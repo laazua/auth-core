@@ -2,12 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟡 sprint-004 待评审（AWAITING_REVIEW）
+- 状态: 🟡 sprint-005 待评审（AWAITING_REVIEW）
 - 当前模块: model
-- 当前功能点: model/001
+- 当前功能点: model/002
 
 ## 下一步动作
-Evaluator：按 `.harness/rules/review-criteria.md` 五维评审 sprint-004（工作单：`.harness/context/task.md`）。实测口径——后端门禁 `mvn -q verify` 与 `bash scripts/smoke.sh`（4 用例）必须亲自复跑并贴输出（环境需含 MYSQL_PASSWORD，已注入 ~/.bashrc）；git diff 取证 smoke.sh 用例调用数 3 → 4；重点核查：DDL 与 §3 九列契约逐列比对、共享库无测试数据残留（__it_ 前缀）、@MapperScan 未动启动类。
+Evaluator：按 `.harness/rules/review-criteria.md` 五维评审 sprint-005（工作单：`.harness/context/task.md`）。实测口径——后端门禁 `mvn -q verify` 与 `bash scripts/smoke.sh`（5 用例）必须亲自复跑并贴输出（环境需含 MYSQL_PASSWORD）；git diff 取证 smoke.sh 用例调用数 4 → 5；重点核查：DDL 六列契约与 name NOT NULL 定夺落地、共享库 `__it_%` 零残留、零既有代码改动。
 
 ## 挂起
 - 2026-08-26: Planner(sprint-004) — 用户裁决：暂沿用旧口令 abc123456 不轮换（风险自担）；已注入仓库外 ~/.bashrc 与 ~/.bash_profile（export MYSQL_PASSWORD），git 历史清理事项仍待裁决。真实库 192.168.165.88:3306（MySQL 8.0.45，库 authcore 已就绪）自本 Sprint 起用于验收。

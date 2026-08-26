@@ -26,7 +26,7 @@ smoke_case() { # smoke_case <用例名> <命令...>
 }
 
 # ===================== 用例区（按功能点增量追加，禁止删除既有用例） =====================
-# 用例计数：4（infra/001 起，每功能点递增）
+# 用例计数：5（infra/001 起，每功能点递增）
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/backend"
 SMOKE_APP_LOG="${TMPDIR:-/tmp}/authcore-smoke-app.log"
@@ -63,6 +63,9 @@ smoke_case "infra-003 统一响应体与异常处理定向测试" mvn -q -f "$AP
 
 # model/001：sys_user 数据层 + Flyway 真实库迁移可重复应用（需环境含 MYSQL_PASSWORD）
 smoke_case "model-001 sys_user 数据层与迁移定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='SysUserModelIntegrationTest'
+
+# model/002：sys_role 数据层 + V2 迁移幂等（需环境含 MYSQL_PASSWORD）
+smoke_case "model-002 sys_role 数据层与迁移定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='SysRoleModelIntegrationTest'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
