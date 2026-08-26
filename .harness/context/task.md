@@ -1,4 +1,4 @@
-# 工作单（当前 Sprint）：sprint-003
+# 工作单（当前 Sprint）：sprint-004
 
 > 本文件是 Generator 实现与 Evaluator 验收的唯一工作契约。字段语义见下方「模板字段定义」；空槽模板与历史工作单见 git 历史。
 
@@ -24,52 +24,54 @@
 ---
 
 ## 基本信息
-- Sprint ID: sprint-003
-- 所属模块: infra
-- 需求描述: 统一响应体 Result&lt;T&gt; + 全局异常处理 + Bean Validation（registry ID：infra/003）
-- 业务背景: 全部 `/api/v1/{resource}` 业务接口的响应契约基座（`docs/01-architecture.md` §4）：Result{code:int(0=成功), message:String, data:T}；业务错误码分段 10xx 用户/11xx 角色/12xx 权限/13xx 模块/14xx 认证；HTTP 语义固定 401=未认证、403=未授权。分层口径依规范 §3（controller 显式包装 Result）、异常口径依规范 §5（业务失败抛 BusinessException(code,message)，系统异常全局兜底）。**规格空白的 Planner 定夺（供评审仲裁）**：§4 分段未覆盖的通用错误不占用资源段——参数校验失败 → HTTP 400 + code=400；未捕获兜底 → HTTP 500 + code=500 且 message 使用固定文案不泄露内部细节。
-- 前置依赖: infra/001（✅ sprint-001）
+- Sprint ID: sprint-004
+- 所属模块: model
+- 需求描述: sys_user 表迁移+实体+Mapper（registry ID：model/001）
+- 业务背景: 数据层六实体之首（`docs/01-architecture.md` §3 契约字段不得增删改名）：id PK、username UNIQUE NOT NULL、password(BCrypt) NOT NULL、nickname/email/phone 可空、status(1启用/0停用)、created_at/updated_at。表结构变更一律走 Flyway `V{n}__{描述}.sql`（本 Sprint 落 **V1__create_sys_user.sql**，为全库首个业务迁移）；唯一性由唯一索引保证而非仅应用层校验（规范 §4）；时间戳经 MetaObjectHandler 自动填充（规范 §4 表设计必备配套）。用户裁决（2026-08-26）：暂沿用旧口令不轮换，凭据已经仓库外 ~/.bashrc 注入 MYSQL_PASSWORD，真实库 192.168.165.88/authcore（MySQL 8.0.45）可用于验收。
+- 前置依赖: infra/002（✅ sprint-002）
 - 状态: AWAITING_REVIEW
 
 ## 验收标准
 <!-- 每条映射测试用例；Generator 按 tdd-workflow 先写测试确认 RED 再最小实现 -->
 
-- [x] AC1 Result 契约：`Result<T>` 为不可变 record，静态工厂 `ok(data)` 产生 code=0、`error(code,message)` 产生非 0 业务码；Jackson 序列化输出恰含 code/message/data 三键 ← 用例 `ResultTest#test_成功工厂_序列化含codeMessageData且code为0`
-- [x] AC2 业务异常路径：controller 抛 `BusinessException(1001,"用户已存在")` 时由全局处理器翻译为 HTTP 400，响应体 {code:1001, message:"用户已存在", data:null} ← 用例 `GlobalExceptionHandlerApiTest#test_业务异常_翻译为400与原样业务码`
-- [x] AC3 Bean Validation 路径：`@Valid @RequestBody` 校验失败时返回 HTTP 400 且 {code:400, message 含字段级提示, data:null} ← 用例 `GlobalExceptionHandlerApiTest#test_参数校验失败_返回400与code400`
-- [x] AC4 兜底路径：未捕获 `RuntimeException` 返回 HTTP 500 且 {code:500, message 为固定文案不含异常细节, data:null}，并以 error 级日志记录带堆栈 ← 用例 `GlobalExceptionHandlerApiTest#test_未捕获异常_返回500固定文案不泄露细节`
+- [x] AC1 迁移可重复应用：真实库上以 spring.flyway.enabled=true 启动上下文后 Flyway 成功应用 V1，flyway_schema_history 存在 version='1' 且 success=1 的记录；再次启动上下文重放不报错且不产生新版本记录 ← 用例 `SysUserModelIntegrationTest#test_迁移_首次应用成功且重放幂等`
+- [x] AC2 表结构符合 §3 契约：information_schema 断言 sys_user 存在，含 id/username/password/nickname/email/phone/status/created_at/updated_at 九列，password 与 status 为 NOT NULL，username 存在非唯一属性的唯一索引 uk_sys_user_username ← 用例 `SysUserModelIntegrationTest#test_表结构_契约列与唯一键齐备`
+- [x] AC3 Mapper CRUD 主线：insert 后 selectById 字段逐项一致，updateById 生效，deleteById 物理删除后不可再查；createdAt/updatedAt 由 MetaObjectHandler 自动填充非空 ← 用例 `SysUserModelIntegrationTest#test_增查改删主线与时间自动填充`（@Transactional 回滚隔离，不在共享开发库留数据）
+- [x] AC4 username 唯一性由数据库保证：同事务内插入重复 username 抛出 DuplicateKeyException ← 用例 `SysUserModelIntegrationTest#test_重复username_触发唯一约束异常`
 
 ## 实现要点（Planner 提示，Generator 裁量落地）
-- 落位 `com.authcore.common`（七业务包之一）：`Result` / `BusinessException` / `GlobalExceptionHandler` 三个类，不做 ErrorCode 枚举等超前抽象（YAGNI，资源段常量随各业务功能点引入）
-- Web 层测试采用测试夹具内探针 controller + MockMvc standaloneSetup + 注册切面，禁止为了测试向主代码添加任何业务端点
-- 冒烟增量：追加 1 条聚焦本功能点能力的用例（如定向运行 ResultTest 与 GlobalExceptionHandlerApiTest），幂等可重复
-- 日志合规（规范 §5）：error 带堆栈上下文、占位符输出、循环外
+- DDL 口径：id BIGINT AUTO_INCREMENT 主键、password VARCHAR(100)（BCrypt 60 字符留裕量）、status TINYINT DEFAULT 1、InnoDB + utf8mb4；禁止 is_ 前缀布尔列（规范 §4）
+- 实体为常规 POJO（规范 §2，MyBatis-Plus 兼容），camelCase↔snake_case 依赖 MP 默认映射；时间字段 LocalDateTime + @TableField(fill=...)
+- `@MapperScan("com.authcore.mapper")` 加在既有 `MybatisPlusConfig` 上（避免为此改动启动类）
+- 集成测试作用于共享开发库：写路径必须 @Transactional 回滚隔离，读路径只读；测试用户名使用可辨识前缀（如 `__it_`）
+- 门禁与冒烟运行前置：环境须含 MYSQL_PASSWORD（已注入 ~/.bashrc，交互 shell 自带；非交互执行需自行 export）
+- 冒烟增量：追加 1 条定向用例运行 `SysUserModelIntegrationTest`（即 tdd-workflow 冒烟节 model 形态「Flyway 真实库迁移可重复应用」的落位）
 
 ## 测试清单
-1. `ResultTest#test_成功工厂_序列化含codeMessageData且code为0` —— ok/error 工厂契约 + JSON 三键断言（覆盖 AC1）
-2. `GlobalExceptionHandlerApiTest#test_业务异常_翻译为400与原样业务码` —— BusinessException → 400/1001/原样 message/data 空（覆盖 AC2）
-3. `GlobalExceptionHandlerApiTest#test_参数校验失败_返回400与code400` —— @NotBlank 空值 → 400/code=400/message 含「名称不能为空」（覆盖 AC3）
-4. `GlobalExceptionHandlerApiTest#test_未捕获异常_返回500固定文案不泄露细节` —— RuntimeException → 500/code=500/固定文案且响应不含 jdbc 细节/ListAppender 断言 ERROR 级带堆栈（覆盖 AC4）
+1. `SysUserModelIntegrationTest#test_迁移_首次应用成功且重放幂等` —— flyway_schema_history version='1' success=1 恰一条 + Flyway#migrate 重放不新增（覆盖 AC1，只读+重放）
+2. `SysUserModelIntegrationTest#test_表结构_契约列与唯一键齐备` —— information_schema 九列/NOT NULL/uk_sys_user_username non_unique=0（覆盖 AC2，只读）
+3. `SysUserModelIntegrationTest#test_增查改删主线与时间自动填充` —— @Transactional 回滚隔离 CRUD 主线 + createdAt/updatedAt 非空（覆盖 AC3）
+4. `SysUserModelIntegrationTest#test_重复username_触发唯一约束异常` —— 同事务重复插入断言 DuplicateKeyException（覆盖 AC4）
 
 ## RED 证据
 <!-- Generator 先写测试运行确认失败后实时摘录 -->
 ```text
-[RED-A] COMPILATION ERROR — ResultTest 先行时 Result 不存在：
-        backend/src/test/java/com/authcore/common/ResultTest.java:[28,49]/[35,9] 找不到符号 类 Result
-[RED-B] COMPILATION ERROR — GlobalExceptionHandlerApiTest 先行时两类均不存在：
-        找不到符号 类 GlobalExceptionHandler / 类 BusinessException
-        （backend/src/test/java/com/authcore/common/GlobalExceptionHandlerApiTest.java:[35,38]/[51,27]/[104,65]）
+[RED] COMPILATION ERROR — SysUserModelIntegrationTest 先行时实体与 Mapper 均不存在：
+        backend/src/test/java/com/authcore/mapper/SysUserModelIntegrationTest.java:
+        [28,13] 找不到符号 类 SysUserMapper / [42,13][43,9] 找不到符号 类 SysUser
 ```
 
 ## 实现说明
-- 新增 `common/Result.java`：record 承载不可变契约（规范 §2 DTO/VO 用 record），ok/error 两工厂；message 成功态固定 "success"。
-- 新增 `common/BusinessException.java`：仅携带 int code + message，HTTP 映射交由处理器，保持认证语义（401/403）留给 auth 模块扩展。
-- 新增 `common/GlobalExceptionHandler.java`：@RestControllerAdvice 三路径（业务 400/校验 400+字段提示/兜底 500 固定文案），error 日志按规范 §5 带完整堆栈。
-- 测试侧：探针 controller 与 DTO 全部内嵌于测试类（未向主代码添加任何端点）；standaloneSetup 显式注入 LocalValidatorFactoryBean 保证校验行为确定性。
-- REFACTOR：各类 ≤60 行单一职责，无坏味道，重构零操作，重跑保持全绿。
+- 新增 `db/migration/V1__create_sys_user.sql`：全库首个业务迁移，九列严格对齐架构 §3；username 唯一索引 uk_sys_user_username；InnoDB/utf8mb4；时间列带 DB 级默认值兜底（应用层以 MetaObjectHandler 为主）。移除 db/migration/.gitkeep（目录已有真实内容）。
+- 新增 `entity/SysUser.java`：常规 POJO（MP 兼容），camelCase↔snake_case 走 MP 默认映射；createdAt/updatedAt 标注 FieldFill.INSERT / INSERT_UPDATE。
+- 新增 `mapper/SysUserMapper.java`：仅继承 BaseMapper，无超前自定义 SQL（YAGNI）。
+- 新增 `config/MybatisPlusMetaObjectHandler.java`：strictInsertFill/strictUpdateFill 时间字段。
+- 修改 `config/MybatisPlusConfig.java`：加 `@MapperScan("com.authcore.mapper")`（按工作单要点，未动启动类）。
+- 测试隔离口径落实：写用例 @Transactional 回滚，读用例只读；测试数据统一 `__it_` 前缀。真实库验证通过（MySQL 8.0.45 @192.168.165.88/authcore）。
+- REFACTOR：零操作，重跑保持全绿。
 
 ## 冒烟记录
-- Generator：本次追加 1 条用例（`infra-003 统一响应体与异常处理定向测试`，定向运行 ResultTest + GlobalExceptionHandlerApiTest）；`bash scripts/smoke.sh` 全组通过（exit=0，`SMOKE PASSED（3 用例）`）。
+- Generator：本次追加 1 条用例（`model-001 sys_user 数据层与迁移定向测试`）；`bash scripts/smoke.sh` 全组通过（exit=0，`SMOKE PASSED（4 用例）`）。
 - Evaluator 复核结论：（待 Evaluator 复跑填写）
 
 ## 评审意见

@@ -4,6 +4,9 @@
 
 ## 记录
 
+- 2026-08-26: Generator — done sprint-004（model/001，后端门禁 mvn -q verify 全绿 13 用例 + 冒烟 4 用例通过，真实库验收）
+- 2026-08-26: Planner — kickoff sprint-004（model/001，4 条验收标准；真实库验收口径，旧口令沿用裁决登记挂起区）
+- 2026-08-26: Evaluator — pass sprint-003（infra/003，平均分 9.8/10）
 - 2026-08-26: Generator — done sprint-003（infra/003，后端门禁 mvn -q verify 全绿 9 用例 + 冒烟 3 用例通过）
 - 2026-08-26: Planner — kickoff sprint-003（infra/003，4 条验收标准；§4 规格空白定夺 400/500 通用码并登记工作单）
 - 2026-08-26: Evaluator — pass sprint-002（infra/002，平均分 8.8/10；历史口令轮换待用户裁决，挂起区跟踪）

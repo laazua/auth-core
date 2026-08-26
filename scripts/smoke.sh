@@ -26,7 +26,7 @@ smoke_case() { # smoke_case <用例名> <命令...>
 }
 
 # ===================== 用例区（按功能点增量追加，禁止删除既有用例） =====================
-# 用例计数：3（infra/001 起，每功能点递增；DB 类用例待 MySQL 实例就绪后按挂起区口径补入）
+# 用例计数：4（infra/001 起，每功能点递增）
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/backend"
 SMOKE_APP_LOG="${TMPDIR:-/tmp}/authcore-smoke-app.log"
@@ -60,6 +60,9 @@ smoke_case "infra-002 后端构建与全量测试" mvn -q -f "$APP_DIR/pom.xml" 
 
 # infra/003：统一响应体与全局异常处理的定向判定（聚焦本功能点交付能力）
 smoke_case "infra-003 统一响应体与异常处理定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='ResultTest,GlobalExceptionHandlerApiTest'
+
+# model/001：sys_user 数据层 + Flyway 真实库迁移可重复应用（需环境含 MYSQL_PASSWORD）
+smoke_case "model-001 sys_user 数据层与迁移定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='SysUserModelIntegrationTest'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

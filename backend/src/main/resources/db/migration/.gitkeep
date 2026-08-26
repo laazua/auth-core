@@ -1,1 +1,0 @@
-# Flyway 迁移目录：命名规则 V{n}__{描述}.sql（docs/01-architecture.md §3）；首个业务表迁移自 model/001 起。

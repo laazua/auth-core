@@ -24,14 +24,14 @@
 |----|--------|----------|------|------|
 | infra/001 | Maven 项目骨架 + Spring Boot 启动 + actuator 健康检查 | — | ✅ | sprint-001 评审通过（2026-08-26，均分 9.8） |
 | infra/002 | MySQL 接入 + MyBatis-Plus 配置 + Flyway 迁移机制 | infra/001 | ✅ | sprint-002 复审通过（2026-08-26，均分 8.8；配置化接入口径见挂起区） |
-| infra/003 | 统一响应体 Result<T> + 全局异常处理 + Bean Validation | infra/001 | 🔄 | sprint-003 进行中（.harness/context/task.md） |
+| infra/003 | 统一响应体 Result<T> + 全局异常处理 + Bean Validation | infra/001 | ✅ | sprint-003 评审通过（2026-08-26，均分 9.8） |
 | infra/004 | 测试基础设施（Testcontainers MySQL 基座 + 测试命名/分层约定） | infra/002 | ⬜ | — |
 
 ## model — 数据模型
 
 | ID | 功能点 | 前置依赖 | 状态 | 备注 |
 |----|--------|----------|------|------|
-| model/001 | sys_user 表迁移+实体+Mapper | infra/002 | ⬜ | — |
+| model/001 | sys_user 表迁移+实体+Mapper | infra/002 | 🔄 | sprint-004 进行中（.harness/context/task.md） |
 | model/002 | sys_role 表迁移+实体+Mapper | infra/002 | ⬜ | — |
 | model/003 | sys_module 表迁移+实体+Mapper | infra/002 | ⬜ | — |
 | model/004 | sys_permission 表迁移+实体+Mapper(FK module_id) | model/003 | ⬜ | — |
