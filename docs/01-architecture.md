@@ -1,6 +1,6 @@
 # auth-core 系统架构
 
-> 本文档（`docs/01-architecture.md`）是所有 Agent 的仲裁依据：任何实现与本文件冲突时，一律以本文件为准，并同步在 .harness/context/session-state.md 中登记冲突与处理结果，不得静默偏离。
+> 本文档（`docs/01-architecture.md`）是所有 Agent 的仲裁依据：任何实现与本文件冲突时，一律以本文件为准，并同步在 `.harness/context/session-state.md` 中登记冲突与处理结果，不得静默偏离。
 
 ## 1. 技术栈（已固化，Agent 不得更改）
 
