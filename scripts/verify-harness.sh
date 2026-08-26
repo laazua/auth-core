@@ -81,6 +81,10 @@ has .harness/rules/tdd-workflow.md "冒烟测试" && ok "tdd-workflow 含「冒�
 has .harness/generator.md "scripts/smoke.sh" && ok "generator 接线 smoke.sh（自跑+记录）" || bad "generator 未接线 smoke.sh"
 has .harness/evaluator.md "scripts/smoke.sh" && ok "evaluator 接线 smoke.sh（复跑）" || bad "evaluator 未接线 smoke.sh"
 has .harness/rules/review-criteria.md "冒烟" && ok "review-criteria 否决口径含「冒烟」" || bad "review-criteria 缺冒烟否决口径"
+CS=.harness/rules/coding-standards.md
+for kw in "总原则" "构造器注入" "N+1" "defineProps" "快速核查清单"; do
+  has "$CS" "$kw" && ok "coding-standards 含「$kw」" || bad "coding-standards 缺「$kw」（规范细化被回退？）"
+done
 has AGENTS.md "scripts/smoke.sh" && ok "AGENTS.md 硬性规则含 smoke.sh" || bad "AGENTS.md 缺 smoke.sh 规则"
 has .harness/README.md "scripts/smoke.sh" && ok "README 含 smoke.sh 说明" || bad "README 缺 smoke.sh 说明"
 
