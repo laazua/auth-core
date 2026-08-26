@@ -30,6 +30,7 @@
 | 枚举值 | UPPER_SNAKE_CASE | `Status.PENDING` |
 
 - 测试类 `<被测类>Test`；抽象类 `Abstract` 前缀；接口不加 `I` 前缀；实现类 `Impl` 后缀
+- 表/列名 `snake_case` ↔ Java 字段 `camelCase` 自动映射；数据库对象统一 `sys_` 前缀
 - `record` 用于不可变数据载体（DTO/VO）；数据库实体仍用常规 POJO（MyBatis-Plus 兼容）
 - `Optional` 仅作返回类型表达"可能无值"；禁止作字段或参数类型；禁止未检查的 `get()`，优先 `orElseThrow`
 - `@Override` 必须使用；`@SuppressWarnings` 必须附注释说明原因
@@ -42,16 +43,15 @@
 
 - 分层单向调用 controller→service→mapper，禁止跨层调用与反向依赖；DTO 进出 controller，entity 不外泄
 - **controller 只做三件事**：接收参数（Bean Validation 校验）→ 委托 service → 包装 Result 返回；任何 if 业务判断、数据组装都不允许出现在 controller
-- 构造器注入（Lombok `@RequiredArgsConstructor`）；禁止字段注入（`@Autowired` 直接标字段）
+- 构造器注入：依赖字段一律 `final` 并以手写构造器注入（Lombok 未列入固化技术栈，如确需引入须先在 session-state 登记并更新 `docs/01-architecture.md` 后方可使用）；**禁止字段注入**（`@Autowired` 直接标字段）
 - `@Transactional` 只置于 service 实现方法上：查询方法标 `readOnly = true`；禁止在 controller 开事务；注意同类自调用导致事务失效——需要时拆分类或经代理调用
 - RESTful 语义正确：GET 幂等无副作用、POST 创建、PUT 全量更新、DELETE 删除；资源名复数小写中划线（`/api/v1/user-roles`）
 - 配置绑定用 `@ConfigurationProperties` 类型安全类；业务代码内禁止散落 `@Value`
 
 ## 4. MyBatis-Plus 与数据层
 
-- 简单 CRUD 用 BaseMapper/IService 内置方法；自定义 SQL 写 XML 或 Wrapper，**禁止字符串拼接 SQL**
-- `${}` 仅限动态表名等白名单场景且必须代码级白名单校验，其余参数一律 `#{}`
-- 列表查询必须分页（PaginationInnerInterceptor 统一实现），**禁止无界全量查询**
+- 简单 CRUD 用 BaseMapper/IService 内置方法；自定义 SQL 写 XML 或 Wrapper，参数一律 `#{}`——**禁止任何 `${}` 拼接（无白名单例外：本项目六表固定，不存在动态表名场景）**
+- 列表查询必须分页（PaginationInnerInterceptor 统一实现），**禁止无界全量查询**；唯一豁免：角色/权限树、状态下拉等字典类小数据可全量加载，但必须注释说明规模预期（≤1000 行）
 - 明确列清单代替 `select *`；大字段（TEXT/JSON）独立查询或延迟加载
 - **禁止 N+1**：循环体内查库一律改为批量查询 + 内存组装
 - 批量写入分批提交（每批 ≤1000 条），禁止循环单条 insert/update
@@ -60,8 +60,8 @@
 
 ## 5. 异常与日志
 
-- 异常分层：业务失败抛 `BusinessException(code, message)`（common 包统一机制）；系统异常由全局异常处理器兜底翻译为 Result
-- 禁止空 catch 块或仅 `e.printStackTrace()`；禁止用异常做流程控制；finally 中禁止 return
+- 异常分层：业务失败抛 `BusinessException(code, message)`——code 必须取自 `docs/01-architecture.md` 第 4 节错误码分段，禁止自造码段；系统异常由全局异常处理器兜底翻译为 Result
+- 禁止 `System.out` / `printStackTrace` / 空 catch 块；禁止用异常做流程控制；finally 中禁止 return
 - 日志统一 slf4j，四规则：
   - 占位符 `{}` 输出，禁止字符串拼接
   - `error`/`warn` 必须带上下文数据与堆栈（`log.error("xxx, id={}", id, e)`）
@@ -71,7 +71,7 @@
 ## 6. 安全
 
 - 密码仅 BCrypt 编码存取；JWT secret 只从环境变量读取，application.yml 不落真实密钥
-- 所有管理接口默认需要认证；授权判定以数据库权限码为准——前端隐藏入口不作为访问控制手段
+- 所有管理接口需要认证；授权判定以数据库权限码为准——前端隐藏入口不作为访问控制手段
 - 入口即校验：所有外部输入 Bean Validation 注解校验 + service 层业务规则双校验；越权防护在 service 层做资源归属/引用校验
 - 引入新依赖必须说明用途并确认无可替代的既有依赖；禁止引入存在已知高危 CVE 且有替代品的库
 
@@ -87,15 +87,17 @@
 ## 8. Vue3 组件
 
 - `<script setup lang="ts">` composition API；SFC 块顺序 script→template→style；禁止 Options API
-- 多单词组件名；基础组件 `Base` 前缀、单例组件 `The` 前缀；可复用逻辑抽 composable（`useXxx`，放 src/composables/）
+- 组件文件名与模板使用一律 PascalCase；多单词组件名（禁单词名）；基础组件 `Base` 前缀、单例组件 `The` 前缀；页面组件放 src/views/，公共组件放 src/components/，可复用逻辑抽 composable（`useXxx`，放 src/composables/）
+- 样式必须 `<style scoped>`；深度选择器用 `:deep()`；主题定制优先 Element Plus CSS 变量
 - Props 用 `defineProps<接口>` 泛型定义 + `withDefaults` 给默认值；事件用 `defineEmits` 显式签名；事件名 kebab-case
-- `v-for` 必带稳定唯一 key，可重排列表禁止 index 作 key；`v-if` 与 `v-for` 禁止作用于同一元素；条件渲染默认 v-if，高频切换才 v-show
+- `v-for` 必带稳定唯一 key，可重排列表禁止 index 作 key；`v-if` 与 `v-for` 禁止作用于同一元素；条件渲染默认 v-if，同区域高频切换（实时状态类）才 v-show
 - 模板表达式保持简单——一切派生数据用 `computed`；元素属性超过 3 个逐行书写
 - 单组件 ≤300 行（不含样式），超限拆子组件
 - API 调用集中在 src/api/ 并与后端 DTO 对齐类型定义；组件内禁止直接 axios
 - Pinia setup store 一域一 store；action 内不做 UI 逻辑（toast/跳转留在组件层）
 - 路由懒加载 + `meta: { requiresAuth, title }`；路由参数经 `props: true` 传入页面
-- 副作用清理：定时器/事件监听在 `onUnmounted` 移除；大数据列表 `shallowRef` 或虚拟滚动；重组件 `defineAsyncComponent`
+- 副作用清理：定时器/事件监听在 `onUnmounted` 移除；列表数据 >200 条用 `shallowRef`，>1000 条考虑虚拟滚动；重组件 `defineAsyncComponent`
+- 交付前门禁：eslint 与 vue-tsc 零告警（视为缺陷而非建议）
 
 ## 9. 测试代码质量（测试也是交付物）
 
