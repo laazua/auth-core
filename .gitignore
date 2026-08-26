@@ -1,0 +1,10 @@
+# Maven 构建产物
+backend/target/
+
+# IDE 与编辑器
+.idea/
+*.iml
+.vscode/
+
+# 日志与临时文件
+*.log
