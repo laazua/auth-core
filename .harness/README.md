@@ -68,10 +68,10 @@
    - Planner 干跑验证：
 
      ```bash
-     claude "阅读 .harness/planner.md 并严格执行。需求：示例——为系统添加操作日志查询接口"
+     claude "阅读 .harness/planner.md 并严格执行。需求：实现 infra/001 Maven 项目骨架与 Spring Boot 启动"
      ```
 
-     预期产出符合模板的 `.harness/context/task.md` 工作单，且 `.harness/modules/registry.md` 出现新条目状态 🔄。验证后还原这些演示改动（git checkout 或手工复原），保持 registry 初始态。
+     预期产出符合模板的 `.harness/context/task.md` 工作单，且 `.harness/modules/registry.md` 中 infra/001 对应行的状态由 ⬜ 翻转为 🔄。验证后还原这些演示改动（git checkout 或手工复原），保持 registry 初始态。
 
 3. 前置软件清单：Java 21、Maven 3.9+、Node 20+、Docker（Testcontainers 用）、MySQL 8。
 
@@ -79,7 +79,7 @@
 
 每个阶段开一个全新会话，粘贴对应命令（尖括号处替换为你的内容）：
 
-```bash
+```text
 claude "阅读 .harness/planner.md 并严格执行。需求：<...>"
 claude "阅读 .harness/generator.md 并严格执行。开始当前 Sprint。"
 claude "阅读 .harness/evaluator.md 并严格执行。"
