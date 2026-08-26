@@ -15,6 +15,7 @@
 | 测试清单 | Generator | 从验收标准导出的用例列表，先于实现写出（规则见 `.harness/rules/tdd-workflow.md`） |
 | RED 证据 | Generator | 测试先行的失败输出摘录，格式须符合 `.harness/rules/tdd-workflow.md` 规定 |
 | 实现说明 | Generator | 最小实现的落点摘要：改了哪些类/文件、为何这样改、重构内容 |
+| 冒烟记录 | Generator 记录；Evaluator 复核 | 本次追加的冒烟用例数与 `scripts/smoke.sh` 执行结果（Evaluator 侧记复跑结论） |
 | 状态 | Planner 初填；Generator/Evaluator 流转更新 | 枚举流转：PLANNED→IN_PROGRESS→AWAITING_REVIEW→REWORK→DONE｜BLOCKED |
 | 评审意见 | Evaluator | 按 `.harness/rules/review-criteria.md` 五维评分的结论与整改要求 |
 
@@ -50,6 +51,9 @@
 
 ## 实现说明
 - 由 Generator 实现/重构完成后填写
+
+## 冒烟记录
+- 由 Generator 在 GREEN 后填写（本次追加用例数 + `bash scripts/smoke.sh` 结果）；Evaluator 复核时附复跑结论
 
 ## 评审意见
 - （由 Evaluator 评审时填写）

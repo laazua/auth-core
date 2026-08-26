@@ -172,6 +172,8 @@ Agent 通过**读文件**获得全部上下文，不依赖对话历史。每次�
 - RED→GREEN→REFACTOR 循环 + 证据记录规范（task.md 槽位）
 - 门禁命令：后端 `mvn -q verify`；前端 `npm run lint && npm run test && npm run build`
 
+> 增补（2026-08-26，用户要求）：引入强制冒烟机制——新增 `scripts/smoke.sh` 随功能点增量维护用例（infra→health、auth→curl 链路、web→构建产物……最终形态对齐 registry integration/002）；Generator 全量回归后必须自跑并记入 task.md 新字段「冒烟记录」，Evaluator 必须亲自复跑；冒烟未执行或不通过列入一票否决。详见 `.harness/rules/tdd-workflow.md` 冒烟节。
+
 ### 5.4 docs/01-architecture.md 要点（固化业务语义，防偏差仲裁依据）
 - Monorepo：`backend/`（Spring Boot 单 Maven 模块，package-by-layer）+ `frontend/`
 - 统一响应 `Result{code,message,data}`；错误码分段（0 成功 / 4xx 业务 / 401·403 HTTP 语义）；列表分页参数 `page/size`

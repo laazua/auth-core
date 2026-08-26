@@ -13,10 +13,10 @@
     │
     ▼
 [Generator] 读工作单 → TDD 红绿灯实现（RED→GREEN→REFACTOR）
-            → 提交 + 变更清单，session-state 标「待评审」
+            → 回归门禁 + 冒烟 scripts/smoke.sh → 提交 + 变更清单，session-state 标「待评审」
     │
     ▼
-[Evaluator] 亲跑门禁命令 → 五维评分裁决
+[Evaluator] 亲跑门禁命令与冒烟复跑 → 五维评分裁决
     ├─ ✅ 通过：registry 🔄→✅ → 记 iteration-log → 取下一功能点（新会话）
     └─ ❌ 不通过：问题清单写回 task.md → Generator 返工（REWORK）
               └─ 同一功能点连续 2 次 ❌ → BLOCKED 转人工
@@ -42,6 +42,7 @@
 | `docs/01-architecture.md` | 固化架构：选型/分层/ER/API 规范/RBAC 业务语义，一切冲突的仲裁依据 |
 | `.harness/README.md` | 本文件：总览 + 驱动手册 |
 | `scripts/verify-harness.sh` | Harness 自身完整性自检脚本（文件存在性/模板字段/死链等六节校验） |
+| `scripts/smoke.sh` | 项目冒烟测试脚本：随功能点增量追加用例，每次迭代 Generator 自跑、Evaluator 复跑，未过即一票否决 |
 
 上下文分三层：指令层（三个 prompt，基本不变）、规则层（rules/*、`docs/01-architecture.md`、`AGENTS.md`，低频）、状态层（context 三件套 + registry，每 Sprint 更新）。
 
@@ -90,6 +91,7 @@ claude "阅读 .harness/evaluator.md 并严格执行。"
 ## 状态机与异常处理
 
 - 功能点状态机：⬜ 未开始 → 🔄 进行中 → ✅ 完成；旁路标记：❌ 阻塞、⚠️ 有缺口。
+- 冒烟强制：功能点转 ✅ 的前置条件是回归门禁全绿且 `scripts/smoke.sh` 全部用例通过（Generator 追加用例并自跑，Evaluator 亲自复跑）。
 - 评审不通过：Evaluator 将问题清单写回 task.md 并置 REWORK，Generator 返工后重新评审。
 - 连续 2 次 REWORK 不通过 → registry 标 ❌ BLOCKED，登记 `.harness/context/session-state.md` 挂起区，转人工处理；人工解决后重新进入循环。
 - 事故复盘：Agent 错误根因记入 `.harness/context/iteration-log.md`；若属规则缺口，则回写 `.harness/rules/` 对应文件或 `AGENTS.md` 防复发。

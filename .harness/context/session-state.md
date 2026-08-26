@@ -13,4 +13,5 @@ Planner kickoff：阅读 `.harness/modules/registry.md` 与 `docs/01-architectur
 （无）
 
 ## 最近更新
+- 2026-08-26: 系统 — Harness 增补强制冒烟机制（smoke.sh 接线六处流程，registry 状态不受影响仍全 ⬜）
 - 2026-08-26: 系统 — Harness 交付，registry 32 个功能点全部 ⬜

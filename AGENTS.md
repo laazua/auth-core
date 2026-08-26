@@ -14,6 +14,7 @@
 
 ## 硬性规则
 - TDD 强制：任何业务代码必须测试先行，流程见 `.harness/rules/tdd-workflow.md`
+- 冒烟强制：每个功能点交付前必须通过 `scripts/smoke.sh`（Generator 追加用例并运行，Evaluator 复跑）
 - 禁止跳过 Evaluator；禁止自行宣布完成
 - 门禁：后端 mvn -q verify；前端 npm run lint && npm run test && npm run build
 - 与 `docs/01-architecture.md` 冲突时以它为准并在 session-state 登记
@@ -23,4 +24,5 @@
 后端：mvn -q verify / mvn spring-boot:run（backend/）
 前端：npm run lint && npm run test && npm run build / npm run dev（frontend/）
 环境前置：Java 21、Maven 3.9+、Node 20+、Docker（Testcontainers）、MySQL 8
+冒烟测试（每功能点必跑）：bash scripts/smoke.sh
 Harness 自检：bash scripts/verify-harness.sh
