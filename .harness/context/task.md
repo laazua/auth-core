@@ -72,7 +72,13 @@
 
 ## 冒烟记录
 - Generator：本次追加 1 条用例（`infra-002 后端构建与全量测试`，mvn -q verify 幂等）；`bash scripts/smoke.sh` 连续 2 次全组通过（exit=0，输出 `SMOKE PASSED（2 用例）`）。DB 类冒烟按挂起区登记延后补入。
-- Evaluator 复核结论：（待 Evaluator 复跑填写）
+- Evaluator 复核结论：已亲自复跑——`SMOKE FAILED（2 用例）`，`infra-002 后端构建与全量测试` 失败（其内嵌 mvn verify 因 DataSourceConfigBindingTest 断言失败而失败）；infra-001 用例仍通过。根因见评审意见问题 2。
 
 ## 评审意见
-- （由 Evaluator 评审时填写）
+- ❌ 不通过（2026-08-26，REWORK 第 1 次）。五维均分不满足通过线之外的独立事实：命中一票否决项 2 与 6。
+- 问题清单：
+  1. [严重·一票否决项2 明文密码] `backend/src/main/resources/application.yml:9` 默认口令落真实值 `abc123456`，且已随 aa4b59b 进入 git 历史——违反规范 §6「application.yml 不落真实密钥」与本工作单实现要点「凭据不得出现真实值」。→ 修复：默认值改空占位 `${MYSQL_PASSWORD:}`；凭据一律经环境变量注入；已入史的口令建议轮换（历史清理与否由用户裁决，登记挂起区）。
+  2. [严重·一票否决项6 回归失败] Evaluator 亲跑 `mvn -q verify` exit=1：`DataSourceConfigBindingTest#test_环境变量覆盖数据源默认配置`(DataSourceConfigBindingTest.java:65) expected:<true> but was:<false>——交付后 yml 默认 url/username 被改为环境特定值 `192.168.165.88/root`，与 AC3 契约及测试断言不一致。→ 修复二选一并保持门禁全绿：(a) 恢复中性默认值（localhost/authcore），真实环境经 env 注入；(b) 若团队约定该库为共享开发默认，则同步修订绑定测试断言并在实现说明中登记理由。无论哪种，密码不得作为默认值入库。
+  3. [非否决·登记] 变更范围核对发现 aa4b59b 夹带了非 Generator 编写的 yml 改动（提交前未复查工作区），流程教训记入返工说明：feat 提交前必须 `git status/diff` 核对暂存内容。
+- 改进建议（不计分）：用户 MySQL 实例已就绪（192.168.165.88），REWORK 通过后建议 Planner 安排挂起区延后的 DB 连通 + Flyway 迁移应用验证。
+- 返工记录（2026-08-26）：① application.yml 口令默认值已改 `${MYSQL_PASSWORD:}` 并加「凭据一律经环境变量注入」注释；② 绑定测试回落分支断言改为协议头+库名 authcore+用户名 root（不钉死环境特定 host，处置口径 b）；③ 本次返工提交前已用 git status/diff 复查暂存内容。复跑：mvn -q verify exit=0（5/5）+ smoke exit=0（2 用例）。

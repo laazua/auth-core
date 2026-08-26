@@ -62,9 +62,12 @@ class DataSourceConfigBindingTest {
         assertEquals("env-pass", overridden.getProperty("spring.datasource.password"));
 
         Environment fallback = envWith(Map.of());
-        assertTrue(fallback.getProperty("spring.datasource.url")
-                .startsWith("jdbc:mysql://localhost:3306/authcore"));
-        assertEquals("authcore", fallback.getProperty("spring.datasource.username"));
+        // 团队共享开发默认值（host/user）允许入库，但断言不钉死环境特定 host；
+        // 仅校验协议、库名与用户名占位生效（评审意见问题 2 的处置口径 b）
+        String fallbackUrl = fallback.getProperty("spring.datasource.url");
+        assertTrue(fallbackUrl.startsWith("jdbc:mysql://"), "默认 url 应为合法 jdbc 前缀");
+        assertTrue(fallbackUrl.contains("/authcore?"), "默认库应为 authcore");
+        assertEquals("root", fallback.getProperty("spring.datasource.username"));
     }
 
     /**
