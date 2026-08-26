@@ -4,6 +4,9 @@
 
 ## 记录
 
+- 2026-08-26: Generator — done sprint-003（infra/003，后端门禁 mvn -q verify 全绿 9 用例 + 冒烟 3 用例通过）
+- 2026-08-26: Planner — kickoff sprint-003（infra/003，4 条验收标准；§4 规格空白定夺 400/500 通用码并登记工作单）
+- 2026-08-26: Evaluator — pass sprint-002（infra/002，平均分 8.8/10；历史口令轮换待用户裁决，挂起区跟踪）
 - 2026-08-26: Generator — rework done sprint-002（infra/002，凭据去真实化+断言口径统一，双门禁复绿）
 - 2026-08-26: Evaluator — fail sprint-002（infra/002，REWORK 第 1 次：明文密码入库 + 门禁复跑回归失败）
 - 2026-08-26: Generator — done sprint-002（infra/002，后端门禁 mvn -q verify 全绿 5 用例 + 冒烟 2 用例连续 2 次通过）

@@ -1,4 +1,4 @@
-# 工作单（当前 Sprint）：sprint-002
+# 工作单（当前 Sprint）：sprint-003
 
 > 本文件是 Generator 实现与 Evaluator 验收的唯一工作契约。字段语义见下方「模板字段定义」；空槽模板与历史工作单见 git 历史。
 
@@ -24,61 +24,53 @@
 ---
 
 ## 基本信息
-- Sprint ID: sprint-002
+- Sprint ID: sprint-003
 - 所属模块: infra
-- 需求描述: MySQL 接入 + MyBatis-Plus 配置 + Flyway 迁移机制——**配置化接入口径**（registry ID：infra/002）
-- 业务背景: 为 model 层六实体（sys_user 等，`docs/01-architecture.md` §3）落地预置持久化基座，ORM/DB/Flyway 选型固化于 §1。用户裁决（2026-08-26，登记于 session-state 挂起区）：本机不使用 Docker，数据库连接完全走配置（application.yml + 环境变量占位），真实连通与迁移应用验证延后至 MySQL 实例就绪；因此本 Sprint 全部验收用例必须离线可跑。
-- 前置依赖: infra/001（✅ sprint-001 交付）
+- 需求描述: 统一响应体 Result&lt;T&gt; + 全局异常处理 + Bean Validation（registry ID：infra/003）
+- 业务背景: 全部 `/api/v1/{resource}` 业务接口的响应契约基座（`docs/01-architecture.md` §4）：Result{code:int(0=成功), message:String, data:T}；业务错误码分段 10xx 用户/11xx 角色/12xx 权限/13xx 模块/14xx 认证；HTTP 语义固定 401=未认证、403=未授权。分层口径依规范 §3（controller 显式包装 Result）、异常口径依规范 §5（业务失败抛 BusinessException(code,message)，系统异常全局兜底）。**规格空白的 Planner 定夺（供评审仲裁）**：§4 分段未覆盖的通用错误不占用资源段——参数校验失败 → HTTP 400 + code=400；未捕获兜底 → HTTP 500 + code=500 且 message 使用固定文案不泄露内部细节。
+- 前置依赖: infra/001（✅ sprint-001）
 - 状态: AWAITING_REVIEW
 
 ## 验收标准
 <!-- 每条映射测试用例；Generator 按 tdd-workflow 先写测试确认 RED 再最小实现 -->
 
-- [x] AC1 `cd backend && mvn -q verify` 构建成功；pom.xml 相对上一版新增依赖仅限 mybatis-plus-spring-boot3-starter(3.5.x)、mysql-connector-j(runtime)、flyway-core、flyway-mysql 四项，无表外技术栈 ← 判定 `mvn -q verify` 门禁 + 既有用例 `AuthCoreApplicationTests#contextLoads` 保持全绿（新依赖不得破坏既有装配）
-- [x] AC2 MyBatis-Plus 分页插件就位：配置类提供的 `MybatisPlusInterceptor` 内含 `PaginationInnerInterceptor` 且方言为 `DbType.MYSQL` ← 用例 `MybatisPlusConfigTest#test_分页拦截器_已注册且方言为MySQL`
-- [x] AC3 数据源三要素完全外置：application.yml 中 url/username/password 均为 `${ENV:默认值}` 占位（环境变量名 MYSQL_URL / MYSQL_USERNAME / MYSQL_PASSWORD），Binder 绑定测试证明「环境变量存在时覆盖默认值」← 用例 `DataSourceConfigBindingTest#test_环境变量覆盖数据源默认配置`
-- [x] AC4 Flyway 开关与位置配置化：`spring.flyway.enabled` 绑定 `FLYWAY_ENABLED`（**默认 false，保证无实例时应用可启动**）、`spring.flyway.locations` 固定 `classpath:db/migration` ← 用例 `DataSourceConfigBindingTest#test_flyway开关与迁移目录绑定`
+- [x] AC1 Result 契约：`Result<T>` 为不可变 record，静态工厂 `ok(data)` 产生 code=0、`error(code,message)` 产生非 0 业务码；Jackson 序列化输出恰含 code/message/data 三键 ← 用例 `ResultTest#test_成功工厂_序列化含codeMessageData且code为0`
+- [x] AC2 业务异常路径：controller 抛 `BusinessException(1001,"用户已存在")` 时由全局处理器翻译为 HTTP 400，响应体 {code:1001, message:"用户已存在", data:null} ← 用例 `GlobalExceptionHandlerApiTest#test_业务异常_翻译为400与原样业务码`
+- [x] AC3 Bean Validation 路径：`@Valid @RequestBody` 校验失败时返回 HTTP 400 且 {code:400, message 含字段级提示, data:null} ← 用例 `GlobalExceptionHandlerApiTest#test_参数校验失败_返回400与code400`
+- [x] AC4 兜底路径：未捕获 `RuntimeException` 返回 HTTP 500 且 {code:500, message 为固定文案不含异常细节, data:null}，并以 error 级日志记录带堆栈 ← 用例 `GlobalExceptionHandlerApiTest#test_未捕获异常_返回500固定文案不泄露细节`
 
 ## 实现要点（Planner 提示，Generator 裁量落地）
-- `src/main/resources/db/migration/` 目录用 `.gitkeep` 占位；首个业务表迁移自 model/001 起（命名 `V{n}__{描述}.sql`，§3 规则）
-- 所有测试离线可跑：禁止引入任何需要真实 MySQL 的集成测试（已延后登记）
-- 密码/凭据不得出现真实值（默认占位符），符合规范第 6 节
-- 冒烟增量：追加 1 条「后端构建与全量测试」用例（幂等），DB 类冒烟（Flyway 迁移应用）延后补入
+- 落位 `com.authcore.common`（七业务包之一）：`Result` / `BusinessException` / `GlobalExceptionHandler` 三个类，不做 ErrorCode 枚举等超前抽象（YAGNI，资源段常量随各业务功能点引入）
+- Web 层测试采用测试夹具内探针 controller + MockMvc standaloneSetup + 注册切面，禁止为了测试向主代码添加任何业务端点
+- 冒烟增量：追加 1 条聚焦本功能点能力的用例（如定向运行 ResultTest 与 GlobalExceptionHandlerApiTest），幂等可重复
+- 日志合规（规范 §5）：error 带堆栈上下文、占位符输出、循环外
 
 ## 测试清单
-1. `DataSourceConfigBindingTest#test_环境变量覆盖数据源默认配置` —— 隔离模拟环境变量 + 主 yml 解析：覆盖方向与缺省回落方向双向断言（覆盖 AC3）
-2. `DataSourceConfigBindingTest#test_flyway开关与迁移目录绑定` —— FLYWAY_ENABLED=true/false 两分支 + locations 固定值断言（覆盖 AC4）
-3. `MybatisPlusConfigTest#test_分页拦截器_已注册且方言为MySQL` —— 配置类单测（覆盖 AC2）
-4. 存量回归：`AuthCoreApplicationTests#contextLoads`、`HealthEndpointApiTest` 保持全绿（覆盖 AC1）
+1. `ResultTest#test_成功工厂_序列化含codeMessageData且code为0` —— ok/error 工厂契约 + JSON 三键断言（覆盖 AC1）
+2. `GlobalExceptionHandlerApiTest#test_业务异常_翻译为400与原样业务码` —— BusinessException → 400/1001/原样 message/data 空（覆盖 AC2）
+3. `GlobalExceptionHandlerApiTest#test_参数校验失败_返回400与code400` —— @NotBlank 空值 → 400/code=400/message 含「名称不能为空」（覆盖 AC3）
+4. `GlobalExceptionHandlerApiTest#test_未捕获异常_返回500固定文案不泄露细节` —— RuntimeException → 500/code=500/固定文案且响应不含 jdbc 细节/ListAppender 断言 ERROR 级带堆栈（覆盖 AC4）
 
 ## RED 证据
-<!-- 两个 TDD 小循环，均实测于实现存在之前（命令 cd backend && mvn test） -->
+<!-- Generator 先写测试运行确认失败后实时摘录 -->
 ```text
-[RED-A] Tests run: 2, Failures: 0, Errors: 2 — DataSourceConfigBindingTest 全错：
-        java.io.FileNotFoundException: class path resource [application.yml] cannot be opened
-        （test_环境变量覆盖数据源默认配置 / test_flyway开关与迁移目录绑定）
-[RED-B] COMPILATION ERROR — MybatisPlusConfigTest 先行时依赖与实现均不存在：
-        程序包 com.baomidou.mybatisplus.annotation/extension.plugins(.inner) 不存在；
-        找不到符号 类 MybatisPlusConfig（实现类尚未创建）
+[RED-A] COMPILATION ERROR — ResultTest 先行时 Result 不存在：
+        backend/src/test/java/com/authcore/common/ResultTest.java:[28,49]/[35,9] 找不到符号 类 Result
+[RED-B] COMPILATION ERROR — GlobalExceptionHandlerApiTest 先行时两类均不存在：
+        找不到符号 类 GlobalExceptionHandler / 类 BusinessException
+        （backend/src/test/java/com/authcore/common/GlobalExceptionHandlerApiTest.java:[35,38]/[51,27]/[104,65]）
 ```
 
 ## 实现说明
-- `backend/pom.xml`：新增四项依赖——mybatis-plus-spring-boot3-starter 3.5.7（选 3.5.7 因其自含 jsqlparser 能力，避免 3.5.9+ 需额外引入 mybatis-plus-jsqlparser 模块而突破 AC1 的四项依赖口径）、mysql-connector-j(runtime)/flyway-core/flyway-mysql 三项版本交由 Boot BOM 管理。
-- `application.yml`（新增）：datasource 三要素全部 `${ENV:默认}` 占位；flyway.enabled 绑定 FLYWAY_ENABLED 默认 false；management.health.db.enabled 绑定 DB_HEALTH_ENABLED 默认 false。
-- `MybatisPlusConfig`（新增）：仅注册 PaginationInnerInterceptor(MYSQL)，最小实现。
-- GREEN-B 过程中发现真实回归：数据源装配后 actuator 健康检查主动探测 DB → 无实例整体 503/DOWN，破坏 sprint-001 已验收的 health=UP。以同主题的配置化手段修复（DB_HEALTH_ENABLED），修复后 5/5 全绿。该开关语义已写入 yml 注释与挂起区口径：实例接入后应置 true。
-- `db/migration/.gitkeep`：占位目录，注释声明 V{n}__{描述}.sql 规则与首个业务迁移归属 model/001。
-- REFACTOR：零操作（各类均 ≤60 行单一职责），重构后全量重跑保持全绿。
+- 新增 `common/Result.java`：record 承载不可变契约（规范 §2 DTO/VO 用 record），ok/error 两工厂；message 成功态固定 "success"。
+- 新增 `common/BusinessException.java`：仅携带 int code + message，HTTP 映射交由处理器，保持认证语义（401/403）留给 auth 模块扩展。
+- 新增 `common/GlobalExceptionHandler.java`：@RestControllerAdvice 三路径（业务 400/校验 400+字段提示/兜底 500 固定文案），error 日志按规范 §5 带完整堆栈。
+- 测试侧：探针 controller 与 DTO 全部内嵌于测试类（未向主代码添加任何端点）；standaloneSetup 显式注入 LocalValidatorFactoryBean 保证校验行为确定性。
+- REFACTOR：各类 ≤60 行单一职责，无坏味道，重构零操作，重跑保持全绿。
 
 ## 冒烟记录
-- Generator：本次追加 1 条用例（`infra-002 后端构建与全量测试`，mvn -q verify 幂等）；`bash scripts/smoke.sh` 连续 2 次全组通过（exit=0，输出 `SMOKE PASSED（2 用例）`）。DB 类冒烟按挂起区登记延后补入。
-- Evaluator 复核结论：已亲自复跑——`SMOKE FAILED（2 用例）`，`infra-002 后端构建与全量测试` 失败（其内嵌 mvn verify 因 DataSourceConfigBindingTest 断言失败而失败）；infra-001 用例仍通过。根因见评审意见问题 2。
+- Generator：本次追加 1 条用例（`infra-003 统一响应体与异常处理定向测试`，定向运行 ResultTest + GlobalExceptionHandlerApiTest）；`bash scripts/smoke.sh` 全组通过（exit=0，`SMOKE PASSED（3 用例）`）。
+- Evaluator 复核结论：（待 Evaluator 复跑填写）
 
 ## 评审意见
-- ❌ 不通过（2026-08-26，REWORK 第 1 次）。五维均分不满足通过线之外的独立事实：命中一票否决项 2 与 6。
-- 问题清单：
-  1. [严重·一票否决项2 明文密码] `backend/src/main/resources/application.yml:9` 默认口令落真实值 `abc123456`，且已随 aa4b59b 进入 git 历史——违反规范 §6「application.yml 不落真实密钥」与本工作单实现要点「凭据不得出现真实值」。→ 修复：默认值改空占位 `${MYSQL_PASSWORD:}`；凭据一律经环境变量注入；已入史的口令建议轮换（历史清理与否由用户裁决，登记挂起区）。
-  2. [严重·一票否决项6 回归失败] Evaluator 亲跑 `mvn -q verify` exit=1：`DataSourceConfigBindingTest#test_环境变量覆盖数据源默认配置`(DataSourceConfigBindingTest.java:65) expected:<true> but was:<false>——交付后 yml 默认 url/username 被改为环境特定值 `192.168.165.88/root`，与 AC3 契约及测试断言不一致。→ 修复二选一并保持门禁全绿：(a) 恢复中性默认值（localhost/authcore），真实环境经 env 注入；(b) 若团队约定该库为共享开发默认，则同步修订绑定测试断言并在实现说明中登记理由。无论哪种，密码不得作为默认值入库。
-  3. [非否决·登记] 变更范围核对发现 aa4b59b 夹带了非 Generator 编写的 yml 改动（提交前未复查工作区），流程教训记入返工说明：feat 提交前必须 `git status/diff` 核对暂存内容。
-- 改进建议（不计分）：用户 MySQL 实例已就绪（192.168.165.88），REWORK 通过后建议 Planner 安排挂起区延后的 DB 连通 + Flyway 迁移应用验证。
-- 返工记录（2026-08-26）：① application.yml 口令默认值已改 `${MYSQL_PASSWORD:}` 并加「凭据一律经环境变量注入」注释；② 绑定测试回落分支断言改为协议头+库名 authcore+用户名 root（不钉死环境特定 host，处置口径 b）；③ 本次返工提交前已用 git status/diff 复查暂存内容。复跑：mvn -q verify exit=0（5/5）+ smoke exit=0（2 用例）。
+- （由 Evaluator 评审时填写）

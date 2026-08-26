@@ -26,7 +26,7 @@ smoke_case() { # smoke_case <用例名> <命令...>
 }
 
 # ===================== 用例区（按功能点增量追加，禁止删除既有用例） =====================
-# 用例计数：2（infra/001 起，每功能点递增；DB 类用例待 MySQL 实例就绪后按挂起区口径补入）
+# 用例计数：3（infra/001 起，每功能点递增；DB 类用例待 MySQL 实例就绪后按挂起区口径补入）
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/backend"
 SMOKE_APP_LOG="${TMPDIR:-/tmp}/authcore-smoke-app.log"
@@ -57,6 +57,9 @@ smoke_case "infra-001 应用启动且 /actuator/health 为 UP" bash -c "
 
 # infra/002：配置化接入基座交付能力 = 后端构建与全量测试可重复全绿（离线、无 DB 依赖）
 smoke_case "infra-002 后端构建与全量测试" mvn -q -f "$APP_DIR/pom.xml" verify
+
+# infra/003：统一响应体与全局异常处理的定向判定（聚焦本功能点交付能力）
+smoke_case "infra-003 统一响应体与异常处理定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='ResultTest,GlobalExceptionHandlerApiTest'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
