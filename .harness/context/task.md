@@ -15,7 +15,7 @@
 | 测试清单 | Generator | 从验收标准导出的用例列表，先于实现写出（规则见 `.harness/rules/tdd-workflow.md`） |
 | RED 证据 | Generator | 测试先行的失败输出摘录，格式须符合 `.harness/rules/tdd-workflow.md` 规定 |
 | 实现说明 | Generator | 最小实现的落点摘要：改了哪些类/文件、为何这样改、重构内容 |
-| 状态 | Planner | 枚举流转：PLANNED→IN_PROGRESS→AWAITING_REVIEW→REWORK→DONE｜BLOCKED |
+| 状态 | Planner 初填；Generator/Evaluator 流转更新 | 枚举流转：PLANNED→IN_PROGRESS→AWAITING_REVIEW→REWORK→DONE｜BLOCKED |
 | 评审意见 | Evaluator | 按 `.harness/rules/review-criteria.md` 五维评分的结论与整改要求 |
 
 > 状态枚举说明：PLANNED 已规划未开工；IN_PROGRESS 实现中；AWAITING_REVIEW 待 Evaluator 评审；REWORK 评审退回返工；DONE 评审通过；BLOCKED 被依赖或评审阻塞（连续 2 次 REWORK 不通过即置 BLOCKED 并登记挂起区）。
@@ -40,7 +40,7 @@
 - 由 Planner 在 kickoff 时填写
 
 ## 测试清单
-- 由 Planner 在 kickoff 时填写
+- 由 Generator 在 RED 阶段从验收标准导出后填写
 
 ## RED 证据
 <!-- 先写测试并运行确认失败后摘录，格式如下 -->
@@ -49,7 +49,7 @@
 ```
 
 ## 实现说明
-- 由 Planner 在 kickoff 时填写
+- 由 Generator 实现/重构完成后填写
 
 ## 评审意见
 - （由 Evaluator 评审时填写）

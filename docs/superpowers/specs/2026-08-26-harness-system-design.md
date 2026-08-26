@@ -165,6 +165,8 @@ Agent 通过**读文件**获得全部上下文，不依赖对话历史。每次�
 5. RBAC 业务模型偏差（权限脱离模块存在、绕过角色的直接用户授权、删除保护语义被绕过等）
 6. 全量回归失败或门禁命令不通过
 
+> 勘误（2026-08-26，终审）：总分定义为五维平均分（1-10 量表），通过线 ≥7 指平均分。
+
 ### 5.3 tdd-workflow.md
 - 测试金字塔：单元测试（JUnit5+Mockito）/ Web 层（MockMvc）/ 集成测试（@SpringBootTest + Testcontainers MySQL）；前端 Vitest + Vue Test Utils（store/composable 必测，登录守卫等关键交互必测）
 - RED→GREEN→REFACTOR 循环 + 证据记录规范（task.md 槽位）

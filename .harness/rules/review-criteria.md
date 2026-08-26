@@ -10,7 +10,7 @@
 | 安全性 | 越权/SQL注入/明文密码/密钥硬编码/敏感日志 五查 |
 
 ## 决策
-- 通过：总分 ≥7 且无一项一票否决
+- 通过：总分 = 五维平均分，总分 ≥7 且无一项一票否决
 - 不通过：总分 <7 或命中任一否决项 → 问题清单退回 Generator（REWORK）
 - 同一功能点连续 2 次 REWORK 不通过 → registry 标 ❌ BLOCKED，登记 `.harness/context/session-state.md` 挂起区，转人工
 

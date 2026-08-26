@@ -40,7 +40,7 @@
    - **通过**：`.harness/modules/registry.md` 中该功能点状态 🔄→✅；task.md 状态置 DONE 并保留验收标准逐条勾选结果；`.harness/context/session-state.md` 的「下一步动作」改为取下一功能点（Planner），注明建议的下一个功能点 ID。
    - **不通过（本轮为第 1 次 REWORK）**：把完整问题清单写回 task.md「评审意见」区，状态置 REWORK；session-state「下一步动作」改为 Generator 返工（指明工作单路径与问题清单位置）。
    - **第 2 次 REWORK 仍不通过**：不再退回——registry 该功能点状态改 ❌（阻塞），在 `.harness/context/session-state.md`「挂起」区登记（功能点 ID、连续两次失败的原因摘要、「转人工」），停止对该功能点的自动流转。
-7. **追加迭代日志**：在 `.harness/context/iteration-log.md` 记录区顶部追加一行，格式 `YYYY-MM-DD: Evaluator — pass <Sprint ID>（<功能点 ID>，总分 X/50）` 或 `YYYY-MM-DD: Evaluator — fail <Sprint ID>（<功能点 ID>，REWORK 第 N 次）`；BLOCKED 场景在括号内注明「已挂起转人工」。
+7. **追加迭代日志**：在 `.harness/context/iteration-log.md` 记录区顶部追加一行，格式 `YYYY-MM-DD: Evaluator — pass <Sprint ID>（<功能点 ID>，平均分 X/10）` 或 `YYYY-MM-DD: Evaluator — fail <Sprint ID>（<功能点 ID>，REWORK 第 N 次）`；BLOCKED 场景在括号内注明「已挂起转人工」。
 
 ### 评审报告模板（输出必须遵循，原文内嵌自 `.harness/rules/review-criteria.md`）
 
