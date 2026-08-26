@@ -22,7 +22,7 @@
 
 | ID | 功能点 | 前置依赖 | 状态 | 备注 |
 |----|--------|----------|------|------|
-| infra/001 | Maven 项目骨架 + Spring Boot 启动 + actuator 健康检查 | — | ⬜ | — |
+| infra/001 | Maven 项目骨架 + Spring Boot 启动 + actuator 健康检查 | — | 🔄 | sprint-001 进行中（.harness/context/task.md） |
 | infra/002 | MySQL 接入 + MyBatis-Plus 配置 + Flyway 迁移机制 | infra/001 | ⬜ | — |
 | infra/003 | 统一响应体 Result<T> + 全局异常处理 + Bean Validation | infra/001 | ⬜ | — |
 | infra/004 | 测试基础设施（Testcontainers MySQL 基座 + 测试命名/分层约定） | infra/002 | ⬜ | — |

@@ -10,10 +10,12 @@
 set -u
 
 FAIL=0
+CASES=0
 
 smoke_case() { # smoke_case <用例名> <命令...>
   local name="$1"
   shift
+  CASES=$((CASES + 1))
   echo "--- 冒烟用例: $name"
   if "$@"; then
     echo "    ✅ 通过"
@@ -24,22 +26,39 @@ smoke_case() { # smoke_case <用例名> <命令...>
 }
 
 # ===================== 用例区（按功能点增量追加，禁止删除既有用例） =====================
-# 当前状态：骨架阶段，尚无用例。infra/001 交付时必须追加第一条用例并保持后续每个功能点递增。
-#
-# 参考形态（按阶段启用/扩展；最终全链路形态对齐 registry integration/002）：
-#   infra 阶段：
-#     smoke_case "应用启动+health" bash -c 'curl -fsS http://localhost:8080/actuator/health | grep -q "\"status\":\"UP\""'
-#   model 阶段：
-#     smoke_case "Flyway 空库迁移可重复应用" mvn -q -f backend/pom.xml flyway:migrate flyway:validate
-#   auth/API 阶段：
-#     smoke_case "登录→me 链路" bash -c 'TOKEN=$(curl -fsS -X POST http://localhost:8080/api/v1/auth/login -H "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"<种子密码>\"}" | sed -n "s/.*\"token\":\"\([^\"]*\)\".*/\1/p") && curl -fsS http://localhost:8080/api/v1/auth/me -H "Authorization: Bearer $TOKEN" >/dev/null'
-#   web 阶段：
-#     smoke_case "前端构建产物存在" test -d frontend/dist
+# 用例计数：1（infra/001 起递增）
+
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/backend"
+SMOKE_APP_LOG="${TMPDIR:-/tmp}/authcore-smoke-app.log"
+
+# infra/001：应用可启动且健康检查为 UP（幂等：专用端口 18080 + 启动前预检、退出时按进程组清理）
+smoke_case "infra-001 应用启动且 /actuator/health 为 UP" bash -c "
+  set -u
+  cd '$APP_DIR' || exit 1
+  if curl -fsS --max-time 2 http://localhost:18080/actuator/health 2>/dev/null | grep -q '\"status\"'; then
+    echo '端口 18080 已被占用，冒烟环境不干净（疑似残留实例）' >&2
+    exit 1
+  fi
+  : > '$SMOKE_APP_LOG'
+  setsid mvn -q spring-boot:run -Dspring-boot.run.arguments=--server.port=18080 >> '$SMOKE_APP_LOG' 2>&1 &
+  APP_PID=\$!
+  cleanup() { kill -- -\$APP_PID 2>/dev/null; wait \$APP_PID 2>/dev/null; }
+  trap cleanup EXIT INT TERM
+  for _ in \$(seq 1 90); do
+    if curl -fsS --max-time 2 http://localhost:18080/actuator/health 2>/dev/null | grep -q '\"status\":\"UP\"'; then
+      exit 0
+    fi
+    sleep 1
+  done
+  echo 'health 探测超时(90s)，应用日志尾部：' >&2
+  tail -n 30 '$SMOKE_APP_LOG' >&2
+  exit 1
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
-  echo "SMOKE PASSED（骨架阶段 0 用例属正常；首个功能点起必须有递增用例）"
+  echo "SMOKE PASSED（$CASES 用例）"
 else
-  echo "SMOKE FAILED"
+  echo "SMOKE FAILED（$CASES 用例）"
 fi
 exit $FAIL
