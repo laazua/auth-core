@@ -5,7 +5,7 @@
 |------|---------|
 | 功能正确性 | task.md 验收标准逐条满足；边界与异常路径处理；RBAC 语义符合 `docs/01-architecture.md` 第 6 节 |
 | 代码质量 | 无 Bug；可读性与命名；分层清晰；无重复代码；无过度设计 |
-| 规范遵守 | `.harness/rules/coding-standards.md` 全部硬规则；行数/日志/分层/命名 |
+| 规范遵守 | `.harness/rules/coding-standards.md` 全部硬规则（含第 11 节快速核查清单逐项过一遍）；行数/日志/分层/命名 |
 | TDD 执行度 | `.harness/rules/tdd-workflow.md` 证据链完整：测试清单→RED 证据→全绿回归；测试质量（断言有效性，非凑数） |
 | 安全性 | 越权/SQL注入/明文密码/密钥硬编码/敏感日志 五查 |
 
