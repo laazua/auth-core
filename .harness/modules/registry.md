@@ -33,8 +33,8 @@
 |----|--------|----------|------|------|
 | model/001 | sys_user 表迁移+实体+Mapper | infra/002 | ✅ | sprint-004 评审通过（2026-08-26，均分 9.8；真实库验收） |
 | model/002 | sys_role 表迁移+实体+Mapper | infra/002 | ✅ | sprint-005 评审通过（2026-08-26，均分 9.8） |
-| model/003 | sys_module 表迁移+实体+Mapper | infra/002 | 🔄 | sprint-006 进行中（.harness/context/task.md） |
-| model/004 | sys_permission 表迁移+实体+Mapper(FK module_id) | model/003 | ⬜ | — |
+| model/003 | sys_module 表迁移+实体+Mapper | infra/002 | ✅ | sprint-006 评审通过（2026-08-26，均分 10.0；集成测试基座就位） |
+| model/004 | sys_permission 表迁移+实体+Mapper(FK module_id) | model/003 | 🔄 | sprint-007 进行中（.harness/context/task.md） |
 | model/005 | sys_user_role+sys_role_permission 关联表 | model/001, model/002, model/004 | ⬜ | — |
 | model/006 | 种子数据迁移（内置 admin + 示例角色/权限/模块） | model/005 | ⬜ | — |
 

@@ -26,7 +26,7 @@ smoke_case() { # smoke_case <用例名> <命令...>
 }
 
 # ===================== 用例区（按功能点增量追加，禁止删除既有用例） =====================
-# 用例计数：6（infra/001 起，每功能点递增）
+# 用例计数：7（infra/001 起，每功能点递增）
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/backend"
 SMOKE_APP_LOG="${TMPDIR:-/tmp}/authcore-smoke-app.log"
@@ -69,6 +69,9 @@ smoke_case "model-002 sys_role 数据层与迁移定向测试" mvn -q -f "$APP_D
 
 # model/003：sys_module 数据层 + V3 迁移幂等（需环境含 MYSQL_PASSWORD）
 smoke_case "model-003 sys_module 数据层与迁移定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='SysModuleModelIntegrationTest'
+
+# model/004：sys_permission 数据层 + V4 迁移幂等（需环境含 MYSQL_PASSWORD）
+smoke_case "model-004 sys_permission 数据层与迁移定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='SysPermissionModelIntegrationTest'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
