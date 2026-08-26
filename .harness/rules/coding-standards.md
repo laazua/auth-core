@@ -119,6 +119,6 @@
 - [ ] 无 System.out/printStackTrace/吞异常；日志占位符+堆栈+敏感信息三合规（第 5 节）
 - [ ] 分层单向、controller 三件事、构造器注入、事务位置与 readOnly 正确（第 3 节）
 - [ ] 无 select */无 N+1/批量分批/分页无界检查（第 4 节）
-- [ ] 无硬编码密钥/明文密码/${} 注入面；越权防护到位（第 6 节）
+- [ ] 无硬编码密钥/明文密码；SQL 参数一律 #{}、无 ${} 注入面（第 4/6 节）；越权防护到位
 - [ ] TS 无 any/strict 全开/import type；Vue script setup/scoped/key/composable 归位（第 7-8 节）
 - [ ] 测试 AAA 结构/断言有效/独立运行/mock 边界正确（第 9 节）
