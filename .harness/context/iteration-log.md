@@ -4,6 +4,9 @@
 
 ## 记录
 
+- 2026-08-26: Generator — done sprint-006（model/003，后端门禁 mvn -q verify 全绿 21 用例 + 冒烟 6 用例通过，真实库验收；测试基座就位）
+- 2026-08-26: Planner — kickoff sprint-006（model/003，4 条验收标准；新增集成测试基座承接两轮评审建议，§3 留白定夺登记工作单）
+- 2026-08-26: Evaluator — pass sprint-005（model/002，平均分 9.8/10）
 - 2026-08-26: Generator — done sprint-005（model/002，后端门禁 mvn -q verify 全绿 17 用例 + 冒烟 5 用例通过，真实库验收）
 - 2026-08-26: Planner — kickoff sprint-005（model/002，4 条验收标准；§3 留白定夺 name NOT NULL 并登记工作单）
 - 2026-08-26: Evaluator — pass sprint-004（model/001，平均分 9.8/10）

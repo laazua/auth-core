@@ -1,4 +1,4 @@
-# 工作单（当前 Sprint）：sprint-005
+# 工作单（当前 Sprint）：sprint-006
 
 > 本文件是 Generator 实现与 Evaluator 验收的唯一工作契约。字段语义见下方「模板字段定义」；空槽模板与历史工作单见 git 历史。
 
@@ -24,47 +24,50 @@
 ---
 
 ## 基本信息
-- Sprint ID: sprint-005
+- Sprint ID: sprint-006
 - 所属模块: model
-- 需求描述: sys_role 表迁移+实体+Mapper（registry ID：model/002）
-- 业务背景: RBAC 角色实体落地，用户获得权限的唯一路径是角色（架构 §6.2），本表是后续 users/002 角色分配与 roles/002 权限分配的挂靠主体。契约（§3）：id、name、code UNIQUE、status、created_at、updated_at。**规格留白的 Planner 定夺（供评审仲裁）**：§3 未标注 name 的空性约束，定夺 `name NOT NULL`——无名角色无法参与鉴权聚合与展示。基础设施全部复用既有交付：V2 为第二个业务迁移（V1 已被 sys_user 占用）、@MapperScan 已扫描 com.authcore.mapper、MetaObjectHandler 时间填充已就位。
-- 前置依赖: infra/002（✅）；建议在 model/001 之后实施以保持迁移序可读（非硬前置）
+- 需求描述: sys_module 表迁移+实体+Mapper（registry ID：model/003）
+- 业务背景: 模块实体落地，承载 RBAC 硬语义「权限必须归属模块」（架构 §6.1）的归属主体，也是 modules/001 模块管理与 integration 外部接入的数据基础。契约（§3）：id、name、code UNIQUE、base_url(可空,模块服务地址)、description、status、created_at、updated_at。**规格留白的 Planner 定夺（供评审仲裁）**：name NOT NULL（同 model/002 先例）；status NOT NULL DEFAULT 1；base_url 与 description 可空。另据 sprint-004/005 两轮评审建议，本功能点为集成测试样板第三次出现，达规范 §0.4 抽象时机——新增集成测试公共基座，仅本功能点起的新测试使用；已完成条目（SysUser/SysRole 测试类）按「不改已完成条目」原则保持原样。
+- 前置依赖: infra/002（✅）
 - 状态: AWAITING_REVIEW
 
 ## 验收标准
 <!-- 每条映射测试用例；Generator 按 tdd-workflow 先写测试确认 RED 再最小实现 -->
 
-- [x] AC1 迁移可重复应用：真实库上 spring.flyway.enabled=true 启动后 Flyway 成功应用 V2（flyway_schema_history 存在 version='2' 且 success=1 恰一条），重放 migrate 不报错不新增记录 ← 用例 `SysRoleModelIntegrationTest#test_迁移_V2首次应用成功且重放幂等`
-- [x] AC2 表结构符合 §3 契约：information_schema 断言 sys_role 存在且含 id/name/code/status/created_at/updated_at 六列，name/code 均 NOT NULL，code 存在唯一索引 uk_sys_role_code ← 用例 `SysRoleModelIntegrationTest#test_表结构_契约列与唯一键齐备`
-- [x] AC3 Mapper CRUD 主线：insert 后 selectById 字段逐项一致，updateById 生效，deleteById 物理删除后不可再查；createdAt/updatedAt 自动填充非空 ← 用例 `SysRoleModelIntegrationTest#test_增查改删主线与时间自动填充`（@Transactional 回滚隔离）
-- [x] AC4 code 全局唯一由数据库保证（架构 §6.3）：同事务插入重复 code 抛出 DuplicateKeyException ← 用例 `SysRoleModelIntegrationTest#test_重复code_触发唯一约束异常`
+- [x] AC1 迁移可重复应用：真实库上 spring.flyway.enabled=true 启动后 Flyway 成功应用 V3（flyway_schema_history 存在 version='3' 且 success=1 恰一条），重放 migrate 不报错不新增记录 ← 用例 `SysModuleModelIntegrationTest#test_迁移_V3首次应用成功且重放幂等`
+- [x] AC2 表结构符合 §3 契约：information_schema 断言 sys_module 含 id/name/code/base_url/description/status/created_at/updated_at 八列；name/code/status 均 NOT NULL；base_url 与 description 可空；code 存在唯一索引 uk_sys_module_code ← 用例 `SysModuleModelIntegrationTest#test_表结构_契约列与约束齐备`
+- [x] AC3 Mapper CRUD 主线：insert 后 selectById 字段逐项一致（含 base_url/description），updateById 生效，deleteById 物理删除后不可再查；createdAt/updatedAt 自动填充非空 ← 用例 `SysModuleModelIntegrationTest#test_增查改删主线与时间自动填充`（@Transactional 回滚隔离）
+- [x] AC4 code 全局唯一由数据库保证（架构 §6.3）：同事务插入重复 code 抛出 DuplicateKeyException ← 用例 `SysModuleModelIntegrationTest#test_重复code_触发唯一约束异常`
 
 ## 实现要点（Planner 提示，Generator 裁量落地）
-- DDL 口径：id BIGINT AUTO_INCREMENT PK、name VARCHAR(64) NOT NULL、code VARCHAR(64) NOT NULL + uk_sys_role_code、status TINYINT NOT NULL DEFAULT 1、InnoDB/utf8mb4；时间列同 V1 口径
-- 测试沿用 sprint-004 模式：共享开发库 192.168.165.88/authcore，写路径 @Transactional 回滚、测试数据 `__it_` 前缀；Evaluator 复跑需环境含 MYSQL_PASSWORD（已注入 ~/.bashrc）
-- 冒烟增量：追加 1 条定向用例运行 `SysRoleModelIntegrationTest`（用例数递增至 5）
+- DDL 口径：id BIGINT AUTO_INCREMENT PK、name VARCHAR(64) NOT NULL、code VARCHAR(64) NOT NULL + uk_sys_module_code、base_url VARCHAR(255) NULL、description VARCHAR(255) NULL、status TINYINT NOT NULL DEFAULT 1、InnoDB/utf8mb4
+- 新增测试基座 `AbstractModelIntegrationTest`（com.authcore.mapper 包下，abstract 类）：承载 @SpringBootTest(flyway 启用)、JdbcTemplate/Flyway 注入、IT_PREFIX 常量与 flyway 历史/information_schema 断言辅助方法；`SysModuleModelIntegrationTest` 继承使用
+- 测试隔离口径沿用：写路径 @Transactional 回滚、`__it_` 前缀；门禁/冒烟需环境含 MYSQL_PASSWORD（~/.bashrc 已注入）
+- 冒烟增量：追加 1 条定向用例运行 `SysModuleModelIntegrationTest`（用例数递增至 6）
 
 ## 测试清单
-1. `SysRoleModelIntegrationTest#test_迁移_V2首次应用成功且重放幂等` —— version='2' success=1 恰一条 + 重放不新增（覆盖 AC1）
-2. `SysRoleModelIntegrationTest#test_表结构_契约列与唯一键齐备` —— 六列/name+code NOT NULL/uk_sys_role_code（覆盖 AC2）
-3. `SysRoleModelIntegrationTest#test_增查改删主线与时间自动填充` —— @Transactional 回滚隔离 CRUD + 时间填充非空（覆盖 AC3）
-4. `SysRoleModelIntegrationTest#test_重复code_触发唯一约束异常` —— 同事务重复插入断言 DuplicateKeyException（覆盖 AC4）
+1. `AbstractModelIntegrationTest` —— 新基座本体（非判定用例）：装配与辅助断言方法，由子类验证间接覆盖
+2. `SysModuleModelIntegrationTest#test_迁移_V3首次应用成功且重放幂等` —— version='3' 恰一条 + 重放不新增（覆盖 AC1）
+3. `SysModuleModelIntegrationTest#test_表结构_契约列与约束齐备` —— NOT NULL 六列 + 可空二列分组断言 + 唯一索引（覆盖 AC2）
+4. `SysModuleModelIntegrationTest#test_增查改删主线与时间自动填充` —— @Transactional 回滚隔离 CRUD 含 base_url/description 字段比对（覆盖 AC3）
+5. `SysModuleModelIntegrationTest#test_重复code_触发唯一约束异常` —— 同事务重复插入断言 DuplicateKeyException（覆盖 AC4）
 
 ## RED 证据
 <!-- Generator 先写测试运行确认失败后实时摘录 -->
 ```text
-[RED] COMPILATION ERROR — SysRoleModelIntegrationTest 先行时实体与 Mapper 均不存在：
-        backend/src/test/java/com/authcore/mapper/SysRoleModelIntegrationTest.java:
-        [3,27] 找不到符号 类 SysRole / [28,13] 找不到符号 类 SysRoleMapper
+[RED] COMPILATION ERROR — SysModuleModelIntegrationTest 先行时实体与 Mapper 均不存在（基座 AbstractModelIntegrationTest 编译通过）：
+        backend/src/test/java/com/authcore/mapper/SysModuleModelIntegrationTest.java:
+        [3,27] 找不到符号 类 SysModule / [23,13] 找不到符号 类 SysModuleMapper
 ```
 
 ## 实现说明
-- 新增 `db/migration/V2__create_sys_role.sql`：六列对齐 §3，uk_sys_role_code 唯一索引；DDL 注释登记 name NOT NULL 定夺来源。
-- 新增 `entity/SysRole.java` 与 `mapper/SysRoleMapper.java`：完全复用 model/001 模式（POJO + BaseMapper），零既有代码改动（@MapperScan/MetaObjectHandler 直接生效）。
+- 新增 `db/migration/V3__create_sys_module.sql`：八列对齐 §3（base_url/description 可空），uk_sys_module_code 唯一索引，DDL 注释登记定夺来源。
+- 新增 `entity/SysModule.java`、`mapper/SysModuleMapper.java`：沿用既有模式。
+- 新增测试基座 `AbstractModelIntegrationTest.java`：@SpringBootTest(flyway) 上移至抽象基类、JdbcTemplate/Flyway 注入、IT_PREFIX、countFlywaySuccess/countColumnsWithNullability/countUniqueIndexes 三个辅助断言；本功能点起消除 model 层测试样板重复（承接 sprint-004/005 评审建议）。已完成条目未做任何改动。
 - REFACTOR：零操作，重跑保持全绿。
 
 ## 冒烟记录
-- Generator：本次追加 1 条用例（`model-002 sys_role 数据层与迁移定向测试`）；`bash scripts/smoke.sh` 全组通过（exit=0，`SMOKE PASSED（5 用例）`）；共享库 `__it_%` 残留 0 行。
+- Generator：本次追加 1 条用例（`model-003 sys_module 数据层与迁移定向测试`）；`bash scripts/smoke.sh` 全组通过（exit=0，`SMOKE PASSED（6 用例）`）；共享库 `__it_%` 残留 0 行。
 - Evaluator 复核结论：（待 Evaluator 复跑填写）
 
 ## 评审意见
