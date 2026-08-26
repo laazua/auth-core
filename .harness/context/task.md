@@ -53,7 +53,7 @@
 - 由 Generator 实现/重构完成后填写
 
 ## 冒烟记录
-- 由 Generator 在 GREEN 后填写（本次追加用例数 + `bash scripts/smoke.sh` 结果）；Evaluator 复核时附复跑结论
+- 由 Generator 在第 6 步（全量回归通过后）填写（本次追加用例数 + `bash scripts/smoke.sh` 结果）；Evaluator 复核时附复跑结论
 
 ## 评审意见
 - （由 Evaluator 评审时填写）

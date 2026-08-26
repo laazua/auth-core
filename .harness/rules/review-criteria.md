@@ -20,7 +20,7 @@
 3. 明确 Bug：核心逻辑错误导致功能不可用
 4. 无测试先行证据：缺 RED 记录且 git 提交顺序无法证明 test-first
 5. RBAC 业务模型偏差：违反 `docs/01-architecture.md` 第 6 节任一条（如权限脱离模块、绕过角色的直接授权、删除保护被绕过）
-6. 回归或冒烟失败：mvn -q verify、前端门禁任一不通过，或 `scripts/smoke.sh` 未执行/未全部通过（规则见 `.harness/rules/tdd-workflow.md` 冒烟节）
+6. 回归或冒烟失败：mvn -q verify、前端门禁任一不通过，或 `scripts/smoke.sh` 未执行/未全部通过，或未按约定为本功能点增量追加冒烟用例（规则见 `.harness/rules/tdd-workflow.md` 冒烟节）
 
 ## 评审报告模板（输出必须遵循）
 ### 验收标准核对
