@@ -12,16 +12,10 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Spring Security 无状态基线配置。
@@ -41,16 +35,33 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtProperties jwtProperties;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     /**
      * 构造器注入。
      *
-     * @param userDetailsService 自定义用户详情服务
-     * @param jwtProperties      JWT 配置属性
+     * @param userDetailsService          自定义用户详情服务
+     * @param jwtProperties               JWT 配置属性
+     * @param jwtTokenProvider            JWT 生成/校验组件
+     * @param jwtAuthenticationEntryPoint JWT 认证入口点
      */
-    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtProperties jwtProperties) {
+    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtProperties jwtProperties,
+                          JwtTokenProvider jwtTokenProvider, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
         this.userDetailsService = userDetailsService;
         this.jwtProperties = jwtProperties;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
+    }
+
+    /**
+     * JWT 认证过滤器 Bean（auth/003）。
+     *
+     * @return JwtAuthenticationFilter 实例
+     */
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService);
     }
 
     /**
@@ -67,27 +78,19 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 // 无状态会话管理
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // 未认证访问受保护资源返回 401
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedEntryPoint()))
+                // 未认证访问受保护资源返回 401 + Result(code=1401)
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 // 授权规则
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/**", "/api/v1/auth/login").permitAll()
                         .anyRequest().authenticated()
                 )
+                // JWT 认证过滤器（在 UsernamePasswordAuthenticationFilter 之前）
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 // 认证提供者
                 .authenticationProvider(daoAuthenticationProvider());
 
         return http.build();
-    }
-
-    /**
-     * 401 认证入口点：未携带有效凭证访问受保护端点时返回 401。
-     *
-     * @return AuthenticationEntryPoint
-     */
-    @Bean
-    public org.springframework.security.web.AuthenticationEntryPoint unauthorizedEntryPoint() {
-        return new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED);
     }
 
     /**

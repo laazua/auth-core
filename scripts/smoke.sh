@@ -81,6 +81,9 @@ smoke_case "model-006 种子数据迁移 V6 与数据正确性" mvn -q -f "$APP_
 
 # auth/001：Spring Security 无状态基线 + BCrypt 编码器（验证公开端点放行、受保护端点拦截、BCrypt 可用）
 smoke_case "auth-001 Security 无状态基线定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='SecurityConfigTest,CustomUserDetailsServiceTest'
+
+# auth/003：JWT 校验过滤器 + SecurityContext 注入（验证有效 token 通过、无效/无/非 Bearer 返回 401 code=1401）
+smoke_case "auth-003 JWT 过滤器与 SecurityContext 定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='JwtAuthenticationFilterTest'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
