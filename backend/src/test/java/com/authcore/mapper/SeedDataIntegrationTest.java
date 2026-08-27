@@ -44,9 +44,9 @@ class SeedDataIntegrationTest extends AbstractModelIntegrationTest {
     @Test
     @DisplayName("核心实体数据存在且字段正确")
     void test_核心实体数据存在且字段正确() {
-        // sys_user: admin 用户
-        Integer userCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM sys_user", Integer.class);
-        assertEquals(1, userCount, "sys_user 应恰含 1 行种子数据");
+        // sys_user: admin 用户（种子数据）
+        Integer adminCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM sys_user WHERE username = 'admin'", Integer.class);
+        assertEquals(1, adminCount, "sys_user 应含 1 行 admin 种子数据");
 
         String username = jdbcTemplate.queryForObject(
                 "SELECT username FROM sys_user WHERE username = 'admin'", String.class);

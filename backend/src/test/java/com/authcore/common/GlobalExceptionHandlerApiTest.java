@@ -58,17 +58,17 @@ class GlobalExceptionHandlerApiTest {
     }
 
     /**
-     * Given 业务异常 When 翻译 Then HTTP 400 且业务码与提示原样保留。
+     * Given 业务异常 When 翻译 Then HTTP 409 且业务码与提示原样保留（1002 为冲突）。
      *
      * @throws Exception MockMvc 调用异常
      */
     @Test
-    @DisplayName("业务异常翻译为 400 与原样业务码")
-    void test_业务异常_翻译为400与原样业务码() throws Exception {
+    @DisplayName("业务异常 1002 翻译为 409 与原样业务码")
+    void test_业务异常_翻译为409与原样业务码() throws Exception {
         mockMvc.perform(post("/probe/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"existing\"}"))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value(1002))
                 .andExpect(jsonPath("$.message").value("用户已存在"))
                 .andExpect(jsonPath("$.data").isEmpty());

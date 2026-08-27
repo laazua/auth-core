@@ -33,6 +33,8 @@ public class GlobalExceptionHandler {
             status = HttpStatus.UNAUTHORIZED;
         } else if (e.getCode() == 1001) {
             status = HttpStatus.NOT_FOUND;
+        } else if (e.getCode() == 1002 || e.getCode() == 1101) {
+            status = HttpStatus.CONFLICT;
         } else {
             status = HttpStatus.BAD_REQUEST;
         }

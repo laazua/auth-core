@@ -93,6 +93,9 @@ smoke_case "auth-005 POST /check 权限校验" mvn -q -f "$APP_DIR/pom.xml" test
 
 # auth/006：POST /api/v1/auth/logout 登出接口（验证有 token 返回成功、无 token 返回成功、@Operation 注解语义）
 smoke_case "auth-006 POST /logout 登出接口" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='AuthControllerTest#logoutReturnsSuccess,AuthControllerTest#logoutWithoutTokenReturnsSuccess,AuthControllerTest#logoutEndpointHasDocumentation'
+
+# users/001：用户 CRUD API（分页/条件查询/创建加密/更新/启停用/删除引用保护）
+smoke_case "users-001 用户 CRUD 定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='UserControllerTest,UserServiceTest'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
