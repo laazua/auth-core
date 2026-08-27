@@ -84,6 +84,9 @@ smoke_case "auth-001 Security 无状态基线定向测试" mvn -q -f "$APP_DIR/p
 
 # auth/003：JWT 校验过滤器 + SecurityContext 注入（验证有效 token 通过、无效/无/非 Bearer 返回 401 code=1401）
 smoke_case "auth-003 JWT 过滤器与 SecurityContext 定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='JwtAuthenticationFilterTest'
+
+# auth/004：GET /api/v1/auth/me 用户+角色+权限集合（验证有效 token 返回完整信息、权限去重、无 token 401）
+smoke_case "auth-004 GET /me 完整信息与权限去重" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='AuthControllerTest#meReturnsUserRolesPermissions,AuthControllerTest#mePermissionsDeduplicated,AuthControllerTest#meWithoutAuthReturns401,AuthServiceTest'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
