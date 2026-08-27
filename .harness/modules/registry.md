@@ -47,13 +47,13 @@
 | auth/003 | JWT 校验过滤器 + SecurityContext 注入 | auth/001, auth/002 | ✅ | sprint-012 评审通过（均分 10.0） |
 | auth/004 | GET /api/v1/auth/me（用户+角色+权限集合） | auth/003, model/005 | ✅ | sprint-013 评审通过（均分 10.0） |
 | auth/005 | 权限校验 API POST /api/v1/auth/check（供外部模块集成调用） | auth/003 | ✅ | sprint-014 评审通过（均分 10.0） |
-| auth/006 | 登出策略（无状态 JWT v1：接口+失效语义说明） | auth/003 | 🔄 | sprint-015 规划中 |
+| auth/006 | 登出策略（无状态 JWT v1：接口+失效语义说明） | auth/003 | ✅ | sprint-015 评审通过（均分 10.0） |
 
 ## users — 用户管理
 
 | ID | 功能点 | 前置依赖 | 状态 | 备注 |
 |----|--------|----------|------|------|
-| users/001 | 用户 CRUD API（分页/条件查询/创建加密/更新/启停用/删除） | auth/003, model/001 | ⬜ | — |
+| users/001 | 用户 CRUD API（分页/条件查询/创建加密/更新/启停用/删除） | auth/003, model/001 | 🔄 | sprint-016 规划中 |
 | users/002 | 用户-角色分配 API（批量设置） | users/001, model/005 | ⬜ | — |
 | users/003 | 密码修改+管理员重置 | users/001 | ⬜ | — |
 
