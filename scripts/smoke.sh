@@ -40,7 +40,7 @@ smoke_case "infra-001 应用启动且 /actuator/health 为 UP" bash -c "
     exit 1
   fi
   : > '$SMOKE_APP_LOG'
-  setsid mvn -q spring-boot:run -Dspring-boot.run.arguments=--server.port=18080 >> '$SMOKE_APP_LOG' 2>&1 &
+  JWT_SECRET='test-secret-key-for-testing-only-minimum-32-chars' setsid mvn -q spring-boot:run -Dspring-boot.run.arguments=--server.port=18080 >> '$SMOKE_APP_LOG' 2>&1 &
   APP_PID=\$!
   cleanup() { kill -- -\$APP_PID 2>/dev/null; wait \$APP_PID 2>/dev/null; }
   trap cleanup EXIT INT TERM

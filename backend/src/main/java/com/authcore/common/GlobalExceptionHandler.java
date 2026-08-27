@@ -21,14 +21,15 @@ public class GlobalExceptionHandler {
     private static final String INTERNAL_ERROR_MESSAGE = "系统繁忙，请稍后重试";
 
     /**
-     * 业务异常：业务码与提示原样保留；HTTP 取 400，401/403 由认证模块后续按语义显式指定。
+     * 业务异常：14xx 认证类错误返回 401，其余返回 400。
      *
      * @param e 业务异常
-     * @return HTTP 400 + Result.error(code, message)
+     * @return HTTP 401/400 + Result.error(code, message)
      */
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Result<Void>> handleBusiness(BusinessException e) {
-        return ResponseEntity.badRequest().body(Result.error(e.getCode(), e.getMessage()));
+        HttpStatus status = (e.getCode() >= 1400 && e.getCode() < 1500) ? HttpStatus.UNAUTHORIZED : HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status).body(Result.error(e.getCode(), e.getMessage()));
     }
 
     /**
