@@ -1,13 +1,13 @@
-# Sprint 工作单：sprint-012
+# Sprint 工作单：sprint-013
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-012 |
+| Sprint ID | sprint-013 |
 | 所属模块 | auth |
-| 功能点 ID | auth/003 |
-| 功能点名称 | JWT 校验过滤器 + SecurityContext 注入 |
+| 功能点 ID | auth/004 |
+| 功能点名称 | GET /api/v1/auth/me（用户+角色+权限集合） |
 | 状态 | PLANNED |
 | 创建时间 | 2026-08-27 |
 
@@ -15,71 +15,69 @@
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| auth/001 | Spring Security 无状态基线 + BCrypt 编码器 | ✅ |
-| auth/002 | 登录接口 POST /api/v1/auth/login 签发 JWT | ✅ |
+| auth/003 | JWT 校验过滤器 + SecurityContext 注入 | ✅ |
+| model/005 | sys_user_role+sys_role_permission 关联表 | ✅ |
 
 ## 需求描述
 
-实现 JWT 校验过滤器，拦截所有受保护请求，验证 Authorization: Bearer <token>，解析用户身份并注入 SecurityContext：
-
-1. `JwtAuthenticationFilter` — 实现 `OncePerRequestFilter`
-   - 从 `Authorization` 头提取 Bearer token
-   - 调用 `JwtTokenProvider.validateToken(token)` 校验
-   - 校验通过：`JwtTokenProvider.getUsernameFromToken(token)` 获取 username
-   - 用 `CustomUserDetailsService.loadUserByUsername(username)` 加载 UserDetails
-   - 构建 `UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities())`
-   - `SecurityContextHolder.getContext().setAuthentication(authentication)`
-   - 校验失败/无 token：放行（由 SecurityConfig 的 authorizeHttpRequests 决定 401/403）
-
-2. 在 `SecurityConfig.filterChain` 中注册过滤器：`.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)`
+实现当前登录用户信息查询接口：
+1. `GET /api/v1/auth/me` — 返回当前认证用户的完整信息
+2. 响应结构：`Result<MeResponse>`，其中 `MeResponse` 包含：
+   - `UserVO`：id、username、nickname、email、phone、status
+   - `List<RoleVO>`：角色列表（id、name、code、status）
+   - `List<PermissionVO>`：权限码集合（code 列表，用于前端权限判断）
+3. 从 `SecurityContextHolder.getContext().getAuthentication()` 获取 `CustomUserDetails`
+4. 基于用户 ID 查询关联角色（sys_user_role → sys_role）与权限（sys_user_role → sys_role → sys_role_permission → sys_permission）
+5. 权限码去重，按模块分组或扁平列表均可
 
 ## 业务背景
 
-这是鉴权链路的核心：auth/002 签发 token，auth/003 校验 token 并建立上下文。后续 auth/004 (/me) 与 auth/005 (/check) 直接依赖 SecurityContext 中的认证信息。架构 §5：无状态 JWT、HS256、payload{uid, username, exp}。RBAC0 §6.5：停用用户 token 即时失效（CustomUserDetailsService 已校验 status=1，过期用户自然被拦截）。
+前端登录后调用 `/me` 获取用户完整信息与权限，用于动态菜单渲染、按钮级权限控制。架构 §5：登录后前端需获取用户信息。RBAC0 §6.2：用户权限仅通过角色获得（sys_user_role → sys_role_permission → sys_permission）。model/005 已建好关联表。
 
 ## 交付物
 
-1. `JwtAuthenticationFilter.java` — JWT 校验过滤器（`com.authcore.config.security`）
-2. 更新 `SecurityConfig.java` — 注册过滤器
-3. `JwtAuthenticationFilterTest.java` — 测试用例
+1. `MeResponse.java` / `UserVO.java` / `RoleVO.java` / `PermissionVO.java` — DTO（在 `com.authcore.dto.auth`）
+2. `AuthService.java` — 业务逻辑：查询用户+角色+权限（在 `com.authcore.service`）
+3. `AuthController.java` — 新增 `GET /me` 端点
+4. `AuthControllerTest.java` — 新增测试用例
 
 ## 验收标准（TDD 驱动）
 
-### AC1 — 有效 token 请求通过，SecurityContext 注入用户
-> 给定有效 JWT，GET /api/v1/users（受保护端点）携带 Authorization: Bearer <token>，返回 200（或 404 因无 controller，但不应 401/403），且 SecurityContext 中 Authentication 为 UsernamePasswordAuthenticationToken，principal 为 CustomUserDetails。
+### AC1 — 认证用户调用 /me 返回完整信息
+> 给定有效 JWT，GET /api/v1/auth/me 返回 200，Result.code=0，data 包含 user（id/username/nickname/email/phone/status）、roles（含 admin 角色）、permissions（含 14 个权限码）。
 
-**用例**：`JwtAuthenticationFilterTest#validTokenSetsSecurityContext`
-- 准备：JwtTokenProvider 生成 admin token
-- 操作：MockMvc GET /api/v1/users header Authorization: Bearer <token>
-- 断言：status != 401/403；SecurityContextHolder.getContext().getAuthentication() 不为 null；principal 为 CustomUserDetails；username=admin
+**用例**：`AuthControllerTest#meReturnsUserRolesPermissions`
+- 准备：种子数据 admin 用户、admin 角色、全部 14 权限
+- 操作：GET /api/v1/auth/me header Authorization: Bearer <admin_token>
+- 断言：status=200、code=0、user.username=admin、roles 含 admin、permissions.size()=14
 
-### AC2 — 无效/过期 token 返回 401
-> 给定篡改/过期 JWT，GET /api/v1/users 携带 Authorization: Bearer <bad_token>，返回 401，Result.code=1401。
+### AC2 — 权限码去重正确
+> admin 角色关联全部 14 权限，返回的 permissions 列表无重复。
 
-**用例**：`JwtAuthenticationFilterTest#invalidTokenReturns401`
-- 操作：GET /api/v1/users header Authorization: Bearer invalid.token.here
+**用例**：`AuthControllerTest#mePermissionsDeduplicated`
+- 断言：permissions.stream().distinct().count() == permissions.size()
+
+### AC3 — 未认证访问返回 401
+> 无 token 访问 /me，返回 401，code=1401。
+
+**用例**：`AuthControllerTest#meWithoutAuthReturns401`
+- 操作：GET /api/v1/auth/me 无 header
 - 断言：status=401、code=1401
 
-### AC3 — 无 Authorization 头返回 401
-> 访问受保护端点无 Authorization 头，返回 401，Result.code=1401。
+### AC4 — 服务层查询正确性
+> `AuthService.getCurrentUserInfo(userId)` 返回完整 MeResponse，角色与权限通过关联表正确聚合。
 
-**用例**：`JwtAuthenticationFilterTest#missingAuthHeaderReturns401`
-- 操作：GET /api/v1/users 无 header
-- 断言：status=401、code=1401
-
-### AC4 — 非 Bearer 格式返回 401
-> Authorization 头非 Bearer 开头，返回 401。
-
-**用例**：`JwtAuthenticationFilterTest#nonBearerAuthHeaderReturns401`
-- 操作：GET /api/v1/users header Authorization: Basic xxx
-- 断言：status=401、code=1401
+**用例**：`AuthServiceTest#getCurrentUserInfoAggregatesCorrectly`
+- 准备：测试库插入用户、角色、权限、关联数据
+- 操作：service.getCurrentUserInfo(adminId)
+- 断言：user 不为 null、roles 不为空、permissions 含 "user:view" 等
 
 ## 规范检查清单（Evaluator 逐项核对）
 
-- [ ] OncePerRequestFilter 正确实现，不重复校验同一请求
-- [ ] 仅对有 Authorization: Bearer 头的请求尝试校验，否则放行
-- [ ] 校验失败不抛异常，而是清空 SecurityContext 并继续（由 SecurityConfig 统一处理 401/403）
-- [ ] 线程安全：SecurityContextHolder 使用 ThreadLocal，过滤器链无状态
+- [ ] Controller 仅做三件事（接参→委托 service→包装 Result）
+- [ ] Service 层事务 @Transactional(readOnly=true)
+- [ ] 关联查询无 N+1（使用 join 或批量查询）
+- [ ] 权限码去重（Set/Stream distinct）
 - [ ] 无硬编码密钥/明文密码（coding-standards §6）
 - [ ] 测试 AAA 结构有效（coding-standards §9）
 - [ ] `mvn -q verify` 全绿
