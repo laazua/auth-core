@@ -10,6 +10,7 @@ import com.authcore.dto.auth.LoginResponse;
 import com.authcore.dto.auth.MeResponse;
 import com.authcore.mapper.SysUserMapper;
 import com.authcore.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -107,5 +108,17 @@ public class AuthController {
         Long userId = userDetails.getUser().getId();
         MeResponse meResponse = authService.getCurrentUserInfo(userId);
         return Result.ok(meResponse);
+    }
+
+    /**
+     * 登出接口（auth/006）。
+     * 无状态 JWT v1 语义：服务端不维护 token 黑名单，登出本质是前端清除本地 token。
+     *
+     * @return Result<Void> code=0，message="登出成功，请客户端清除 token"
+     */
+    @PostMapping("/logout")
+    @Operation(summary = "登出（无状态 JWT v1：服务端不撤销 token，客户端自行清除）")
+    public Result<Void> logout() {
+        return Result.okMessage("登出成功，请客户端清除 token");
     }
 }

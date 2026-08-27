@@ -22,6 +22,17 @@ public record Result<T>(int code, String message, T data) {
     }
 
     /**
+     * 构造成功响应（仅消息，无载荷）。
+     *
+     * @param message 提示信息
+     * @param <T>     载荷类型
+     * @return code=0、data=null 的成功 Result
+     */
+    public static <T> Result<T> okMessage(String message) {
+        return new Result<>(0, message, null);
+    }
+
+    /**
      * 构造失败响应。
      *
      * @param code    业务错误码（取值口径见 docs/01-architecture.md §4）

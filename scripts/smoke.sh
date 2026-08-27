@@ -90,6 +90,9 @@ smoke_case "auth-004 GET /me 完整信息与权限去重" mvn -q -f "$APP_DIR/po
 
 # auth/005：POST /api/v1/auth/check 权限校验（验证有权限返回 true、无权限返回 false、用户不存在 404、无 token 401）
 smoke_case "auth-005 POST /check 权限校验" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='AuthControllerTest#checkPermissionReturnsTrue,AuthControllerTest#checkPermissionReturnsFalse,AuthControllerTest#checkPermissionUserNotFoundReturns404,AuthControllerTest#checkWithoutAuthReturns401'
+
+# auth/006：POST /api/v1/auth/logout 登出接口（验证有 token 返回成功、无 token 返回成功、@Operation 注解语义）
+smoke_case "auth-006 POST /logout 登出接口" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='AuthControllerTest#logoutReturnsSuccess,AuthControllerTest#logoutWithoutTokenReturnsSuccess,AuthControllerTest#logoutEndpointHasDocumentation'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

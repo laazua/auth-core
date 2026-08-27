@@ -82,7 +82,7 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 // 授权规则
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator/**", "/api/v1/auth/login").permitAll()
+                        .requestMatchers("/actuator/**", "/api/v1/auth/login", "/api/v1/auth/logout").permitAll()
                         .anyRequest().authenticated()
                 )
                 // JWT 认证过滤器（在 UsernamePasswordAuthenticationFilter 之前）
