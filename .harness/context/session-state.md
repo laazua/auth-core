@@ -2,12 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🔄 sprint-009 进行中（model/006）
-- 当前模块: model
-- 当前功能点: model/006（种子数据迁移：内置 admin + 示例角色/权限/模块）
+- 状态: 🔄 sprint-010 进行中（auth/001）
+- 当前模块: auth
+- 当前功能点: auth/001（Spring Security 无状态基线 + BCrypt 编码器）
 
 ## 下一步动作
-Generator：按 `.harness/context/task.md`（sprint-009）执行 TDD，先写 V6 迁移脚本的失败测试，再实现，最后重构。
+Generator：按 `.harness/context/task.md`（sprint-010）执行 TDD，先写 SecurityConfig/UserDetailsService 的失败测试，再实现，最后重构。
 
 ## 挂起
 - 2026-08-26: Planner(sprint-004) — 用户裁决：暂沿用旧口令 abc123456 不轮换（风险自担）；已注入仓库外 ~/.bashrc 与 ~/.bash_profile（export MYSQL_PASSWORD），git 历史清理事项仍待裁决。真实库 192.168.165.88:3306（MySQL 8.0.45，库 authcore 已就绪）自本 Sprint 起用于验收。
@@ -17,6 +17,8 @@ Generator：按 `.harness/context/task.md`（sprint-009）执行 TDD，先写 V6
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-08-27: Planner — kickoff sprint-010（auth/001，4 条验收标准）
+- 2026-08-27: Evaluator — pass sprint-009（model/006，平均分 10.0/10）
 - 2026-08-27: Evaluator — pass sprint-008（model/005，平均分 10.0/10）
 - 2026-08-26: Generator — done sprint-008（model/005，后端门禁 mvn -q verify 全绿 28 用例 + 冒烟 8 用例通过，真实库验收）
 - 2026-08-26: Planner — kickoff sprint-008（model/005，4 条验收标准）

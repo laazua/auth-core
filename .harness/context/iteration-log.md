@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-08-27: Planner — kickoff sprint-010（auth/001，4 条验收标准）
+- 2026-08-27: Evaluator — pass sprint-009（model/006，平均分 10.0/10）
 - 2026-08-27: Planner — kickoff sprint-009（model/006，4 条验收标准）
 - 2026-08-27: Evaluator — pass sprint-008（model/005，平均分 10.0/10）
 - 2026-08-26: Generator — done sprint-008（model/005，后端门禁 mvn -q verify 全绿 28 用例 + 冒烟 8 用例通过，真实库验收）
