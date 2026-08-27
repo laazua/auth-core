@@ -1,6 +1,7 @@
 package com.authcore.controller;
 
 import com.authcore.config.security.JwtTokenProvider;
+import io.swagger.v3.oas.annotations.Operation;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -433,5 +435,72 @@ class AuthControllerTest {
                         .content(checkBody))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(1401));
+    }
+
+    /**
+     * AC1 (auth/006): 登出接口返回成功。
+     * Given 有效 JWT，POST /api/v1/auth/logout
+     * Then status=200、code=0、message 包含"登出成功"
+     */
+    @Test
+    @DisplayName("登出接口返回成功")
+    void logoutReturnsSuccess() throws Exception {
+        // 先登录获取 token
+        String loginBody = """
+                {
+                    "username": "admin",
+                    "password": "admin123456"
+                }
+                """;
+
+        String loginResponse = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        var root = mapper.readTree(loginResponse);
+        String token = root.path("data").path("token").asText();
+
+        // 调用 /logout
+        mockMvc.perform(post("/api/v1/auth/logout")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.message").value("登出成功，请客户端清除 token"));
+    }
+
+    /**
+     * AC2 (auth/006): 无 token 也可调用（幂等）。
+     * 无 token 调用 /logout，返回 200、code=0
+     */
+    @Test
+    @DisplayName("无 token 调用登出返回成功")
+    void logoutWithoutTokenReturnsSuccess() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/logout"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.message").value("登出成功，请客户端清除 token"));
+    }
+
+    /**
+     * AC3 (auth/006): 接口文档化语义。
+     * 控制器方法上有 @Operation(summary="登出（无状态 JWT v1：服务端不撤销 token，客户端自行清除）") 说明语义。
+     */
+    @Test
+    @DisplayName("登出端点有 @Operation 注解且 summary 包含无状态 JWT v1")
+    void logoutEndpointHasDocumentation() throws Exception {
+        Method method = AuthController.class.getMethod("logout");
+        Operation operation = method.getAnnotation(Operation.class);
+        assertNotNull(operation, "logout 方法应有 @Operation 注解");
+        String summary = operation.summary();
+        assertNotNull(summary, "summary 不应为空");
+        assertTrue(summary.contains("无状态 JWT v1"), "summary 应包含'无状态 JWT v1'，实际: " + summary);
+        assertTrue(summary.contains("服务端不撤销 token"), "summary 应包含'服务端不撤销 token'，实际: " + summary);
+        assertTrue(summary.contains("客户端自行清除"), "summary 应包含'客户端自行清除'，实际: " + summary);
     }
 }
