@@ -269,4 +269,169 @@ class AuthControllerTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(1401));
     }
+
+    /**
+     * AC1 (auth/005): 权限校验通过返回 true。
+     * Given 用户拥有指定权限，POST /api/v1/auth/check {userId, permissionCode}
+     * Then status=200、code=0、data.hasPermission=true
+     */
+    @Test
+    @DisplayName("权限校验通过返回 true")
+    void checkPermissionReturnsTrue() throws Exception {
+        // 先登录获取 token
+        String loginBody = """
+                {
+                    "username": "admin",
+                    "password": "admin123456"
+                }
+                """;
+
+        String loginResponse = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        var root = mapper.readTree(loginResponse);
+        String token = root.path("data").path("token").asText();
+
+        // 调用 /check - admin 用户 (id=1) 拥有 user:create 权限
+        String checkBody = """
+                {
+                    "userId": 1,
+                    "permissionCode": "user:create"
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/auth/check")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(checkBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.data.hasPermission").value(true))
+                .andExpect(jsonPath("$.data.userId").value(1))
+                .andExpect(jsonPath("$.data.permissionCode").value("user:create"));
+    }
+
+    /**
+     * AC2 (auth/005): 无权限返回 false。
+     * Given 用户不拥有指定权限，返回 200，data.hasPermission=false
+     */
+    @Test
+    @DisplayName("权限校验无权限返回 false")
+    void checkPermissionReturnsFalse() throws Exception {
+        // 先登录获取 token
+        String loginBody = """
+                {
+                    "username": "admin",
+                    "password": "admin123456"
+                }
+                """;
+
+        String loginResponse = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        var root = mapper.readTree(loginResponse);
+        String token = root.path("data").path("token").asText();
+
+        // 调用 /check - 普通用户 (假设 id=2) 无 user:delete 权限
+        // 这里使用 userId=2，种子数据中没有 userId=2 的用户，所以会返回 404
+        // 我们需要确保有一个只有 view 权限的用户，或者使用 admin 但查询 admin 没有的权限
+        // 根据种子数据，admin 有所有 14 个权限，所以我们需要用一个有限权限的用户
+        // 但种子数据只有 admin 用户。让我们用一个不存在的权限码来测试
+        String checkBody = """
+                {
+                    "userId": 1,
+                    "permissionCode": "nonexistent:permission"
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/auth/check")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(checkBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.data.hasPermission").value(false))
+                .andExpect(jsonPath("$.data.userId").value(1))
+                .andExpect(jsonPath("$.data.permissionCode").value("nonexistent:permission"));
+    }
+
+    /**
+     * AC3 (auth/005): 用户不存在返回 404。
+     * Given 不存在的 userId，返回 404，code=1001（用户不存在）
+     */
+    @Test
+    @DisplayName("用户不存在返回 404 code=1001")
+    void checkPermissionUserNotFoundReturns404() throws Exception {
+        // 先登录获取 token
+        String loginBody = """
+                {
+                    "username": "admin",
+                    "password": "admin123456"
+                }
+                """;
+
+        String loginResponse = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        var root = mapper.readTree(loginResponse);
+        String token = root.path("data").path("token").asText();
+
+        // 调用 /check - 不存在的用户 ID
+        String checkBody = """
+                {
+                    "userId": 99999,
+                    "permissionCode": "user:view"
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/auth/check")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(checkBody))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(1001))
+                .andExpect(jsonPath("$.message").exists());
+    }
+
+    /**
+     * AC4 (auth/005): 未认证返回 401。
+     * 无 token 调用 /check，返回 401，code=1401
+     */
+    @Test
+    @DisplayName("未认证调用 /check 返回 401 code=1401")
+    void checkWithoutAuthReturns401() throws Exception {
+        String checkBody = """
+                {
+                    "userId": 1,
+                    "permissionCode": "user:view"
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/auth/check")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(checkBody))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(1401));
+    }
 }

@@ -48,7 +48,7 @@ class GlobalExceptionHandlerApiTest {
         @PostMapping("/probe/users")
         Result<Void> create(@Valid @RequestBody CreateUserRequest request) {
             if ("existing".equals(request.name())) {
-                throw new BusinessException(1001, "用户已存在");
+                throw new BusinessException(1002, "用户已存在");
             }
             throw new RuntimeException("内部细节 jdbc:mysql://secret 不应外泄");
         }
@@ -69,7 +69,7 @@ class GlobalExceptionHandlerApiTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"existing\"}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(1001))
+                .andExpect(jsonPath("$.code").value(1002))
                 .andExpect(jsonPath("$.message").value("用户已存在"))
                 .andExpect(jsonPath("$.data").isEmpty());
     }
