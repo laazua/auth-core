@@ -42,8 +42,8 @@
 
 | ID | 功能点 | 前置依赖 | 状态 | 备注 |
 |----|--------|----------|------|------|
-| auth/001 | Spring Security 无状态基线 + BCrypt 编码器 | infra/003, model/001 | 🔄 | sprint-010 规划中 |
-| auth/002 | 登录接口 POST /api/v1/auth/login 签发 JWT | auth/001 | ⬜ | — |
+| auth/001 | Spring Security 无状态基线 + BCrypt 编码器 | infra/003, model/001 | ✅ | sprint-010 评审通过（均分 10.0） |
+| auth/002 | 登录接口 POST /api/v1/auth/login 签发 JWT | auth/001 | 🔄 | sprint-011 规划中 |
 | auth/003 | JWT 校验过滤器 + SecurityContext 注入 | auth/001, auth/002 | ⬜ | — |
 | auth/004 | GET /api/v1/auth/me（用户+角色+权限集合） | auth/003, model/005 | ⬜ | — |
 | auth/005 | 权限校验 API POST /api/v1/auth/check（供外部模块集成调用） | auth/003 | ⬜ | — |
