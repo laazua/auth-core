@@ -78,6 +78,9 @@ smoke_case "model-005 sys_user_role+sys_role_permission 数据层与迁移定向
 
 # model/006：种子数据迁移 V6 可重复应用 + 数据正确性（需环境含 MYSQL_PASSWORD）
 smoke_case "model-006 种子数据迁移 V6 与数据正确性" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='SeedDataIntegrationTest'
+
+# auth/001：Spring Security 无状态基线 + BCrypt 编码器（验证公开端点放行、受保护端点拦截、BCrypt 可用）
+smoke_case "auth-001 Security 无状态基线定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='SecurityConfigTest,CustomUserDetailsServiceTest'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
