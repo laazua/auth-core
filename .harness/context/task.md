@@ -1,13 +1,13 @@
-# Sprint 工作单：sprint-011
+# Sprint 工作单：sprint-012
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-011 |
+| Sprint ID | sprint-012 |
 | 所属模块 | auth |
-| 功能点 ID | auth/002 |
-| 功能点名称 | 登录接口 POST /api/v1/auth/login 签发 JWT |
+| 功能点 ID | auth/003 |
+| 功能点名称 | JWT 校验过滤器 + SecurityContext 注入 |
 | 状态 | PLANNED |
 | 创建时间 | 2026-08-27 |
 
@@ -16,64 +16,70 @@
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
 | auth/001 | Spring Security 无状态基线 + BCrypt 编码器 | ✅ |
+| auth/002 | 登录接口 POST /api/v1/auth/login 签发 JWT | ✅ |
 
 ## 需求描述
 
-实现登录接口：
-1. `POST /api/v1/auth/login` — 接收 `LoginRequest{username, password}`，返回 `Result<LoginResponse>`，其中 `LoginResponse{token, tokenType="Bearer", expiresIn}`
-2. 使用 `AuthenticationManager` 进行认证（委托给 auth/001 配置的 `DaoAuthenticationProvider` + `CustomUserDetailsService`）
-3. 认证成功后，使用 `JwtTokenProvider` 生成 JWT（HS256，payload {uid, username, exp}，过期时间来自 `JwtProperties.expireHours`）
-4. `JwtTokenProvider` 组件：`generateToken(UserDetails)`、`validateToken(String)`、`getUsernameFromToken(String)`
-5. 失败返回 401，错误码 1401（用户名或密码错误），`Result.code=1401`
+实现 JWT 校验过滤器，拦截所有受保护请求，验证 Authorization: Bearer <token>，解析用户身份并注入 SecurityContext：
+
+1. `JwtAuthenticationFilter` — 实现 `OncePerRequestFilter`
+   - 从 `Authorization` 头提取 Bearer token
+   - 调用 `JwtTokenProvider.validateToken(token)` 校验
+   - 校验通过：`JwtTokenProvider.getUsernameFromToken(token)` 获取 username
+   - 用 `CustomUserDetailsService.loadUserByUsername(username)` 加载 UserDetails
+   - 构建 `UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities())`
+   - `SecurityContextHolder.getContext().setAuthentication(authentication)`
+   - 校验失败/无 token：放行（由 SecurityConfig 的 authorizeHttpRequests 决定 401/403）
+
+2. 在 `SecurityConfig.filterChain` 中注册过滤器：`.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)`
 
 ## 业务背景
 
-架构 §5 规定：登录接口 POST `/api/v1/auth/login`，请求体 username+password，认证成功签发 JWT(HS256)，payload{uid, username, exp}，token 有效期默认 2h。secret 仅环境变量。RBAC0 §6.5：停用用户(status=0)不可登录（auth/001 的 UserDetailsService 已校验）。
+这是鉴权链路的核心：auth/002 签发 token，auth/003 校验 token 并建立上下文。后续 auth/004 (/me) 与 auth/005 (/check) 直接依赖 SecurityContext 中的认证信息。架构 §5：无状态 JWT、HS256、payload{uid, username, exp}。RBAC0 §6.5：停用用户 token 即时失效（CustomUserDetailsService 已校验 status=1，过期用户自然被拦截）。
 
 ## 交付物
 
-1. `LoginRequest.java` / `LoginResponse.java` — DTO（在 `com.authcore.dto.auth`）
-2. `JwtTokenProvider.java` — JWT 生成/校验/解析组件（在 `com.authcore.config.security`）
-3. `AuthController.java` — 登录端点（在 `com.authcore.controller`）
-4. `AuthControllerTest.java` — Web 层测试
+1. `JwtAuthenticationFilter.java` — JWT 校验过滤器（`com.authcore.config.security`）
+2. 更新 `SecurityConfig.java` — 注册过滤器
+3. `JwtAuthenticationFilterTest.java` — 测试用例
 
 ## 验收标准（TDD 驱动）
 
-### AC1 — 登录成功返回 JWT
-> 给定数据库存在 status=1 用户 admin / BCrypt(admin123456)，POST /api/v1/auth/login 携带正确凭据，返回 200，Result.code=0，data.token 为非空 JWT 字符串（三段式，Base64Url 编码），tokenType=Bearer，expiresIn=7200（默认 2h）。
+### AC1 — 有效 token 请求通过，SecurityContext 注入用户
+> 给定有效 JWT，GET /api/v1/users（受保护端点）携带 Authorization: Bearer <token>，返回 200（或 404 因无 controller，但不应 401/403），且 SecurityContext 中 Authentication 为 UsernamePasswordAuthenticationToken，principal 为 CustomUserDetails。
 
-**用例**：`AuthControllerTest#loginSuccessReturnsJwt`
-- 准备：种子数据 admin/admin123456 已存在（V6 迁移）
-- 操作：POST /api/v1/auth/login {username:"admin", password:"admin123456"}
-- 断言：status=200、code=0、token 非空且为 3 段、expiresIn=7200
+**用例**：`JwtAuthenticationFilterTest#validTokenSetsSecurityContext`
+- 准备：JwtTokenProvider 生成 admin token
+- 操作：MockMvc GET /api/v1/users header Authorization: Bearer <token>
+- 断言：status != 401/403；SecurityContextHolder.getContext().getAuthentication() 不为 null；principal 为 CustomUserDetails；username=admin
 
-### AC2 — 凭据错误返回 401
-> 用户名不存在或密码错误，返回 401，Result.code=1401（用户名或密码错误），message 非空。
+### AC2 — 无效/过期 token 返回 401
+> 给定篡改/过期 JWT，GET /api/v1/users 携带 Authorization: Bearer <bad_token>，返回 401，Result.code=1401。
 
-**用例**：`AuthControllerTest#loginWrongCredentialsReturns401`
-- 操作：POST /api/v1/auth/login {username:"admin", password:"wrong"}
+**用例**：`JwtAuthenticationFilterTest#invalidTokenReturns401`
+- 操作：GET /api/v1/users header Authorization: Bearer invalid.token.here
 - 断言：status=401、code=1401
 
-### AC3 — 停用用户不可登录
-> 给定 status=0 用户，POST /api/v1/auth/login 返回 401，code=1401。
+### AC3 — 无 Authorization 头返回 401
+> 访问受保护端点无 Authorization 头，返回 401，Result.code=1401。
 
-**用例**：`AuthControllerTest#loginDisabledUserReturns401`
-- 准备：插入 status=0 用户
-- 操作：POST /api/v1/auth/login {username:"disabled", password:"xxx"}
+**用例**：`JwtAuthenticationFilterTest#missingAuthHeaderReturns401`
+- 操作：GET /api/v1/users 无 header
 - 断言：status=401、code=1401
 
-### AC4 — JWT 可被 JwtTokenProvider 解析
-> 登录返回的 token，`JwtTokenProvider.validateToken(token)` 返回 true，`getUsernameFromToken(token)` 返回 "admin"。
+### AC4 — 非 Bearer 格式返回 401
+> Authorization 头非 Bearer 开头，返回 401。
 
-**用例**：`JwtTokenProviderTest#tokenRoundtrip`
-- 操作：generateToken(adminUserDetails) → token；validateToken(token)；getUsernameFromToken(token)
-- 断言：validateToken=true、username="admin"
+**用例**：`JwtAuthenticationFilterTest#nonBearerAuthHeaderReturns401`
+- 操作：GET /api/v1/users header Authorization: Basic xxx
+- 断言：status=401、code=1401
 
 ## 规范检查清单（Evaluator 逐项核对）
 
-- [ ] Controller 仅做三件事（接参→委托→包装 Result），无业务逻辑（coding-standards §3）
-- [ ] JWT 生成使用 HS256、payload 含 uid/username/exp、secret 仅环境变量（架构 §5）
-- [ ] 错误码分段：14xx 认证类（coding-standards §6、架构 §4）
+- [ ] OncePerRequestFilter 正确实现，不重复校验同一请求
+- [ ] 仅对有 Authorization: Bearer 头的请求尝试校验，否则放行
+- [ ] 校验失败不抛异常，而是清空 SecurityContext 并继续（由 SecurityConfig 统一处理 401/403）
+- [ ] 线程安全：SecurityContextHolder 使用 ThreadLocal，过滤器链无状态
 - [ ] 无硬编码密钥/明文密码（coding-standards §6）
 - [ ] 测试 AAA 结构有效（coding-standards §9）
 - [ ] `mvn -q verify` 全绿
