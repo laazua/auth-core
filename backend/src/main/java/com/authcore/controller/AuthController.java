@@ -1,23 +1,28 @@
 package com.authcore.controller;
 
 import com.authcore.common.Result;
+import com.authcore.config.security.CustomUserDetails;
 import com.authcore.config.security.JwtTokenProvider;
 import com.authcore.dto.auth.LoginRequest;
 import com.authcore.dto.auth.LoginResponse;
+import com.authcore.dto.auth.MeResponse;
+import com.authcore.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 认证控制器：登录接口（auth/002）。
+ * 认证控制器：登录接口（auth/002）、当前用户信息（auth/004）。
  */
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -25,16 +30,21 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AuthService authService;
 
     /**
      * 构造器注入。
      *
      * @param authenticationManager 认证管理器
      * @param jwtTokenProvider      JWT 生成器
+     * @param authService           认证业务服务
      */
-    public AuthController(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider) {
+    public AuthController(AuthenticationManager authenticationManager,
+                          JwtTokenProvider jwtTokenProvider,
+                          AuthService authService) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.authService = authService;
     }
 
     /**
@@ -56,5 +66,23 @@ public class AuthController {
         } catch (BadCredentialsException | DisabledException e) {
             throw new com.authcore.common.BusinessException(1401, "用户名或密码错误");
         }
+    }
+
+    /**
+     * 获取当前登录用户完整信息（auth/004）。
+     *
+     * @return Result<MeResponse> 包含 user、roles、permissions
+     */
+    @GetMapping("/me")
+    public Result<MeResponse> me() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication.getPrincipal() instanceof String) {
+            throw new com.authcore.common.BusinessException(1401, "未认证");
+        }
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long userId = userDetails.getUser().getId();
+        MeResponse meResponse = authService.getCurrentUserInfo(userId);
+        return Result.ok(meResponse);
     }
 }
