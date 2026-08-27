@@ -19,10 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * CustomUserDetailsService 用户查询与 status 校验判定用例（auth/001 AC4）。
  */
-@SpringBootTest(properties = {
-    "spring.flyway.enabled=true",
-    "jwt.secret=test-secret-key-for-testing-only-minimum-32-chars"
-})
+@SpringBootTest
 @ActiveProfiles("test")
 @Transactional
 class CustomUserDetailsServiceTest {

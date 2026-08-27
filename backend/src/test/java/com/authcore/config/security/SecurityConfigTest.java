@@ -13,14 +13,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 /**
  * Spring Security 无状态基线配置判定用例（auth/001 AC1-AC3）。
  */
-@SpringBootTest(properties = {
-    "spring.flyway.enabled=false",
-    "jwt.secret=test-secret-key-for-testing-only-minimum-32-chars"
-})
+@SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class SecurityConfigTest {
@@ -35,7 +33,7 @@ class SecurityConfigTest {
      * AC1: 公开端点无需认证可访问。
      * Given Spring Boot 测试上下文
      * When GET /actuator/health、POST /api/v1/auth/login
-     * Then 状态码非 401/403（即 200/400/404 等）
+     * Then 状态码非 403（Forbidden），且登录端点返回业务响应而非 Spring Security 认证挑战
      */
     @Test
     @DisplayName("公开端点 /actuator/health 与 /api/v1/auth/login 无需认证可访问")
@@ -44,12 +42,17 @@ class SecurityConfigTest {
         mockMvc.perform(get("/actuator/health"))
                 .andExpect(status().isOk());
 
-        // /api/v1/auth/login 无需认证（登录控制器由 auth/002 实现，当前 404 也满足非 401/403）
-        mockMvc.perform(post("/api/v1/auth/login"))
+        // /api/v1/auth/login 无需认证：Spring Security 不应拦截（无 403），控制器可到达（返回业务码 1401 或 200/400）
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"username\":\"test\",\"password\":\"test\"}"))
                 .andExpect(result -> {
                     int status = result.getResponse().getStatus();
-                    assertTrue(status != 401 && status != 403,
-                            "登录端点不应返回 401/403，实际: " + status);
+                    String body = result.getResponse().getContentAsString();
+                    // 403 表示被 Spring Security 拦截，不应出现
+                    assertTrue(status != 403, "登录端点不应被 Spring Security 拦截 (403)，实际: " + status);
+                    // 应返回业务响应（含 code 字段），而非 Spring Security 认证挑战页面
+                    assertTrue(body.contains("\"code\""), "登录端点应返回业务响应格式，实际 body: " + body);
                 });
     }
 

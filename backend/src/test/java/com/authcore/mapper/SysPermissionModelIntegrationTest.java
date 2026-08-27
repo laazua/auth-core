@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * <p>写路径全部 @Transactional 回滚隔离，不在库中残留测试数据；读路径只读。
  * 注意 §3 契约：本表七列、无 status 列；module_id NOT NULL 为 §6.1「权限必须归属模块」的数据层表达。
  */
+@ActiveProfiles("test")
 class SysPermissionModelIntegrationTest extends AbstractModelIntegrationTest {
 
     @Autowired

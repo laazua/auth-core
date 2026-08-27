@@ -3,11 +3,13 @@ package com.authcore;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 /**
  * 验证 Spring 容器可正常装配启动（infra/001 AC1 判定用例）。
  */
 @SpringBootTest
+@ActiveProfiles("test")
 class AuthCoreApplicationTests {
 
     /**

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  *
  * <p>写路径全部 @Transactional 回滚隔离，不在库中残留测试数据；读路径只读。
  */
+@ActiveProfiles("test")
 class SysUserRoleModelIntegrationTest extends AbstractModelIntegrationTest {
 
     @Autowired

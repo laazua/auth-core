@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * <p>读路径只读断言，不残留测试数据；Flyway 重放幂等性在独立用例中验证。
  */
+@ActiveProfiles("test")
 class SeedDataIntegrationTest extends AbstractModelIntegrationTest {
 
     @Autowired
