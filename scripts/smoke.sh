@@ -75,6 +75,9 @@ smoke_case "model-004 sys_permission 数据层与迁移定向测试" mvn -q -f "
 
 # model/005：sys_user_role+sys_role_permission 数据层 + V5 迁移幂等（需环境含 MYSQL_PASSWORD）
 smoke_case "model-005 sys_user_role+sys_role_permission 数据层与迁移定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='SysUserRoleModelIntegrationTest'
+
+# model/006：种子数据迁移 V6 可重复应用 + 数据正确性（需环境含 MYSQL_PASSWORD）
+smoke_case "model-006 种子数据迁移 V6 与数据正确性" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='SeedDataIntegrationTest'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

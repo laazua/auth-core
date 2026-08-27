@@ -89,7 +89,8 @@ class SysUserRoleModelIntegrationTest extends AbstractModelIntegrationTest {
     @Transactional
     @DisplayName("增查改删主线 sys_user_role 与时间自动填充")
     void test_增查改删主线_sys_user_role与时间自动填充() {
-        SysUserRole created = newUserRole(1L, 1L);
+        // 使用 999L 避免与种子数据 (1,1) 冲突
+        SysUserRole created = newUserRole(999L, 999L);
         userRoleMapper.insert(created);
         assertNotNull(created.getId(), "插入后应回填自增主键");
 
@@ -140,7 +141,8 @@ class SysUserRoleModelIntegrationTest extends AbstractModelIntegrationTest {
     @Transactional
     @DisplayName("增查改删主线 sys_role_permission 与时间自动填充")
     void test_增查改删主线_sys_role_permission与时间自动填充() {
-        SysRolePermission created = newRolePermission(1L, 1L);
+        // 使用 999L 避免与种子数据冲突
+        SysRolePermission created = newRolePermission(999L, 999L);
         rolePermissionMapper.insert(created);
         assertNotNull(created.getId(), "插入后应回填自增主键");
 
