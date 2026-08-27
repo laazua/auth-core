@@ -115,6 +115,22 @@ public class AuthService {
         );
     }
 
+    /**
+     * 校验用户是否拥有指定权限（auth/005）。
+     *
+     * @param userId         用户 ID
+     * @param permissionCode 权限编码
+     * @return true 表示拥有权限，false 表示无权限或用户不存在
+     */
+    public boolean checkPermission(Long userId, String permissionCode) {
+        MeResponse me = getCurrentUserInfo(userId);
+        if (me == null) {
+            return false;
+        }
+        return me.permissions().stream()
+                .anyMatch(p -> permissionCode.equals(p));
+    }
+
     private UserVO toUserVO(SysUser user) {
         return new UserVO(
                 user.getId(),

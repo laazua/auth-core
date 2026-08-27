@@ -3,9 +3,12 @@ package com.authcore.controller;
 import com.authcore.common.Result;
 import com.authcore.config.security.CustomUserDetails;
 import com.authcore.config.security.JwtTokenProvider;
+import com.authcore.dto.auth.CheckRequest;
+import com.authcore.dto.auth.CheckResponse;
 import com.authcore.dto.auth.LoginRequest;
 import com.authcore.dto.auth.LoginResponse;
 import com.authcore.dto.auth.MeResponse;
+import com.authcore.mapper.SysUserMapper;
 import com.authcore.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,6 +34,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthService authService;
+    private final SysUserMapper userMapper;
 
     /**
      * 构造器注入。
@@ -38,13 +42,16 @@ public class AuthController {
      * @param authenticationManager 认证管理器
      * @param jwtTokenProvider      JWT 生成器
      * @param authService           认证业务服务
+     * @param userMapper            用户数据访问
      */
     public AuthController(AuthenticationManager authenticationManager,
                           JwtTokenProvider jwtTokenProvider,
-                          AuthService authService) {
+                          AuthService authService,
+                          SysUserMapper userMapper) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
         this.authService = authService;
+        this.userMapper = userMapper;
     }
 
     /**
@@ -66,6 +73,22 @@ public class AuthController {
         } catch (BadCredentialsException | DisabledException e) {
             throw new com.authcore.common.BusinessException(1401, "用户名或密码错误");
         }
+    }
+
+    /**
+     * 权限校验接口（auth/005）。
+     * 供外部模块集成调用，根据 userId 校验是否拥有指定权限。
+     *
+     * @param request 权限校验请求（userId、permissionCode）
+     * @return Result<CheckResponse> 包含 hasPermission、userId、permissionCode
+     */
+    @PostMapping("/check")
+    public Result<CheckResponse> checkPermission(@Valid @RequestBody CheckRequest request) {
+        if (userMapper.selectById(request.userId()) == null) {
+            throw new com.authcore.common.BusinessException(1001, "用户不存在");
+        }
+        boolean has = authService.checkPermission(request.userId(), request.permissionCode());
+        return Result.ok(new CheckResponse(has, request.userId(), request.permissionCode()));
     }
 
     /**
