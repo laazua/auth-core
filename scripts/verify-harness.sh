@@ -34,8 +34,8 @@ if [ -f "$REG" ]; then
   ids_defined=$(grep -ohE '^\| *(infra|model|auth|users|roles|perms|modules|web|integration)/[0-9]{3}' "$REG" | tr -d '| ' | sort -u)
   count=$(printf '%s\n' "$ids_defined" | grep -c . )
   [ "$count" -eq 32 ] && ok "功能点计数 = 32" || bad "功能点计数 = $count（期望 32）"
-  pending=$(grep -cE '^\| *(infra|model|auth|users|roles|perms|modules|web|integration)/[0-9]{3}.*⬜' "$REG")
-  [ "$pending" -eq 32 ] && ok "初始状态全 ⬜" || bad "⬜ 行数 = $pending（期望 32）"
+  blocked=$(grep -cE '^\| *(infra|model|auth|users|roles|perms|modules|web|integration)/[0-9]{3}.*❌' "$REG")
+  [ "$blocked" -eq 0 ] && ok "无阻塞功能点" || bad "❌ 阻塞行数 = $blocked"
   deps_raw=$(awk -F'|' '/^\| *(infra|model|auth|users|roles|perms|modules|web|integration)\/[0-9]{3}/{print $4}' "$REG")
   orphan=0
   while IFS= read -r dep_cell; do
@@ -60,9 +60,17 @@ fi
 
 echo "== 4. task.md 模板字段 =="
 TASK=.harness/context/task.md
-for field in "Sprint ID" "所属模块" "需求描述" "业务背景" "前置依赖" "验收标准" "测试清单" "RED 证据" "实现说明" "冒烟记录" "状态" "评审意见"; do
+for field in "Sprint ID" "所属模块" "需求描述" "业务背景" "前置依赖" "验收标准" "状态"; do
   has "$TASK" "$field" && ok "task.md 含「$field」" || bad "task.md 缺「$field」"
 done
+task_status=$(grep -oP '状态\s*\|\s*\K\S+' "$TASK" 2>/dev/null || echo "UNKNOWN")
+if [ "$task_status" = "PLANNED" ]; then
+  ok "PLANNED 阶段跳过执行态字段检查"
+else
+  for field in "测试清单" "RED 证据" "实现说明" "冒烟记录" "评审意见"; do
+    has "$TASK" "$field" && ok "task.md 含「$field」" || bad "task.md 缺「$field」"
+  done
+fi
 
 echo "== 4.5. 路由结构完整性 =="
 SS=.harness/context/session-state.md

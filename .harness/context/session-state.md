@@ -2,12 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟡 sprint-007 待评审（AWAITING_REVIEW）
+- 状态: 🔄 sprint-008 进行中（model/005）
 - 当前模块: model
-- 当前功能点: model/004
+- 当前功能点: model/005（sys_user_role + sys_role_permission 关联表）
 
 ## 下一步动作
-Evaluator：按 `.harness/rules/review-criteria.md` 五维评审 sprint-007（工作单：`.harness/context/task.md`）。实测口径——后端门禁 `mvn -q verify` 与 `bash scripts/smoke.sh`（7 用例）必须亲自复跑并贴输出（环境需含 MYSQL_PASSWORD）；git diff 取证 smoke.sh 用例调用数 6 → 7；重点核查：七列契约无 status 列（反增断言）、module_id NOT NULL 落地且无物理 FK、共享库 `__it_%` 零残留。
+Generator：按 `.harness/context/task.md`（sprint-008）执行 TDD，先写迁移脚本+实体+Mapper 的失败测试，再实现，最后重构。
 
 ## 挂起
 - 2026-08-26: Planner(sprint-004) — 用户裁决：暂沿用旧口令 abc123456 不轮换（风险自担）；已注入仓库外 ~/.bashrc 与 ~/.bash_profile（export MYSQL_PASSWORD），git 历史清理事项仍待裁决。真实库 192.168.165.88:3306（MySQL 8.0.45，库 authcore 已就绪）自本 Sprint 起用于验收。
@@ -17,5 +17,6 @@ Evaluator：按 `.harness/rules/review-criteria.md` 五维评审 sprint-007（�
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-08-26: Planner — kickoff sprint-008（model/005，4 条验收标准）
 - 2026-08-26: 系统 — Harness 增补强制冒烟机制（smoke.sh 接线六处流程，registry 状态不受影响仍全 ⬜）
 - 2026-08-26: 系统 — Harness 交付，registry 32 个功能点全部 ⬜

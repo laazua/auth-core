@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-08-26: Planner — kickoff sprint-008（model/005，4 条验收标准）
+- 2026-08-26: Evaluator — pass sprint-007（model/004，平均分 10.0/10）
 - 2026-08-26: Generator — done sprint-007（model/004，后端门禁 mvn -q verify 全绿 25 用例 + 冒烟 7 用例通过，真实库验收）
 - 2026-08-26: Planner — kickoff sprint-007（model/004，4 条验收标准；§6.1 落 DDL 为 module_id NOT NULL，物理 FK 不建与 key_column_usage 建议不采纳均已登记）
 - 2026-08-26: Evaluator — pass sprint-006（model/003，平均分 10.0/10）
