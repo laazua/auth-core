@@ -6,8 +6,10 @@ import com.authcore.dto.user.UserQueryDTO;
 import com.authcore.dto.user.UserStatusDTO;
 import com.authcore.dto.user.UserUpdateDTO;
 import com.authcore.dto.user.UserVO;
+import com.authcore.entity.SysRole;
 import com.authcore.entity.SysUser;
 import com.authcore.entity.SysUserRole;
+import com.authcore.mapper.SysRoleMapper;
 import com.authcore.mapper.SysUserMapper;
 import com.authcore.mapper.SysUserRoleMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -17,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -28,13 +31,16 @@ public class UserService {
 
     private final SysUserMapper userMapper;
     private final SysUserRoleMapper userRoleMapper;
+    private final SysRoleMapper roleMapper;
     private final PasswordEncoder passwordEncoder;
 
     public UserService(SysUserMapper userMapper,
                        SysUserRoleMapper userRoleMapper,
+                       SysRoleMapper roleMapper,
                        PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
         this.userRoleMapper = userRoleMapper;
+        this.roleMapper = roleMapper;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -183,6 +189,45 @@ public class UserService {
         }
 
         userMapper.deleteById(id);
+    }
+
+    /**
+     * 批量分配用户角色（全量替换）。
+     *
+     * @param userId 用户 ID
+     * @param roleIds 角色 ID 列表
+     * @throws BusinessException code=1001 用户不存在；code=1004 角色不存在或已停用
+     */
+    @Transactional
+    public void assignRoles(Long userId, List<Long> roleIds) {
+        // 1. 校验用户存在
+        if (userMapper.selectById(userId) == null) {
+            throw new BusinessException(1001, "用户不存在");
+        }
+
+        // 2. 校验角色有效：每个 roleId 在 sys_role 存在且 status=1
+        if (roleIds != null && !roleIds.isEmpty()) {
+            List<SysRole> roles = roleMapper.selectBatchIds(roleIds);
+            if (roles.size() != roleIds.size()) {
+                throw new BusinessException(1004, "角色不存在或已停用");
+            }
+            for (SysRole r : roles) {
+                if (r.getStatus() != 1) {
+                    throw new BusinessException(1004, "角色已停用");
+                }
+            }
+        }
+
+        // 3. 事务内：先删后增
+        userRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, userId));
+        if (roleIds != null && !roleIds.isEmpty()) {
+            for (Long rid : roleIds) {
+                SysUserRole ur = new SysUserRole();
+                ur.setUserId(userId);
+                ur.setRoleId(rid);
+                userRoleMapper.insert(ur);
+            }
+        }
     }
 
     private UserVO toVO(SysUser user) {

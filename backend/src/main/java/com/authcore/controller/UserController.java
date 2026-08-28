@@ -3,6 +3,7 @@ package com.authcore.controller;
 import com.authcore.common.Result;
 import com.authcore.dto.user.UserCreateDTO;
 import com.authcore.dto.user.UserQueryDTO;
+import com.authcore.dto.user.UserRoleAssignDTO;
 import com.authcore.dto.user.UserStatusDTO;
 import com.authcore.dto.user.UserUpdateDTO;
 import com.authcore.dto.user.UserVO;
@@ -122,5 +123,20 @@ public class UserController {
     public Result<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return Result.okMessage("删除成功");
+    }
+
+    /**
+     * 批量分配用户角色（全量替换）。
+     *
+     * @param id 用户 ID
+     * @param dto 角色 ID 列表
+     * @return 空载荷成功响应
+     * @throws BusinessException code=1001 用户不存在；code=1004 角色不存在或已停用
+     */
+    @Operation(summary = "批量分配用户角色（全量替换）")
+    @PutMapping("/{id}/roles")
+    public Result<Void> assignRoles(@PathVariable Long id, @Valid @RequestBody UserRoleAssignDTO dto) {
+        userService.assignRoles(id, dto.roleIds());
+        return Result.ok(null);
     }
 }

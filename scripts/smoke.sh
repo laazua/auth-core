@@ -96,6 +96,9 @@ smoke_case "auth-006 POST /logout 登出接口" mvn -q -f "$APP_DIR/pom.xml" tes
 
 # users/001：用户 CRUD API（分页/条件查询/创建加密/更新/启停用/删除引用保护）
 smoke_case "users-001 用户 CRUD 定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='UserControllerTest,UserServiceTest'
+
+# users/002：用户-角色批量分配 API（全量替换/校验/空列表清空）
+smoke_case "users-002 用户角色分配定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='UserControllerTest#assignRolesBatchReplace,UserControllerTest#assignRolesInvalidRoleReturns400,UserControllerTest#assignRolesUserNotFoundReturns404,UserControllerTest#assignRolesEmptyListClearsRoles'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
