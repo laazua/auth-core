@@ -1,0 +1,88 @@
+import type { RouteRecordRaw } from 'vue-router';
+import type { AppRouteRecordRaw } from '@/types/router';
+
+export const staticRoutes: RouteRecordRaw[] = [
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/LoginView.vue'),
+    meta: { public: true, title: '登录', hidden: true },
+  },
+  {
+    path: '/404',
+    name: 'NotFound',
+    component: () => import('@/views/NotFoundView.vue'),
+    meta: { public: true, title: '404', hidden: true },
+  },
+];
+
+export const layoutRoutes: RouteRecordRaw[] = [
+  {
+    path: '/',
+    component: () => import('@/layouts/Layout.vue'),
+    redirect: '/dashboard',
+    children: [
+      {
+        path: 'dashboard',
+        name: 'Dashboard',
+        component: () => import('@/views/DashboardView.vue'),
+        meta: { requiresAuth: true, title: '仪表盘', icon: 'Monitor', affix: true },
+      },
+    ],
+  },
+];
+
+export const asyncRoutes: AppRouteRecordRaw[] = [
+  {
+    path: '/system',
+    name: 'System',
+    component: () => import('@/layouts/Layout.vue'),
+    redirect: '/system/user',
+    meta: { requiresAuth: true, title: '系统管理', icon: 'Setting', roles: ['admin'] },
+    children: [
+      {
+        path: 'user',
+        name: 'User',
+        component: () => import('@/views/system/UserView.vue'),
+        meta: { requiresAuth: true, title: '用户管理', icon: 'User', permissions: ['user:read'] },
+      },
+      {
+        path: 'role',
+        name: 'Role',
+        component: () => import('@/views/system/RoleView.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '角色管理',
+          icon: 'UserFilled',
+          permissions: ['role:read'],
+        },
+      },
+      {
+        path: 'permission',
+        name: 'Permission',
+        component: () => import('@/views/system/PermissionView.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '权限管理',
+          icon: 'Lock',
+          permissions: ['permission:read'],
+        },
+      },
+      {
+        path: 'module',
+        name: 'Module',
+        component: () => import('@/views/system/ModuleView.vue'),
+        meta: { requiresAuth: true, title: '模块管理', icon: 'Grid', permissions: ['module:read'] },
+      },
+    ],
+  },
+];
+
+export const generateRoutes = (roles: string[]): RouteRecordRaw[] => {
+  const accessibleRoutes = asyncRoutes.filter((route) => {
+    if (!route.meta?.roles) return true;
+    return route.meta.roles.some((role) => roles.includes(role));
+  });
+
+  return [...layoutRoutes, ...accessibleRoutes, { path: '/:pathMatch(.*)*', redirect: '/404' }];
+};
