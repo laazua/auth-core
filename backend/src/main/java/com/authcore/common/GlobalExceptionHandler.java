@@ -35,7 +35,8 @@ public class GlobalExceptionHandler {
         } else if (e.getCode() == 1001) {
             status = HttpStatus.NOT_FOUND;
         } else if (e.getCode() == 1002 || e.getCode() == 1101 || e.getCode() == 1102 || e.getCode() == 1103 || e.getCode() == 1104
-                || e.getCode() == 1201 || e.getCode() == 1202 || e.getCode() == 1203) {
+                || e.getCode() == 1201 || e.getCode() == 1202 || e.getCode() == 1203
+                || e.getCode() == 1301 || e.getCode() == 1302 || e.getCode() == 1303) {
             status = HttpStatus.CONFLICT;
         } else {
             status = HttpStatus.BAD_REQUEST;

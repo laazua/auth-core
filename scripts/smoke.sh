@@ -111,6 +111,9 @@ smoke_case "roles-002 角色权限分配定向测试" mvn -q -f "$APP_DIR/pom.xm
 
 # perms/001：权限 CRUD API（分页/条件查询/分组查询/创建唯一/更新code不可改/删除引用保护）
 smoke_case "perms-001 权限 CRUD 定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='PermissionControllerTest,PermissionServiceTest'
+
+# modules/001：模块 CRUD API（分页/条件查询/权限级联/创建唯一/更新code不可改/删除引用保护）
+smoke_case "modules-001 模块 CRUD 定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='ModuleControllerTest,ModuleServiceTest'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
