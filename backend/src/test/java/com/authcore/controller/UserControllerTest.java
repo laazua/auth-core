@@ -534,4 +534,406 @@ class UserControllerTest {
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
     }
+
+    /**
+     * AC1: 用户自助修改密码成功。
+     * Given 用户密码 Pass1234
+     * When PUT /api/v1/users/{id}/password {oldPassword:"Pass1234", newPassword:"NewPass5678"}
+     * Then status=200、登录接口用 NewPass5678 成功、旧密码失败
+     */
+    @Test
+    @DisplayName("用户自助修改密码成功")
+    void changePasswordSuccess() throws Exception {
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        String token = getAdminToken();
+
+        // 先创建一个测试用户
+        String username = unique("changepass");
+        String createBody = """
+                {
+                    "username": "%s",
+                    "password": "Pass1234",
+                    "nickname": "密码修改测试",
+                    "email": "changepass@test.com",
+                    "phone": "13900002000"
+                }
+                """.formatted(username);
+        String createResponse = mockMvc.perform(post("/api/v1/users")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        var createRoot = mapper.readTree(createResponse);
+        Long userId = createRoot.path("data").path("id").asLong();
+
+        // 获取该用户的 token
+        String loginBody = """
+                {
+                    "username": "%s",
+                    "password": "Pass1234"
+                }
+                """.formatted(username);
+        String loginResponse = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        var loginRoot = mapper.readTree(loginResponse);
+        String userToken = loginRoot.path("data").path("token").asText();
+
+        // 修改密码
+        String changeBody = """
+                {
+                    "oldPassword": "Pass1234",
+                    "newPassword": "NewPass5678"
+                }
+                """;
+        mockMvc.perform(put("/api/v1/users/" + userId + "/password")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(changeBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0));
+
+        // 验证新密码可登录
+        String newLoginBody = """
+                {
+                    "username": "%s",
+                    "password": "NewPass5678"
+                }
+                """.formatted(username);
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newLoginBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0));
+
+        // 验证旧密码失败
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginBody))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(1401));
+
+        // 清理
+        mockMvc.perform(delete("/api/v1/users/" + userId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * AC2: 旧密码错误返回 400。
+     * Given 错误旧密码
+     * When PUT /api/v1/users/{id}/password {oldPassword:"WrongPass", newPassword:"NewPass"}
+     * Then status=400、code=1005
+     */
+    @Test
+    @DisplayName("旧密码错误返回 400 code=1005")
+    void changePasswordWrongOldReturns400() throws Exception {
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        String token = getAdminToken();
+
+        // 先创建一个测试用户
+        String username = unique("wrongold");
+        String createBody = """
+                {
+                    "username": "%s",
+                    "password": "Pass1234",
+                    "nickname": "错误旧密码测试",
+                    "email": "wrongold@test.com",
+                    "phone": "13900002001"
+                }
+                """.formatted(username);
+        String createResponse = mockMvc.perform(post("/api/v1/users")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        var createRoot = mapper.readTree(createResponse);
+        Long userId = createRoot.path("data").path("id").asLong();
+
+        // 获取该用户的 token
+        String loginBody = """
+                {
+                    "username": "%s",
+                    "password": "Pass1234"
+                }
+                """.formatted(username);
+        String loginResponse = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        var loginRoot = mapper.readTree(loginResponse);
+        String userToken = loginRoot.path("data").path("token").asText();
+
+        // 尝试用错误旧密码修改
+        String changeBody = """
+                {
+                    "oldPassword": "WrongPass",
+                    "newPassword": "NewPass5678"
+                }
+                """;
+        mockMvc.perform(put("/api/v1/users/" + userId + "/password")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(changeBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(1005));
+
+        // 清理
+        mockMvc.perform(delete("/api/v1/users/" + userId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * AC3: 新旧密码相同返回 400。
+     * When PUT /api/v1/users/{id}/password {oldPassword:"Pass1234", newPassword:"Pass1234"}
+     * Then status=400、code=1006
+     */
+    @Test
+    @DisplayName("新旧密码相同返回 400 code=1006")
+    void changePasswordSameAsOldReturns400() throws Exception {
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        String token = getAdminToken();
+
+        // 先创建一个测试用户
+        String username = unique("samepass");
+        String createBody = """
+                {
+                    "username": "%s",
+                    "password": "Pass1234",
+                    "nickname": "相同密码测试",
+                    "email": "samepass@test.com",
+                    "phone": "13900002002"
+                }
+                """.formatted(username);
+        String createResponse = mockMvc.perform(post("/api/v1/users")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        var createRoot = mapper.readTree(createResponse);
+        Long userId = createRoot.path("data").path("id").asLong();
+
+        // 获取该用户的 token
+        String loginBody = """
+                {
+                    "username": "%s",
+                    "password": "Pass1234"
+                }
+                """.formatted(username);
+        String loginResponse = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        var loginRoot = mapper.readTree(loginResponse);
+        String userToken = loginRoot.path("data").path("token").asText();
+
+        // 尝试用相同密码修改
+        String changeBody = """
+                {
+                    "oldPassword": "Pass1234",
+                    "newPassword": "Pass1234"
+                }
+                """;
+        mockMvc.perform(put("/api/v1/users/" + userId + "/password")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(changeBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(1006));
+
+        // 清理
+        mockMvc.perform(delete("/api/v1/users/" + userId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * AC4: 管理员重置密码成功。
+     * Given admin token、目标用户
+     * When POST /api/v1/users/{id}/password/reset {newPassword:"AdminReset123"}
+     * Then status=200、目标用户用新密码登录成功
+     */
+    @Test
+    @DisplayName("管理员重置密码成功")
+    void adminResetPasswordSuccess() throws Exception {
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        String adminToken = getAdminToken();
+
+        // 先创建一个测试用户
+        String username = unique("adminreset");
+        String createBody = """
+                {
+                    "username": "%s",
+                    "password": "Pass1234",
+                    "nickname": "管理员重置测试",
+                    "email": "adminreset@test.com",
+                    "phone": "13900002003"
+                }
+                """.formatted(username);
+        String createResponse = mockMvc.perform(post("/api/v1/users")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        var createRoot = mapper.readTree(createResponse);
+        Long userId = createRoot.path("data").path("id").asLong();
+
+        // 管理员重置密码
+        String resetBody = """
+                {
+                    "newPassword": "AdminReset123"
+                }
+                """;
+        mockMvc.perform(post("/api/v1/users/" + userId + "/password/reset")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(resetBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0));
+
+        // 验证新密码可登录
+        String newLoginBody = """
+                {
+                    "username": "%s",
+                    "password": "AdminReset123"
+                }
+                """.formatted(username);
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newLoginBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0));
+
+        // 清理
+        mockMvc.perform(delete("/api/v1/users/" + userId)
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * AC5: 非管理员重置返回 403。
+     * Given 普通用户 token
+     * When POST /api/v1/users/{id}/password/reset {newPassword:"NewPass"}
+     * Then status=403、code=1403
+     */
+    @Test
+    @DisplayName("非管理员重置密码返回 403 code=1403")
+    void resetPasswordNonAdminReturns403() throws Exception {
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        String adminToken = getAdminToken();
+
+        // 先创建两个测试用户：一个普通用户作为调用者，一个作为目标用户
+        String callerUsername = unique("caller");
+        String callerCreateBody = """
+                {
+                    "username": "%s",
+                    "password": "Pass1234",
+                    "nickname": "调用者",
+                    "email": "caller@test.com",
+                    "phone": "13900002004"
+                }
+                """.formatted(callerUsername);
+        String callerCreateResponse = mockMvc.perform(post("/api/v1/users")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(callerCreateBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        var callerCreateRoot = mapper.readTree(callerCreateResponse);
+        Long callerId = callerCreateRoot.path("data").path("id").asLong();
+
+        String targetUsername = unique("target");
+        String targetCreateBody = """
+                {
+                    "username": "%s",
+                    "password": "Pass1234",
+                    "nickname": "目标用户",
+                    "email": "target@test.com",
+                    "phone": "13900002005"
+                }
+                """.formatted(targetUsername);
+        String targetCreateResponse = mockMvc.perform(post("/api/v1/users")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(targetCreateBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        var targetCreateRoot = mapper.readTree(targetCreateResponse);
+        Long targetId = targetCreateRoot.path("data").path("id").asLong();
+
+        // 获取普通用户的 token（非管理员）
+        String loginBody = """
+                {
+                    "username": "%s",
+                    "password": "Pass1234"
+                }
+                """.formatted(callerUsername);
+        String loginResponse = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        var loginRoot = mapper.readTree(loginResponse);
+        String userToken = loginRoot.path("data").path("token").asText();
+
+        // 非管理员尝试重置密码
+        String resetBody = """
+                {
+                    "newPassword": "NewPass5678"
+                }
+                """;
+        mockMvc.perform(post("/api/v1/users/" + targetId + "/password/reset")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(resetBody))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value(1403));
+
+        // 清理
+        mockMvc.perform(delete("/api/v1/users/" + callerId)
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk());
+        mockMvc.perform(delete("/api/v1/users/" + targetId)
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk());
+    }
 }
