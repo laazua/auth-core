@@ -61,8 +61,8 @@
 
 | ID | 功能点 | 前置依赖 | 状态 | 备注 |
 |----|--------|----------|------|------|
-| roles/001 | 角色 CRUD API | auth/003, model/002 | 🔄 | sprint-019 规划中 |
-| roles/002 | 角色-权限分配 API（批量设置） | roles/001, model/005 | ⬜ | — |
+| roles/001 | 角色 CRUD API | auth/003, model/002 | ✅ | sprint-019 评审通过（均分 10.0） |
+| roles/002 | 角色-权限分配 API（批量设置） | roles/001, model/005 | 🔄 | sprint-020 规划中 |
 
 ## perms — 权限管理
 
