@@ -34,7 +34,8 @@ public class GlobalExceptionHandler {
             status = HttpStatus.UNAUTHORIZED;
         } else if (e.getCode() == 1001) {
             status = HttpStatus.NOT_FOUND;
-        } else if (e.getCode() == 1002 || e.getCode() == 1101 || e.getCode() == 1102 || e.getCode() == 1103 || e.getCode() == 1104) {
+        } else if (e.getCode() == 1002 || e.getCode() == 1101 || e.getCode() == 1102 || e.getCode() == 1103 || e.getCode() == 1104
+                || e.getCode() == 1201 || e.getCode() == 1202 || e.getCode() == 1203) {
             status = HttpStatus.CONFLICT;
         } else {
             status = HttpStatus.BAD_REQUEST;

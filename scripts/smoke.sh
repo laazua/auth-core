@@ -108,6 +108,9 @@ smoke_case "roles-001 角色 CRUD 定向测试" mvn -q -f "$APP_DIR/pom.xml" tes
 
 # roles/002：角色-权限批量分配 API（全量替换/权限存在性校验/角色不存在/空列表清空）
 smoke_case "roles-002 角色权限分配定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='RoleControllerTest#assignPermissionsBatchReplace,RoleControllerTest#assignPermissionsInvalidPermissionReturns400,RoleControllerTest#assignPermissionsRoleNotFoundReturns404,RoleControllerTest#assignPermissionsEmptyListClearsPermissions'
+
+# perms/001：权限 CRUD API（分页/条件查询/分组查询/创建唯一/更新code不可改/删除引用保护）
+smoke_case "perms-001 权限 CRUD 定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='PermissionControllerTest,PermissionServiceTest'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
