@@ -99,6 +99,9 @@ smoke_case "users-001 用户 CRUD 定向测试" mvn -q -f "$APP_DIR/pom.xml" tes
 
 # users/002：用户-角色批量分配 API（全量替换/校验/空列表清空）
 smoke_case "users-002 用户角色分配定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='UserControllerTest#assignRolesBatchReplace,UserControllerTest#assignRolesInvalidRoleReturns400,UserControllerTest#assignRolesUserNotFoundReturns404,UserControllerTest#assignRolesEmptyListClearsRoles'
+
+# users/003：密码修改+管理员重置 API（自助修改/旧密码校验/新旧不同/管理员重置/非管理员 403）
+smoke_case "users-003 密码修改与管理员重置定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='UserControllerTest#changePasswordSuccess,UserControllerTest#changePasswordWrongOldReturns400,UserControllerTest#changePasswordSameAsOldReturns400,UserControllerTest#adminResetPasswordSuccess,UserControllerTest#resetPasswordNonAdminReturns403'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

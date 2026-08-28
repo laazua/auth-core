@@ -230,6 +230,48 @@ public class UserService {
         }
     }
 
+    /**
+     * 用户自助修改密码。
+     *
+     * @param userId      用户 ID
+     * @param oldPassword 旧密码（明文）
+     * @param newPassword 新密码（明文）
+     * @throws BusinessException code=1001 用户不存在；code=1005 旧密码错误；code=1006 新旧密码相同
+     */
+    @Transactional
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
+        SysUser user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(1001, "用户不存在");
+        }
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new BusinessException(1005, "旧密码错误");
+        }
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            throw new BusinessException(1006, "新密码不能与旧密码相同");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userMapper.updateById(user);
+    }
+
+    /**
+     * 管理员重置用户密码（无需旧密码）。
+     *
+     * @param userId      目标用户 ID
+     * @param newPassword 新密码（明文）
+     * @param operatorId  操作者 ID（已由 @PreAuthorize 校验为 ROLE_ADMIN）
+     * @throws BusinessException code=1001 用户不存在
+     */
+    @Transactional
+    public void resetPassword(Long userId, String newPassword, Long operatorId) {
+        SysUser user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(1001, "用户不存在");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userMapper.updateById(user);
+    }
+
     private UserVO toVO(SysUser user) {
         return new UserVO(
                 user.getId(),

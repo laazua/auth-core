@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -39,6 +40,18 @@ public class GlobalExceptionHandler {
             status = HttpStatus.BAD_REQUEST;
         }
         return ResponseEntity.status(status).body(Result.error(e.getCode(), e.getMessage()));
+    }
+
+    /**
+     * Spring Security 权限不足：返回 403 code=1403。
+     *
+     * @param e 权限不足异常
+     * @return HTTP 403 + Result.error(1403, "权限不足")
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Result<Void>> handleAccessDenied(AccessDeniedException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Result.error(1403, "权限不足"));
     }
 
     /**
