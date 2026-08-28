@@ -3,6 +3,7 @@ package com.authcore.controller;
 import com.authcore.config.security.JwtTokenProvider;
 import com.authcore.entity.SysRolePermission;
 import com.authcore.entity.SysUserRole;
+import com.authcore.mapper.SysPermissionMapper;
 import com.authcore.mapper.SysRolePermissionMapper;
 import com.authcore.mapper.SysUserRoleMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -28,8 +29,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * RoleController 角色 CRUD 判定用例（roles/001 AC1-4）。
@@ -389,5 +388,158 @@ class RoleControllerTest {
                         .andExpect(status().isOk());
             }
         }
+    }
+
+    /**
+     * AC1: 批量分配权限成功（全量替换）。
+     * Given 存在的角色与有效权限 IDs
+     * When PUT /api/v1/roles/{id}/permissions {permissionIds:[3,4]}
+     * Then status=200、sys_role_permission 表中该角色仅关联指定权限
+     */
+    @Test
+    @DisplayName("批量分配权限成功（全量替换）")
+    void assignPermissionsBatchReplace() throws Exception {
+        String token = getAdminToken();
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+        // 创建测试角色
+        String roleName = unique("perm_assign_role");
+        String roleCode = "ROLE_" + unique("PERM_ASSIGN").toUpperCase();
+        Long roleId = createRole(token, roleName, roleCode);
+
+        // 准备请求体：分配权限 3 和 4（sys_permission 种子数据中存在）
+        String requestBody = """
+                {
+                    "permissionIds": [3, 4]
+                }
+                """;
+
+        // 执行分配
+        String response = mockMvc.perform(put("/api/v1/roles/" + roleId + "/permissions")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        // 验证数据库：sys_role_permission 表中该角色仅有两行 (roleId, 3) 和 (roleId, 4)
+        var queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<SysRolePermission>()
+                .eq(SysRolePermission::getRoleId, roleId);
+        List<SysRolePermission> relations = rolePermissionMapper.selectList(queryWrapper);
+
+        assertEquals(2, relations.size(), "角色应仅关联 2 个权限");
+        List<Long> permIds = relations.stream().map(SysRolePermission::getPermissionId).sorted().toList();
+        assertEquals(List.of(3L, 4L), permIds, "权限 ID 应为 3 和 4");
+    }
+
+    /**
+     * AC2: 权限不存在返回 400。
+     * Given 不存在的 permissionId
+     * When PUT /api/v1/roles/{id}/permissions {permissionIds:[999]}
+     * Then status=400、code=1201
+     */
+    @Test
+    @DisplayName("权限不存在返回 400 code=1201")
+    void assignPermissionsInvalidPermissionReturns400() throws Exception {
+        String token = getAdminToken();
+
+        // 创建测试角色
+        String roleName = unique("invalid_perm_role");
+        String roleCode = "ROLE_" + unique("INVALID_PERM").toUpperCase();
+        Long roleId = createRole(token, roleName, roleCode);
+
+        // 准备请求体：包含不存在的权限 ID 999
+        String requestBody = """
+                {
+                    "permissionIds": [999]
+                }
+                """;
+
+        // 执行分配，期望 400
+        mockMvc.perform(put("/api/v1/roles/" + roleId + "/permissions")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(1201))
+                .andExpect(jsonPath("$.message").exists());
+    }
+
+    /**
+     * AC3: 角色不存在返回 404。
+     * Given 不存在的 roleId
+     * When PUT /api/v1/roles/99999/permissions {permissionIds:[1]}
+     * Then status=404、code=1001
+     */
+    @Test
+    @DisplayName("角色不存在返回 404 code=1001")
+    void assignPermissionsRoleNotFoundReturns404() throws Exception {
+        String token = getAdminToken();
+
+        // 准备请求体：有效权限 ID
+        String requestBody = """
+                {
+                    "permissionIds": [1]
+                }
+                """;
+
+        // 执行分配，期望 404
+        mockMvc.perform(put("/api/v1/roles/99999/permissions")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(1001))
+                .andExpect(jsonPath("$.message").exists());
+    }
+
+    /**
+     * AC4: 空列表清空权限。
+     * Given 角色已有权限关联
+     * When PUT /api/v1/roles/{id}/permissions {permissionIds:[]}
+     * Then status=200、sys_role_permission 该角色行数为 0
+     */
+    @Test
+    @DisplayName("空列表清空权限")
+    void assignPermissionsEmptyListClearsPermissions() throws Exception {
+        String token = getAdminToken();
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+        // 创建测试角色
+        String roleName = unique("clear_perm_role");
+        String roleCode = "ROLE_" + unique("CLEAR_PERM").toUpperCase();
+        Long roleId = createRole(token, roleName, roleCode);
+
+        // 先手动插入一些权限关联（权限 1 和 2）
+        assignPermissionToRole(roleId, 1L);
+        assignPermissionToRole(roleId, 2L);
+
+        // 验证初始状态：有 2 个关联
+        var queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<SysRolePermission>()
+                .eq(SysRolePermission::getRoleId, roleId);
+        long initialCount = rolePermissionMapper.selectCount(queryWrapper);
+        assertEquals(2, initialCount, "初始应有 2 个权限关联");
+
+        // 准备请求体：空列表
+        String requestBody = """
+                {
+                    "permissionIds": []
+                }
+                """;
+
+        // 执行分配（清空）
+        mockMvc.perform(put("/api/v1/roles/" + roleId + "/permissions")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0));
+
+        // 验证数据库：该角色的关联已清空
+        long finalCount = rolePermissionMapper.selectCount(queryWrapper);
+        assertEquals(0, finalCount, "清空后权限关联应为 0");
     }
 }
