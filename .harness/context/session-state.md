@@ -2,12 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🔄 sprint-022 进行中（modules/001）
-- 当前模块: modules
-- 当前功能点: modules/001（模块 CRUD API+模块下权限级联查询+删除引用保护）
+- 状态: 🔄 sprint-023 进行中（web/001）
+- 当前模块: web
+- 当前功能点: web/001（Vite+Vue3+TS+Pinia+Router+Element Plus 骨架+Axios 封装+Vitest 基线）
 
 ## 下一步动作
-Generator：按 `.harness/context/task.md`（sprint-022）执行 TDD，先写模块 CRUD 失败测试，再实现，最后重构。
+Generator：按 `.harness/context/task.md`（sprint-023）执行 TDD，先写前端骨架失败测试，再实现，最后重构。
 
 ## 挂起
 - 2026-08-26: Planner(sprint-004) — 用户裁决：暂沿用旧口令 abc123456 不轮换（风险自担）；已注入仓库外 ~/.bashrc 与 ~/.bash_profile（export MYSQL_PASSWORD），git 历史清理事项仍待裁决。真实库 192.168.165.88:3306（MySQL 8.0.45，库 authcore 已就绪）自本 Sprint 起用于验收。
@@ -17,7 +17,8 @@ Generator：按 `.harness/context/task.md`（sprint-022）执行 TDD，先写模
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
-- 2026-08-28: Planner — kickoff sprint-022（modules/001，5 条验收标准）
+- 2026-08-28: Planner — kickoff sprint-023（web/001，5 条验收标准）
+- 2026-08-28: Evaluator — pass sprint-022（modules/001，平均分 10.0/10）
 - 2026-08-28: Evaluator — pass sprint-021（perms/001，平均分 10.0/10）
 - 2026-08-28: Evaluator — pass sprint-020（roles/002，平均分 10.0/10）
 - 2026-08-28: Evaluator — pass sprint-019（roles/001，平均分 10.0/10）

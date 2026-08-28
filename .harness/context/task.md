@@ -1,13 +1,13 @@
-# Sprint 工作单：sprint-022
+# Sprint 工作单：sprint-023
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-022 |
-| 所属模块 | modules |
-| 功能点 ID | modules/001 |
-| 功能点名称 | 模块 CRUD API+模块下权限级联查询+删除引用保护 |
+| Sprint ID | sprint-023 |
+| 所属模块 | web |
+| 功能点 ID | web/001 |
+| 功能点名称 | Vite+Vue3+TS+Pinia+Router+Element Plus 骨架+Axios 封装(token 注入/401 拦截)+Vitest 基线 |
 | 状态 | PLANNED |
 | 创建时间 | 2026-08-28 |
 
@@ -15,76 +15,81 @@
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| auth/003 | JWT 校验过滤器 + SecurityContext 注入 | ✅ |
-| model/003 | sys_module 表迁移+实体+Mapper | ✅ |
+| auth/002 | 登录接口 POST /api/v1/auth/login 签发 JWT | ✅ |
 
 ## 需求描述
 
-实现模块管理完整 CRUD API：
-1. `GET /api/v1/modules` — 分页查询，支持条件（name、code、status）
-2. `GET /api/v1/modules/{id}` — 单模块详情
-3. `GET /api/v1/modules/{id}/permissions` — 模块下权限级联查询（返回 List<PermissionVO>）
-4. `POST /api/v1/modules` — 创建模块，name/code 唯一校验，code 规范
-5. `PUT /api/v1/modules/{id}` — 更新模块（name/base_url/description/status，code 不可改）
-6. `DELETE /api/v1/modules/{id}` — 删除模块，引用保护（sys_permission 存在则拒绝，code=1302）
+搭建现代化前端工程骨架，作为后续所有页面的基础：
 
-## 业务背景
-
-模块是权限的归属容器（架构 §6.1）。架构 §4：分页参数 page/size，响应 data={list,total,page,size}。错误码分段：13xx 模块。RBAC0 §6.1：权限必须归属模块。§6.4：删除模块前校验其下权限引用。
+1. **工程初始化**：Vite + Vue 3 + TypeScript + Pinia + Vue Router + Element Plus
+2. **Axios 封装**：统一请求/响应拦截、Token 自动注入、401 统一跳转登录、错误码统一处理
+3. **Pinia Store**：auth store（token、userInfo、roles、permissions）、app store（sidebar、theme、breadcrumbs）
+4. **路由配置**：基础路由（登录、404、布局）、动态路由加载预留、路由守卫预留
+5. **UI 规范**：现代简洁风格、Element Plus 主题定制、响应式布局、暗色模式预留
+6. **测试基线**：Vitest 单元测试配置、组件测试工具、E2E 预留
 
 ## 交付物
 
-1. `ModuleQueryDTO.java` / `ModuleCreateDTO.java` / `ModuleUpdateDTO.java` / `ModuleVO.java` — DTO（`com.authcore.dto.module`）
-2. `ModuleService.java` — 业务逻辑（在 `com.authcore.service`）
-3. `ModuleController.java` — REST 端点（在 `com.authcore.controller`）
-4. `ModuleControllerTest.java` / `ModuleServiceTest.java` — 测试用例
+1. `frontend/` 完整工程目录
+2. `package.json` 依赖管理
+2. `vite.config.ts` 构建配置
+3. `src/main.ts` 入口
+4. `src/App.vue` 根组件
+5. `src/router/index.ts` 路由配置
+6. `src/stores/` Pinia stores
+7. `src/api/` Axios 封装 + API 接口定义
+8. `src/types/` 类型定义
+9. `src/styles/` 全局样式、变量、主题
+10. `vitest.config.ts` 测试配置
 
 ## 验收标准（TDD 驱动）
 
-### AC1 — 分页查询支持多条件
-> GET /api/v1/modules?page=1&size=10&name=用户&status=1 返回 200，data 含 list/total/page/size，list 中模块匹配条件。
+### AC1 — 工程启动构建成功
+> `npm run dev` 启动开发服务器无报错，`npm run build` 生产构建成功，`npm run test` 单元测试通过。
 
-**用例**：`ModuleControllerTest#queryModulesWithPaginationAndFilters`
-- 准备：种子数据 4 个模块
-- 操作：GET /api/v1/modules?name=用户&status=1
-- 断言：status=200、total≥1、list 非空、每项含 id/name/code/base_url/description/status
+**用例**：`SmokeTest#buildAndDevServer`
+- 操作：执行 `npm install`、`npm run build`、`npm run test`
+- 断言：构建产物存在于 `dist/`、测试全部通过
 
-### AC2 — 模块下权限级联查询
-> GET /api/v1/modules/{id}/permissions 返回 200，data 为 List<PermissionVO>，含该模块下所有权限。
+### AC2 — Axios 拦截器生效
+> 请求自动携带 Token，响应 401 自动跳转 `/login`，错误码统一提示。
 
-**用例**：`ModuleControllerTest#queryModulePermissionsCascade`
-- 操作：GET /api/v1/modules/1/permissions
-- 断言：status=200、list 非空、每项含 id/module_id/name/code/description
+**用例**：`AxiosInterceptorsTest#tokenInjectionAnd401Redirect`
+- Mock 登录接口返回 token
+- 发起带 token 请求 → Header 包含 Authorization
+- Mock 401 响应 → 跳转 `/login`、清除 token
 
-### AC3 — 创建模块唯一校验
-> POST /api/v1/modules {name, code, base_url, description, status} 返回 200，data.id 非空，重复 name/code 返回 409 code=1301/1302。
+### AC3 — Pinia Store 状态管理
+> auth store 正确存取 token/userInfo，app store 控制侧边栏折叠、主题切换。
 
-**用例**：`ModuleControllerTest#createModuleUniqueNameAndCode`
-- 操作：POST {name:"新模块", code:"NEW_MOD", base_url:"http://new", status:1}
-- 断言：status=200、id 非空、再次创建同 name 返回 409 code=1301、同 code 返回 409 code=1302
+**用例**：`StoresTest#authAndAppStore`
+- setToken/getToken 往返一致
+- toggleSidebar 切换状态
+- toggleTheme 切换暗色模式
 
-### AC4 — 更新模块 code 不可改
-> PUT /api/v1/modules/{id} {name, base_url, description, status} 返回 200，name/base_url/description/status 更新，code 不变。
+### AC4 — 路由守卫基础
+> 未登录访问受保护路由重定向 `/login`，已登录访问 `/login` 重定向首页。
 
-**用例**：`ModuleControllerTest#updateModuleCodeImmutable`
-- 操作：PUT /api/v1/modules/2 {name:"新模块名", status:0}
-- 断言：status=200、name/status 更新、code 与原值一致
+**用例**：`RouterGuardsTest#authRedirect`
+- 无 token 访问 `/dashboard` → redirect `/login`
+- 有 token 访问 `/login` → redirect `/dashboard`
 
-### AC5 — 删除模块引用保护
-> DELETE /api/v1/modules/{id} 若 sys_permission 存在则 409 code=1302，否则 200 物理删除。
+### AC5 — UI 现代简洁规范
+> Element Plus 组件按需引入，主题色配置，响应式断点，暗色模式 CSS 变量就绪。
 
-**用例**：`ModuleControllerTest#deleteModuleWithReferenceProtection`
-- 操作：创建模块并创建权限 → DELETE /api/v1/modules/3 → 409 code=1302
-- 断言：无引用时删除成功、有引用时被拒
+**用例**：`UIComponentsTest#themeAndResponsive`
+- 主色调可通过 CSS 变量修改
+- 侧边栏在 < 768px 自动折叠
+- 暗色模式类名切换生效
 
 ## 规范检查清单（Evaluator 逐项核对）
 
-- [ ] Controller 仅做三件事（接参→委托 service→包装 Result）
-- [ ] Service @Transactional，创建/更新/删除事务边界正确
-- [ ] name/code 唯一校验，code 不可改
-- [ ] 分页响应固定结构 {list,total,page,size}
-- [ ] 错误码分段：13xx 模块（1301 name 重复、1302 code 重复、1303 引用保护）
-- [ ] 删除引用保护：sys_permission 存在拒绝
-- [ ] 无硬编码密钥/明文密码（coding-standards §6）
-- [ ] 测试 AAA 结构有效（coding-standards §9）
-- [ ] `mvn -q verify` 全绿
+- [ ] Vite + Vue 3 + TS + Pinia + Router + Element Plus 全家桶就绪
+- [ ] Axios 封装：请求/响应拦截、Token 注入、401 跳转、错误统一处理
+- [ ] Pinia：auth/app stores 完整、TypeScript 类型完备
+- [ ] 路由：基础路由、守卫预留、动态路由加载预留
+- [ ] UI：Element Plus 按需引入、主题定制、响应式、暗色模式预留
+- [ ] 类型：API 接口、响应体、Store 状态、路由元信息全类型化
+- [ ] 测试：Vitest 配置、组件测试工具、基础用例通过
+- [ ] 代码规范：ESLint + Prettier + Stylelint 配置、Vue 3 Composition API 规范
+- [ ] `npm run lint && npm run test && npm run build` 全绿
