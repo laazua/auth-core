@@ -322,4 +322,216 @@ class UserControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value(1001));
     }
+
+    /**
+     * AC1: 批量分配角色成功（全量替换）。
+     * Given 存在的用户与有效角色 IDs
+     * When PUT /api/v1/users/{id}/roles {roleIds:[1,2]}
+     * Then status=200、sys_user_role 含指定角色
+     */
+    @Test
+    @DisplayName("批量分配角色成功（全量替换）")
+    void assignRolesBatchReplace() throws Exception {
+        String token = getAdminToken();
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+        // 先创建一个测试用户
+        String username = unique("batch");
+        String createBody = """
+                {
+                    "username": "%s",
+                    "password": "Pass1234",
+                    "nickname": "批量分配测试",
+                    "email": "batch@test.com",
+                    "phone": "13900001000"
+                }
+                """.formatted(username);
+        String createResponse = mockMvc.perform(post("/api/v1/users")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var createRoot = mapper.readTree(createResponse);
+        Long userId = createRoot.path("data").path("id").asLong();
+
+        // 使用种子数据中的角色 ROLE_ADMIN (id=1) 和 ROLE_USER (id=2)
+        String assignBody = """
+                {
+                    "roleIds": [1, 2]
+                }
+                """;
+
+        // 分配角色
+        mockMvc.perform(put("/api/v1/users/" + userId + "/roles")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(assignBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0));
+
+        // 清理：清空角色并删除用户
+        String clearBody = """
+                {
+                    "roleIds": []
+                }
+                """;
+        mockMvc.perform(put("/api/v1/users/" + userId + "/roles")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(clearBody))
+                .andExpect(status().isOk());
+        mockMvc.perform(delete("/api/v1/users/" + userId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * AC2: 角色不存在或停用返回 400 code=1004。
+     * When PUT /api/v1/users/{id}/roles {roleIds:[999]}
+     * Then status=400、code=1004
+     */
+    @Test
+    @DisplayName("角色不存在返回 400 code=1004")
+    void assignRolesInvalidRoleReturns400() throws Exception {
+        String token = getAdminToken();
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+        // 先创建一个测试用户
+        String username = unique("invalid_role");
+        String createBody = """
+                {
+                    "username": "%s",
+                    "password": "Pass1234",
+                    "nickname": "无效角色测试",
+                    "email": "invalid@test.com",
+                    "phone": "13900001001"
+                }
+                """.formatted(username);
+        String createResponse = mockMvc.perform(post("/api/v1/users")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var createRoot = mapper.readTree(createResponse);
+        Long userId = createRoot.path("data").path("id").asLong();
+
+        String assignBody = """
+                {
+                    "roleIds": [999]
+                }
+                """;
+
+        mockMvc.perform(put("/api/v1/users/" + userId + "/roles")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(assignBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(1004));
+
+        // 清理：删除用户（无角色关联）
+        mockMvc.perform(delete("/api/v1/users/" + userId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * AC3: 用户不存在返回 404 code=1001。
+     * When PUT /api/v1/users/99999/roles {roleIds:[1]}
+     * Then status=404、code=1001
+     */
+    @Test
+    @DisplayName("用户不存在返回 404 code=1001")
+    void assignRolesUserNotFoundReturns404() throws Exception {
+        String token = getAdminToken();
+
+        String assignBody = """
+                {
+                    "roleIds": [1]
+                }
+                """;
+
+        mockMvc.perform(put("/api/v1/users/99999/roles")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(assignBody))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(1001));
+    }
+
+    /**
+     * AC4: 空列表清空角色。
+     * When PUT /api/v1/users/{id}/roles {roleIds:[]}
+     * Then status=200、sys_user_role 该用户行数为 0
+     */
+    @Test
+    @DisplayName("空列表清空角色")
+    void assignRolesEmptyListClearsRoles() throws Exception {
+        String token = getAdminToken();
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+        // 先创建一个测试用户
+        String username = unique("clear");
+        String createBody = """
+                {
+                    "username": "%s",
+                    "password": "Pass1234",
+                    "nickname": "清空角色测试",
+                    "email": "clear@test.com",
+                    "phone": "13900001002"
+                }
+                """.formatted(username);
+        String createResponse = mockMvc.perform(post("/api/v1/users")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var createRoot = mapper.readTree(createResponse);
+        Long userId = createRoot.path("data").path("id").asLong();
+
+        // 先分配一些角色
+        String assignBody = """
+                {
+                    "roleIds": [1]
+                }
+                """;
+        mockMvc.perform(put("/api/v1/users/" + userId + "/roles")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(assignBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0));
+
+        // 再传空列表清空
+        String clearBody = """
+                {
+                    "roleIds": []
+                }
+                """;
+        mockMvc.perform(put("/api/v1/users/" + userId + "/roles")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(clearBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0));
+
+        // 清理：删除用户
+        mockMvc.perform(delete("/api/v1/users/" + userId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
 }
