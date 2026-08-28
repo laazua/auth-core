@@ -2,12 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🔄 sprint-017 进行中（users/002）
+- 状态: 🔄 sprint-018 进行中（users/003）
 - 当前模块: users
-- 当前功能点: users/002（用户-角色分配 API 批量设置）
+- 当前功能点: users/003（密码修改+管理员重置）
 
 ## 下一步动作
-Generator：按 `.harness/context/task.md`（sprint-017）执行 TDD，先写角色分配失败测试，再实现，最后重构。
+Generator：按 `.harness/context/task.md`（sprint-018）执行 TDD，先写密码修改/重置失败测试，再实现，最后重构。
 
 ## 挂起
 - 2026-08-26: Planner(sprint-004) — 用户裁决：暂沿用旧口令 abc123456 不轮换（风险自担）；已注入仓库外 ~/.bashrc 与 ~/.bash_profile（export MYSQL_PASSWORD），git 历史清理事项仍待裁决。真实库 192.168.165.88:3306（MySQL 8.0.45，库 authcore 已就绪）自本 Sprint 起用于验收。
@@ -17,7 +17,8 @@ Generator：按 `.harness/context/task.md`（sprint-017）执行 TDD，先写角
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
-- 2026-08-27: Planner — kickoff sprint-017（users/002，4 条验收标准）
+- 2026-08-27: Planner — kickoff sprint-018（users/003，5 条验收标准）
+- 2026-08-27: Evaluator — pass sprint-017（users/002，平均分 10.0/10）
 - 2026-08-27: Evaluator — pass sprint-016（users/001，平均分 10.0/10）
 - 2026-08-27: Evaluator — pass sprint-015（auth/006，平均分 10.0/10）
 - 2026-08-27: Evaluator — pass sprint-014（auth/005，平均分 10.0/10）
