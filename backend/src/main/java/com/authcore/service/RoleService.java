@@ -5,9 +5,11 @@ import com.authcore.dto.role.RoleCreateDTO;
 import com.authcore.dto.role.RoleQueryDTO;
 import com.authcore.dto.role.RoleUpdateDTO;
 import com.authcore.dto.role.RoleVO;
+import com.authcore.entity.SysPermission;
 import com.authcore.entity.SysRole;
 import com.authcore.entity.SysRolePermission;
 import com.authcore.entity.SysUserRole;
+import com.authcore.mapper.SysPermissionMapper;
 import com.authcore.mapper.SysRoleMapper;
 import com.authcore.mapper.SysRolePermissionMapper;
 import com.authcore.mapper.SysUserRoleMapper;
@@ -16,6 +18,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * 角色业务服务（roles/001）。
@@ -27,13 +31,16 @@ public class RoleService {
     private final SysRoleMapper roleMapper;
     private final SysUserRoleMapper userRoleMapper;
     private final SysRolePermissionMapper rolePermissionMapper;
+    private final SysPermissionMapper permissionMapper;
 
     public RoleService(SysRoleMapper roleMapper,
                        SysUserRoleMapper userRoleMapper,
-                       SysRolePermissionMapper rolePermissionMapper) {
+                       SysRolePermissionMapper rolePermissionMapper,
+                       SysPermissionMapper permissionMapper) {
         this.roleMapper = roleMapper;
         this.userRoleMapper = userRoleMapper;
         this.rolePermissionMapper = rolePermissionMapper;
+        this.permissionMapper = permissionMapper;
     }
 
     /**
@@ -179,6 +186,40 @@ public class RoleService {
         }
 
         roleMapper.deleteById(id);
+    }
+
+    /**
+     * 批量分配角色权限（全量替换）。
+     *
+     * @param roleId       角色 ID
+     * @param permissionIds 权限 ID 列表
+     * @throws BusinessException code=1001 角色不存在；code=1201 权限不存在
+     */
+    @Transactional
+    public void assignPermissions(Long roleId, List<Long> permissionIds) {
+        // 1. 校验角色存在
+        if (roleMapper.selectById(roleId) == null) {
+            throw new BusinessException(1001, "角色不存在");
+        }
+
+        // 2. 校验权限有效：每个 permissionId 在 sys_permission 存在
+        if (permissionIds != null && !permissionIds.isEmpty()) {
+            List<SysPermission> perms = permissionMapper.selectBatchIds(permissionIds);
+            if (perms.size() != permissionIds.size()) {
+                throw new BusinessException(1201, "权限不存在");
+            }
+        }
+
+        // 3. 事务内：先删后增
+        rolePermissionMapper.delete(new LambdaQueryWrapper<SysRolePermission>().eq(SysRolePermission::getRoleId, roleId));
+        if (permissionIds != null && !permissionIds.isEmpty()) {
+            for (Long pid : permissionIds) {
+                SysRolePermission rp = new SysRolePermission();
+                rp.setRoleId(roleId);
+                rp.setPermissionId(pid);
+                rolePermissionMapper.insert(rp);
+            }
+        }
     }
 
     private RoleVO toVO(SysRole role) {

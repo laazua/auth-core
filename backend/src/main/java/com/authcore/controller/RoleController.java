@@ -2,6 +2,7 @@ package com.authcore.controller;
 
 import com.authcore.common.Result;
 import com.authcore.dto.role.RoleCreateDTO;
+import com.authcore.dto.role.RolePermissionAssignDTO;
 import com.authcore.dto.role.RoleQueryDTO;
 import com.authcore.dto.role.RoleUpdateDTO;
 import com.authcore.dto.role.RoleVO;
@@ -104,5 +105,19 @@ public class RoleController {
     public Result<Void> deleteRole(@PathVariable Long id) {
         roleService.deleteRole(id);
         return Result.okMessage("删除成功");
+    }
+
+    /**
+     * 批量分配角色权限（全量替换）。
+     *
+     * @param id  角色 ID
+     * @param dto 权限 ID 列表
+     * @return 空载荷成功响应
+     */
+    @Operation(summary = "批量分配角色权限（全量替换）")
+    @PutMapping("/{id}/permissions")
+    public Result<Void> assignPermissions(@PathVariable Long id, @Valid @RequestBody RolePermissionAssignDTO dto) {
+        roleService.assignPermissions(id, dto.permissionIds());
+        return Result.okMessage("权限分配成功");
     }
 }
