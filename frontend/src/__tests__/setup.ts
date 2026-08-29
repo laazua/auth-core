@@ -1,6 +1,7 @@
 import { vi } from 'vitest';
 import { config } from '@vue/test-utils';
 import { createPinia } from 'pinia';
+import ElementPlus from 'element-plus';
 
 vi.mock('vue-router', async (importOriginal) => {
   const actual = await importOriginal();
@@ -39,7 +40,7 @@ config.global.mocks = {
 };
 
 const pinia = createPinia();
-config.global.plugins = [pinia];
+config.global.plugins = [pinia, ElementPlus];
 
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

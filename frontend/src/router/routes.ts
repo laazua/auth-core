@@ -9,6 +9,12 @@ export const staticRoutes: RouteRecordRaw[] = [
     meta: { public: true, title: '登录', hidden: true },
   },
   {
+    path: '/403',
+    name: 'Forbidden',
+    component: () => import('@/views/ForbiddenView.vue'),
+    meta: { public: true, title: '403', hidden: true },
+  },
+  {
     path: '/404',
     name: 'NotFound',
     component: () => import('@/views/NotFoundView.vue'),

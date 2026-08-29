@@ -47,7 +47,7 @@ export const permissionGuard = (requiredPermissions: string[]) => {
     const hasPermission = requiredPermissions.some((p) => authStore.hasPermission(p));
 
     if (!hasPermission) {
-      next({ name: 'Dashboard' });
+      next({ name: 'Forbidden' });
       return;
     }
 
@@ -71,7 +71,7 @@ export const roleGuard = (requiredRoles: string[]) => {
     const hasRole = requiredRoles.some((r) => authStore.hasRole(r));
 
     if (!hasRole) {
-      next({ name: 'Dashboard' });
+      next({ name: 'Forbidden' });
       return;
     }
 

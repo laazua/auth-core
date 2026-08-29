@@ -15,8 +15,8 @@
     minlength?: number;
     autocomplete?: string;
     autofocus?: boolean;
-    prefixIcon?: string;
-    suffixIcon?: string;
+    prefixIcon?: string | object;
+    suffixIcon?: string | object;
   }
 
   const props = withDefaults(defineProps<Props>(), {
