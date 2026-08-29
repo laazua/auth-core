@@ -20,12 +20,25 @@ export const staticRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/NotFoundView.vue'),
     meta: { public: true, title: '404', hidden: true },
   },
+  {
+    path: '/redirect',
+    component: () => import('@/layouts/DefaultLayout.vue'),
+    meta: { hidden: true },
+    children: [
+      {
+        path: '/redirect/:path(.*)',
+        name: 'Redirect',
+        component: () => import('@/views/RedirectView.vue'),
+        meta: { hidden: true },
+      },
+    ],
+  },
 ];
 
 export const layoutRoutes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: () => import('@/layouts/Layout.vue'),
+    component: () => import('@/layouts/DefaultLayout.vue'),
     redirect: '/dashboard',
     children: [
       {
@@ -42,7 +55,7 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
   {
     path: '/system',
     name: 'System',
-    component: () => import('@/layouts/Layout.vue'),
+    component: () => import('@/layouts/DefaultLayout.vue'),
     redirect: '/system/user',
     meta: { requiresAuth: true, title: '系统管理', icon: 'Setting', roles: ['admin'] },
     children: [

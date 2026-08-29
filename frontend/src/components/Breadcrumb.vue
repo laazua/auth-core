@@ -1,35 +1,36 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
-  import { ElBreadcrumb, ElBreadcrumbItem } from 'element-plus';
+import { computed } from 'vue';
+import { ElBreadcrumb, ElBreadcrumbItem } from 'element-plus';
+import { Monitor } from '@element-plus/icons-vue';
 
-  interface RouteRecord {
-    path: string;
-    meta?: {
-      title?: string;
-      hidden?: boolean;
-      icon?: string;
-    };
-  }
+interface RouteRecord {
+  path: string;
+  meta?: {
+    title?: string;
+    hidden?: boolean;
+    icon?: string;
+  };
+}
 
-  interface Props {
-    routes?: RouteRecord[];
-  }
+interface Props {
+  routes?: RouteRecord[];
+}
 
-  const props = withDefaults(defineProps<Props>(), {
-    routes: () => [],
-  });
+const props = withDefaults(defineProps<Props>(), {
+  routes: () => [],
+});
 
-  const breadcrumbItems = computed(() => {
-    const items = props.routes
-      .filter((r) => r.meta?.title && !r.meta?.hidden)
-      .map((r) => ({
-        path: r.path,
-        title: r.meta!.title,
-        icon: r.meta?.icon,
-      }));
+const breadcrumbItems = computed(() => {
+  const items = props.routes
+    .filter((r) => r.meta?.title && !r.meta?.hidden)
+    .map((r) => ({
+      path: r.path,
+      title: r.meta!.title,
+      icon: r.meta?.icon,
+    }));
 
-    return items;
-  });
+  return items;
+});
 </script>
 
 <template>
@@ -54,42 +55,42 @@
 </template>
 
 <style scoped lang="scss">
-  .breadcrumb {
-    margin-bottom: 16px;
-    font-size: 13px;
+.breadcrumb {
+  margin-bottom: 16px;
+  font-size: 13px;
 
-    :deep(.el-breadcrumb) {
-      :deep(.el-breadcrumb__inner) {
-        color: var(--color-text-regular);
-        font-size: 13px;
+  :deep(.el-breadcrumb) {
+    :deep(.el-breadcrumb__inner) {
+      color: var(--color-text-regular);
+      font-size: 13px;
 
-        &:hover {
-          color: var(--color-primary);
-        }
-      }
-
-      :deep(.el-breadcrumb__inner.is-link) {
-        color: var(--color-text-regular);
-
-        &:hover {
-          color: var(--color-primary);
-        }
-      }
-
-      :deep(.el-breadcrumb__separator) {
-        color: var(--color-text-placeholder);
-      }
-
-      :deep(.el-breadcrumb__item:last-child .el-breadcrumb__inner) {
-        color: var(--color-text-primary);
-        font-weight: 500;
-        pointer-events: none;
+      &:hover {
+        color: var(--color-primary);
       }
     }
-  }
 
-  .breadcrumb__icon {
-    margin-right: 4px;
-    font-size: 13px;
+    :deep(.el-breadcrumb__inner.is-link) {
+      color: var(--color-text-regular);
+
+      &:hover {
+        color: var(--color-primary);
+      }
+    }
+
+    :deep(.el-breadcrumb__separator) {
+      color: var(--color-text-placeholder);
+    }
+
+    :deep(.el-breadcrumb__item:last-child .el-breadcrumb__inner) {
+      color: var(--color-text-primary);
+      font-weight: 500;
+      pointer-events: none;
+    }
   }
+}
+
+.breadcrumb__icon {
+  margin-right: 4px;
+  font-size: 13px;
+}
 </style>
