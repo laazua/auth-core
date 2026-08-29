@@ -80,8 +80,8 @@
 
 | ID | 功能点 | 前置依赖 | 状态 | 备注 |
 |----|--------|----------|------|------|
-| web/001 | Vite+Vue3+TS+Pinia+Router+Element Plus 骨架+Axios 封装(token 注入/401 拦截)+Vitest 基线 | auth/002 | 🔄 | sprint-023 规划中 |
-| web/002 | 登录页+路由守卫 | web/001, auth/002 | ⬜ | — |
+| web/001 | Vite+Vue3+TS+Pinia+Router+Element Plus 骨架+Axios 封装(token 注入/401 拦截)+Vitest 基线 | auth/002 | ✅ | sprint-023 评审通过（均分 10.0） |
+| web/002 | 登录页+路由守卫 | web/001, auth/002 | 🔄 | sprint-024 规划中 |
 | web/003 | 主布局(侧边菜单/顶栏)+动态菜单渲染 | web/002, auth/004 | ⬜ | — |
 | web/004 | 用户管理页(含角色分配/启停用/重置密码) | web/003, users/001, users/002, users/003 | ⬜ | — |
 | web/005 | 角色管理页(含权限分配树) | web/003, roles/001, roles/002 | ⬜ | — |

@@ -1,13 +1,13 @@
-# Sprint 工作单：sprint-023
+# Sprint 工作单：sprint-024
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-023 |
+| Sprint ID | sprint-024 |
 | 所属模块 | web |
-| 功能点 ID | web/001 |
-| 功能点名称 | Vite+Vue3+TS+Pinia+Router+Element Plus 骨架+Axios 封装(token 注入/401 拦截)+Vitest 基线 |
+| 功能点 ID | web/002 |
+| 功能点名称 | 登录页+路由守卫 |
 | 状态 | PLANNED |
 | 创建时间 | 2026-08-28 |
 
@@ -15,85 +15,92 @@
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| auth/002 | 登录接口 POST /api/v1/auth/login 签发 JWT | ✅ |
-
-## 需求描述
-
-搭建现代化前端工程骨架，作为后续所有页面的基础：
-
-1. **工程初始化**：Vite + Vue 3 + TypeScript + Pinia + Vue Router + Element Plus
-2. **Axios 封装**：统一请求/响应拦截、Token 自动注入、401 统一跳转登录、错误码统一处理
-3. **Pinia Store**：auth store（token、userInfo、roles、permissions）、app store（sidebar、theme、breadcrumbs）
-4. **路由配置**：基础路由（登录、404、布局）、动态路由加载预留、路由守卫预留
-5. **UI 规范**：现代简洁风格、Element Plus 主题定制、响应式布局、暗色模式预留
-6. **测试基线**：Vitest 单元测试配置、组件测试工具、E2E 预留
+| web/001 | 前端骨架 | ✅ |
+| auth/002 | 登录接口 | ✅ |
 
 ## 业务背景
 
-前端工程是 RBAC 权限管理系统的用户交互入口。所有业务功能（用户、角色、权限、模块管理）均通过前端页面交互完成。现代化技术栈（Vue 3 + TS + Pinia + Element Plus）保证开发体验与代码可维护性，Axios 统一拦截保证与后端 API 契约一致，Pinia 状态管理支撑权限控制与 UI 状态，路由守卫实现认证授权前置拦截。
+登录页是用户进入系统的第一道门户，路由守卫是前端权限控制的核心防线。登录页需美观易用、表单验证完善、错误提示友好；路由守卫需拦截未认证访问、已登录用户访问登录页自动跳转首页、权限不足时跳转 403 页。
+
+## 需求描述
+
+实现登录页面与完善的路由守卫体系：
+
+1. **登录页** (`/login`)：
+   - 响应式布局，左右分栏（左侧品牌展示、右侧登录表单）
+   - 表单：用户名/密码输入框、记住我、忘记密码链接、登录按钮
+   - 表单验证：用户名必填、密码必填、长度校验
+   - 登录中 Loading 状态、错误提示（用户名或密码错误、账号停用等）
+   - 登录成功存储 Token、跳转首页或重定向原目标页
+   - 响应式适配：移动端单栏、桌面端左右分栏
+
+2. **路由守卫完善**：
+   - 认证守卫：无 Token 访问受保护路由 → 重定向 `/login?redirect=...`
+   - 已登录访问 `/login` → 重定向 `/dashboard`
+   - 权限守卫：基于 `meta.permissions` 校验，无权限 → 跳转 `/403`
+   - 动态路由加载预留（后续 web/003 接入）
+
+3. **403 页面**：无权限访问提示页面
 
 ## 交付物
 
-1. `frontend/` 完整工程目录
-2. `package.json` 依赖管理
-2. `vite.config.ts` 构建配置
-3. `src/main.ts` 入口
-4. `src/App.vue` 根组件
-5. `src/router/index.ts` 路由配置
-6. `src/stores/` Pinia stores
-7. `src/api/` Axios 封装 + API 接口定义
-8. `src/types/` 类型定义
-9. `src/styles/` 全局样式、变量、主题
-10. `vitest.config.ts` 测试配置
+1. `src/views/LoginView.vue` — 登录页组件
+2. `src/views/ForbiddenView.vue` — 403 页面
+3. 更新 `src/router/guards.ts` — 完善认证/权限守卫
+3. 更新 `src/router/routes.ts` — 添加登录、403 路由
+4. `src/views/LoginView.spec.ts` — 登录页测试
+5. `src/router/guards.spec.ts` — 路由守卫测试
 
 ## 验收标准（TDD 驱动）
 
-### AC1 — 工程启动构建成功
-> `npm run dev` 启动开发服务器无报错，`npm run build` 生产构建成功，`npm run test` 单元测试通过。
+### AC1 — 登录页渲染与表单验证
+> 访问 `/login` 正确渲染，空提交提示“用户名不能为空”“密码不能为空”，密码长度 < 6 提示“密码长度不足 6 位”。
 
-**用例**：`SmokeTest#buildAndDevServer`
-- 操作：执行 `npm install`、`npm run build`、`npm run test`
-- 断言：构建产物存在于 `dist/`、测试全部通过
+**用例**：`LoginView.spec.ts#formValidation`
+- 空提交 → 错误提示正确
+- 密码过短 → 长度提示正确
+- 输入合法 → 验证通过
 
-### AC2 — Axios 拦截器生效
-> 请求自动携带 Token，响应 401 自动跳转 `/login`，错误码统一提示。
+### AC2 — 登录成功跳转
+> 输入正确凭据（admin/admin123456），点击登录 → 显示 Loading → 登录成功 → 存储 Token → 跳转 `/dashboard` 或 `redirect` 参数指定页。
 
-**用例**：`AxiosInterceptorsTest#tokenInjectionAnd401Redirect`
-- Mock 登录接口返回 token
-- 发起带 token 请求 → Header 包含 Authorization
-- Mock 401 响应 → 跳转 `/login`、清除 token
+**用例**：`LoginView.spec.ts#loginSuccessRedirect`
+- Mock 登录 API 返回 token
+- 提交表单 → Loading 显示 → API 调用 → Token 存储 → 跳转目标页
 
-### AC3 — Pinia Store 状态管理
-> auth store 正确存取 token/userInfo，app store 控制侧边栏折叠、主题切换。
+### AC3 — 登录失败错误提示
+> 输入错误凭据，登录失败 → 显示错误提示“用户名或密码错误”/“账号已停用”，不跳转。
 
-**用例**：`StoresTest#authAndAppStore`
-- setToken/getToken 往返一致
-- toggleSidebar 切换状态
-- toggleTheme 切换暗色模式
+**用例**：`LoginView.spec.ts#loginFailureError`
+- Mock 登录 API 返回 401/403
+- 提交表单 → 错误提示显示 → 停留登录页
 
-### AC4 — 路由守卫基础
-> 未登录访问受保护路由重定向 `/login`，已登录访问 `/login` 重定向首页。
+### AC4 — 路由守卫拦截未认证访问
+> 无 Token 访问 `/dashboard` → 重定向 `/login?redirect=/dashboard`；登录后自动跳回原目标页。
 
-**用例**：`RouterGuardsTest#authRedirect`
-- 无 token 访问 `/dashboard` → redirect `/login`
-- 有 token 访问 `/login` → redirect `/dashboard`
+**用例**：`guards.spec.ts#authGuardRedirect`
+- 清除 Token → 访问受保护路由 → 重定向 `/login?redirect=...`
+- 登录成功 → 跳转回原目标页
 
-### AC5 — UI 现代简洁规范
-> Element Plus 组件按需引入，主题色配置，响应式断点，暗色模式 CSS 变量就绪。
+### AC5 — 已登录用户访问登录页重定向
+> 已登录用户访问 `/login` → 自动重定向 `/dashboard`。
 
-**用例**：`UIComponentsTest#themeAndResponsive`
-- 主色调可通过 CSS 变量修改
-- 侧边栏在 < 768px 自动折叠
-- 暗色模式类名切换生效
+**用例**：`guards.spec.ts#loggedInRedirectFromLogin`
+- 设置 Token → 访问 `/login` → 重定向 `/dashboard`
+
+### AC6 — 权限守卫拦截无权限访问
+> 无权限访问受保护路由 → 跳转 `/403` 页面。
+
+**用例**：`guards.spec.ts#permissionGuardForbidden`
+- 设置无权限用户 Token → 访问需权限路由 → 跳转 `/403`
 
 ## 规范检查清单（Evaluator 逐项核对）
 
-- [ ] Vite + Vue 3 + TS + Pinia + Router + Element Plus 全家桶就绪
-- [ ] Axios 封装：请求/响应拦截、Token 注入、401 跳转、错误统一处理
-- [ ] Pinia：auth/app stores 完整、TypeScript 类型完备
-- [ ] 路由：基础路由、守卫预留、动态路由加载预留
-- [ ] UI：Element Plus 按需引入、主题定制、响应式、暗色模式预留
-- [ ] 类型：API 接口、响应体、Store 状态、路由元信息全类型化
-- [ ] 测试：Vitest 配置、组件测试工具、基础用例通过
-- [ ] 代码规范：ESLint + Prettier + Stylelint 配置、Vue 3 Composition API 规范
+- [ ] 登录页：响应式布局、表单验证、Loading、错误提示、品牌展示区
+- [ ] 路由守卫：认证守卫、权限守卫、重定向逻辑完整
+- [ ] 403 页面：友好提示、返回首页按钮
+- [ ] 表单验证：VeeValidate + Yup 或原生校验、即时反馈
+- [ ] API 对接：复用 `api/auth.ts` 登录接口、错误码映射
+- [ ] 状态管理：复用 `authStore` 登录/登出/Token 管理
+- [ ] 测试覆盖：登录页表单/登录流程、路由守卫重定向/权限拦截
 - [ ] `npm run lint && npm run test && npm run build` 全绿
