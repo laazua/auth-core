@@ -95,6 +95,20 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
       },
     ],
   },
+  {
+    path: '/users',
+    name: 'Users',
+    component: () => import('@/layouts/DefaultLayout.vue'),
+    meta: { requiresAuth: true, title: '用户管理', icon: 'User', permissions: ['user:read'] },
+    children: [
+      {
+        path: '',
+        name: 'UsersIndex',
+        component: () => import('@/views/users/IndexView.vue'),
+        meta: { requiresAuth: true, title: '用户管理', permissions: ['user:read'] },
+      },
+    ],
+  },
 ];
 
 export const generateRoutes = (roles: string[]): RouteRecordRaw[] => {

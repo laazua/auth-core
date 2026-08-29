@@ -1,7 +1,32 @@
 import { vi } from 'vitest';
+
+// Apply matchMedia mock BEFORE any other imports
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation((query) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
+
+Object.defineProperty(window, 'localStorage', {
+  writable: true,
+  value: {
+    getItem: vi.fn(),
+    setItem: vi.fn(),
+    removeItem: vi.fn(),
+    clear: vi.fn(),
+  },
+});
+
 import { config } from '@vue/test-utils';
 import { createPinia } from 'pinia';
-import ElementPlus from 'element-plus';
 
 vi.mock('vue-router', async (importOriginal) => {
   const actual = await importOriginal();
@@ -40,28 +65,4 @@ config.global.mocks = {
 };
 
 const pinia = createPinia();
-config.global.plugins = [pinia, ElementPlus];
-
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockImplementation((query) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-});
-
-Object.defineProperty(window, 'localStorage', {
-  writable: true,
-  value: {
-    getItem: vi.fn(),
-    setItem: vi.fn(),
-    removeItem: vi.fn(),
-    clear: vi.fn(),
-  },
-});
+config.global.plugins = [pinia];
