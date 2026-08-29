@@ -4,15 +4,11 @@ export interface PermissionVO {
   id: number;
   code: string;
   name: string;
-  type: number;
-  parentId?: number;
-  path?: string;
-  component?: string;
-  icon?: string;
-  sort: number;
+  moduleId: number;
+  moduleName: string;
+  description: string;
   status: number;
   createTime: string;
-  children?: PermissionVO[];
 }
 
 export interface PermissionQuery {
@@ -20,30 +16,22 @@ export interface PermissionQuery {
   size?: number;
   code?: string;
   name?: string;
-  type?: number;
+  moduleId?: number;
   status?: number;
 }
 
 export interface PermissionCreateRequest {
   code: string;
   name: string;
-  type: number;
-  parentId?: number;
-  path?: string;
-  component?: string;
-  icon?: string;
-  sort?: number;
+  moduleId: number;
+  description?: string;
   status?: number;
 }
 
 export interface PermissionUpdateRequest {
   name?: string;
-  type?: number;
-  parentId?: number;
-  path?: string;
-  component?: string;
-  icon?: string;
-  sort?: number;
+  moduleId?: number;
+  description?: string;
   status?: number;
 }
 

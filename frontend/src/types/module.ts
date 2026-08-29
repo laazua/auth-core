@@ -4,6 +4,7 @@ export interface ModuleVO {
   id: number;
   code: string;
   name: string;
+  baseUrl: string;
   description?: string;
   status: number;
   createTime: string;
@@ -14,12 +15,9 @@ export interface PermissionVO {
   id: number;
   code: string;
   name: string;
-  type: number;
-  parentId?: number;
-  path?: string;
-  component?: string;
-  icon?: string;
-  sort: number;
+  moduleId: number;
+  moduleName: string;
+  description: string;
   status: number;
   createTime: string;
 }
@@ -35,13 +33,14 @@ export interface ModuleQuery {
 export interface ModuleCreateRequest {
   code: string;
   name: string;
+  baseUrl: string;
   description?: string;
   status?: number;
-  permissionIds?: number[];
 }
 
 export interface ModuleUpdateRequest {
   name?: string;
+  baseUrl?: string;
   description?: string;
   status?: number;
 }

@@ -77,9 +77,9 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
         },
       },
       {
-        path: 'permission',
-        name: 'Permission',
-        component: () => import('@/views/system/PermissionView.vue'),
+        path: 'permissions',
+        name: 'Permissions',
+        component: () => import('@/views/system/IndexView.vue'),
         meta: {
           requiresAuth: true,
           title: '权限管理',
@@ -88,9 +88,9 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
         },
       },
       {
-        path: 'module',
-        name: 'Module',
-        component: () => import('@/views/system/ModuleView.vue'),
+        path: 'modules',
+        name: 'Modules',
+        component: () => import('@/views/system/IndexView.vue'),
         meta: { requiresAuth: true, title: '模块管理', icon: 'Grid', permissions: ['module:read'] },
       },
     ],
