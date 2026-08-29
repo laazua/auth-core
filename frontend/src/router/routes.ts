@@ -47,6 +47,12 @@ export const layoutRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/DashboardView.vue'),
         meta: { requiresAuth: true, title: '仪表盘', icon: 'Monitor', affix: true },
       },
+      {
+        path: 'profile/password',
+        name: 'Password',
+        component: () => import('@/views/profile/PasswordView.vue'),
+        meta: { requiresAuth: true, title: '修改密码', hidden: true },
+      },
     ],
   },
 ];
