@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-08-28: Planner — kickoff sprint-028（web/006，9 条验收标准）
+- 2026-08-28: Evaluator — pass sprint-027（web/005，平均分 10.0/10）
 - 2026-08-28: Planner — kickoff sprint-027（web/005，5 条验收标准）
 - 2026-08-28: Evaluator — pass sprint-026（web/004，平均分 10.0/10）
 - 2026-08-28: Planner — kickoff sprint-026（web/004，4 条验收标准）
