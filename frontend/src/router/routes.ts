@@ -109,6 +109,20 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
       },
     ],
   },
+  {
+    path: '/roles',
+    name: 'Roles',
+    component: () => import('@/layouts/DefaultLayout.vue'),
+    meta: { requiresAuth: true, title: '角色管理', icon: 'UserFilled', permissions: ['role:read'] },
+    children: [
+      {
+        path: '',
+        name: 'RolesIndex',
+        component: () => import('@/views/roles/IndexView.vue'),
+        meta: { requiresAuth: true, title: '角色管理', permissions: ['role:read'] },
+      },
+    ],
+  },
 ];
 
 export const generateRoutes = (roles: string[]): RouteRecordRaw[] => {
