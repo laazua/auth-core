@@ -1,13 +1,13 @@
-# Sprint 工作单：sprint-029
+# Sprint 工作单：sprint-030
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-029 |
-| 所属模块 | web |
-| 功能点 ID | web/007 |
-| 功能点名称 | 个人中心改密 |
+| Sprint ID | sprint-030 |
+| 所属模块 | integration |
+| 功能点 ID | integration/001 |
+| 功能点名称 | 第三方模块接入指南（鉴权流程/check API 契约/错误码表） |
 | 状态 | PLANNED |
 | 创建时间 | 2026-08-28 |
 
@@ -15,88 +15,86 @@
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| web/003 | 主布局+动态菜单渲染 | ✅ |
-| users/003 | 密码修改+管理员重置 | ✅ |
+| auth/005 | 权限校验 API POST /api/v1/auth/check | ✅ |
 
 ## 业务背景
 
-个人中心改密是用户自助修改密码的入口，位于用户下拉菜单中。用户需输入旧密码、新密码、确认新密码，验证通过后调用后端 users/003 密码修改 API。体现用户自助服务能力，减轻管理员负担。
+第三方模块（微服务、外部系统）需要接入 auth-core 进行统一鉴权。需提供标准化接入文档，涵盖鉴权流程、check API 契约、错误码对照表、SDK 接入示例、最佳实践。
 
 ## 需求描述
 
-实现个人中心改密页面：
+编写第三方模块接入指南文档（Markdown 格式），包含：
 
-1. **改密页面** (`/profile/password`)：
-   - 页面标题：修改密码
-   - 表单：旧密码、新密码、确认新密码
-   - 表单验证：
-     - 旧密码：必填
-     - 新密码：必填、长度 ≥ 8、包含大小写字母、数字、特殊字符至少三类
-     - 确认新密码：必填、与新密码一致
-     - 新密码不能与旧密码相同
-   - 提交按钮：Loading 状态、提交中禁用
-   - 提交成功 → 提示“密码修改成功，请重新登录” → 清除 Token、跳转登录页
-   - 失败错误提示：旧密码错误、新旧密码相同、两次新密码不一致等
+1. **鉴权流程概述**：
+   - JWT 无状态鉴权原理
+   - Token 获取（登录接口）、携带方式（Authorization: Bearer）、校验流程
+   - Token 刷新策略（可选，v1 版本不刷新、仅过期重登）
 
-2. **页面布局**：
-   - 面包屑：首页 / 个人中心 / 修改密码
-   - 卡片式表单布局，居中显示，最大宽度 480px
-   - 响应式：移动端全屏、桌面端居中卡片
+2. **Check API 契约**：
+   - 接口：POST /api/v1/auth/check
+   - 请求头：Authorization: Bearer <token>
+   - 请求体：{ userId: Long, permissionCode: String }
+   - 响应结构：Result<CheckResponse> { hasPermission: boolean, userId: Long, permissionCode: String }
+   - 成功码：200 code=0
+   - 错误码：401 code=1401（未认证/Token 无效）、403 code=1403（无权限）、404 code=1001（用户不存在）、400 code=1201（权限编码不存在）
+
+3. **错误码对照表**：
+   - 10xx 用户、11xx 角色、12xx 权限、13xx 模块、14xx 认证
+   - 完整错误码表、HTTP 状态码映射、排查建议
+
+4. **SDK 接入示例**：
+   - Java/Spring Boot：Filter/Interceptor 自动校验、FeignClient 调用 check API
+   - Go/Gin：Middleware 鉴权、HTTP Client 调用
+   - Python/FastAPI：Dependency 鉴权、httpx 调用
+   - Node.js/Express：Middleware 鉴权、axios 调用
+
+5. **最佳实践**：
+   - Token 存储与传输安全（HTTPS、HttpOnly Cookie 可选）
+   - 权限码设计规范（模块:操作，如 user:create）
+   - 错误处理策略（重试、降级、熔断）
+   - 监控告警（鉴权失败率、延迟）
 
 ## 交付物
 
-1. `src/views/profile/PasswordView.vue` — 个人中心改密页
-2. 更新 `src/router/routes.ts` — 添加 `/profile/password` 路由
-3. 更新 `src/components/Header.vue` — 用户菜单增加“修改密码”入口（已预留）
-4. 测试用例
+1. `docs/integration/third-party-integration-guide.md` — 完整接入指南文档
 
 ## 验收标准（TDD 驱动）
 
-### AC1 — 改密页面渲染与表单验证
-> 访问 `/profile/password`，正确渲染表单，空提交提示必填项，新密码不符合复杂度提示“密码需包含大小写字母、数字、特殊字符至少三类且长度≥8”，确认密码不一致提示“两次输入的密码不一致”，新旧密码相同提示“新密码不能与旧密码相同”。
+### AC1 — 鉴权流程文档完整
+> 文档包含 JWT 鉴权原理、Token 获取/携带/校验流程图、Token 过期处理说明。
 
-**用例**：`PasswordView.spec.ts#formValidation`
-- 空提交 → 必填提示正确
-- 新密码过短/复杂度不足 → 复杂度提示正确
-- 确认密码不一致 → 不一致提示正确
-- 新旧密码相同 → 相同提示正确
-- 输入合法 → 验证通过
+**用例**：`IntegrationGuideReview#authFlowDocumentComplete`
+- 检查文档包含：JWT 原理、登录获取 Token、Authorization Header 格式、校验流程、过期重登
 
-### AC2 — 旧密码错误返回错误提示
-> 输入正确旧密码但新密码合法 → 提交 → 旧密码错误 → 显示“旧密码错误”，停留页面。
+### AC2 — Check API 契约文档完整
+> 文档包含接口地址、请求/响应结构、字段说明、示例请求/响应、错误码映射。
 
-**用例**：`PasswordView.spec.ts#changePasswordWrongOldPassword`
-- Mock changePassword API 返回 400 code=1005
-- 提交表单 → 显示“旧密码错误” → 停留页面
+**用例**：`IntegrationGuideReview#checkApiContractComplete`
+- 检查：POST /api/v1/auth/check、请求头/体、响应体、hasPermission 语义、错误码 1401/1403/1001/1201
 
-### AC3 — 新旧密码相同提示
-> 新密码与旧密码相同 → 提交 → 提示“新密码不能与旧密码相同”。
+### AC3 — 错误码对照表完整
+> 文档包含 10xx-14xx 全部错误码、HTTP 状态码、排查建议。
 
-**用例**：`PasswordView.spec.ts#newPasswordSameAsOld`
-- 输入相同的新旧密码 → 提交 → 提示“新密码不能与旧密码相同”
+**用例**：`IntegrationGuideReview#errorCodeTableComplete`
+- 检查：10xx/11xx/12xx/13xx/14xx 分段、HTTP 400/401/403/404/409 映射、排查建议
 
-### AC4 — 修改成功跳转登录页
-> 输入正确旧密码、合法新密码、确认一致 → 提交 → 显示“密码修改成功，请重新登录” → 清除 Token → 跳转 `/login`。
+### AC4 — 多语言 SDK 接入示例完整
+> 文档包含 Java/Go/Python/Node.js 四语言接入示例代码。
 
-**用例**：`PasswordView.spec.ts#changePasswordSuccessRedirect`
-- Mock changePassword API 返回成功
-- 提交表单 → 显示成功提示 → Token 清除 → 跳转 `/login`
+**用例**：`IntegrationGuideReview#sdkExamplesComplete`
+- 检查：Java Filter/Interceptor、Go Middleware、Python Dependency、Node.js Middleware、完整可运行示例
 
-### AC5 — 导航入口可达
-> 顶栏用户下拉菜单点击“修改密码” → 跳转 `/profile/password`。
+### AC5 — 最佳实践文档完整
+> 文档包含 Token 安全、权限码设计、错误处理、监控告警最佳实践。
 
-**用例**：`Header.spec.ts#passwordChangeEntry`
-- 点击用户头像 → 下拉菜单点击“修改密码” → 路由跳转 `/profile/password`
+**用例**：`IntegrationGuideReview#bestPracticesComplete`
+- 检查：HTTPS/HSTS、权限码命名规范、重试/熔断/降级、Prometheus 指标
 
 ## 规范检查清单（Evaluator 逐项核对）
 
-- [ ] 页面结构：面包屑、卡片表单、表单验证、提交按钮完整
-- [ ] 表单验证：必填、复杂度、一致性、新旧不同、即时反馈
-- [ ] 提交流程：Loading 状态、错误提示、成功跳转登录页、Token 清除
-- [ ] 权限控制：仅登录用户可访问（路由守卫）
-- [ ] API 对接：复用 users/003 changePassword API、错误码映射（1005 旧密码错误、1006 新旧相同）
-- [ ] 状态管理：复用 authStore 登出、Token 清除
-- [ ] 响应式：移动端全屏卡片、桌面端居中卡片
-- [ ] 导航入口：Header 用户菜单“修改密码”可达
-- [ ] 测试覆盖：表单验证、旧密码错误、新旧相同、修改成功跳转、入口可达
-- [ ] `npm run lint && npm run test && npm run build` 全绿
+- [ ] 文档格式：Markdown、目录结构清晰、代码块高亮
+- [ ] 内容完整：五大章节全覆盖、无遗漏
+- [ ] 示例可用：代码片段可直接复制运行、版本兼容性说明
+- [ ] 错误码表：与后端实现一致、分段清晰
+- [ ] 交叉引用：文档内链接跳转正确、外部链接有效
+- [ ] 版本标识：文档版本号、适用 auth-core 版本、更新日期

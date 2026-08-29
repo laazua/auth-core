@@ -86,11 +86,11 @@
 | web/004 | 用户管理页(含角色分配/启停用/重置密码) | web/003, users/001, users/002, users/003 | ✅ | sprint-026 评审通过（均分 10.0） |
 | web/005 | 角色管理页(含权限分配树) | web/003, roles/001, roles/002 | ✅ | sprint-027 评审通过（均分 10.0） |
 | web/006 | 权限管理页+模块管理页 | web/003, perms/001, modules/001 | ✅ | sprint-028 评审通过（均分 10.0） |
-| web/007 | 个人中心改密 | web/003, users/003 | 🔄 | sprint-029 规划中 |
+| web/007 | 个人中心改密 | web/003, users/003 | ✅ | sprint-029 评审通过（均分 10.0） |
 
 ## integration — 集成与验收
 
 | ID | 功能点 | 前置依赖 | 状态 | 备注 |
 |----|--------|----------|------|------|
-| integration/001 | 第三方模块接入指南（鉴权流程/check API 契约/错误码表） | auth/005 | ⬜ | — |
+| integration/001 | 第三方模块接入指南（鉴权流程/check API 契约/错误码表） | auth/005 | 🔄 | sprint-030 规划中 |
 | integration/002 | e2e 冒烟脚本（shell+curl：登录→授权→check 全链路验证） | integration/001 | ⬜ | — |
