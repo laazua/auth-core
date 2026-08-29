@@ -1,13 +1,13 @@
-# Sprint 工作单：sprint-030
+# Sprint 工作单：sprint-031
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-030 |
+| Sprint ID | sprint-031 |
 | 所属模块 | integration |
-| 功能点 ID | integration/001 |
-| 功能点名称 | 第三方模块接入指南（鉴权流程/check API 契约/错误码表） |
+| 功能点 ID | integration/002 |
+| 功能点名称 | e2e 冒烟脚本（shell+curl：登录→授权→check 全链路验证） |
 | 状态 | PLANNED |
 | 创建时间 | 2026-08-28 |
 
@@ -15,86 +15,99 @@
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| auth/005 | 权限校验 API POST /api/v1/auth/check | ✅ |
+| integration/001 | 第三方模块接入指南 | ✅ |
 
 ## 业务背景
 
-第三方模块（微服务、外部系统）需要接入 auth-core 进行统一鉴权。需提供标准化接入文档，涵盖鉴权流程、check API 契约、错误码对照表、SDK 接入示例、最佳实践。
+提供端到端的冒烟测试脚本，验证 auth-core 核心鉴权链路完整可用：登录获取 Token → 携带 Token 访问受保护资源 → 调用 check API 校验权限。脚本用于 CI/CD 流水线、部署验证、回归测试。
 
 ## 需求描述
 
-编写第三方模块接入指南文档（Markdown 格式），包含：
+编写 e2e 冒烟测试 Shell 脚本（`scripts/e2e-smoke.sh`），覆盖核心鉴权全链路：
 
-1. **鉴权流程概述**：
-   - JWT 无状态鉴权原理
-   - Token 获取（登录接口）、携带方式（Authorization: Bearer）、校验流程
-   - Token 刷新策略（可选，v1 版本不刷新、仅过期重登）
+1. **登录获取 Token**：
+   - 调用 POST /api/v1/auth/login
+   - 解析响应提取 token、tokenType、expiresIn
+   - 验证 code=0、token 非空、三段式 JWT 格式
 
-2. **Check API 契约**：
-   - 接口：POST /api/v1/auth/check
-   - 请求头：Authorization: Bearer <token>
-   - 请求体：{ userId: Long, permissionCode: String }
-   - 响应结构：Result<CheckResponse> { hasPermission: boolean, userId: Long, permissionCode: String }
-   - 成功码：200 code=0
-   - 错误码：401 code=1401（未认证/Token 无效）、403 code=1403（无权限）、404 code=1001（用户不存在）、400 code=1201（权限编码不存在）
+2. **携带 Token 访问受保护资源**：
+   - 携带 Authorization: Bearer <token> 访问 GET /api/v1/auth/me
+   - 验证返回用户信息、角色、权限集合
 
-3. **错误码对照表**：
-   - 10xx 用户、11xx 角色、12xx 权限、13xx 模块、14xx 认证
-   - 完整错误码表、HTTP 状态码映射、排查建议
+3. **权限校验 Check API**：
+   - 携带 Token 调用 POST /api/v1/auth/check
+   - 测试有权限场景（hasPermission=true）
+   - 测试无权限场景（hasPermission=false）
 
-4. **SDK 接入示例**：
-   - Java/Spring Boot：Filter/Interceptor 自动校验、FeignClient 调用 check API
-   - Go/Gin：Middleware 鉴权、HTTP Client 调用
-   - Python/FastAPI：Dependency 鉴权、httpx 调用
-   - Node.js/Express：Middleware 鉴权、axios 调用
+4. **Token 过期/无效场景**：
+   - 无 Token 访问 → 401 code=1401
+   - 无效 Token 访问 → 401 code=1401
+   - 过期 Token 访问 → 401 code=1401（如支持过期 Token 生成）
 
-5. **最佳实践**：
-   - Token 存储与传输安全（HTTPS、HttpOnly Cookie 可选）
-   - 权限码设计规范（模块:操作，如 user:create）
-   - 错误处理策略（重试、降级、熔断）
-   - 监控告警（鉴权失败率、延迟）
+5. **权限校验边界**：
+   - 管理员用户拥有全部权限 → check 全 true
+   - 普通用户仅部分权限 → check 部分 true/false
+   - 不存在权限码 → 400 code=1201
 
 ## 交付物
 
-1. `docs/integration/third-party-integration-guide.md` — 完整接入指南文档
+1. `scripts/e2e-smoke.sh` — 端到端冒烟测试脚本
+2. `scripts/e2e-smoke.sh.spec.md` — 测试用例文档
+3. 更新 `scripts/smoke.sh` — 集成 e2e 冒烟入口（可选）
 
 ## 验收标准（TDD 驱动）
 
-### AC1 — 鉴权流程文档完整
-> 文档包含 JWT 鉴权原理、Token 获取/携带/校验流程图、Token 过期处理说明。
+### AC1 — 登录获取 Token 成功
+> 执行登录请求，返回 code=0、token 非空、三段式 JWT。
 
-**用例**：`IntegrationGuideReview#authFlowDocumentComplete`
-- 检查文档包含：JWT 原理、登录获取 Token、Authorization Header 格式、校验流程、过期重登
+**用例**：`e2eSmokeTest#loginSuccess`
+- 调用登录接口 admin/admin123456
+- 断言：code=0、token 非空、token 分段数=3、expiresIn=7200
 
-### AC2 — Check API 契约文档完整
-> 文档包含接口地址、请求/响应结构、字段说明、示例请求/响应、错误码映射。
+### AC2 — 携带 Token 访问 /me 成功
+> 携带 Token 访问 /api/v1/auth/me，返回用户信息、角色、权限。
 
-**用例**：`IntegrationGuideReview#checkApiContractComplete`
-- 检查：POST /api/v1/auth/check、请求头/体、响应体、hasPermission 语义、错误码 1401/1403/1001/1201
+**用例**：`e2eSmokeTest#meWithValidToken`
+- 携带 Token 访问 /api/v1/auth/me
+- 断言：code=0、data.user.username=admin、roles 包含 admin、permissions 包含 14 项
 
-### AC3 — 错误码对照表完整
-> 文档包含 10xx-14xx 全部错误码、HTTP 状态码、排查建议。
+### AC3 — Check API 权限校验通过
+> 携带 Token 调用 check API，有权限返回 true，无权限返回 false。
 
-**用例**：`IntegrationGuideReview#errorCodeTableComplete`
-- 检查：10xx/11xx/12xx/13xx/14xx 分段、HTTP 400/401/403/404/409 映射、排查建议
+**用例**：`e2eSmokeTest#checkPermissionTrueFalse`
+- admin 用户 check user:create → hasPermission=true
+- 普通用户 check user:delete → hasPermission=false
 
-### AC4 — 多语言 SDK 接入示例完整
-> 文档包含 Java/Go/Python/Node.js 四语言接入示例代码。
+### AC4 — 无效/过期 Token 返回 401
+> 无 Token、无效 Token、过期 Token 访问受保护接口均返回 401 code=1401。
 
-**用例**：`IntegrationGuideReview#sdkExamplesComplete`
-- 检查：Java Filter/Interceptor、Go Middleware、Python Dependency、Node.js Middleware、完整可运行示例
+**用例**：`e2eSmokeTest#invalidTokenReturns401`
+- 无 Authorization 头 → 401 code=1401
+- Authorization: Bearer invalid.token.here → 401 code=1401
+- 过期 Token（如可生成） → 401 code=1401
 
-### AC5 — 最佳实践文档完整
-> 文档包含 Token 安全、权限码设计、错误处理、监控告警最佳实践。
+### AC5 — 权限码不存在返回 400
+> check API 传入不存在权限码 → 400 code=1201。
 
-**用例**：`IntegrationGuideReview#bestPracticesComplete`
-- 检查：HTTPS/HSTS、权限码命名规范、重试/熔断/降级、Prometheus 指标
+**用例**：`e2eSmokeTest#checkPermissionCodeNotFound`
+- POST /api/v1/auth/check {userId:1, permissionCode:"nonexistent:perm"}
+- 断言：status=400、code=1201
+
+### AC6 — 脚本幂等可重复执行
+> 连续多次执行脚本，每次均通过，无副作用。
+
+**用例**：`e2eSmokeTest#idempotentExecution`
+- 连续执行 3 次脚本 → 均通过
 
 ## 规范检查清单（Evaluator 逐项核对）
 
-- [ ] 文档格式：Markdown、目录结构清晰、代码块高亮
-- [ ] 内容完整：五大章节全覆盖、无遗漏
-- [ ] 示例可用：代码片段可直接复制运行、版本兼容性说明
-- [ ] 错误码表：与后端实现一致、分段清晰
-- [ ] 交叉引用：文档内链接跳转正确、外部链接有效
-- [ ] 版本标识：文档版本号、适用 auth-core 版本、更新日期
+- [ ] 脚本可执行（`chmod +x`）、shebang 正确
+- [ ] 使用 `set -euo pipefail` 严格模式
+- [ ] 统一错误处理、非零退出码即失败
+- [ ] 彩色输出（成功绿、失败红、信息蓝）
+- [ ] 进度提示、耗时统计
+- [ ] 环境变量配置（BASE_URL、ADMIN_USER、ADMIN_PASS）
+- [ ] jq 解析 JSON、正则校验 JWT 格式
+- [ ] 清理临时文件、无残留
+- [ ] 可作为 CI/CD 步骤直接集成
+- [ ] `bash scripts/e2e-smoke.sh` 直接运行通过
