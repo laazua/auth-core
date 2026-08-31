@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAppStore } from '@/stores/app';
+import { useTheme } from '@/composables/useTheme';
 import Sidebar from '@/components/Sidebar.vue';
 import Header from '@/components/Header.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
@@ -10,6 +11,7 @@ import TagsView from '@/components/Layout/TagsView.vue';
 const route = useRoute();
 const router = useRouter();
 const appStore = useAppStore();
+const { initTheme } = useTheme();
 
 const isMobile = ref(false);
 
@@ -33,11 +35,11 @@ const handleRouteChange = () => {
   appStore.setActiveTag(fullPath);
 };
 
-onMounted(() => {
-  handleResize();
-  window.addEventListener('resize', handleResize);
-  appStore.initTheme();
-  appStore.restoreTags();
+  onMounted(() => {
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    initTheme();
+    appStore.restoreTags();
 
   if (typeof router.afterEach === 'function') {
     router.afterEach(handleRouteChange);

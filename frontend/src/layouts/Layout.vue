@@ -1,13 +1,15 @@
 <script setup lang="ts">
-  import { computed, onMounted, onUnmounted, ref } from 'vue';
-  import { useRoute } from 'vue-router';
-  import { useAppStore } from '@/stores/app';
-  import Sidebar from '@/components/Sidebar.vue';
-  import Header from '@/components/Header.vue';
-  import Breadcrumb from '@/components/Breadcrumb.vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { useAppStore } from '@/stores/app';
+import { useTheme } from '@/composables/useTheme';
+import Sidebar from '@/components/Sidebar.vue';
+import Header from '@/components/Header.vue';
+import Breadcrumb from '@/components/Breadcrumb.vue';
 
-  const route = useRoute();
-  const appStore = useAppStore();
+const route = useRoute();
+const appStore = useAppStore();
+const { initTheme } = useTheme();
 
   const isMobile = ref(false);
 
@@ -28,7 +30,7 @@
   onMounted(() => {
     handleResize();
     window.addEventListener('resize', handleResize);
-    appStore.initTheme();
+    initTheme();
   });
 
   onUnmounted(() => {

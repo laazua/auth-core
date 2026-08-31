@@ -3,6 +3,7 @@
   import { useRoute, useRouter } from 'vue-router';
   import { useAppStore } from '@/stores/app';
   import { useAuthStore } from '@/stores/auth';
+  import { useTheme } from '@/composables/useTheme';
   import { ElDropdown, ElDropdownMenu, ElDropdownItem } from 'element-plus';
   import {
     Moon,
@@ -38,9 +39,9 @@
   const router = useRouter();
   const appStore = useAppStore();
   const authStore = useAuthStore();
+  const { isDark, toggleTheme } = useTheme();
 
   const isCollapsed = computed(() => props.sidebarCollapsed ?? appStore.sidebarCollapsed);
-  const theme = computed(() => appStore.theme);
   const userInfo = computed(() => authStore.userInfo);
 
   const avatarUrl = computed(() => {
@@ -56,10 +57,6 @@
     { label: '修改密码', icon: Lock, command: 'password' },
     { label: '退出登录', icon: SwitchButton, command: 'logout', divided: true },
   ];
-
-  const handleThemeToggle = () => {
-    appStore.toggleTheme();
-  };
 
   const handleDropdownCommand = (command: string) => {
     switch (command) {
@@ -105,15 +102,12 @@
       <h1 v-if="!isCollapsed" class="header__title">{{ route.meta.title || '仪表盘' }}</h1>
     </div>
     <div class="header__right">
-      <el-dropdown trigger="click">
-        <button
-          class="header__action header__theme"
-          :aria-label="theme === 'light' ? '开启暗色模式' : '开启亮色模式'"
-          @click="handleThemeToggle"
-        >
-          <component :is="theme === 'light' ? Moon : Sunny" />
-        </button>
-      </el-dropdown>
+      <button class="header__theme-toggle" :aria-label="isDark ? '切换亮色模式' : '切换暗色模式'" @click="toggleTheme">
+        <span class="header__theme-toggle-track" :class="{ 'is-dark': isDark }">
+          <span class="header__theme-toggle-thumb" />
+        </span>
+        <component :is="isDark ? Moon : Sunny" class="header__theme-toggle-icon" />
+      </button>
       <el-dropdown trigger="click">
         <button class="header__action" aria-label="消息通知">
           <component :is="Bell" />
@@ -222,6 +216,58 @@
     display: flex;
     align-items: center;
     gap: 8px;
+  }
+
+  .header__theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 48px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 14px;
+    transition: all var(--transition-duration-base) var(--transition-timing);
+  }
+
+  .header__theme-toggle-track {
+    position: relative;
+    width: 40px;
+    height: 20px;
+    border-radius: 10px;
+    background: var(--color-border);
+    transition: background var(--transition-duration-base) var(--transition-timing-smooth);
+    flex-shrink: 0;
+
+    &.is-dark {
+      background: var(--color-primary);
+    }
+  }
+
+  .header__theme-toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--color-bg);
+    box-shadow: var(--color-shadow-sm);
+    transition: transform var(--transition-duration-base) var(--transition-timing-bounce);
+
+    .is-dark & {
+      transform: translateX(20px);
+    }
+  }
+
+  .header__theme-toggle-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+    transition: color var(--transition-duration-base) var(--transition-timing);
   }
 
   .header__action {

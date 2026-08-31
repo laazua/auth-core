@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import { onMounted } from 'vue';
-  import { useAppStore } from '@/stores/app';
+  import { useTheme } from '@/composables/useTheme';
 
-  const appStore = useAppStore();
+  const { initTheme } = useTheme();
 
   onMounted(() => {
-    appStore.initTheme();
+    initTheme();
   });
 </script>
 

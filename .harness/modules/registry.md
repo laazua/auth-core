@@ -93,4 +93,4 @@
 | ID | 功能点 | 前置依赖 | 状态 | 备注 |
 |----|--------|----------|------|------|
 | integration/001 | 第三方模块接入指南（鉴权流程/check API 契约/错误码表） | auth/005 | ✅ | sprint-030 评审通过（均分 10.0） |
-| integration/002 | e2e 冒烟脚本（shell+curl：登录→授权→check 全链路验证） | integration/001 | 🔄 | sprint-031 规划中 |
+| integration/002 | e2e 冒烟脚本（shell+curl：登录→授权→check 全链路验证） | integration/001 | ✅ | sprint-031 评审通过（均分 10.0） |
