@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-08-31: Generator — done sprint-032（web/008，UI现代化优化+白天/晚上模式切换，前端测试 44/44 通过）
 - 2026-08-31: Evaluator — pass sprint-031（integration/002，平均分 10.0/10）
 - 2026-08-28: Planner — kickoff sprint-031（integration/002，6 条验收标准）
 - 2026-08-28: Evaluator — pass sprint-030（integration/001，平均分 10.0/10）
