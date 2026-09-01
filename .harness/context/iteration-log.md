@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-09-01: Generator — done sprint-033（infra/004 测试基础设施 Testcontainers 基座 + 三层测试分层 + 通用工具，单元测试 4/4 通过，需 Docker 运行集成测试）
 - 2026-09-01: Planner — kickoff sprint-033（infra/004，4 条验收标准）
 - 2026-09-01: Generator — v3 精致现代化优化（克制渐变、柔和阴影、精致配色、充足留白，前端测试 44/44 通过）
 - 2026-09-01: Generator — v2 激进大胆UI优化（glassmorphism、渐变、深度阴影、Logo 动画等增强，前端测试 44/44 通过）

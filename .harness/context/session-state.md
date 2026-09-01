@@ -2,12 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟡 sprint-033 进行中（infra/004 测试基础设施 Testcontainers MySQL 基座）
+- 状态: 🟢 sprint-033 完成（infra/004 测试基础设施 Testcontainers MySQL 基座 + 测试分层约定）
 - 当前模块: infra
 - 当前功能点: infra/004
 
 ## 下一步动作
-Generator：实现 infra/004 测试基础设施（Testcontainers MySQL 基座 + 测试命名/分层约定），首要任务：引入 Testcontainers 依赖、创建 BaseIntegrationTest 抽象类。
+Planner：取新功能点（sprint-034）或处理 backlog。
 
 ## 挂起
 - 2026-08-26: Planner(sprint-004) — 用户裁决：暂沿用旧口令 abc123456 不轮换（风险自担）；已注入仓库外 ~/.bashrc 与 ~/.bash_profile（export MYSQL_PASSWORD），git 历史清理事项仍待裁决。真实库 192.168.165.88:3306（MySQL 8.0.45，库 authcore 已就绪）自本 Sprint 起用于验收。
