@@ -111,8 +111,6 @@ const toggleCollapse = () => {
   z-index: var(--z-index-fixed);
   transition: width 0.2s var(--transition-timing-smooth), background var(--transition-duration-slow) var(--transition-timing-smooth);
   overflow: hidden;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 
   &--collapsed {
     width: 64px;
@@ -127,7 +125,6 @@ const toggleCollapse = () => {
   padding: 0 16px;
   border-bottom: 1px solid var(--color-border-light);
   flex-shrink: 0;
-  background: var(--color-bg-page);
 }
 
 .sidebar__logo {
@@ -137,14 +134,10 @@ const toggleCollapse = () => {
   color: var(--color-text-primary);
   white-space: nowrap;
 
-  svg {
-    flex-shrink: 0;
-  }
-
   span {
     font-size: 16px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.2px;
   }
 }
 
@@ -152,7 +145,7 @@ const toggleCollapse = () => {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: var(--gradient-primary);
+  background: var(--color-primary);
   flex-shrink: 0;
   box-shadow: 0 2px 8px var(--color-primary-glow);
 }
@@ -186,24 +179,23 @@ const toggleCollapse = () => {
       padding: 0 12px;
       border-radius: 8px;
       margin: 2px 4px;
-      color: var(--color-text-regular);
+      color: var(--color-text-secondary);
       font-size: 13px;
-      font-weight: 500;
+      font-weight: var(--font-weight-medium);
       transition: all var(--transition-duration-base) var(--transition-timing);
       border: 1px solid transparent;
 
       &:hover {
         background: var(--color-bg-hover);
         color: var(--color-primary);
-        border-color: var(--color-border-light);
       }
 
       &.is-active {
-        background: rgba(0, 87, 217, 0.08);
+        background: var(--color-primary-bg);
         color: var(--color-primary);
-        font-weight: 600;
-        border-color: rgba(0, 87, 217, 0.15);
-        box-shadow: 0 0 0 1px rgba(0, 87, 217, 0.1);
+        font-weight: var(--font-weight-semibold);
+        border-color: var(--color-border);
+        box-shadow: none;
 
         .sidebar__icon {
           color: var(--color-primary);
@@ -213,7 +205,7 @@ const toggleCollapse = () => {
       .sidebar__icon {
         margin-right: 12px;
         font-size: 16px;
-        color: var(--color-text-secondary);
+        color: var(--color-text-placeholder);
         transition: color var(--transition-duration-base) var(--transition-timing);
         flex-shrink: 0;
       }
@@ -226,9 +218,9 @@ const toggleCollapse = () => {
         padding: 0 12px;
         border-radius: 8px;
         margin: 2px 4px;
-        color: var(--color-text-regular);
+        color: var(--color-text-secondary);
         font-size: 13px;
-        font-weight: 500;
+        font-weight: var(--font-weight-medium);
         transition: all var(--transition-duration-base) var(--transition-timing);
         border: 1px solid transparent;
 
@@ -237,15 +229,10 @@ const toggleCollapse = () => {
           color: var(--color-primary);
         }
 
-        &.is-active {
-          background: rgba(0, 87, 217, 0.08);
-          color: var(--color-primary);
-        }
-
         .sidebar__icon {
           margin-right: 12px;
           font-size: 16px;
-          color: var(--color-text-secondary);
+          color: var(--color-text-placeholder);
           flex-shrink: 0;
         }
 
@@ -257,7 +244,7 @@ const toggleCollapse = () => {
       &.is-opened {
         :deep(.el-sub-menu__title) {
           color: var(--color-primary);
-          background: rgba(0, 87, 217, 0.08);
+          background: var(--color-primary-bg);
 
           :deep(.el-sub-menu__icon-arrow) {
             transform: rotate(90deg);
@@ -298,7 +285,6 @@ const toggleCollapse = () => {
   padding: 12px;
   border-top: 1px solid var(--color-border-light);
   flex-shrink: 0;
-  background: var(--color-bg-page);
 }
 
 .sidebar__toggle {
@@ -317,7 +303,6 @@ const toggleCollapse = () => {
     background: var(--color-bg-hover);
     color: var(--color-primary);
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-glow);
   }
 
   svg {

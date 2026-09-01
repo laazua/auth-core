@@ -41,29 +41,6 @@ body {
   background-image: var(--gradient-bg);
   background-attachment: fixed;
   min-height: 100vh;
-  position: relative;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image:
-    radial-gradient(circle at 20% 20%, rgba(0, 87, 217, 0.04) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(124, 58, 237, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 50% 0%, rgba(0, 168, 107, 0.02) 0%, transparent 40%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-[data-theme="dark"] body::before {
-  background-image:
-    radial-gradient(circle at 20% 20%, rgba(77, 142, 255, 0.06) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(167, 139, 250, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 50% 0%, rgba(52, 211, 153, 0.03) 0%, transparent 40%);
 }
 
 a {
@@ -177,8 +154,8 @@ table {
 
 .glass-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   border-radius: var(--color-border-radius-card);
   box-shadow: var(--color-shadow-glass);
@@ -195,12 +172,12 @@ table {
   background: var(--gradient-bg);
 }
 
-.gradient-hero {
-  background: var(--gradient-hero);
+.gradient-brand {
+  background: var(--gradient-brand);
 }
 
 .shadow-glow {
-  box-shadow: var(--color-shadow-glow);
+  box-shadow: var(--color-shadow-base), 0 0 0 1px var(--color-primary-glow);
 }
 
 .depth-1 {
@@ -227,29 +204,12 @@ table {
   box-shadow: var(--color-shadow-heavy);
 }
 
-@keyframes gradient-shift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.animated-gradient {
-  background-size: 200% 200%;
-  animation: gradient-shift 6s ease infinite;
-}
-
 @keyframes float {
   0%, 100% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-8px);
+    transform: translateY(-6px);
   }
 }
 
@@ -263,9 +223,10 @@ table {
 }
 
 .shimmer {
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.04) 50%, transparent 100%);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
+  border-radius: var(--color-border-radius-sm);
 }
 
 .skeleton {
@@ -273,4 +234,16 @@ table {
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: var(--color-border-radius-sm);
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }

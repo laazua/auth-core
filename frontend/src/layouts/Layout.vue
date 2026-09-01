@@ -58,41 +58,41 @@ const { initTheme } = useTheme();
 </template>
 
 <style scoped lang="scss">
-  .layout {
-    display: flex;
-    min-height: 100vh;
-    background: var(--color-bg-page);
-    background-image: var(--gradient-bg);
-    background-attachment: fixed;
-  }
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-bg-page);
+  background-image: var(--gradient-bg);
+  background-attachment: fixed;
+}
 
-  .layout__main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    overflow: hidden;
-  }
+.layout__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
 
-  .layout__content {
-    flex: 1;
-    overflow: auto;
-    padding: 24px 28px;
-    position: relative;
-    z-index: 1;
-  }
+.layout__content {
+  flex: 1;
+  overflow: auto;
+  padding: 24px 28px;
+  position: relative;
+  z-index: 1;
+}
 
-  .layout__page {
-    min-height: 100%;
-  }
+.layout__page {
+  min-height: 100%;
+}
 
-  .fade-enter-active,
-  .fade-leave-active {
-    transition: opacity 0.15s ease-out;
-  }
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.15s ease-out;
+}
 
-  .fade-enter-from,
-  .fade-leave-to {
-    opacity: 0;
-  }
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

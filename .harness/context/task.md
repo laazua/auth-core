@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/008 |
 | 功能点名称 | UI现代化优化+白天/晚上模式切换 |
-| 状态 | 🟢 DONE — 激进大胆UI优化（v2） |
+| 状态 | 🟢 DONE — v3 精致现代化优化（不视觉疲劳） |
 
 ## RED 证据
 
@@ -26,51 +26,58 @@ Tests  44 passed (44)
 [GREEN] npm run test (前端相关测试 44 个全绿)
 ```
 
-## v2 激进大胆UI优化（额外增强）
+## v3 精致现代化优化（不视觉疲劳）
+
+### 优化目标
+在保持现代大胆风格的同时，消除视觉疲劳：克制的渐变、柔和的阴影、精致的配色、充足的留白、平滑的动画。
 
 ### 优化内容
-1. **CSS 变量全面增强** (`src/styles/variables.scss`)：
-   - 主色升级为更鲜艳的 #0057D9，添加渐变变量
-   - 背景色从纯白 #FFFFFF 调整为柔和的 #FAFBFC
-   - 新增玻璃拟态变量、渐变变量、发光变量
-   - 深色模式增强：更鲜艳的文本色、更强烈的阴影
-   - 新增 `--transition-timing-spring` 弹性过渡
+1. **CSS 变量全面精简** (`src/styles/variables.scss`)：
+   - 主色升级为自信深蓝 #1D4ED8（不刺眼、不浅淡）
+   - 背景色调整为温暖浅灰 #F4F5F7（非纯白、非高亮）
+   - 文本色使用近黑 #111827（对比度充足但不刺眼）
+   - 新增语义化背景变量（--color-primary-bg 等）
+   - 阴影层级精简为 6 级，带蓝色色调
+   - 深色模式：深邃蓝黑 #020617，文本 #F1F5F9
 
-2. **全局样式增强** (`src/styles/global.css`, `src/styles/reset.css`)：
-   - body 添加渐变背景和装饰性光晕
-   - 新增玻璃拟态工具类（`.glass`, `.glass-strong`, `.glass-card`）
-   - 新增渐变文本工具类（`.gradient-text`）
-   - 新增深度阴影工具类（`.depth-1` ~ `.depth-6`）
-   - 新增动画关键帧（`gradient-shift`, `float`, `shimmer`）
+2. **全局样式精简** (`src/styles/reset.css`, `src/styles/global.css`)：
+   - body 背景仅保留微妙的渐变 + 极淡装饰光晕
+   - 移除激进的动画关键帧，仅保留必要的 shimmer/float
+   - 玻璃拟态变量精简，边框更淡
+   - 按钮悬停仅用 3px 发光环，不再用大面积 glow
+   - 徽章使用语义化背景变量，更协调
 
-3. **BaseCard.vue 增强**：
-   - 新增 `--glass` 和 `--gradient` 属性
-   - 玻璃拟态效果和渐变背景变体
-   - 更现代的圆角和阴影
+3. **BaseCard.vue**：
+   - 移除 gradient 属性，glass 仅保留微妙毛玻璃
+   - hover 位移减小为 -1px，更自然
 
-4. **Header.vue 增强**：
-   - 添加 logo 渐变标记
-   - 主题切换添加文字标签
-   - 更明显的 hover 发光效果
-   - 添加 backdrop-filter 毛玻璃效果
+4. **Header.vue**：
+   - 移除 logo 渐变标记，改用纯色主色块
+   - 主题切换悬停背景使用 --color-primary-bg
+   - 取消多余发光阴影
 
-5. **Sidebar.vue 增强**：
-   - 渐变 logo 标记
-   - 更现代的活动状态指示器
-   - 边框高亮和发光效果
-   - 添加 backdrop-filter 毛玻璃效果
+5. **Sidebar.vue**：
+   - 活动态使用 --color-primary-bg，边框取消高亮
+   - 图标色调为 --color-text-placeholder，更淡雅
+   - 取消 footer 背景色，保持统一
 
-6. **DashboardView.vue 增强**：
-   - 统计卡片添加图标徽章和渐变背景
-   - 更大的字体和更强的视觉层次
-   - 渐变文本标题
-   - 悬停动效增强
+6. **DashboardView.vue**：
+   - 统计卡片图标块使用纯色语义色 + 微弱发光
+   - 标题恢复纯文本，不再用渐变文本
+   - 字号保持大但不夸张
+   - 活动项 hover 背景更淡
 
-7. **LoginView.vue 增强**：
-   - 深色渐变背景更强烈
-   - 品牌区域添加动画浮动效果
-   - 卡片顶部渐变装饰条
-   - 更现代的登录表单样式
+7. **LoginView.vue**：
+   - 背景改为 --color-bg-page + 微妙渐变，去除深色大面积渐变
+   - 品牌区改为浅色背景，文本用正常色系
+   - Logo 阴影减弱，去除浮动动画
+   - 特性卡片用 --color-bg-hover，边框更淡
+   - 表单卡片去除顶部装饰条
+   - 错误提示使用 --color-error-bg
+
+8. **Layout.vue**：
+   - 背景仅保留微妙渐变
+   - 内容区内边距优化为 24px 28px
 | 创建时间 | 2026-08-31 |
 
 ## 前置依赖
