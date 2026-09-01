@@ -62,6 +62,8 @@ const { initTheme } = useTheme();
     display: flex;
     min-height: 100vh;
     background: var(--color-bg-page);
+    background-image: var(--gradient-bg);
+    background-attachment: fixed;
   }
 
   .layout__main {
@@ -75,7 +77,9 @@ const { initTheme } = useTheme();
   .layout__content {
     flex: 1;
     overflow: auto;
-    padding: 20px 24px;
+    padding: 24px 28px;
+    position: relative;
+    z-index: 1;
   }
 
   .layout__page {

@@ -38,7 +38,32 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   color: var(--color-text-primary);
   background-color: var(--color-bg-page);
+  background-image: var(--gradient-bg);
+  background-attachment: fixed;
   min-height: 100vh;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(0, 87, 217, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(124, 58, 237, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 50% 0%, rgba(0, 168, 107, 0.02) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-theme="dark"] body::before {
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(77, 142, 255, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(167, 139, 250, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 50% 0%, rgba(52, 211, 153, 0.03) 0%, transparent 40%);
 }
 
 a {
@@ -125,7 +150,7 @@ table {
 }
 
 [data-theme="dark"] .el-loading-mask {
-  background-color: rgba(20, 21, 23, 0.8) !important;
+  background-color: rgba(15, 23, 42, 0.8) !important;
 }
 
 .nprogress .peg {
@@ -134,4 +159,118 @@ table {
 
 .nprogress .bar {
   background: var(--color-primary) !important;
+}
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+}
+
+.glass-strong {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--color-border-radius-card);
+  box-shadow: var(--color-shadow-glass);
+}
+
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-bg {
+  background: var(--gradient-bg);
+}
+
+.gradient-hero {
+  background: var(--gradient-hero);
+}
+
+.shadow-glow {
+  box-shadow: var(--color-shadow-glow);
+}
+
+.depth-1 {
+  box-shadow: var(--color-shadow-xs);
+}
+
+.depth-2 {
+  box-shadow: var(--color-shadow-sm);
+}
+
+.depth-3 {
+  box-shadow: var(--color-shadow-light);
+}
+
+.depth-4 {
+  box-shadow: var(--color-shadow-base);
+}
+
+.depth-5 {
+  box-shadow: var(--color-shadow-hover);
+}
+
+.depth-6 {
+  box-shadow: var(--color-shadow-heavy);
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animated-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 6s ease infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-bg-hover) 25%, var(--color-bg-active) 50%, var(--color-bg-hover) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--color-border-radius-sm);
 }

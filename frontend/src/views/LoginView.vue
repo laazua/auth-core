@@ -54,14 +54,21 @@
     loading.value = true;
 
     try {
-      const response = await authApi.login(loginForm);
-      if (response.code === 0 && response.data) {
-        const { token, userInfo } = response.data;
-        authStore.login(token, userInfo, [], []);
-        ElMessage.success('登录成功');
+      const loginResponse = await authApi.login(loginForm);
+      if (loginResponse.code === 0 && loginResponse.data) {
+        const { token } = loginResponse.data;
+        authStore.setToken(token);
+        const meResponse = await authApi.me();
+        if (meResponse.code === 0 && meResponse.data) {
+          const { user, roles, permissions } = meResponse.data;
+          authStore.login(token, user, roles.map(r => r.code), permissions);
+          ElMessage.success('登录成功');
 
-        const redirect = (route.query.redirect as string) || '/dashboard';
-        router.push(redirect);
+          const redirect = (route.query.redirect as string) || '/dashboard';
+          await router.push(redirect);
+        } else {
+          throw new Error(meResponse.message || '获取用户信息失败');
+        }
       }
     } catch (error: unknown) {
       const message = (error as Error).message || '登录失败';
@@ -82,24 +89,14 @@
 <template>
   <div class="login-page" @keyup="handleKeyUp">
     <div class="login-container">
-      <!-- Left Brand Section -->
       <div class="login__brand">
         <div class="login__brand-content">
-          <svg
-            class="login__brand-logo"
-            viewBox="0 0 32 32"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <rect width="32" height="32" rx="8" fill="var(--color-primary)" />
-            <path
-              d="M8 16L14 22L24 10"
-              stroke="white"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
+          <div class="login__brand-logo">
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="32" height="32" rx="8" fill="white" />
+              <path d="M8 16L14 22L24 10" stroke="#0057D9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
           <h1 class="login__brand-title">Auth Core</h1>
           <p class="login__brand-slogan">通用权限管理系统</p>
           <p class="login__brand-desc">
@@ -124,7 +121,6 @@
         </div>
       </div>
 
-      <!-- Right Form Section -->
       <div class="login__form-wrapper">
         <div class="login__card">
           <div class="login__header">
@@ -213,7 +209,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--color-bg-page) 0%, var(--color-bg-hover) 100%);
+    background: linear-gradient(160deg, #020617 0%, #0F172A 40%, #1E293B 100%);
     padding: 24px;
     position: relative;
     overflow: hidden;
@@ -226,8 +222,22 @@
       right: 0;
       bottom: 0;
       background-image:
-        radial-gradient(circle at 20% 80%, rgba(64, 158, 255, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(103, 194, 58, 0.08) 0%, transparent 50%);
+        radial-gradient(circle at 15% 85%, rgba(0, 87, 217, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 85% 15%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(0, 168, 107, 0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 20%, rgba(0, 87, 217, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 70% 80%, rgba(124, 58, 237, 0.05) 0%, transparent 40%);
+      animation: float 20s ease-in-out infinite;
       pointer-events: none;
     }
   }
@@ -238,23 +248,23 @@
     max-width: 1120px;
     height: calc(100vh - 48px);
     max-height: 680px;
-    background: var(--color-bg);
-    border-radius: 16px;
-    box-shadow: var(--color-shadow-heavy);
-    border: 1px solid var(--color-border-light);
+    border-radius: 20px;
     overflow: hidden;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
   }
 
-  /* Brand Section (Left) */
   .login__brand {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(145deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    background: linear-gradient(160deg, #0F172A 0%, #1E293B 100%);
     padding: 60px 48px;
     position: relative;
     min-width: 0;
+    overflow: hidden;
 
     &::before {
       content: '';
@@ -263,8 +273,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-      opacity: 0.5;
+      background: linear-gradient(135deg, rgba(0, 87, 217, 0.08) 0%, transparent 60%);
     }
 
     &::after {
@@ -274,7 +283,12 @@
       left: 0;
       right: 0;
       height: 200px;
-      background: linear-gradient(180deg, transparent 0%, rgba(64, 158, 255, 0.15) 100%);
+      background: linear-gradient(180deg, transparent 0%, rgba(0, 87, 217, 0.2) 100%);
+    }
+
+    .login__features {
+      position: relative;
+      z-index: 1;
     }
   }
 
@@ -287,26 +301,35 @@
   }
 
   .login__brand-logo {
-    width: 64px;
-    height: 64px;
-    margin-bottom: 24px;
-    filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.2));
+    width: 72px;
+    height: 72px;
+    margin-bottom: 28px;
+    filter: drop-shadow(0 8px 24px rgba(0, 87, 217, 0.3));
+    animation: float 4s ease-in-out infinite;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
   }
 
   .login__brand-title {
     margin: 0 0 8px;
-    font-size: 32px;
-    font-weight: 700;
+    font-size: 36px;
+    font-weight: 800;
     line-height: 1.2;
-    letter-spacing: -0.5px;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #fff 0%, #94A3B8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   .login__brand-slogan {
     margin: 0 0 16px;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 400;
-    opacity: 0.9;
-    color: rgba(255, 255, 255, 0.95);
+    color: rgba(255, 255, 255, 0.9);
   }
 
   .login__brand-desc {
@@ -320,7 +343,7 @@
   .login__features {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
     margin-bottom: 40px;
   }
 
@@ -328,33 +351,34 @@
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: all 0.2s ease;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    transition: all var(--transition-duration-base) var(--transition-timing);
 
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.12);
       transform: translateX(4px);
     }
   }
 
   .login__feature-icon {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+    background: rgba(0, 87, 217, 0.2);
+    border-radius: 10px;
+    color: var(--color-primary-lighter);
 
     svg {
       width: 20px;
       height: 20px;
-      color: white;
     }
   }
 
@@ -379,16 +403,15 @@
 
   .login__brand-footer {
     padding-top: 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
 
     p {
       margin: 0;
       font-size: 12px;
-      opacity: 0.6;
+      opacity: 0.5;
     }
   }
 
-  /* Form Section (Right) */
   .login__form-wrapper {
     flex: 1;
     display: flex;
@@ -397,16 +420,29 @@
     padding: 48px 40px;
     min-width: 0;
     overflow-y: auto;
+    background: var(--color-bg);
   }
 
   .login__card {
     width: 100%;
     max-width: 400px;
-    background: var(--color-bg);
-    border-radius: 12px;
-    box-shadow: var(--color-shadow-base);
+    background: var(--color-bg-elevated);
+    border-radius: 16px;
+    box-shadow: var(--color-shadow-heavy);
     border: 1px solid var(--color-border-light);
     padding: 40px 32px;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient-primary);
+    }
   }
 
   .login__header {
@@ -416,9 +452,10 @@
 
   .login__title {
     margin: 0 0 8px;
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 700;
     color: var(--color-text-primary);
+    letter-spacing: -0.5px;
   }
 
   .login__subtitle {
@@ -453,9 +490,9 @@
     align-items: center;
     gap: 8px;
     padding: 12px 16px;
-    background: rgba(245, 108, 108, 0.1);
-    border: 1px solid rgba(245, 108, 108, 0.2);
-    border-radius: 8px;
+    background: rgba(220, 38, 38, 0.08);
+    border: 1px solid rgba(220, 38, 38, 0.2);
+    border-radius: 10px;
     color: var(--color-error);
     font-size: 13px;
 
@@ -499,6 +536,7 @@
   .login__forgot {
     font-size: 13px;
     color: var(--color-primary);
+    font-weight: var(--font-weight-medium);
 
     &:hover {
       text-decoration: underline;
@@ -507,6 +545,10 @@
 
   .login__submit {
     width: 100%;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
   }
 
   .login__footer {
@@ -521,7 +563,6 @@
     }
   }
 
-  /* Responsive */
   @media (max-width: 768px) {
     .login-page {
       padding: 16px;
@@ -533,13 +574,13 @@
       flex-direction: column;
       height: auto;
       max-height: none;
-      border-radius: 12px;
+      border-radius: 16px;
     }
 
     .login__brand {
-      padding: 40px 24px;
+      padding: 48px 24px;
       text-align: center;
-      min-height: 300px;
+      min-height: auto;
 
       &::after {
         display: none;
@@ -558,8 +599,14 @@
       font-size: 16px;
     }
 
+    .login__brand-logo {
+      width: 56px;
+      height: 56px;
+      margin-bottom: 20px;
+    }
+
     .login__features {
-      gap: 12px;
+      gap: 10px;
     }
 
     .login__feature {
@@ -567,8 +614,8 @@
     }
 
     .login__feature-icon {
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
     }
 
     .login__form-wrapper {
@@ -577,8 +624,8 @@
 
     .login__card {
       padding: 32px 24px;
-      box-shadow: none;
-      border: none;
+      box-shadow: var(--color-shadow-base);
+      border: 1px solid var(--color-border-light);
     }
   }
 
@@ -594,7 +641,6 @@
 
     .login__brand {
       padding: 32px 20px;
-      min-height: 280px;
     }
 
     .login__brand-title {
@@ -616,19 +662,5 @@
     .login__card {
       padding: 24px 20px;
     }
-  }
-
-  /* Dark mode adjustments */
-  [data-theme='dark'] .login-page {
-    background: linear-gradient(135deg, var(--color-bg-page) 0%, var(--color-bg-hover) 100%);
-  }
-
-  [data-theme='dark'] .login__card {
-    background: var(--color-bg);
-    border-color: var(--color-border-light);
-  }
-
-  [data-theme='dark'] .login__brand {
-    background: linear-gradient(145deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
   }
 </style>

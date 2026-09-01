@@ -6,6 +6,8 @@
   max-width: 1920px;
   margin: 0 auto;
   padding: 0 var(--spacing-md);
+  position: relative;
+  z-index: 1;
 }
 
 .flex {
@@ -176,6 +178,34 @@
   box-shadow: var(--color-shadow-hover);
 }
 
+.shadow-glow {
+  box-shadow: var(--color-shadow-glow);
+}
+
+.depth-1 {
+  box-shadow: var(--color-shadow-xs);
+}
+
+.depth-2 {
+  box-shadow: var(--color-shadow-sm);
+}
+
+.depth-3 {
+  box-shadow: var(--color-shadow-light);
+}
+
+.depth-4 {
+  box-shadow: var(--color-shadow-base);
+}
+
+.depth-5 {
+  box-shadow: var(--color-shadow-hover);
+}
+
+.depth-6 {
+  box-shadow: var(--color-shadow-heavy);
+}
+
 .transition {
   transition: all var(--transition-duration-base) var(--transition-timing);
 }
@@ -320,6 +350,7 @@
 .btn-primary:hover:not(:disabled) {
   background: var(--color-primary-light);
   border-color: var(--color-primary-light);
+  box-shadow: 0 0 16px var(--color-primary-glow);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -336,6 +367,7 @@
 .btn-success:hover:not(:disabled) {
   background: var(--color-success-light);
   border-color: var(--color-success-light);
+  box-shadow: 0 0 16px var(--color-success-glow);
 }
 
 .btn-warning {
@@ -347,6 +379,7 @@
 .btn-warning:hover:not(:disabled) {
   background: var(--color-warning-light);
   border-color: var(--color-warning-light);
+  box-shadow: 0 0 16px var(--color-warning-glow);
 }
 
 .btn-danger {
@@ -358,6 +391,7 @@
 .btn-danger:hover:not(:disabled) {
   background: var(--color-error-light);
   border-color: var(--color-error-light);
+  box-shadow: 0 0 16px var(--color-error-glow);
 }
 
 .btn-info {
@@ -369,6 +403,7 @@
 .btn-info:hover:not(:disabled) {
   background: var(--color-info-light);
   border-color: var(--color-info-light);
+  box-shadow: 0 0 16px var(--color-info-glow);
 }
 
 .btn-outline {
@@ -380,6 +415,7 @@
 .btn-outline:hover:not(:disabled) {
   background: var(--color-primary);
   color: var(--color-text-inverse);
+  box-shadow: 0 0 16px var(--color-primary-glow);
 }
 
 .btn-ghost {
@@ -424,7 +460,7 @@
 
 .input:focus:not(:disabled) {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
 }
 
 .input:disabled {
@@ -438,7 +474,7 @@
 }
 
 .input.is-error:focus {
-  box-shadow: 0 0 0 2px rgba(245, 108, 108, 0.2);
+  box-shadow: 0 0 0 3px var(--color-error-glow);
 }
 
 .label {
@@ -466,27 +502,27 @@
 }
 
 .badge-primary {
-  background: rgba(64, 158, 255, 0.1);
+  background: rgba(0, 87, 217, 0.1);
   color: var(--color-primary);
 }
 
 .badge-success {
-  background: rgba(103, 194, 58, 0.1);
+  background: rgba(0, 168, 107, 0.1);
   color: var(--color-success);
 }
 
 .badge-warning {
-  background: rgba(230, 162, 60, 0.1);
+  background: rgba(217, 119, 6, 0.1);
   color: var(--color-warning);
 }
 
 .badge-danger {
-  background: rgba(245, 108, 108, 0.1);
+  background: rgba(220, 38, 38, 0.1);
   color: var(--color-error);
 }
 
 .badge-info {
-  background: rgba(144, 147, 153, 0.1);
+  background: rgba(124, 58, 237, 0.1);
   color: var(--color-info);
 }
 

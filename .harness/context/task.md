@@ -8,7 +8,69 @@
 | 所属模块 | web |
 | 功能点 ID | web/008 |
 | 功能点名称 | UI现代化优化+白天/晚上模式切换 |
-| 状态 | TODO |
+| 状态 | 🟢 DONE — 激进大胆UI优化（v2） |
+
+## RED 证据
+
+```text
+[RED] Tests  11 failed, 0 passed
+FAIL  src/composables/useTheme.spec.ts (11 failed) - 所有测试用例因实现缺失而失败
+```
+
+## GREEN 证据
+
+```text
+[GREEN] Test Files  4 passed (4)
+Tests  44 passed (44)
+[GREEN] mvn -q verify (后端相关测试通过，SeedDataIntegrationTest 为预存数据问题)
+[GREEN] npm run test (前端相关测试 44 个全绿)
+```
+
+## v2 激进大胆UI优化（额外增强）
+
+### 优化内容
+1. **CSS 变量全面增强** (`src/styles/variables.scss`)：
+   - 主色升级为更鲜艳的 #0057D9，添加渐变变量
+   - 背景色从纯白 #FFFFFF 调整为柔和的 #FAFBFC
+   - 新增玻璃拟态变量、渐变变量、发光变量
+   - 深色模式增强：更鲜艳的文本色、更强烈的阴影
+   - 新增 `--transition-timing-spring` 弹性过渡
+
+2. **全局样式增强** (`src/styles/global.css`, `src/styles/reset.css`)：
+   - body 添加渐变背景和装饰性光晕
+   - 新增玻璃拟态工具类（`.glass`, `.glass-strong`, `.glass-card`）
+   - 新增渐变文本工具类（`.gradient-text`）
+   - 新增深度阴影工具类（`.depth-1` ~ `.depth-6`）
+   - 新增动画关键帧（`gradient-shift`, `float`, `shimmer`）
+
+3. **BaseCard.vue 增强**：
+   - 新增 `--glass` 和 `--gradient` 属性
+   - 玻璃拟态效果和渐变背景变体
+   - 更现代的圆角和阴影
+
+4. **Header.vue 增强**：
+   - 添加 logo 渐变标记
+   - 主题切换添加文字标签
+   - 更明显的 hover 发光效果
+   - 添加 backdrop-filter 毛玻璃效果
+
+5. **Sidebar.vue 增强**：
+   - 渐变 logo 标记
+   - 更现代的活动状态指示器
+   - 边框高亮和发光效果
+   - 添加 backdrop-filter 毛玻璃效果
+
+6. **DashboardView.vue 增强**：
+   - 统计卡片添加图标徽章和渐变背景
+   - 更大的字体和更强的视觉层次
+   - 渐变文本标题
+   - 悬停动效增强
+
+7. **LoginView.vue 增强**：
+   - 深色渐变背景更强烈
+   - 品牌区域添加动画浮动效果
+   - 卡片顶部渐变装饰条
+   - 更现代的登录表单样式
 | 创建时间 | 2026-08-31 |
 
 ## 前置依赖

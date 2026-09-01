@@ -3,10 +3,10 @@
   import BaseCard from '@/components/BaseCard.vue';
 
   const stats = ref([
-    { label: '总用户数', value: '1,234', trend: '+12%', trendType: 'success' },
-    { label: '总角色数', value: '56', trend: '+5%', trendType: 'success' },
-    { label: '总权限数', value: '234', trend: '+8%', trendType: 'success' },
-    { label: '总模块数', value: '12', trend: '-2%', trendType: 'warning' },
+    { label: '总用户数', value: '1,234', trend: '+12%', trendType: 'success', icon: 'User', gradient: 'var(--gradient-primary)' },
+    { label: '总角色数', value: '56', trend: '+5%', trendType: 'success', icon: 'SwitchButton', gradient: 'var(--gradient-success)' },
+    { label: '总权限数', value: '234', trend: '+8%', trendType: 'success', icon: 'Key', gradient: 'var(--gradient-info)' },
+    { label: '总模块数', value: '12', trend: '-2%', trendType: 'warning', icon: 'Cpu', gradient: 'var(--gradient-warning)' },
   ]);
 
   const recentActivities = ref([
@@ -51,7 +51,7 @@
 <template>
   <div class="dashboard">
     <div class="dashboard__header">
-      <h1 class="dashboard__title">仪表盘</h1>
+      <h1 class="dashboard__title gradient-text">仪表盘</h1>
       <p class="dashboard__subtitle">欢迎回来，这里是系统概览</p>
     </div>
 
@@ -62,8 +62,12 @@
         class="dashboard__stat-card"
         :bordered="true"
         :hoverable="true"
+        :gradient="true"
       >
         <div class="stat__content">
+          <div class="stat__icon" :style="{ background: stat.gradient }">
+            <component :is="stat.icon" />
+          </div>
           <div class="stat__label">{{ stat.label }}</div>
           <div class="stat__value">{{ stat.value }}</div>
           <div class="stat__trend" :class="['stat__trend--' + stat.trendType]">
@@ -73,7 +77,7 @@
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="2"
+                stroke-width="2.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               >
@@ -85,7 +89,7 @@
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="2"
+                stroke-width="2.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               >
@@ -100,7 +104,7 @@
     </div>
 
     <div class="dashboard__content">
-      <BaseCard title="近期活动" class="dashboard__activity-card">
+      <BaseCard title="近期活动" class="dashboard__activity-card" :gradient="true">
         <div class="activity__list">
           <div v-for="activity in recentActivities" :key="activity.time" class="activity__item">
             <div class="activity__time">{{ activity.time }}</div>
@@ -122,67 +126,98 @@
 <style scoped lang="scss">
   .dashboard {
     padding: 0;
+    position: relative;
+    z-index: 1;
   }
 
   .dashboard__header {
-    margin-bottom: 24px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--color-border-light);
   }
 
   .dashboard__title {
-    margin: 0 0 4px;
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--color-text-primary);
+    margin: 0 0 6px;
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    line-height: 1.2;
+    letter-spacing: -0.5px;
   }
 
   .dashboard__subtitle {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--font-size-base);
     color: var(--color-text-secondary);
   }
 
   .dashboard__stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 20px;
+    margin-bottom: 28px;
   }
 
   .stat__content {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 10px;
+  }
+
+  .stat__icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--color-border-radius-lg);
+    color: white;
+    font-size: 22px;
+    margin-bottom: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    svg {
+      width: 22px;
+      height: 22px;
+    }
   }
 
   .stat__label {
     font-size: 13px;
     color: var(--color-text-secondary);
+    font-weight: var(--font-weight-medium);
   }
 
   .stat__value {
-    font-size: 28px;
-    font-weight: 700;
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
     color: var(--color-text-primary);
-    line-height: 1.2;
+    line-height: 1.1;
+    letter-spacing: -1px;
   }
 
   .stat__trend {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: var(--font-weight-semibold);
+    padding: 4px 10px;
+    border-radius: 20px;
+    width: fit-content;
 
     &--success {
       color: var(--color-success);
+      background: rgba(0, 168, 107, 0.08);
     }
 
     &--warning {
       color: var(--color-warning);
+      background: rgba(217, 119, 6, 0.08);
     }
 
     &--danger {
       color: var(--color-error);
+      background: rgba(220, 38, 38, 0.08);
     }
   }
 
@@ -201,7 +236,7 @@
   .dashboard__content {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 20px;
   }
 
   .activity__list {
@@ -213,19 +248,29 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 12px 0;
+    padding: 16px 0;
     border-bottom: 1px solid var(--color-border-lighter);
+    transition: background var(--transition-duration-base) var(--transition-timing);
 
     &:last-child {
       border-bottom: none;
+    }
+
+    &:hover {
+      background: var(--color-bg-hover);
+      margin: 0 calc(var(--card-padding) * -1);
+      padding-left: calc(var(--card-padding));
+      padding-right: calc(var(--card-padding));
+      border-radius: var(--color-border-radius-sm);
     }
   }
 
   .activity__time {
     width: 140px;
     flex-shrink: 0;
-    font-size: 12px;
+    font-size: 13px;
     color: var(--color-text-secondary);
+    font-weight: var(--font-weight-medium);
   }
 
   .activity__info {
@@ -237,8 +282,8 @@
   }
 
   .activity__user {
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text-primary);
   }
 
@@ -265,7 +310,7 @@
     &::before {
       content: '';
       position: absolute;
-      inset: -3px;
+      inset: -4px;
       border-radius: 50%;
       opacity: 0.2;
     }
@@ -324,6 +369,10 @@
     .activity__time {
       width: auto;
       flex-shrink: 0;
+    }
+
+    .dashboard__title {
+      font-size: var(--font-size-2xl);
     }
   }
 </style>

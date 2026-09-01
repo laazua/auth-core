@@ -11,6 +11,8 @@
     headerClass?: string;
     bodyClass?: string;
     footerClass?: string;
+    glass?: boolean;
+    gradient?: boolean;
   }
 
   const props = withDefaults(defineProps<Props>(), {
@@ -18,6 +20,8 @@
     hoverable: false,
     shadow: 'hover',
     padding: '16px',
+    glass: false,
+    gradient: false,
   });
 
   const cardClasses = computed(() => [
@@ -27,6 +31,8 @@
     { 'base-card--shadow-always': props.shadow === 'always' },
     { 'base-card--shadow-hover': props.shadow === 'hover' },
     { 'base-card--shadow-never': props.shadow === 'never' },
+    { 'base-card--glass': props.glass },
+    { 'base-card--gradient': props.gradient },
   ]);
 
   const headerClasses = computed(() => ['base-card__header', props.headerClass]);
@@ -61,19 +67,37 @@
 <style scoped lang="scss">
   .base-card {
     background: var(--color-bg);
-    border-radius: 8px;
+    border-radius: var(--color-border-radius-card);
     overflow: hidden;
+    position: relative;
 
     &--bordered {
       border: 1px solid var(--color-border-light);
     }
 
+    &--glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+    }
+
+    &--gradient {
+      background: var(--gradient-bg);
+      background-size: 200% 200%;
+      animation: gradient-shift 8s ease infinite;
+    }
+
     &--hoverable {
-      transition: all 0.15s ease-out;
+      transition: all var(--transition-duration-base) var(--transition-timing);
 
       &:hover {
         box-shadow: var(--color-shadow-hover);
         transform: translateY(-2px);
+
+        .base-card__header {
+          border-bottom-color: var(--color-border);
+        }
       }
     }
 
@@ -82,7 +106,7 @@
     }
 
     &--shadow-hover {
-      transition: box-shadow 0.15s ease-out;
+      transition: box-shadow var(--transition-duration-base) var(--transition-timing);
 
       &:hover {
         box-shadow: var(--color-shadow-hover);
@@ -116,7 +140,7 @@
     &__title {
       margin: 0;
       font-size: 16px;
-      font-weight: 600;
+      font-weight: var(--font-weight-semibold);
       color: var(--color-text-primary);
       line-height: 1.3;
     }
@@ -140,6 +164,18 @@
       padding: 12px var(--card-padding);
       border-top: 1px solid var(--color-border-light);
       background: var(--color-bg-page);
+    }
+  }
+
+  @keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
     }
   }
 </style>

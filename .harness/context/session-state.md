@@ -2,12 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟡 sprint-032 进行中（web/008 UI现代化优化+白天/晚上模式切换）
+- 状态: 🟢 sprint-032 完成（web/008 UI现代化优化+白天/晚上模式切换 v2 激进大胆优化）
 - 当前模块: web
 - 当前功能点: web/008
 
 ## 下一步动作
-Evaluator：web/008 UI现代化优化+白天/晚上模式切换待评审。
+Planner：取新功能点（sprint-033）或处理 backlog。
 
 ## 挂起
 - 2026-08-26: Planner(sprint-004) — 用户裁决：暂沿用旧口令 abc123456 不轮换（风险自担）；已注入仓库外 ~/.bashrc 与 ~/.bash_profile（export MYSQL_PASSWORD），git 历史清理事项仍待裁决。真实库 192.168.165.88:3306（MySQL 8.0.45，库 authcore 已就绪）自本 Sprint 起用于验收。

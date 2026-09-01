@@ -47,7 +47,7 @@
   const avatarUrl = computed(() => {
     return (
       userInfo.value?.avatar ||
-      `https://ui-avatars.com/api/?name=${encodeURIComponent(userInfo.value?.nickname || 'User')}&background=409EFF&color=fff`
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(userInfo.value?.nickname || 'User')}&background=0057D9&color=fff`
     );
   });
 
@@ -99,14 +99,17 @@
       >
         <component :is="isCollapsed ? Expand : Fold" />
       </button>
-      <h1 v-if="!isCollapsed" class="header__title">{{ route.meta.title || '仪表盘' }}</h1>
+      <h1 v-if="!isCollapsed" class="header__title">
+        <span class="header__logo-mark" />
+        {{ route.meta.title || '仪表盘' }}
+      </h1>
     </div>
     <div class="header__right">
       <button class="header__theme-toggle" :aria-label="isDark ? '切换亮色模式' : '切换暗色模式'" @click="toggleTheme">
         <span class="header__theme-toggle-track" :class="{ 'is-dark': isDark }">
           <span class="header__theme-toggle-thumb" />
         </span>
-        <component :is="isDark ? Moon : Sunny" class="header__theme-toggle-icon" />
+        <span class="header__theme-toggle-label">{{ isDark ? '暗色' : '亮色' }}</span>
       </button>
       <el-dropdown trigger="click">
         <button class="header__action" aria-label="消息通知">
@@ -175,6 +178,8 @@
     top: 0;
     z-index: var(--z-index-sticky);
     flex-shrink: 0;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
   .header__left {
@@ -189,14 +194,15 @@
     justify-content: center;
     width: 36px;
     height: 36px;
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--color-text-secondary);
     background: transparent;
-    transition: all 0.1s ease-out;
+    transition: all var(--transition-duration-base) var(--transition-timing);
 
     &:hover {
       background: var(--color-bg-hover);
       color: var(--color-primary);
+      box-shadow: 0 0 0 2px var(--color-primary-glow);
     }
 
     svg {
@@ -207,9 +213,22 @@
 
   .header__title {
     margin: 0;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 18px;
+    font-weight: var(--font-weight-bold);
     color: var(--color-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: -0.3px;
+  }
+
+  .header__logo-mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: var(--gradient-primary);
+    display: inline-block;
+    box-shadow: 0 2px 8px var(--color-primary-glow);
   }
 
   .header__right {
@@ -222,27 +241,33 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    width: 48px;
-    height: 28px;
-    padding: 0;
-    border: none;
-    background: transparent;
+    width: auto;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--color-border-light);
+    background: var(--color-bg);
     cursor: pointer;
-    border-radius: 14px;
+    border-radius: 16px;
     transition: all var(--transition-duration-base) var(--transition-timing);
+
+    &:hover {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 2px var(--color-primary-glow);
+    }
   }
 
   .header__theme-toggle-track {
     position: relative;
-    width: 40px;
-    height: 20px;
-    border-radius: 10px;
+    width: 36px;
+    height: 18px;
+    border-radius: 9px;
     background: var(--color-border);
     transition: background var(--transition-duration-base) var(--transition-timing-smooth);
     flex-shrink: 0;
 
     &.is-dark {
-      background: var(--color-primary);
+      background: var(--gradient-primary);
+      box-shadow: 0 0 8px var(--color-primary-glow);
     }
   }
 
@@ -250,24 +275,23 @@
     position: absolute;
     top: 2px;
     left: 2px;
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     background: var(--color-bg);
     box-shadow: var(--color-shadow-sm);
     transition: transform var(--transition-duration-base) var(--transition-timing-bounce);
 
     .is-dark & {
-      transform: translateX(20px);
+      transform: translateX(18px);
     }
   }
 
-  .header__theme-toggle-icon {
-    width: 16px;
-    height: 16px;
+  .header__theme-toggle-label {
+    font-size: 12px;
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-secondary);
-    flex-shrink: 0;
-    transition: color var(--transition-duration-base) var(--transition-timing);
+    white-space: nowrap;
   }
 
   .header__action {
@@ -277,14 +301,15 @@
     position: relative;
     width: 36px;
     height: 36px;
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--color-text-secondary);
     background: transparent;
-    transition: all 0.1s ease-out;
+    transition: all var(--transition-duration-base) var(--transition-timing);
 
     &:hover {
       background: var(--color-bg-hover);
       color: var(--color-primary);
+      box-shadow: 0 0 0 2px var(--color-primary-glow);
     }
 
     svg {
@@ -295,18 +320,19 @@
 
   .header__badge {
     position: absolute;
-    top: 4px;
-    right: 4px;
+    top: 2px;
+    right: 2px;
     min-width: 16px;
     height: 16px;
     padding: 0 4px;
     font-size: 10px;
-    font-weight: 600;
+    font-weight: var(--font-weight-bold);
     color: white;
     background: var(--color-error);
     border-radius: 8px;
     text-align: center;
     line-height: 16px;
+    box-shadow: 0 0 0 2px var(--color-bg);
   }
 
   .header__avatar-wrapper {
@@ -314,26 +340,30 @@
     align-items: center;
     gap: 8px;
     padding: 4px 12px 4px 8px;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: all 0.1s ease-out;
+    transition: all var(--transition-duration-base) var(--transition-timing);
+    border: 1px solid transparent;
 
     &:hover {
       background: var(--color-bg-hover);
+      border-color: var(--color-border-light);
+      box-shadow: var(--color-shadow-sm);
     }
   }
 
   .header__avatar {
     width: 32px;
     height: 32px;
-    border-radius: 50%;
+    border-radius: 8px;
     object-fit: cover;
-    border: 1px solid var(--color-border-light);
+    border: 2px solid var(--color-border-light);
+    transition: border-color var(--transition-duration-base) var(--transition-timing);
   }
 
   .header__username {
     font-size: 13px;
-    font-weight: 500;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text-primary);
     max-width: 100px;
     overflow: hidden;
@@ -354,14 +384,14 @@
   .header__dropdown-avatar {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
+    border-radius: 8px;
     object-fit: cover;
   }
 
   .header__dropdown-name {
     margin: 0;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text-primary);
   }
 

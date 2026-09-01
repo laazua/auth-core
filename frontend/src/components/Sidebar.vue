@@ -49,41 +49,11 @@ const toggleCollapse = () => {
   <aside class="sidebar" :class="{ 'sidebar--collapsed': isCollapsed }">
     <div class="sidebar__header">
       <div v-if="!isCollapsed" class="sidebar__logo">
-        <svg
-          viewBox="0 0 32 32"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          width="28"
-          height="28"
-        >
-          <rect width="32" height="32" rx="8" fill="var(--color-primary)" />
-          <path
-            d="M8 16L14 22L24 10"
-            stroke="white"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+        <div class="sidebar__logo-mark" />
         <span>Auth Core</span>
       </div>
       <div v-else class="sidebar__logo-collapsed">
-        <svg
-          viewBox="0 0 32 32"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          width="28"
-          height="28"
-        >
-          <rect width="32" height="32" rx="8" fill="var(--color-primary)" />
-          <path
-            d="M8 16L14 22L24 10"
-            stroke="white"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+        <div class="sidebar__logo-mark sidebar__logo-mark--sm" />
       </div>
     </div>
     <div class="sidebar__menu">
@@ -139,8 +109,10 @@ const toggleCollapse = () => {
   left: 0;
   top: 0;
   z-index: var(--z-index-fixed);
-  transition: width 0.15s ease-out, transform 0.15s ease-out;
+  transition: width 0.2s var(--transition-timing-smooth), background var(--transition-duration-slow) var(--transition-timing-smooth);
   overflow: hidden;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 
   &--collapsed {
     width: 64px;
@@ -155,12 +127,13 @@ const toggleCollapse = () => {
   padding: 0 16px;
   border-bottom: 1px solid var(--color-border-light);
   flex-shrink: 0;
+  background: var(--color-bg-page);
 }
 
 .sidebar__logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   color: var(--color-text-primary);
   white-space: nowrap;
 
@@ -170,8 +143,24 @@ const toggleCollapse = () => {
 
   span {
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: -0.3px;
   }
+}
+
+.sidebar__logo-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--gradient-primary);
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px var(--color-primary-glow);
+}
+
+.sidebar__logo-mark--sm {
+  width: 24px;
+  height: 24px;
+  margin: 0 auto;
 }
 
 .sidebar__logo-collapsed {
@@ -195,21 +184,26 @@ const toggleCollapse = () => {
       height: 40px;
       line-height: 40px;
       padding: 0 12px;
-      border-radius: 6px;
+      border-radius: 8px;
       margin: 2px 4px;
       color: var(--color-text-regular);
       font-size: 13px;
-      transition: all 0.1s ease-out;
+      font-weight: 500;
+      transition: all var(--transition-duration-base) var(--transition-timing);
+      border: 1px solid transparent;
 
       &:hover {
         background: var(--color-bg-hover);
         color: var(--color-primary);
+        border-color: var(--color-border-light);
       }
 
       &.is-active {
-        background: rgba(64, 158, 255, 0.1);
+        background: rgba(0, 87, 217, 0.08);
         color: var(--color-primary);
-        font-weight: 500;
+        font-weight: 600;
+        border-color: rgba(0, 87, 217, 0.15);
+        box-shadow: 0 0 0 1px rgba(0, 87, 217, 0.1);
 
         .sidebar__icon {
           color: var(--color-primary);
@@ -217,10 +211,10 @@ const toggleCollapse = () => {
       }
 
       .sidebar__icon {
-        margin-right: 10px;
-        font-size: 14px;
+        margin-right: 12px;
+        font-size: 16px;
         color: var(--color-text-secondary);
-        transition: color 0.1s ease-out;
+        transition: color var(--transition-duration-base) var(--transition-timing);
         flex-shrink: 0;
       }
     }
@@ -230,34 +224,40 @@ const toggleCollapse = () => {
         height: 40px;
         line-height: 40px;
         padding: 0 12px;
-        border-radius: 6px;
+        border-radius: 8px;
         margin: 2px 4px;
         color: var(--color-text-regular);
         font-size: 13px;
         font-weight: 500;
-        transition: all 0.1s ease-out;
+        transition: all var(--transition-duration-base) var(--transition-timing);
+        border: 1px solid transparent;
 
         &:hover {
           background: var(--color-bg-hover);
           color: var(--color-primary);
         }
 
-.sidebar__icon {
-        margin-right: 10px;
-        font-size: 14px;
-        color: var(--color-text-secondary);
-        flex-shrink: 0;
-      }
+        &.is-active {
+          background: rgba(0, 87, 217, 0.08);
+          color: var(--color-primary);
+        }
+
+        .sidebar__icon {
+          margin-right: 12px;
+          font-size: 16px;
+          color: var(--color-text-secondary);
+          flex-shrink: 0;
+        }
 
         :deep(.el-sub-menu__icon-arrow) {
-          transition: transform 0.15s ease-out;
+          transition: transform var(--transition-duration-base) var(--transition-timing-smooth);
         }
       }
 
       &.is-opened {
         :deep(.el-sub-menu__title) {
           color: var(--color-primary);
-          background: rgba(64, 158, 255, 0.1);
+          background: rgba(0, 87, 217, 0.08);
 
           :deep(.el-sub-menu__icon-arrow) {
             transform: rotate(90deg);
@@ -284,7 +284,7 @@ const toggleCollapse = () => {
 }
 
 .sidebar__icon {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .sidebar__title {
@@ -298,6 +298,7 @@ const toggleCollapse = () => {
   padding: 12px;
   border-top: 1px solid var(--color-border-light);
   flex-shrink: 0;
+  background: var(--color-bg-page);
 }
 
 .sidebar__toggle {
@@ -306,14 +307,17 @@ const toggleCollapse = () => {
   align-items: center;
   justify-content: center;
   height: 32px;
-  border-radius: 6px;
+  border-radius: 8px;
   color: var(--color-text-secondary);
   background: transparent;
-  transition: all 0.1s ease-out;
+  border: 1px solid var(--color-border-light);
+  transition: all var(--transition-duration-base) var(--transition-timing);
 
   &:hover {
     background: var(--color-bg-hover);
     color: var(--color-primary);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary-glow);
   }
 
   svg {
