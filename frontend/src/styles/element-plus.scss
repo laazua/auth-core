@@ -1,1 +1,43 @@
 @use 'element-plus/theme-chalk/src/index.scss';
+
+/* ── web/017：el-dropdown 弹层主题覆盖 ──
+ * 弹层 teleport 至 body，须在全局层命中；全走 var(--color-*)，随 [data-theme] 亮/暗自动切换
+ * 背景/边框/阴影须以 .is-light 后缀提权（EP 默认 .el-popper.is-light 为 (0,2,0)，裸 .el-dropdown__popper 会被压过） */
+.el-dropdown__popper.is-light {
+  background: var(--color-bg-overlay);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--color-border-radius-lg);
+  box-shadow: var(--color-shadow-base);
+}
+
+.el-dropdown__popper .el-dropdown-menu {
+  min-width: 200px;
+  padding: 6px;
+}
+
+.el-dropdown__popper .el-dropdown-menu__item {
+  color: var(--color-text-regular);
+  font-weight: var(--font-weight-medium);
+  line-height: 22px;
+  padding: 7px 12px;
+  border-radius: var(--color-border-radius-base);
+  transition:
+    background-color var(--transition-duration-base) var(--transition-timing),
+    color var(--transition-duration-base) var(--transition-timing);
+}
+
+.el-dropdown__popper .el-dropdown-menu__item:not(.is-disabled):hover,
+.el-dropdown__popper .el-dropdown-menu__item:not(.is-disabled):focus {
+  background: var(--color-bg-hover);
+  color: var(--color-primary);
+}
+
+.el-dropdown__popper .el-dropdown-menu__item.is-disabled {
+  color: var(--color-text-secondary);
+  cursor: default;
+}
+
+.el-dropdown__popper .el-dropdown-menu__item--divided {
+  border-top-color: var(--color-border-light);
+  margin: 6px 0;
+}

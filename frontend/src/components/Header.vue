@@ -383,8 +383,10 @@ const handleSidebarToggle = () => {
 }
 
 .header__dropdown-icon {
+  width: 16px;
+  height: 16px;
   margin-right: 8px;
-  font-size: 13px;
+  flex-shrink: 0;
   color: var(--color-text-secondary);
 }
 </style>

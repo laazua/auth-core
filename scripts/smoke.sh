@@ -123,6 +123,14 @@ smoke_case "web-013 登录页密码输入框默认隐藏" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1
   npm run test -- --run src/views/LoginView.spec.ts 2>&1 | grep -q '19 passed'
 "
+# web/017：顶栏用户下拉弹层主题覆盖修复验证（生产构建产物含弹层覆盖选择器与主题变量引用）
+smoke_case "web-017 用户下拉弹层主题覆盖构建产物" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  npx vite build >/dev/null 2>&1 || exit 1
+  grep -q '.el-dropdown__popper' dist/assets/css/index-*.css || exit 1
+  grep -q -- '--color-bg-overlay' dist/assets/css/index-*.css || exit 1
+  grep -q '200px' dist/assets/css/index-*.css || exit 1
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
