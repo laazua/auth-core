@@ -4,7 +4,13 @@
 
 ## 记录
 
-- 2026-09-01: Generator — done sprint-033（infra/004 测试基础设施 Testcontainers 基座 + 三层测试分层 + 通用工具，单元测试 4/4 通过，需 Docker 运行集成测试）
+- 2026-09-02: Generator — done sprint-037（web/013 修复登录页密码输入框默认明文显示问题，门禁+冒烟通过）
+- 2026-09-02: Planner — kickoff sprint-037（web/013 修复登录页密码输入框默认明文显示问题，3 条验收标准）
+- 2026-09-01: Planner — kickoff sprint-036（web/012 前端区域背景色差异化优化，4 条验收标准）
+- 2026-09-01: Generator — done sprint-035（web/010 修复侧边栏系统管理菜单 404 问题（路由未注册到路由器），门禁+冒烟通过）
+- 2026-09-01: Planner — kickoff sprint-035（web/010 修复侧边栏系统管理菜单 404 问题（路由未注册到路由器），2 条验收标准，拆分 web/011 后续）
+- 2026-09-01: Generator — done sprint-034（web/009 修复侧边栏系统管理菜单 404 问题，routes.ts 移除 roles 限制 + useMenu.ts 修正路径指向，相关测试 17/17 通过）
+- 2026-09-01: Planner — kickoff sprint-034（web/009 修复侧边栏系统管理菜单 404 问题，4 条验收标准）
 - 2026-09-01: Planner — kickoff sprint-033（infra/004，4 条验收标准）
 - 2026-09-01: Generator — v3 精致现代化优化（克制渐变、柔和阴影、精致配色、充足留白，前端测试 44/44 通过）
 - 2026-09-01: Generator — v2 激进大胆UI优化（glassmorphism、渐变、深度阴影、Logo 动画等增强，前端测试 44/44 通过）

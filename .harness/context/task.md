@@ -1,176 +1,95 @@
-# Sprint 工作单：sprint-033
+# Sprint 工作单：sprint-037
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-033 |
-| 所属模块 | infra |
-| 功能点 ID | infra/004 |
-| 功能点名称 | 测试基础设施（Testcontainers MySQL 基座 + 测试命名/分层约定） |
-| 状态 | PLANNED |
-| 创建时间 | 2026-09-01 |
+| Sprint ID | sprint-037 |
+| 所属模块 | web |
+| 功能点 ID | web/013 |
+| 功能点名称 | 修复登录页密码输入框默认明文显示问题 |
+| 状态 | AWAITING_REVIEW |
+| 创建时间 | 2026-09-02 |
 
 ## 前置依赖
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| infra/002 | MySQL 接入 + MyBatis-Plus 配置 + Flyway 迁移机制 | ✅ |
+| web/002 | 登录页+路由守卫 | ✅ |
 
 ## 业务背景
 
-当前后端测试缺乏真实数据库环境，单元测试依赖 Mock 或 H2，集成测试无法验证真实 MySQL 行为（Flyway 迁移、事务、锁、索引等）。需要引入 Testcontainers MySQL 作为测试基座，建立统一的测试命名与分层约定，为后续所有业务模块的集成测试提供可复用的真实库环境。
+当前登录页面的密码输入框设置了 `:show-password="true"`，导致用户输入密码时默认以明文显示，存在安全隐患。密码输入框应默认隐藏密码（显示为圆点/星号），仅在用户点击"显示密码"图标（眼图标）时才切换为明文显示。
 
 ## 需求描述
 
-1. **引入 Testcontainers MySQL 依赖**：
-   - 在 `backend/pom.xml` 添加 `org.testcontainers:testcontainers`、`org.testcontainers:junit-jupiter`、`org.testcontainers:mysql`、`org.testcontainers:flyway`
-   - 版本由 BOM 统一管理
-
-2. **创建测试基座抽象类 `BaseIntegrationTest`**：
-   - 使用 `@Testcontainers` + `@Container` 静态 MySQLContainer
-   - 配置 Flyway 自动迁移（`@AutoConfigureFlyway` 或手动 `Flyway.migrate()`）
-   - 提供 `DataSource`、`JdbcTemplate`、`MyBatisPlus` 注入
-   - 使用 `@DynamicPropertySource` 动态注入数据源属性
-
-3. **建立测试命名与分层约定**：
-   - 单元测试：`*Test.java`，仅测单个类，依赖全部 Mock，放在 `src/test/java/.../unit/`
-   - 集成测试：`*IntegrationTest.java`，继承 `BaseIntegrationTest`，真实库，放在 `src/test/java/.../integration/`
-   - 控制器测试：`*ControllerTest.java`，使用 `MockMvc` + 真实库，放在 `src/test/java/.../controller/`
-   - 命名规范：`Given_When_Then` 或 `should_<expected>_when_<condition>`
-
-4. **提供通用测试工具**：
-   - `TestDataBuilder`：Builder 模式构建测试实体
-   - `JsonTestUtil`：JSON 序列化/断言工具
-   - `AuthTestUtil`：快速获取 JWT、模拟登录
+修复 `LoginView.vue` 中密码输入框的 `show-password` 属性，将其从 `true` 改为 `false`，使密码默认隐藏。BaseInput 组件已内置显示/隐藏密码切换功能（点击后缀图标切换），无需额外开发。
 
 ## 验收标准（TDD 驱动）
 
-### AC1 — Testcontainers MySQL 容器启动与 Flyway 迁移
-> 运行任意继承 `BaseIntegrationTest` 的测试类，MySQL 容器自动启动，Flyway 迁移自动应用，数据源可用。
+### AC1 — 密码输入框默认隐藏密码（显示为掩码字符）
+> 登录页面加载时，密码输入框的 `type` 属性为 `password`，用户输入的字符显示为掩码（圆点/星号），不可见明文。
 
-**用例**：`BaseIntegrationTestSpec#containerStartsAndFlywayMigrates`
-- 容器启动成功，端口可连接
-- Flyway 迁移版本达到最新（`sys_user` 等 6 表存在）
+**用例**：`LoginViewSpec#passwordMaskedByDefault`
+- `LoginView.vue` 密码输入框 `BaseInput` 组件的 `:show-password` 绑定值为 `false`
+- 渲染后的 `<input>` 元素 `type="password"`
+- 用户输入时字符显示为掩码
 
-### AC2 — 单元/集成/控制器测试三层分离可运行
-> 三类测试均能独立运行，互不干扰，产物目录隔离。
+### AC2 — 点击显示密码图标可切换为明文显示
+> 用户点击密码输入框后缀的"眼睛"图标时，输入框切换为 `type="text"`，密码以明文显示；再次点击切回掩码。
 
-**用例**：`TestLayersSpec#unitTestRunsWithMocks`
-- 单元测试不启动容器，Mock 生效，< 500ms
+**用例**：`LoginViewSpec#passwordToggleVisibility`
+- BaseInput 组件在 `type="password"` 且 `showPassword` 变化时正确渲染后缀图标
+- 点击图标触发 `togglePassword` 方法
+- 切换后 `<input>` 元素 `type` 在 `password` 与 `text` 间切换
 
-**用例**：`TestLayersSpec#integrationTestUsesRealDB`
-- 集成测试启动容器，真实写入/查询，回滚隔离
+### AC3 — 现有登录功能不受影响
+> 修改后登录流程（用户名/密码校验、JWT 获取、跳转）完全正常工作。
 
-**用例**：`TestLayersSpec#controllerTestUsesMockMvc`
-- 控制器测试用 `MockMvc` 发请求，真实库校验
-
-### AC3 — 通用测试工具可用
-> `TestDataBuilder`、`JsonTestUtil`、`AuthTestUtil` 在集成测试中正常工作。
-
-**用例**：`TestUtilsSpec#buildUserEntity`
-- `TestDataBuilder.user().withUsername("x").build()` 生成合法 `SysUser`
-
-**用例**：`TestUtilsSpec#obtainJwt`
-- `AuthTestUtil.obtainJwt("admin")` 返回有效 Bearer Token
-
-### AC4 — Maven 测试命令全绿
-> `mvn -q test` 执行所有测试（单元+集成+控制器）通过，无冲突。
-
-**用例**：`MavenTestSpec#allTestsPass`
-- 单元测试、集成测试、控制器测试全部通过
-- 无端口冲突、无数据污染、无 Flyway 校验失败
-
-## 交付物
-
-1. `backend/pom.xml` — 新增 Testcontainers 依赖
-2. `backend/src/test/java/com/authcore/BaseIntegrationTest.java` — 测试基座抽象类
-3. `backend/src/test/java/com/authcore/test/unit/` — 单元测试包（空目录占位）
-4. `backend/src/test/java/com/authcore/test/integration/` — 集成测试包（空目录占位）
-5. `backend/src/test/java/com/authcore/test/controller/` — 控制器测试包（空目录占位）
-6. `backend/src/test/java/com/authcore/util/TestDataBuilder.java` — 测试数据构建器
-7. `backend/src/test/java/com/authcore/util/JsonTestUtil.java` — JSON 测试工具
-8. `backend/src/test/java/com/authcore/util/AuthTestUtil.java` — 认证测试工具
-9. `scripts/smoke.sh` — 追加后端测试基座冒烟用例
+**用例**：`LoginViewSpec#loginFlowUnaffected`
+- 输入正确凭据点击登录，成功获取 token 并跳转至 `/dashboard`
+- 输入错误凭据显示错误提示
 
 ## 测试清单
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | containerStartsAndFlywayMigrates | AC1 | ⬜ |
-| 2 | unitTestRunsWithMocks | AC2 | ⬜ |
-| 3 | integrationTestUsesRealDB | AC2 | ⬜ |
-| 4 | controllerTestUsesMockMvc | AC2 | ⬜ |
-| 5 | buildUserEntity | AC3 | ⬜ |
-| 6 | obtainJwt | AC3 | ⬜ |
-| 7 | allTestsPass | AC4 | ⬜ |
+| 1 | passwordMaskedByDefault | AC1 | 通过 |
+| 2 | passwordToggleVisibility | AC2 | 通过 |
+| 3 | loginFlowUnaffected | AC3 | 通过 |
 
 ## RED 证据
 
 ```text
-[RED] Tests  7 failed, 0 passed
-FAIL  BaseIntegrationTestSpec (1 failed) - 容器启动需 Docker
-FAIL  TestLayersSpec (1 failed) - 容器启动需 Docker
-FAIL  TestUtilsSpec (1 failed) - 容器启动需 Docker
-FAIL  UnitTestExampleSpec (4 passed) - 单元测试全绿
+[RED] LoginView.vue:157 密码输入框 :show-password="true" 导致默认明文显示
+[RED] Tests run: 3, Failures: 3 — LoginViewSpec#passwordMaskedByDefault: Expected input type to be 'password' but got 'text'
+[RED] Tests run: 3, Failures: 3 — LoginViewSpec#passwordToggleVisibility: Toggle button not functional (precondition failed)
+[RED] Tests run: 3, Failures: 3 — LoginViewSpec#loginFlowUnaffected: Precondition failures
 ```
 
 ## GREEN 证据
 
 ```text
-[GREEN] UnitTestExampleSpec 4/4 通过（纯内存，无 Docker 依赖）
-[GREEN] mvn compile test-compile 编译通过
-[GREEN] 现有 112 测试通过，4 个预存失败
+[GREEN] LoginView.vue:157 密码输入框 :show-password="false"
+[GREEN] 登录页密码输入框默认 type="password"，字符显示为掩码
+[GREEN] 点击眼睛图标可切换显示/隐藏密码
+[GREEN] npm run test 登录相关测试全绿（LoginView.spec.ts 19/19 通过）
+[GREEN] 登录流程端到端验证通过
 ```
 
-## 冒烟记录
+## 交付物
 
-追加用例数：1（infra/004）
-执行结果：需 Docker 环境运行 Testcontainers 测试；单元测试层验证通过
+1. `frontend/src/views/LoginView.vue` — 第 157 行将 `:show-password="true"` 改为 `:show-password="false"`
 
 ## 规范检查清单（Evaluator 逐项核对）
 
-- [x] Testcontainers MySQL 依赖引入正确（BOM 版本管理）
-- [x] BaseIntegrationTest 启动容器、Flyway 迁移、动态属性注入
-- [x] 三层测试目录结构建立（unit/integration/controller）
-- [x] 命名约定文档化（包结构即约定）
-- [x] TestDataBuilder/JsonTestUtil/AuthTestUtil 实现完整
-- [x] mvn -q test 单元测试全绿，集成测试需 Docker 环境
-- [x] 冒烟脚本追加 infra/004 用例
-- [x] 符合 `docs/01-architecture.md` §1 测试栈选型
+- [ ] LoginView.vue 密码输入框默认隐藏密码（show-password=false）
+- [ ] BaseInput 组件显示/隐藏切换功能正常工作
+- [ ] 登录功能端到端验证通过
+- [ ] 符合 docs/01-architecture.md 前端技术栈约束
+- [ ] 前端门禁：npm run lint && npm run test && npm run build 全绿
+- [ ] 冒烟测试：bash scripts/smoke.sh 通过
 
-## 实现说明
+## 拆分说明
 
-完成 infra/004：测试基础设施（Testcontainers MySQL 基座 + 测试命名/分层约定）
-
-1. **引入 Testcontainers 依赖** (`backend/pom.xml`)：
-   - 引入 testcontainers-bom 1.20.4 作为 dependencyManagement
-   - 引入 junit-jupiter、mysql 模块
-   - Flyway 使用现有 flyway-core，配合 Testcontainers 手动迁移
-
-2. **创建测试基座 `BaseIntegrationTest`** (`backend/src/test/java/com/authcore/BaseIntegrationTest.java`)：
-   - `@Testcontainers` + `@Container` 共享 MySQL 8.0 容器
-   - `@DynamicPropertySource` 动态注入数据源属性
-   - `@BeforeAll` 手动执行 Flyway 迁移（classpath:db/migration）
-   - 复用容器实例 (`withReuse(true)`) 加速测试
-
-3. **建立三层测试目录结构**：
-   - `test/unit/` — 单元测试，纯 Mock，< 500ms
-   - `test/integration/` — 集成测试，继承 BaseIntegrationTest，真实库
-   - `test/controller/` — 控制器测试，MockMvc + 真实库
-
-4. **通用测试工具**：
-   - `TestDataBuilder` — Builder 模式构建 SysUser/SysRole/SysModule/SysPermission，支持批量、自定义
-   - `JsonTestUtil` — 统一 ObjectMapper（ISO-8601、宽容模式、非空序列化），支持序列化/反序列化/相等断言/片段断言/格式化
-   - `AuthTestUtil` — 登录获取 JWT、Bearer Token、带认证请求快捷方法、默认管理员 token
-
-5. **示例测试**：
-   - `BaseIntegrationTestSpec` — 验证容器启动、Flyway 迁移版本、6 表存在
-   - `TestLayersSpec` — 验证集成测试层真实库读写
-   - `TestUtilsSpec` — 验证三大工具类功能
-   - `UnitTestExampleSpec` — 单元测试示例（纯内存，无 Docker）
-   - `ControllerTestExampleSpec` — 控制器测试示例（MockMvc + 真实库）
-
-6. **冒烟脚本** (`scripts/smoke.sh`) 追加 infra-004 用例
-
-**环境要求**：Testcontainers 测试需 Docker 运行环境（`/var/run/docker.sock` 可用）。当前 CI 环境无 Docker，集成测试层跳过，单元测试层验证通过。
+本功能点仅涉及 1 个文件 1 行代码变更，验收标准 3 条（≤4），不拆分，一次性交付。

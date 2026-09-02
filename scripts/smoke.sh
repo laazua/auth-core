@@ -117,6 +117,12 @@ smoke_case "perms-001 权限 CRUD 定向测试" mvn -q -f "$APP_DIR/pom.xml" tes
 
 # modules/001：模块 CRUD API（分页/条件查询/权限级联/创建唯一/更新code不可改/删除引用保护）
 smoke_case "modules-001 模块 CRUD 定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='ModuleControllerTest,ModuleServiceTest'
+
+# web/013：登录页密码输入框默认隐藏（前端单测验证）
+smoke_case "web-013 登录页密码输入框默认隐藏" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  npm run test -- --run src/views/LoginView.spec.ts 2>&1 | grep -q '19 passed'
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
