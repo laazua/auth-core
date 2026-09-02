@@ -12,3 +12,4 @@ backend/target/
 # 本地配置文件（含敏感信息，不提交）
 backend/src/main/resources/application.yml
 backend/src/main/resources/application-local.yml
+node_modules/*
