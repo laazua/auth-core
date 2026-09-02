@@ -12,6 +12,9 @@ const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 
+// Provide router to auth store for dynamic route registration
+authStore.setRouter(router);
+
 const loginForm = reactive({
   username: '',
   password: '',
@@ -24,7 +27,7 @@ const rules = {
     { min: 3, max: 20, message: '用户名长度为 3-20 位', trigger: 'blur' },
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
+    { required: true, message: '请输入用户密码', trigger: 'blur' },
     { min: 6, max: 30, message: '密码长度为 6-30 位', trigger: 'blur' },
   ],
 };
@@ -151,7 +154,7 @@ const handleKeyUp = (event: KeyboardEvent) => {
                 type="password"
                 placeholder="请输入密码"
                 :prefix-icon="Lock"
-                :show-password="true"
+                :show-password="false"
                 autocomplete="current-password"
                 @keyup.enter="handleLogin"
               />
