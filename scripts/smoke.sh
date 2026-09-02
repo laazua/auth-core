@@ -185,6 +185,15 @@ smoke_case "web-018 侧边栏图标全局注册构建产物" bash -c "
   grep -q 'Object.entries' dist/assets/js/index-*.js || exit 1
   grep -q '\.component(' dist/assets/js/index-*.js || exit 1
 "
+
+# web/019：侧边栏菜单图标尺寸修复验证（生产构建产物含图标定宽样式）
+smoke_case "web-019 侧边栏图标尺寸修复构建产物" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  npx vite build >/dev/null 2>&1 || exit 1
+  # 检查 CSS 产物中包含 width:16px 和 height:16px（图标定宽样式，压缩后无空格）
+  grep -q 'width:16px' dist/assets/css/index-*.css || exit 1
+  grep -q 'height:16px' dist/assets/css/index-*.css || exit 1
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

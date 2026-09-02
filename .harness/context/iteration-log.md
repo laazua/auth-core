@@ -4,8 +4,8 @@
 
 ## 记录
 
-- 2026-09-02: Planner — kickoff sprint-042（web/018 修复侧边栏菜单图标不显示，4 条验收标准；main.ts 全局注册 @element-plus/icons-vue 所有图标，Sidebar.vue 模板与 useMenu.ts 配置保持不变）
-- 2026-09-02: Generator — done sprint-041（web/017 顶栏用户下拉弹层主题化+图标定宽，DropdownThemeSpec 6/6 + 冒烟 web-017 通过；浏览器实证：菜单 419.7→229px、行高统一 36px、图标 16×16、暗色弹层深底浅字；门禁红项与预存清单一致零新增；提交 d2a4eb1/e34363e）
+- 2026-09-02: Planner — kickoff sprint-043（web/019 修复侧边栏菜单图标尺寸过大，4 条验收标准；Sidebar.vue 三处 .sidebar__icon 显式定宽 16×16px，SVG 图标不响应 font-size 需显式 width/height）
+- 2026-09-02: Generator — done sprint-042（web/018 侧边栏菜单图标全局注册，SidebarIconSpec 3/3 + 冒烟 web-018 通过；main.ts 批量注册 @element-plus/icons-vue，构建产物含注册代码 Object.entries + .component()；门禁红项与预存清单一致零新增；提交 2c409c5/c92d315）
 - 2026-09-02: Planner — kickoff sprint-041（web/017 修复顶栏用户下拉菜单 UI 突兀与尺寸异常，4 条验收标准；浏览器实测基线：菜单高 419.7px、项行高 78~106px 不一——EP 图标无显式尺寸被 flex 拉伸成 68~96px 巨图，弹层 EP 默认白底 4px 圆角未主题化、暗色下白底近白字不可读）
 - 2026-09-02: Evaluator — pass sprint-040（web/016 CSS 变量注入入口修复 + web/015 一并验收，平均分 9.6/10；门禁/冒烟红项经两次 stash 对照证实为基线预存、零回归）
 - 2026-09-02: Generator — done sprint-040（web/016 修复 CSS 主题变量源未注入入口，StylesEntrySpec 3/3 + 产物含变量定义实证 + 冒烟 web-016 通过；提交 f663a31/e32c6eb；门禁 3 项预存失败/错误与本改动无关见挂起区）

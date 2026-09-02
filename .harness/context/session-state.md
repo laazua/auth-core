@@ -2,12 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟡 sprint-042 规划完成（web/018 Planner 完成，注册 task.md）
+- 状态: 🟡 sprint-043 规划完成（web/019 Planner 完成，注册 task.md）
 - 当前模块: web
-- 当前功能点: web/018（PLANNED）
+- 当前功能点: web/019（PLANNED）
 
 ## 下一步动作
-  Generator：按 `.harness/generator.md` 实现 sprint-042（web/018 修复侧边栏菜单图标不显示）。首个实现要点：在 `frontend/src/main.ts` 引入 `@element-plus/icons-vue` 并批量注册所有图标为全局组件；同步按 TDD 先写 `frontend/src/__tests__/sidebar-icon.spec.ts` 三条源级静态用例（AC1/AC2/AC3）留 RED 证据。
+  Generator：按 `.harness/generator.md` 实现 sprint-043（web/019 修复侧边栏菜单图标尺寸过大）。首个实现要点：在 `frontend/src/components/Sidebar.vue` 三处 `.sidebar__icon` 样式规则中各增 `width: 16px; height: 16px;`；同步按 TDD 先写 `frontend/src/__tests__/sidebar-icon-size.spec.ts` 三条源级静态用例（AC1/AC2/AC3）留 RED 证据。
 
 ## 挂起
 - 2026-09-02: Planner(sprint-041) — 台账盘点仍待决：web/010（sprint-035）评审并入账未完成，registry 行仍 🔄、阶段总览计数已按实际行修正；web/011 预存红项治理优先级维持。本次新增注册 web/017 不依赖二者。

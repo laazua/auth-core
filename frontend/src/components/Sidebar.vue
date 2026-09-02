@@ -204,6 +204,8 @@ const toggleCollapse = () => {
 
       .sidebar__icon {
         margin-right: 12px;
+        width: 16px;
+        height: 16px;
         font-size: 16px;
         color: var(--color-text-placeholder);
         transition: color var(--transition-duration-base) var(--transition-timing);
@@ -231,6 +233,8 @@ const toggleCollapse = () => {
 
         .sidebar__icon {
           margin-right: 12px;
+          width: 16px;
+          height: 16px;
           font-size: 16px;
           color: var(--color-text-placeholder);
           flex-shrink: 0;
@@ -271,6 +275,8 @@ const toggleCollapse = () => {
 }
 
 .sidebar__icon {
+  width: 16px;
+  height: 16px;
   font-size: 16px;
 }
 
