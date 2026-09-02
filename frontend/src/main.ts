@@ -2,6 +2,7 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import router from '@/router';
 import App from '@/App.vue';
+import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 
 import '@/styles/global.css';
 import 'nprogress/nprogress.css';
@@ -23,6 +24,10 @@ router.onError(() => {
 });
 
 const app = createApp(App);
+
+for (const [name, component] of Object.entries(ElementPlusIconsVue)) {
+  app.component(name, component);
+}
 
 app.use(createPinia());
 app.use(router);

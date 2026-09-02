@@ -176,6 +176,15 @@ smoke_case "web-017 用户下拉弹层主题覆盖构建产物" bash -c "
   grep -q -- '--color-bg-overlay' dist/assets/css/index-*.css || exit 1
   grep -q '200px' dist/assets/css/index-*.css || exit 1
 "
+
+# web/018：侧边栏菜单图标注册验证（生产构建产物含图标注册代码特征）
+smoke_case "web-018 侧边栏图标全局注册构建产物" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  npx vite build >/dev/null 2>&1 || exit 1
+  # 检查生产产物中包含图标注册代码：Object.entries(导入) + V.component(t,n)
+  grep -q 'Object.entries' dist/assets/js/index-*.js || exit 1
+  grep -q '\.component(' dist/assets/js/index-*.js || exit 1
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
