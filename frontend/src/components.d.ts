@@ -14,12 +14,18 @@ declare module 'vue' {
     BaseTable: typeof import('./components/BaseTable.vue')['default']
     Breadcrumb: typeof import('./components/Breadcrumb.vue')['default']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
+    ElDrawer: typeof import('element-plus/es')['ElDrawer']
     ElForm: typeof import('element-plus/es')['ElForm']
     ElFormItem: typeof import('element-plus/es')['ElFormItem']
+    ElTable: typeof import('element-plus/es')['ElTable']
+    ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     Header: typeof import('./components/Header.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Sidebar: typeof import('./components/Sidebar.vue')['default']
     TagsView: typeof import('./components/Layout/TagsView.vue')['default']
+  }
+  export interface ComponentCustomProperties {
+    vLoading: typeof import('element-plus/es')['ElLoadingDirective']
   }
 }

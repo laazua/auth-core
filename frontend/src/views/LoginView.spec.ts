@@ -82,7 +82,7 @@ describe('LoginView', () => {
       expect(wrapper.find('.login__title').text()).toBe('欢迎登录');
       expect(wrapper.find('.login__subtitle').text()).toBe('请输入您的账号信息');
       expect(wrapper.find('input[placeholder="请输入用户名"]').exists()).toBe(true);
-      expect(wrapper.find('input[placeholder="请输入密码"]').exists()).toBe(true);
+      expect(wrapper.find('input[placeholder="请输入用户密码"]').exists()).toBe(true);
       expect(wrapper.find('.login__remember').exists()).toBe(true);
       expect(wrapper.find('.login__forgot').exists()).toBe(true);
       expect(wrapper.find('.login__submit').exists()).toBe(true);
@@ -93,7 +93,7 @@ describe('LoginView', () => {
       const vm = wrapper.vm as any;
       
       expect(vm.rules.username).toBeDefined();
-      expect(vm.rules.username.some((r: any) => r.required && r.message === '请输入用户名')).toBe(true);
+      expect(vm.rules.username.some((r: any) => r.required && r.message === '请输入用户')).toBe(true);
       expect(vm.rules.username.some((r: any) => r.min === 3 && r.max === 20)).toBe(true);
       
       expect(vm.rules.password).toBeDefined();

@@ -84,6 +84,11 @@ const { initTheme } = useTheme();
 
 .layout__page {
   min-height: 100%;
+  background: var(--color-bg-content);
+  border-radius: var(--color-border-radius-card);
+  box-shadow: var(--color-shadow-light);
+  border: 1px solid var(--color-border-light);
+  padding: 24px;
 }
 
 .fade-enter-active,

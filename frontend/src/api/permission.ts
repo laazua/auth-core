@@ -29,6 +29,6 @@ export const permissionApi = {
   },
 
   delete(id: number): Promise<Result<void>> {
-    return http.del(`/permissions/${id}`);
+    return http.delete(`/permissions/${id}`);
   },
 };

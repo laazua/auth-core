@@ -49,8 +49,8 @@ describe('Router Guards', () => {
       { path: '/login', name: 'Login', meta: { public: true } },
       { path: '/403', name: 'Forbidden', meta: { public: true } },
       { path: '/dashboard', name: 'Dashboard', meta: { requiresAuth: true } },
-      { path: '/user', name: 'User', meta: { requiresAuth: true, permissions: ['user:read'] } },
-      { path: '/role', name: 'Role', meta: { requiresAuth: true, permissions: ['role:read'] } },
+      { path: '/user', name: 'User', meta: { requiresAuth: true, permissions: ['user:view'] } },
+      { path: '/role', name: 'Role', meta: { requiresAuth: true, permissions: ['role:view'] } },
       { path: '/admin', name: 'Admin', meta: { requiresAuth: true, roles: ['admin'] } },
     ]);
   });
@@ -170,7 +170,7 @@ describe('Router Guards', () => {
     it('redirects to 403 when user lacks required permission', async () => {
       mockAuthStore.isAuthenticated = true;
       mockAuthStore.token = 'valid-token';
-      mockAuthStore.permissions = ['role:read'];
+      mockAuthStore.permissions = ['role:view'];
       mockAuthStore.hasPermission.mockImplementation((p: string) => mockAuthStore.permissions.includes(p));
 
       setupAuthGuard(router);
@@ -183,7 +183,7 @@ describe('Router Guards', () => {
     it('allows access when user has required permission', async () => {
       mockAuthStore.isAuthenticated = true;
       mockAuthStore.token = 'valid-token';
-      mockAuthStore.permissions = ['user:read', 'role:read'];
+      mockAuthStore.permissions = ['user:view', 'role:view'];
       mockAuthStore.hasPermission.mockImplementation((p: string) => mockAuthStore.permissions.includes(p));
 
       setupAuthGuard(router);
@@ -285,8 +285,8 @@ describe('Router Guards', () => {
       mockAuthStore.isAuthenticated = true;
       mockAuthStore.hasPermission.mockReturnValue(false);
 
-      const guard = permissionGuard(['user:read']);
-      const to = { name: 'User', matched: [{ meta: { requiresAuth: true, permissions: ['user:read'] } }] };
+      const guard = permissionGuard(['user:view']);
+      const to = { name: 'User', matched: [{ meta: { requiresAuth: true, permissions: ['user:view'] } }] };
       const from = { name: 'Dashboard' };
       const next = vi.fn();
 
@@ -299,8 +299,8 @@ describe('Router Guards', () => {
       mockAuthStore.isAuthenticated = true;
       mockAuthStore.hasPermission.mockReturnValue(true);
 
-      const guard = permissionGuard(['user:read']);
-      const to = { name: 'User', matched: [{ meta: { requiresAuth: true, permissions: ['user:read'] } }] };
+      const guard = permissionGuard(['user:view']);
+      const to = { name: 'User', matched: [{ meta: { requiresAuth: true, permissions: ['user:view'] } }] };
       const from = { name: 'Dashboard' };
       const next = vi.fn();
 

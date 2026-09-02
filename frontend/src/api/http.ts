@@ -8,7 +8,7 @@ import axios, {
 import { ElMessage } from 'element-plus';
 import router from '@/router';
 import { useAuthStore } from '@/stores/auth';
-import type { Result, ErrorCode } from '@/types/api';
+import { Result, PageResult, ErrorCode } from '@/types/api';
 
 const REQUEST_TIMEOUT = 10000;
 
@@ -56,7 +56,7 @@ const createHttp = (): AxiosInstance => {
         return Promise.reject(new Error(message));
       }
 
-      return response;
+      return response.data;
     },
     (error: AxiosError<Result>) => {
       const { response } = error;
@@ -101,24 +101,26 @@ const handleUnauthorized = () => {
   router.push({ name: 'Login', query: { redirect: router.currentRoute.value.fullPath } });
 };
 
+export type { Result, PageResult, ErrorCode };
+
 export const http = createHttp();
 
+export const del = <T = unknown>(url: string): Promise<Result<T>> => {
+  return http.delete(url) as Promise<Result<T>>;
+};
+
 export const request = <T = unknown>(config: AxiosRequestConfig): Promise<Result<T>> => {
-  return http.request(config).then((res) => res.data);
+  return http.request(config) as Promise<Result<T>>;
 };
 
 export const get = <T = unknown>(url: string, params?: unknown): Promise<Result<T>> => {
-  return http.get(url, { params }).then((res) => res.data);
+  return http.get(url, { params }) as Promise<Result<T>>;
 };
 
 export const post = <T = unknown>(url: string, data?: unknown): Promise<Result<T>> => {
-  return http.post(url, data).then((res) => res.data);
+  return http.post(url, data) as Promise<Result<T>>;
 };
 
 export const put = <T = unknown>(url: string, data?: unknown): Promise<Result<T>> => {
-  return http.put(url, data).then((res) => res.data);
-};
-
-export const del = <T = unknown>(url: string): Promise<Result<T>> => {
-  return http.delete(url).then((res) => res.data);
+  return http.put(url, data) as Promise<Result<T>>;
 };

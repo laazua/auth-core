@@ -176,7 +176,7 @@ describe('IndexView - 用户管理页', () => {
   let authStore: ReturnType<typeof useAuthStore>;
   let pinia: ReturnType<typeof createPinia>;
 
-const createWrapper = (permissions: string[] = ['user:read', 'user:create', 'user:update', 'user:delete', 'user:reset-password', 'user:assign-role']) => {
+const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'user:update', 'user:delete', 'user:reset-password', 'user:assign-role']) => {
   // Update authStore with the given permissions
   authStore.setPermissions(permissions);
   
@@ -184,7 +184,7 @@ const createWrapper = (permissions: string[] = ['user:read', 'user:create', 'use
     history: createWebHistory(),
     routes: [
       { path: '/', name: 'Home', component: { template: '<div>Home</div>' }, meta: { requiresAuth: true } },
-      { path: '/users', name: 'Users', component: IndexView, meta: { requiresAuth: true, permissions: ['user:read'] } },
+      { path: '/users', name: 'Users', component: IndexView, meta: { requiresAuth: true, permissions: ['user:view'] } },
       { path: '/login', name: 'Login', component: { template: '<div>Login</div>' }, meta: { public: true } },
     ],
   });
@@ -205,7 +205,7 @@ const createWrapper = (permissions: string[] = ['user:read', 'user:create', 'use
     pinia = createPinia();
     setActivePinia(pinia);
     authStore = useAuthStore();
-    authStore.login('mock-token', { id: 1, username: 'admin', nickname: '管理员', email: '', phone: '', status: 1, createTime: '' }, ['admin'], ['user:read', 'user:create', 'user:update', 'user:delete', 'user:reset-password', 'user:assign-role', '*']);
+    authStore.login('mock-token', { id: 1, username: 'admin', nickname: '管理员', email: '', phone: '', status: 1, createTime: '' }, ['admin'], ['user:view', 'user:create', 'user:update', 'user:delete', 'user:reset-password', 'user:assign-role', '*']);
     
     mockUserApi.list.mockResolvedValue({
       code: 0,
@@ -603,7 +603,7 @@ const createWrapper = (permissions: string[] = ['user:read', 'user:create', 'use
       mockElMessageBox.confirm.mockResolvedValue('confirm');
       mockUserApi.resetPassword.mockResolvedValue({ code: 0, data: null });
 
-      const wrapper = createWrapper(['user:read', 'user:reset-password']);
+      const wrapper = createWrapper(['user:view', 'user:reset-password']);
       await new Promise(resolve => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -633,7 +633,7 @@ const createWrapper = (permissions: string[] = ['user:read', 'user:create', 'use
         data: mockUsers[0],
       });
 
-      const wrapper = createWrapper(['user:read', 'user:assign-role']);
+      const wrapper = createWrapper(['user:view', 'user:assign-role']);
       await new Promise(resolve => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -686,7 +686,7 @@ const createWrapper = (permissions: string[] = ['user:read', 'user:create', 'use
         data: mockUsers[0],
       });
 
-      const wrapper = createWrapper(['user:read', 'user:assign-role']);
+      const wrapper = createWrapper(['user:view', 'user:assign-role']);
       await new Promise(resolve => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -702,7 +702,7 @@ const createWrapper = (permissions: string[] = ['user:read', 'user:create', 'use
     });
 
     it('hides reset password button when no permission', async () => {
-      const wrapper = createWrapper(['user:read', 'user:create', 'user:update', 'user:delete']);
+      const wrapper = createWrapper(['user:view', 'user:create', 'user:update', 'user:delete']);
       await new Promise(resolve => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -711,7 +711,7 @@ const createWrapper = (permissions: string[] = ['user:read', 'user:create', 'use
     });
 
     it('hides role assign button when no permission', async () => {
-      const wrapper = createWrapper(['user:read', 'user:create', 'user:update', 'user:delete']);
+      const wrapper = createWrapper(['user:view', 'user:create', 'user:update', 'user:delete']);
       await new Promise(resolve => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -719,7 +719,7 @@ const createWrapper = (permissions: string[] = ['user:read', 'user:create', 'use
     });
 
     it('hides create button when no create permission', async () => {
-      const wrapper = createWrapper(['user:read', 'user:update', 'user:delete']);
+      const wrapper = createWrapper(['user:view', 'user:update', 'user:delete']);
       await new Promise(resolve => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 

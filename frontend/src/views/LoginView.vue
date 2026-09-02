@@ -23,11 +23,11 @@ const loginForm = reactive({
 
 const rules = {
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { required: true, message: '请输入用户', trigger: 'blur' },
     { min: 3, max: 20, message: '用户名长度为 3-20 位', trigger: 'blur' },
   ],
   password: [
-    { required: true, message: '请输入用户密码', trigger: 'blur' },
+    { required: true, message: '请输入密码', trigger: 'blur' },
     { min: 6, max: 30, message: '密码长度为 6-30 位', trigger: 'blur' },
   ],
 };
@@ -142,7 +142,7 @@ const handleKeyUp = (event: KeyboardEvent) => {
             <el-form-item prop="username">
               <BaseInput
                 v-model="loginForm.username"
-                placeholder="请输入用户名"
+                placeholder="请输入用户"
                 :prefix-icon="User"
                 autocomplete="username"
                 @keyup.enter="handleLogin"

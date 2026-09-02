@@ -25,7 +25,7 @@ export const moduleApi = {
   },
 
   delete(id: number): Promise<Result<void>> {
-    return http.del(`/modules/${id}`);
+    return http.delete(`/modules/${id}`);
   },
 
   assignPermissions(id: number, data: AssignPermissionsRequest): Promise<Result<void>> {

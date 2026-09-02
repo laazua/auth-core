@@ -181,10 +181,10 @@ const moduleEditData = ref<ModuleVO | null>(null);
 const moduleCreateDrawerVisible = ref(false);
 
 // 权限计算属性
-const canCreatePermission = computed(() => authStore.hasPermission('permission:create'));
-const canDeletePermission = computed(() => authStore.hasPermission('permission:delete'));
+const canCreatePermission = computed(() => authStore.hasPermission('perm:create'));
+const canDeletePermission = computed(() => authStore.hasPermission('perm:delete'));
 
-// 模块权限计算属性
+
 const canCreateModule = computed(() => authStore.hasPermission('module:create'));
 const canDeleteModule = computed(() => authStore.hasPermission('module:delete'));
 const canToggleModuleStatus = computed(() => authStore.hasPermission('module:toggle-status'));

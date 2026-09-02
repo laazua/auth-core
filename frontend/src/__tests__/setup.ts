@@ -29,7 +29,7 @@ import { config } from '@vue/test-utils';
 import { createPinia } from 'pinia';
 
 vi.mock('vue-router', async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = (await importOriginal()) as any;
   return {
     ...actual,
     useRouter: () => ({
@@ -38,6 +38,7 @@ vi.mock('vue-router', async (importOriginal) => {
       go: vi.fn(),
       back: vi.fn(),
       forward: vi.fn(),
+      addRoute: vi.fn(),
     }),
     useRoute: () => ({
       path: '/',
@@ -50,7 +51,7 @@ vi.mock('vue-router', async (importOriginal) => {
 });
 
 vi.mock('pinia', async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = (await importOriginal()) as any;
   return {
     ...actual,
     defineStore: actual.defineStore,

@@ -142,7 +142,7 @@ const mockRoles = [
     status: 1,
     createTime: '2024-01-01T00:00:00Z',
     permissions: [
-      { id: 1, code: 'user:read', name: '用户查看', type: 2, parentId: 0, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z' },
+      { id: 1, code: 'user:view', name: '用户查看', type: 2, parentId: 0, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z' },
       { id: 2, code: 'user:create', name: '用户新增', type: 2, parentId: 0, sort: 2, status: 1, createTime: '2024-01-01T00:00:00Z' },
     ],
   },
@@ -154,7 +154,7 @@ const mockRoles = [
     status: 1,
     createTime: '2024-01-02T00:00:00Z',
     permissions: [
-      { id: 1, code: 'user:read', name: '用户查看', type: 2, parentId: 0, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z' },
+      { id: 1, code: 'user:view', name: '用户查看', type: 2, parentId: 0, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z' },
     ],
   },
   {
@@ -189,7 +189,7 @@ const mockPermissionTree = [
         status: 1,
         createTime: '2024-01-01T00:00:00Z',
         children: [
-          { id: 1, code: 'user:read', name: '用户查看', type: 2, parentId: 11, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
+          { id: 1, code: 'user:view', name: '用户查看', type: 2, parentId: 11, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
           { id: 2, code: 'user:create', name: '用户新增', type: 2, parentId: 11, sort: 2, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
           { id: 3, code: 'user:update', name: '用户编辑', type: 2, parentId: 11, sort: 3, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
           { id: 4, code: 'user:delete', name: '用户删除', type: 2, parentId: 11, sort: 4, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
@@ -205,7 +205,7 @@ const mockPermissionTree = [
         status: 1,
         createTime: '2024-01-01T00:00:00Z',
         children: [
-          { id: 5, code: 'role:read', name: '角色查看', type: 2, parentId: 12, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
+          { id: 5, code: 'role:view', name: '角色查看', type: 2, parentId: 12, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
           { id: 6, code: 'role:create', name: '角色新增', type: 2, parentId: 12, sort: 2, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
           { id: 7, code: 'role:update', name: '角色编辑', type: 2, parentId: 12, sort: 3, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
           { id: 8, code: 'role:delete', name: '角色删除', type: 2, parentId: 12, sort: 4, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
@@ -248,14 +248,14 @@ describe('IndexView - 角色管理页', () => {
   let authStore: ReturnType<typeof useAuthStore>;
   let pinia: ReturnType<typeof createPinia>;
 
-  const createWrapper = (permissions: string[] = ['role:read', 'role:create', 'role:update', 'role:delete', 'role:assign-permission']) => {
+  const createWrapper = (permissions: string[] = ['role:view', 'role:create', 'role:update', 'role:delete', 'role:assign-permission']) => {
     authStore.setPermissions(permissions);
 
     const router = createRouter({
       history: createWebHistory(),
       routes: [
         { path: '/', name: 'Home', component: { template: '<div>Home</div>' }, meta: { requiresAuth: true } },
-        { path: '/roles', name: 'Roles', component: IndexView, meta: { requiresAuth: true, permissions: ['role:read'] } },
+        { path: '/roles', name: 'Roles', component: IndexView, meta: { requiresAuth: true, permissions: ['role:view'] } },
         { path: '/login', name: 'Login', component: { template: '<div>Login</div>' }, meta: { public: true } },
       ],
     });
@@ -276,7 +276,7 @@ describe('IndexView - 角色管理页', () => {
     pinia = createPinia();
     setActivePinia(pinia);
     authStore = useAuthStore();
-    authStore.login('mock-token', { id: 1, username: 'admin', nickname: '管理员', email: '', phone: '', status: 1, createTime: '' }, ['admin'], ['role:read', 'role:create', 'role:update', 'role:delete', 'role:assign-permission', '*']);
+    authStore.login('mock-token', { id: 1, username: 'admin', nickname: '管理员', email: '', phone: '', status: 1, createTime: '' }, ['admin'], ['role:view', 'role:create', 'role:update', 'role:delete', 'role:assign-permission', '*']);
 
     mockRoleApi.list.mockResolvedValue({
       code: 0,
@@ -711,7 +711,7 @@ describe('IndexView - 角色管理页', () => {
 
   describe('AC5 - 权限分配树功能完整', () => {
     it('opens permission assign drawer when clicking permissions button', async () => {
-      const wrapper = createWrapper(['role:read', 'role:assign-permission']);
+      const wrapper = createWrapper(['role:view', 'role:assign-permission']);
       await new Promise(resolve => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -723,7 +723,7 @@ describe('IndexView - 角色管理页', () => {
     });
 
     it('opens permission assign drawer and fetches role permissions', async () => {
-      const wrapper = createWrapper(['role:read', 'role:assign-permission']);
+      const wrapper = createWrapper(['role:view', 'role:assign-permission']);
       await new Promise(resolve => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -765,7 +765,7 @@ describe('IndexView - 角色管理页', () => {
             records: [{
               ...mockRoles[0],
               permissions: [
-                { id: 1, code: 'user:read', name: '用户查看', type: 2, parentId: 0, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z' },
+                { id: 1, code: 'user:view', name: '用户查看', type: 2, parentId: 0, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z' },
                 { id: 2, code: 'user:create', name: '用户新增', type: 2, parentId: 0, sort: 2, status: 1, createTime: '2024-01-01T00:00:00Z' },
                 { id: 3, code: 'user:update', name: '用户编辑', type: 2, parentId: 0, sort: 3, status: 1, createTime: '2024-01-01T00:00:00Z' },
               ],
@@ -777,7 +777,7 @@ describe('IndexView - 角色管理页', () => {
           },
         });
 
-      const wrapper = createWrapper(['role:read', 'role:assign-permission']);
+      const wrapper = createWrapper(['role:view', 'role:assign-permission']);
       await new Promise(resolve => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -795,7 +795,7 @@ describe('IndexView - 角色管理页', () => {
 
   describe('Permission Control', () => {
     it('hides create button when no create permission', async () => {
-      const wrapper = createWrapper(['role:read', 'role:update', 'role:delete']);
+      const wrapper = createWrapper(['role:view', 'role:update', 'role:delete']);
       await new Promise(resolve => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -804,7 +804,7 @@ describe('IndexView - 角色管理页', () => {
     });
 
     it('hides delete button when no delete permission', async () => {
-      const wrapper = createWrapper(['role:read', 'role:create', 'role:update']);
+      const wrapper = createWrapper(['role:view', 'role:create', 'role:update']);
       await new Promise(resolve => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -812,7 +812,7 @@ describe('IndexView - 角色管理页', () => {
     });
 
     it('hides permission assign button when no assign permission', async () => {
-      const wrapper = createWrapper(['role:read', 'role:create', 'role:update', 'role:delete']);
+      const wrapper = createWrapper(['role:view', 'role:create', 'role:update', 'role:delete']);
       await new Promise(resolve => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 

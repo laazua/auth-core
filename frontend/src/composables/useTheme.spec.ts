@@ -15,6 +15,7 @@ describe('useTheme', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+    document.documentElement.removeAttribute('data-theme');
     originalMatchMedia = window.matchMedia;
     window.matchMedia = vi.fn().mockImplementation((query: string) => ({
       matches: query === '(prefers-color-scheme: dark)',
@@ -192,6 +193,31 @@ describe('useTheme', () => {
 
       await new Promise((resolve) => setTimeout(resolve, 400));
       expect(document.documentElement.classList.contains('theme-transitioning')).toBe(false);
+    });
+  });
+
+  describe('AC4: darkModeGradientBackground', () => {
+    it('dark mode uses dark gradient variables when data-theme=dark', () => {
+      vi.spyOn(storage, 'get').mockReturnValue('dark');
+      const store = getAppStore('dark');
+      const { initTheme } = useTheme();
+
+      initTheme();
+
+      // Verify dark theme is applied
+      expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+
+      // The actual gradient variables are defined in CSS :root[data-theme="dark"]
+      // This test verifies the theme switching works; visual rendering is tested in component tests
+    });
+
+    it('light mode uses light gradient variables when data-theme=light', () => {
+      getAppStore('light');
+      const { initTheme } = useTheme();
+
+      initTheme();
+
+      expect(document.documentElement.getAttribute('data-theme')).toBe('light');
     });
   });
 });

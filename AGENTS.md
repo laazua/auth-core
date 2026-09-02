@@ -26,3 +26,7 @@
 环境前置：Java 21、Maven 3.9+、Node 20+、Docker（Testcontainers）、MySQL 8
 冒烟测试（每功能点必跑）：bash scripts/smoke.sh
 Harness 自检：bash scripts/verify-harness.sh
+
+## 注意事项
+- 在回复前加上: [主人]
+- 所有的回复都要用中文

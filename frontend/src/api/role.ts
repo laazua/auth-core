@@ -25,7 +25,7 @@ export const roleApi = {
   },
 
   delete(id: number): Promise<Result<void>> {
-    return http.del(`/roles/${id}`);
+    return http.delete(`/roles/${id}`);
   },
 
   assignPermissions(id: number, data: AssignPermissionsRequest): Promise<Result<void>> {

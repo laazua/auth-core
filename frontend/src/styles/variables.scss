@@ -54,6 +54,9 @@
   --color-bg-glass: rgba(255, 255, 255, 0.78);
   --color-bg-glass-strong: rgba(255, 255, 255, 0.94);
   --color-bg-subtle: #FAFBFD;
+  --color-bg-sidebar: #E8EBEF;
+  --color-bg-header: rgba(255, 255, 255, 0.85);
+  --color-bg-content: #FFFFFF;
 
   /* ── Text: Refined contrast (not pure black, not gray) ── */
   --color-text-primary: #111827;
@@ -169,7 +172,7 @@
   --gradient-error: linear-gradient(135deg, #B91C1C 0%, #DC2626 100%);
   --gradient-info: linear-gradient(135deg, #6D28D9 0%, #7C3AED 100%);
   --gradient-brand: linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 50%, #3B82F6 100%);
-  --gradient-bg: linear-gradient(160deg, #F4F5F7 0%, #FFFFFF 50%, #F4F5F7 100%);
+  --gradient-bg: linear-gradient(160deg, #E8EBF0 0%, #F4F5F7 50%, #E8EBF0 100%);
 
   /* ── Glass ── */
   --glass-bg: rgba(255, 255, 255, 0.78);
@@ -228,6 +231,9 @@
   --color-bg-glass: rgba(15, 23, 42, 0.78);
   --color-bg-glass-strong: rgba(15, 23, 42, 0.94);
   --color-bg-subtle: #0F172A;
+  --color-bg-sidebar: #0A0E1A;
+  --color-bg-header: rgba(15, 23, 42, 0.85);
+  --color-bg-content: #1E293B;
 
   --color-text-primary: #F1F5F9;
   --color-text-regular: #CBD5E1;
@@ -250,7 +256,10 @@
   --color-shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
   --color-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
 
-  --glass-bg: rgba(15, 23, 42, 0.78);
+--glass-bg: rgba(15, 23, 42, 0.78);
   --glass-bg-strong: rgba(15, 23, 42, 0.94);
   --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-blur: 12px;
+
+  --gradient-bg: linear-gradient(160deg, #0A0E1A 0%, #0F172A 50%, #0A0E1A 100%);
 }

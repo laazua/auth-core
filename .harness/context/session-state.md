@@ -2,14 +2,18 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟡 sprint-037 完成（web/013 修复登录页密码输入框默认明文显示问题，待评审）
+- 状态: 🟡 sprint-041 交付待评审（web/017 Generator 完成，提交 d2a4eb1 RED / e34363e GREEN，均 hunk 级隔离无漂移）
 - 当前模块: web
-- 当前功能点: web/013
+- 当前功能点: web/017（AWAITING_REVIEW）
 
 ## 下一步动作
-  Evaluator：评审 sprint-037（web/013 修复登录页密码输入框默认明文显示问题）
+  Evaluator：按 `.harness/evaluator.md` 评审 sprint-041（读 task.md + review-criteria）。复跑基准：浏览器实证对比图 /tmp/dropdown-light.png、dark.png（基线）↔ /tmp/dropdown-after-light.png、dark.png（修复后）；门禁/冒烟预存红项对照口径见挂起区（前端 test 14、lint Header.vue 基线红、build 350 预存、mvn 6 项环境预存、冒烟 roles-001/002 + web-013）。registry web/017 行由 Evaluator 过审后置 ✅。
 
 ## 挂起
+- 2026-09-02: Planner(sprint-041) — 台账盘点仍待决：web/010（sprint-035）评审并入账未完成，registry 行仍 🔄、阶段总览计数已按实际行修正；web/011 预存红项治理优先级维持。本次新增注册 web/017 不依赖二者。
+- 2026-09-02: Planner(sprint-041) — 浏览器实测基线（playwright 登录 admin/admin123456）：用户下拉菜单高 419.7px、项行高 78~106px 不一（EP 图标 svg 无显式尺寸被 flex 拉伸 68~96px）；弹层 EP 默认白底/4px 圆角；暗色下弹层白底近白字不可读。基线截图 /tmp/dropdown-light.png、/tmp/dropdown-dark.png，修复后由 Generator/Evaluator 同法复测对比。
+- 2026-09-02: Generator(sprint-040) — 门禁/冒烟预存失败登记（与本改动零关联，stash 对照实证）：① 前端 test 14 预存失败（LoginView.spec.ts 1 + system/IndexView.spec.ts 13，Element Plus 组件解析缺失）；② npm run lint 全量卡死/分片含预存错误；③ npm run build 350 预存 TS 错误（32 文件，属 web/011 范围）；④ 冒烟 roles-001/roles-002（RoleControllerTest#assignPermissionsInvalidPermissionReturns400 expected 400 but was 409，同 infra-002 排除列表）/web-013（LoginView 预存失败致 '19 passed' 不中）。均建议由 web/011「修复前端构建错误与失败测试」统一处理，Evaluator 评审时可对照裁决。web/017（sprint-041）继续沿用此对照口径。
+- 2026-09-02: Planner(sprint-040) — web/015（sprint-039）评审并入 sprint-040 验收面：web/015 仅补 DefaultLayout.vue 渐变 var() 引用不达根因（variables.scss 未注入入口），其改动保留于工作树，由 Evaluator 在 sprint-040 交付后一并验收 web/015+web/016，不再单独评审 sprint-039。
 - 2026-08-26: Planner(sprint-004) — 用户裁决：暂沿用旧口令 abc123456 不轮换（风险自担）；已注入仓库外 ~/.bashrc 与 ~/.bash_profile（export MYSQL_PASSWORD），git 历史清理事项仍待裁决。真实库 192.168.165.88:3306（MySQL 8.0.45，库 authcore 已就绪）自本 Sprint 起用于验收。
 - 2026-08-26: Evaluator(sprint-002) — 真实口令 abc123456 已随 aa4b59b 入库（git 历史）：是否清理历史由用户裁决；强烈建议该口令立即轮换。另：用户 MySQL 实例已就绪（192.168.165.88），model/001 起可合并验证 DB 连通 + Flyway 迁移应用。
 - 2026-08-26: Planner(sprint-002) — 用户裁决：本机不使用 Docker/Testcontainers，数据库走配置化接入（application.yml + 环境变量），真实连通与 Flyway 迁移应用验证延后至 MySQL 实例就绪；架构 §1「测试基座 Testcontainers MySQL」口径据此调整登记。影响：① infra/004（Testcontainers 基座）定义待环境就绪后由 Planner 重新规划；② DB 类冒烟用例（Flyway 迁移应用，tdd-workflow 冒烟节 model 形态）延后补入，infra/002 冒烟以「构建+全量测试」形态替代。

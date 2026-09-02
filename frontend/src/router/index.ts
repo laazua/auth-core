@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { asyncRoutes } from '@/router/routes';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -27,6 +28,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/NotFoundView.vue'),
     meta: { public: true, title: '404' },
   },
+  ...asyncRoutes,
 ];
 
 const router = createRouter({

@@ -164,7 +164,7 @@ const mockElMessageBox = vi.mocked(ElMessageBox);
 const mockPermissions = [
   {
     id: 1,
-    code: 'perm:user:read',
+    code: 'perm:user:view',
     name: '用户查看',
     moduleId: 1,
     moduleName: '用户管理',
@@ -184,7 +184,7 @@ const mockPermissions = [
   },
   {
     id: 3,
-    code: 'perm:role:read',
+    code: 'perm:role:view',
     name: '角色查看',
     moduleId: 2,
     moduleName: '角色管理',
@@ -235,8 +235,8 @@ describe('IndexView - 权限/模块管理页', () => {
   let pinia: ReturnType<typeof createPinia>;
 
   const createWrapper = (permissions: string[] = [
-    'permission:read', 'permission:create', 'permission:update', 'permission:delete',
-    'module:read', 'module:create', 'module:update', 'module:delete', 'module:toggle-status'
+    'perm:view', 'perm:create', 'perm:update', 'perm:delete',
+    'module:view', 'module:create', 'module:update', 'module:delete', 'module:toggle-status'
   ], initialRoute = '/system/permissions') => {
     authStore.setPermissions(permissions);
 
@@ -244,8 +244,8 @@ describe('IndexView - 权限/模块管理页', () => {
       history: createWebHistory(),
       routes: [
         { path: '/', name: 'Home', component: { template: '<div>Home</div>' }, meta: { requiresAuth: true } },
-        { path: '/system/permissions', name: 'SystemPermissions', component: IndexView, meta: { requiresAuth: true, permissions: ['permission:read'] } },
-        { path: '/system/modules', name: 'SystemModules', component: IndexView, meta: { requiresAuth: true, permissions: ['module:read'] } },
+        { path: '/system/permissions', name: 'SystemPermissions', component: IndexView, meta: { requiresAuth: true, permissions: ['perm:view'] } },
+        { path: '/system/modules', name: 'SystemModules', component: IndexView, meta: { requiresAuth: true, permissions: ['module:view'] } },
         { path: '/login', name: 'Login', component: { template: '<div>Login</div>' }, meta: { public: true } },
       ],
     });
@@ -267,8 +267,8 @@ describe('IndexView - 权限/模块管理页', () => {
     setActivePinia(pinia);
     authStore = useAuthStore();
     authStore.login('mock-token', { id: 1, username: 'admin', nickname: '管理员', email: '', phone: '', status: 1, createTime: '' }, ['admin'], [
-      'permission:read', 'permission:create', 'permission:update', 'permission:delete',
-      'module:read', 'module:create', 'module:update', 'module:delete', 'module:toggle-status', '*'
+      'perm:view', 'perm:create', 'perm:update', 'perm:delete',
+      'module:view', 'module:create', 'module:update', 'module:delete', 'module:toggle-status', '*'
     ]);
 
     mockPermissionApi.list.mockResolvedValue({
@@ -1131,7 +1131,7 @@ describe('IndexView - 权限/模块管理页', () => {
 
   describe('Permission Control', () => {
     it('hides create button when no permission:create', async () => {
-      const wrapper = createWrapper(['permission:read', 'permission:update', 'permission:delete']);
+      const wrapper = createWrapper(['perm:view', 'perm:update', 'perm:delete']);
       await new Promise(resolve => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -1140,7 +1140,7 @@ describe('IndexView - 权限/模块管理页', () => {
     });
 
     it('hides delete button when no permission:delete', async () => {
-      const wrapper = createWrapper(['permission:read', 'permission:create', 'permission:update']);
+      const wrapper = createWrapper(['perm:view', 'perm:create', 'perm:update']);
       await new Promise(resolve => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -1148,7 +1148,7 @@ describe('IndexView - 权限/模块管理页', () => {
     });
 
     it('hides module create button when no module:create', async () => {
-      const wrapper = createWrapper(['permission:read', 'module:read', 'module:update', 'module:delete'], '/system/modules');
+      const wrapper = createWrapper(['perm:view', 'module:view', 'module:update', 'module:delete'], '/system/modules');
       await new Promise(resolve => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -1157,7 +1157,7 @@ describe('IndexView - 权限/模块管理页', () => {
     });
 
     it('hides module delete button when no module:delete', async () => {
-      const wrapper = createWrapper(['permission:read', 'module:read', 'module:create', 'module:update'], '/system/modules');
+      const wrapper = createWrapper(['perm:view', 'module:view', 'module:create', 'module:update'], '/system/modules');
       await new Promise(resolve => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 

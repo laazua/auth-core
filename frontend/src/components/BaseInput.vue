@@ -133,7 +133,7 @@
         </svg>
       </span>
       <span
-        v-if="showPassword && type === 'password'"
+        v-if="props.showPassword && props.type === 'password'"
         class="base-input__suffix"
         @click="togglePassword"
       >

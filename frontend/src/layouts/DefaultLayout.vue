@@ -86,6 +86,8 @@ onUnmounted(() => {
   display: flex;
   min-height: 100vh;
   background: var(--color-bg-page);
+  background-image: var(--gradient-bg);
+  background-attachment: fixed;
 }
 
 .layout__main {
@@ -105,6 +107,11 @@ onUnmounted(() => {
 
 .layout__page {
   min-height: 100%;
+  background: var(--color-bg-content);
+  border-radius: var(--color-border-radius-card);
+  box-shadow: var(--color-shadow-light);
+  border: 1px solid var(--color-border-light);
+  padding: 24px;
 }
 
 .fade-enter-active,
@@ -119,11 +126,7 @@ onUnmounted(() => {
 
 @media (max-width: 767.98px) {
   .layout__main {
-    margin-left: 0;
-
-    &:style="contentStyle" {
-      margin-left: 0 !important;
-    }
+    margin-left: 0 !important;
   }
 }
 </style>

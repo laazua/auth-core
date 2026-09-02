@@ -27,7 +27,7 @@ export const userApi = {
   },
 
   delete(id: number): Promise<Result<void>> {
-    return http.del(`/users/${id}`);
+    return http.delete(`/users/${id}`);
   },
 
   enable(id: number): Promise<Result<void>> {

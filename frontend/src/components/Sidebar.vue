@@ -101,7 +101,7 @@ const toggleCollapse = () => {
 .sidebar {
   width: 260px;
   height: 100vh;
-  background: var(--color-bg);
+  background: var(--color-bg-sidebar);
   border-right: 1px solid var(--color-border-light);
   display: flex;
   flex-direction: column;

@@ -2,6 +2,8 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { UserInfo } from '@/types/auth';
 import { storage } from '@/utils/storage';
+import { generateRoutes } from '@/router/routes';
+import { useRouter } from 'vue-router';
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(storage.get('token'));
@@ -10,6 +12,24 @@ export const useAuthStore = defineStore('auth', () => {
   const permissions = ref<string[]>(storage.get('permissions') || []);
 
   const isAuthenticated = computed(() => !!token.value);
+
+  let router: ReturnType<typeof useRouter> | null = null;
+
+  const setRouter = (r: ReturnType<typeof useRouter>) => {
+    router = r;
+  };
+
+  const initRoutes = () => {
+    if (!router) return;
+    try {
+      const routes = generateRoutes(roles.value);
+      routes.forEach((route) => {
+        router!.addRoute(route);
+      });
+    } catch (error) {
+      console.warn('Failed to initialize dynamic routes:', error);
+    }
+  };
 
   const setToken = (newToken: string | null) => {
     token.value = newToken;
@@ -60,6 +80,10 @@ export const useAuthStore = defineStore('auth', () => {
     return roleList.some((role) => roles.value.includes(role));
   };
 
+  const hasAnyPermission = (permissionList: string[]): boolean => {
+    return permissionList.some((permission) => hasPermission(permission));
+  };
+
   const login = (
     loginToken: string,
     user: UserInfo,
@@ -70,6 +94,7 @@ export const useAuthStore = defineStore('auth', () => {
     setUserInfo(user);
     setRoles(userRoles);
     setPermissions(userPermissions);
+    initRoutes();
   };
 
   const logout = () => {
@@ -84,6 +109,7 @@ export const useAuthStore = defineStore('auth', () => {
     setUserInfo(user);
     setRoles(userRoles);
     setPermissions(userPermissions);
+    initRoutes();
   };
 
   return {
@@ -99,8 +125,11 @@ export const useAuthStore = defineStore('auth', () => {
     hasPermission,
     hasRole,
     hasAnyRole,
+    hasAnyPermission,
     login,
     logout,
     refreshAuth,
+    setRouter,
+    initRoutes,
   };
 });

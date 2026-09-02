@@ -21,20 +21,20 @@ describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
 
   const mockUserAuthStore = {
     roles: ['user'],
-    permissions: ['user:read', 'role:read', 'permission:read'],
-    hasPermission: vi.fn((p: string) => ['user:read', 'role:read', 'permission:read'].includes(p)),
+    permissions: ['user:view', 'role:view', 'perm:view'],
+    hasPermission: vi.fn((p: string) => ['user:view', 'role:view', 'perm:view'].includes(p)),
     hasRole: vi.fn((r: string) => r === 'user'),
     hasAnyRole: vi.fn((roles: string[]) => roles.includes('user')),
-    hasAnyPermission: vi.fn((perms: string[]) => perms.some((p) => ['user:read', 'role:read', 'permission:read'].includes(p))),
+    hasAnyPermission: vi.fn((perms: string[]) => perms.some((p) => ['user:view', 'role:view', 'perm:view'].includes(p))),
   };
 
   const mockLimitedAuthStore = {
     roles: ['viewer'],
-    permissions: ['user:read'],
-    hasPermission: vi.fn((p: string) => p === 'user:read'),
+    permissions: ['user:view'],
+    hasPermission: vi.fn((p: string) => p === 'user:view'),
     hasRole: vi.fn((r: string) => r === 'viewer'),
     hasAnyRole: vi.fn((roles: string[]) => roles.includes('viewer')),
-    hasAnyPermission: vi.fn((perms: string[]) => perms.some((p) => p === 'user:read')),
+    hasAnyPermission: vi.fn((perms: string[]) => perms.some((p) => p === 'user:view')),
   };
 
   beforeEach(() => {
@@ -63,10 +63,10 @@ describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
       expect(systemModule).toBeDefined();
       expect(systemModule?.children?.length).toBe(3);
       const childPaths = systemModule?.children?.map((c) => c.path) || [];
-      expect(childPaths).toContain('/system/user');
-      expect(childPaths).toContain('/system/role');
-      expect(childPaths).toContain('/system/permission');
-      expect(childPaths).not.toContain('/system/module');
+      expect(childPaths).toContain('/users');
+      expect(childPaths).toContain('/roles');
+      expect(childPaths).toContain('/system/permissions');
+      expect(childPaths).not.toContain('/system/modules');
     });
 
     it('hides entire module when user has no permissions for any child', () => {
@@ -77,7 +77,7 @@ describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
       const systemModule = menu.find((m) => m.path === '/system');
       expect(systemModule).toBeDefined();
       expect(systemModule?.children?.length).toBe(1);
-      expect(systemModule?.children?.[0]?.path).toBe('/system/user');
+      expect(systemModule?.children?.[0]?.path).toBe('/users');
     });
 
     it('includes dashboard for all authenticated users', () => {
@@ -139,7 +139,7 @@ describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
       const { filterMenuByPermission } = useMenu();
 
       const testMenu = [
-        { path: '/a', title: 'A', permissions: ['user:read'] },
+        { path: '/a', title: 'A', permissions: ['user:view'] },
         { path: '/b', title: 'B', permissions: ['b:read'] },
         { path: '/c', title: 'C', permissions: [] },
       ];
@@ -163,5 +163,45 @@ describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
       expect(filtered.length).toBe(1);
       expect(filtered[0].path).toBe('/a');
     });
+  });
+});
+
+describe('Menu Config - AC2: menuPointsToFunctionalPages', () => {
+  const mockAdminAuthStore = {
+    roles: ['admin'],
+    permissions: ['*'],
+    hasPermission: vi.fn((p: string) => true),
+    hasRole: vi.fn((r: string) => true),
+    hasAnyRole: vi.fn((roles: string[]) => true),
+    hasAnyPermission: vi.fn((perms: string[]) => true),
+  };
+
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+    (useAuthStore as vi.Mock).mockReturnValue(mockAdminAuthStore);
+  });
+
+  it('menu items point to correct functional pages', () => {
+    const { getMenuConfig } = useMenu();
+    const config = getMenuConfig();
+
+    const systemModule = config.find((m) => m.path === '/system');
+    expect(systemModule).toBeDefined();
+
+    const childPaths = systemModule?.children?.map((c) => c.path) || [];
+
+    // 用户管理 -> /users (实际功能页)
+    expect(childPaths).toContain('/users');
+    // 角色管理 -> /roles (实际功能页)
+    expect(childPaths).toContain('/roles');
+    // 权限管理 -> /system/permissions
+    expect(childPaths).toContain('/system/permissions');
+    // 模块管理 -> /system/modules
+    expect(childPaths).toContain('/system/modules');
+
+    // 旧路径不应存在
+    expect(childPaths).not.toContain('/system/user');
+    expect(childPaths).not.toContain('/system/role');
   });
 });

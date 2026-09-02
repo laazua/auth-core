@@ -62,7 +62,7 @@ describe('Pinia Stores', () => {
     it('should set roles and permissions', () => {
       const store = useAuthStore();
       const roles = ['admin', 'user'];
-      const permissions = ['user:create', 'user:read', 'role:create'];
+      const permissions = ['user:create', 'user:view', 'role:create'];
 
       store.setRoles(roles);
       store.setPermissions(permissions);
@@ -73,7 +73,7 @@ describe('Pinia Stores', () => {
 
     it('should check permission correctly', () => {
       const store = useAuthStore();
-      store.setPermissions(['user:create', 'user:read']);
+      store.setPermissions(['user:create', 'user:view']);
 
       expect(store.hasPermission('user:create')).toBe(true);
       expect(store.hasPermission('user:delete')).toBe(false);

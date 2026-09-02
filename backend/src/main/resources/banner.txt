@@ -1,0 +1,11 @@
+${AnsiColor.BRIGHT_CYAN}
+  ___        _        _                   
+ / _ \ _ __ | |_ ___ | |_ ___  _ __ ___  
+| | | | '_ \| __/ _ \| __/ _ \| '__/ _ \ 
+| |_| | | | | || (_) | || (_) | | |  __/ 
+ \___/|_| |_|\__\___/ \__\___/|_|  \___| 
+${AnsiColor.BRIGHT_YELLOW}
+ :: Auth-Core :: ${spring-boot.version}
+${AnsiColor.BRIGHT_GREEN}
+ :: 启动成功 ::
+${AnsiColor.BRIGHT_WHITE}

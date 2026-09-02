@@ -153,7 +153,7 @@ defineOptions({
       >
         <BaseInput
           v-model="form.code"
-          placeholder="请输入权限编码 (如 perm:user:read)"
+          placeholder="请输入权限编码 (如 perm:user:view)"
           maxlength="100"
         />
       </el-form-item>

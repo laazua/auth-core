@@ -1,10 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createRouter, createWebHistory } from 'vue-router';
 import { createPinia, setActivePinia } from 'pinia';
+import { generateRoutes } from '@/router/routes';
 
 const mockAuthStore = {
   isAuthenticated: false,
-  token: null,
+  token: null as string | null,
+  roles: [] as string[],
+  permissions: [] as string[],
 };
 
 vi.mock('@/stores/auth', () => ({
@@ -47,7 +50,7 @@ describe('Router Guards', () => {
       routes: mockRoutes,
     });
 
-    router.beforeEach(async (to, from, next) => {
+    router.beforeEach(async (to, _from, next) => {
       const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
       const isPublic = to.matched.some((record) => record.meta.public);
 
@@ -114,5 +117,35 @@ describe('Router Guards', () => {
     await router.isReady();
 
     expect(router.currentRoute.value.name).toBe('NotFound');
+  });
+});
+
+describe('Route Access Control - AC1: systemRouteAllowsPermissionBasedAccess', () => {
+  it('generates routes without admin role when user has permissions', () => {
+    mockAuthStore.roles = ['user'];
+    mockAuthStore.permissions = ['user:view', 'role:view', 'perm:view', 'module:view'];
+
+    const routes = generateRoutes(mockAuthStore.roles);
+
+    const systemRoute = routes.find((r) => r.path === '/system');
+    expect(systemRoute).toBeDefined();
+    expect(systemRoute?.meta?.roles).toBeUndefined();
+
+    const userRoute = routes.find((r) => r.path === '/users');
+    expect(userRoute).toBeDefined();
+
+    const roleRoute = routes.find((r) => r.path === '/roles');
+    expect(roleRoute).toBeDefined();
+  });
+
+  it('generates routes with admin role still works', () => {
+    mockAuthStore.roles = ['admin'];
+    mockAuthStore.permissions = ['*'];
+
+    const routes = generateRoutes(mockAuthStore.roles);
+
+    const systemRoute = routes.find((r) => r.path === '/system');
+    expect(systemRoute).toBeDefined();
+    expect(systemRoute?.meta?.roles).toBeUndefined();
   });
 });

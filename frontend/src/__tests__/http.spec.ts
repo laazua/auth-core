@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import axios from 'axios';
 
 vi.mock('axios', async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual: any = await importOriginal();
   return {
     ...actual,
     default: {

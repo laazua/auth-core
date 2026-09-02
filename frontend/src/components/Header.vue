@@ -6,8 +6,6 @@ import { useAuthStore } from '@/stores/auth';
 import { useTheme } from '@/composables/useTheme';
 import { ElDropdown, ElDropdownMenu, ElDropdownItem } from 'element-plus';
 import {
-  Moon,
-  Sunny,
   User,
   Setting,
   Lock,
@@ -125,7 +123,7 @@ const handleSidebarToggle = () => {
           <component :is="FullScreen" />
         </button>
       </el-dropdown>
-      <el-dropdown trigger="click">
+      <el-dropdown trigger="click" @command="handleDropdownCommand">
         <div class="header__avatar-wrapper">
           <img :src="avatarUrl" :alt="userInfo?.nickname || '用户'" class="header__avatar" />
           <span v-if="!isCollapsed" class="header__username">{{
@@ -150,7 +148,6 @@ const handleSidebarToggle = () => {
               :key="item.command"
               :divided="item.divided"
               :command="item.command"
-              @command="handleDropdownCommand"
             >
               <component :is="item.icon" class="header__dropdown-icon" />
               <span>{{ item.label }}</span>
@@ -169,14 +166,14 @@ const handleSidebarToggle = () => {
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  background: var(--color-bg);
+  background: var(--color-bg-header);
   border-bottom: 1px solid var(--color-border-light);
   position: sticky;
   top: 0;
   z-index: var(--z-index-sticky);
   flex-shrink: 0;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
 }
 
 .header__left {
