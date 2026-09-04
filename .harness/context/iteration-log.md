@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-09-04: Planner — kickoff sprint-055（model/012 更新所有 Controller 层依赖接口，验收确认，5 条验收标准全满足，model 模块全 12 点完成）
 - 2026-09-04: Evaluator — pass sprint-054（model/011，平均分 9.8/10，4 条验收标准全满足，门禁+冒烟通过）
 - 2026-09-04: Generator — done model/011（Service 接口化重构，门禁+冒烟通过；创建 AuthService 接口 + AuthServiceImpl 实现类，Controller 依赖接口，20/20 测试通过）
 - 2026-09-04: Planner — kickoff sprint-054（model/011 抽取 AuthService 接口，4 条验收标准；前置依赖 model/010、model/005 均 ✅，不阻塞 model/012）
