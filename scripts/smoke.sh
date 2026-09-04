@@ -50,7 +50,7 @@ smoke_case() { # smoke_case <用例名> <命令...>
 }
 
 # ===================== 用例区（按功能点增量追加，禁止删除既有用例） =====================
-# 用例计数：16（infra/001 起，每功能点递增）
+# 用例计数：17（infra/001 起，每功能点递增）
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/backend"
 SMOKE_APP_LOG="${TMPDIR:-/tmp}/authcore-smoke-app.log"
@@ -117,6 +117,9 @@ smoke_case "model-009 Service 接口化重构定向测试" mvn -q -f "$APP_DIR/p
 
 # model/010：Service 接口化重构 - Controller 依赖接口而非实现类
 smoke_case "model-010 Service 接口化重构定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='ModuleServiceInterfaceSpec,ModuleServiceImplSpec,ModuleControllerSpec,ModuleServiceTest,ModuleControllerTest'
+
+# model/011：Service 接口化重构 - Controller 依赖接口而非实现类
+smoke_case "model-011 Service 接口化重构定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='AuthServiceInterfaceSpec,AuthServiceImplSpec,AuthControllerSpec,AuthServiceTest,AuthControllerTest'
 
 # auth/001：Spring Security 无状态基线 + BCrypt 编码器（验证公开端点放行、受保护端点拦截、BCrypt 可用）
 smoke_case "auth-001 Security 无状态基线定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='SecurityConfigTest,CustomUserDetailsServiceTest'
