@@ -2,20 +2,20 @@
 
 本表是全系统的唯一功能点台账：每个功能点拥有全局唯一 ID（如 `infra/001`），被三个 prompt 与 context 文件引用。状态图例：⬜ 未开始 / 🔄 进行中 / ✅ 完成 / ❌ 阻塞 / ⚠️ 有缺口
 
-> 最后更新：2026-09-02（web/017 顶栏用户下拉菜单 UI 突兀/尺寸异常修复 kickoff，sprint-041）
+> 最后更新：2026-09-04（model/007 Service 接口化重构评审通过，sprint-050；model/008 抽取 RoleService 接口规划中，sprint-051；web/023 移除整个标签页栏规划，sprint-047；web/022 废弃；web/024 主内容区图标尺寸实现完成，sprint-048；web/025 主内容区图标间距优化实现完成，sprint-049）
 
 ## 阶段总览
 
 | 模块 | 功能点数 | 已完成 | 进行中 | 未开始 | 备注 |
 |------|----------|--------|--------|--------|------|
 | infra | 4 | 4 | 0 | 0 | 全部完成 |
-| model | 6 | 0 | 0 | 6 | 承接 infra/002，为全部业务 API 提供数据层 |
+| model | 8 | 7 | 1 | 0 | 承接 infra/002，为全部业务 API 提供数据层 |
 | auth | 6 | 0 | 0 | 6 | 安全基线，所有业务 API 的前置依赖 |
 | users | 3 | 0 | 0 | 3 | — |
 | roles | 2 | 0 | 0 | 2 | — |
 | perms | 1 | 0 | 0 | 1 | — |
 | modules | 1 | 0 | 0 | 1 | — |
-| web | 19 | 15 | 2 | 1 | web/017/019 规划中（sprint-041/043）；web/010 待评审并入账（台账盘点中）；web/011 待规划 |
+| web | 25 | 21 | 2 | 2 | web/017/023 进行中；web/022 废弃；web/011 待规划 |
 | integration | 2 | 0 | 0 | 2 | 收尾验证，依赖全部前置就绪 |
 
 ## infra — 基础设施
@@ -37,6 +37,8 @@
 | model/004 | sys_permission 表迁移+实体+Mapper(FK module_id) | model/003 | ✅ | sprint-007 评审通过（2026-08-26，均分 10.0） |
 | model/005 | sys_user_role+sys_role_permission 关联表 | model/001, model/002, model/004 | ✅ | sprint-008 评审通过（均分 10.0） |
 | model/006 | 种子数据迁移（内置 admin + 示例角色/权限/模块） | model/005 | ✅ | sprint-009 评审通过（均分 10.0） |
+| model/007 | 抽取 UserService 接口（Controller 依赖接口） | model/005 | ✅ | sprint-050 评审通过（2026-09-04，均分 9.8） |
+| model/008 | 抽取 RoleService 接口（Controller 依赖接口） | model/007, model/005 | 🔄 | sprint-051 规划中（2026-09-04 kickoff，4 条验收标准） |
 
 ## auth — 认证授权
 
@@ -89,7 +91,7 @@
 | web/007 | 个人中心改密 | web/003, users/003 | ✅ | sprint-029 评审通过（均分 10.0） |
 | web/008 | UI现代化优化+白天/晚上模式切换 | web/001, web/003 | ✅ | sprint-032 评审通过（v3 精致现代化，不视觉疲劳） |
 | web/009 | 修复侧边栏系统管理菜单 404 问题（路由权限与菜单权限不一致） | web/003, web/004, web/005, web/006 | ✅ | sprint-034 评审通过 |
-| web/010 | 修复侧边栏系统管理菜单 404 问题（路由未注册到路由器） | web/009 | 🔄 | sprint-035 规划中 |
+| web/010 | 修复侧边栏系统管理菜单 404 问题（路由未注册到路由器） | web/009 | ✅ | sprint-035 评审通过（2026-09-03，4 条验收标准） |
 | web/011 | 修复前端构建错误与失败测试 | web/010 | ⬜ | 待规划 |
 | web/012 | 前端区域背景色差异化优化（登录页/侧边栏/顶栏/主内容区视觉层级区分） | web/008 | ✅ | sprint-036 评审中 |
 | web/013 | 修复登录页密码输入框默认明文显示问题 | web/002 | ✅ | sprint-037 完成 |
@@ -98,7 +100,13 @@
 | web/016 | 修复 CSS 主题变量源 variables.scss 未注入样式入口导致全站 UI 纯白 | web/001, web/008 | ✅ | sprint-040 评审通过（均分 9.6/10，浏览器实证渐变恢复） |
 | web/017 | 修复顶栏用户下拉菜单 UI 突兀与尺寸异常（图标拉伸成 68~96px 巨图致行高 78/106px 不一、弹层 EP 默认白底 4px 圆角未主题化、暗色弹层白底近白字不可读） | web/014, web/008, web/016 | 🔄 | sprint-041 规划中（2026-09-02 kickoff，4 条验收标准，浏览器实测基线见 task.md） |
 | web/018 | 修复侧边栏菜单图标不显示（图标字符串未解析为组件） | web/001, web/003, web/008 | ✅ | sprint-042 评审通过（2026-09-02，4 条验收标准，main.ts 全局注册 Element Plus 图标） |
-| web/019 | 修复侧边栏菜单图标尺寸过大（SVG 图标缺少显式 width/height，font-size 不生效） | web/001, web/003, web/008, web/018 | 🔄 | sprint-043 规划中（2026-09-02 kickoff，4 条验收标准，Sidebar.vue 三处 .sidebar__icon 显式定宽 16×16px） |
+| web/019 | 修复侧边栏菜单图标尺寸过大（SVG 图标缺少显式 width/height，font-size 不生效） | web/001, web/003, web/008, web/018 | ✅ | sprint-043 评审通过（2026-09-02，4 条验收标准，Sidebar.vue 三处 .sidebar__icon 显式定宽 16×16px） |
+| web/020 | 移除侧边栏底部折叠按钮，仅保留顶栏左侧折叠按钮 | web/003, web/019 | ✅ | sprint-044 评审通过（2026-09-03，4 条验收标准） |
+| web/021 | 移除标签页操作区域（关闭其他标签、关闭所有标签），仅保留刷新按钮 | web/003, web/020 | ✅ | sprint-045 评审通过（2026-09-03，4 条验收标准） |
+| web/022 | 移除标签页操作区域整个红框部分（含刷新按钮），仅保留标签页栏 | web/003, web/021 | ⚠️ | sprint-046 实现有误（需求理解偏差，已废弃） |
+| web/023 | 移除整个标签页栏（TagsView），仅保留面包屑导航 | web/003, web/020 | 🔄 | sprint-047 规划中（2026-09-03 kickoff，4 条验收标准） |
+| web/024 | 修复主内容区图标尺寸异常（ElButton icon prop 等 EP 图标缺少显式尺寸被 flex 拉伸） | web/003, web/007, web/008, web/016 | ✅ | sprint-048 评审中（2026-09-03 实现完成，3 条验收标准，ProfileView.vue BaseButton+slot 16×16px + header-icon 20×20px，Breadcrumb.vue breadcrumb__icon 13×13px） |
+| web/025 | 优化主内容区图标与文字间距（ProfileView header、action buttons、Breadcrumb 等） | web/003, web/007, web/008, web/016, web/024 | ✅ | sprint-049 评审通过（2026-09-03，4 条验收标准，平均分 9.8/10，header gap 24px、action gap 16px、breadcrumb margin-right 12px） |
 
 ## integration — 集成与验收
 

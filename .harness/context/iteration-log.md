@@ -4,8 +4,32 @@
 
 ## 记录
 
+- 2026-09-04: Generator — done model/008（Service 接口化重构，门禁+冒烟通过；创建 RoleService 接口 + RoleServiceImpl 实现类，Controller 依赖接口，10/10 测试通过）
+- 2026-09-04: Evaluator — pass sprint-050（model/007，平均分 9.8/10，4 条验收标准全满足，门禁+冒烟通过）
+- 2026-09-04: Planner — kickoff sprint-051（model/008 抽取 RoleService 接口，4 条验收标准；前置依赖 model/007、model/005 均 ✅，不阻塞 model/009）
+- 2026-09-03: Generator — done model/007（Service 接口化重构，门禁+冒烟通过；创建 UserService 接口 + UserServiceImpl 实现类，Controller 依赖接口，24/24 测试通过）
+- 2026-09-03: Planner — kickoff sprint-050（model/007 抽取 UserService 接口，4 条验收标准；前置依赖 model/005、auth/003 均 ✅，不阻塞 model/008）
+- 2026-09-03: Evaluator — pass sprint-049（web/025，平均分 9.8/10，三条验收标准全满足，门禁+冒烟通过）
+- 2026-09-03: Generator — done sprint-049（web/025 优化主内容区图标与文字间距，ProfileViewSpacingSpec 2/2 + BreadcrumbSpacingSpec 1/1 + 冒烟 web-025 通过；ProfileView.vue header gap 16→24px、action buttons gap 12→16px，Breadcrumb.vue margin-right 8→12px；前端 lint/build 全绿；构建产物验证间距样式存在；门禁红项与预存清单一致零新增）
+- 2026-09-03: Planner — kickoff sprint-049（web/025 优化主内容区图标与文字间距，4 条验收标准；前置依赖 web/003/007/008/016/024 均 ✅，不阻塞 web/017/023 评审）
+- 2026-09-03: Generator — done sprint-048（web/024 修复主内容区图标尺寸异常，ProfileViewIconSizeSpec 3/3 + MainAreaIconSizeAuditSpec 1/1 + 冒烟 web-024 通过；ProfileView.vue 移除 ElButton :icon 改用 BaseButton+slot 显式包裹 Lock/Setting 图标 16×16px、修复 .profile__header-icon (User) 20×20px；Breadcrumb.vue 修复 .breadcrumb__icon (Monitor 等) 13×13px；前端 lint/build 全绿；构建产物含所有图标尺寸样式；门禁红项与预存清单一致零新增）
+- 2026-09-03: Planner — kickoff sprint-048（web/024 修复主内容区图标尺寸异常，3 条验收标准；前置依赖 web/003/007/008/016 均 ✅，不阻塞 web/017/023 评审）
+- 2026-09-03: Generator — done sprint-047（web/023 移除整个标签页栏 TagsView，仅保留面包屑导航，DefaultLayoutTagsViewRemovedSpec 3/3 + 冒烟 web-023 通过；DefaultLayout.vue 移除 TagsView 导入与使用、调整 minHeight 为 calc(100vh - 60px)、保留 Breadcrumb；构建产物验证通过；门禁红项与预存清单一致零新增）
+- 2026-09-03: Planner — kickoff sprint-047（web/023 移除整个标签页栏 TagsView，仅保留面包屑导航，4 条验收标准）
+- 2026-09-03: Planner — 废弃 sprint-046（web/022 移除标签页操作区域红框部分，需求理解偏差，用户实际需求为移除整个标签页栏）
+- 2026-09-03: Generator — done sprint-046（web/022 移除标签页操作区域整个红框部分，含刷新按钮，TagsViewActionsRemovedSpec 3/3 + 冒烟 web-022 通过；TagsView.vue 移除 .tags-view__actions 容器、refreshTag 方法，保留 RefreshRight 导入供右键菜单、handleContextCommand 内联刷新逻辑、右键菜单完整；构建产物 CSS 验证通过；门禁红项与预存清单一致零新增）
+- 2026-09-03: Planner — kickoff sprint-046（web/022 移除标签页操作区域整个红框部分，含刷新按钮，4 条验收标准）
+- 2026-09-03: Evaluator — pass sprint-045（web/021，平均分 10.0/10）
+- 2026-09-03: Generator — done sprint-045（web/021 移除标签页操作区域，仅保留刷新按钮，TagsViewDropdownRemovedSpec 4/4 + 冒烟 web-021 通过；TagsView.vue 移除 el-dropdown 下拉菜单及 showMore，保留 closeOtherTags/closeAllTags 供右键菜单、刷新按钮、右键菜单；构建产物 CSS 验证通过；门禁红项与预存清单一致零新增）
+- 2026-09-03: Planner — kickoff sprint-045（web/021 移除标签页操作区域，仅保留刷新按钮，5 条验收标准）
+- 2026-09-03: Evaluator — pass sprint-035（web/010，平均分 9.8/10）
+- 2026-09-03: Generator — done sprint-035（web/010 修复侧边栏系统管理菜单 404 问题，SystemMenuPathFixSpec 4/4 + 冒烟 web-010 通过；useMenu.ts 修正用户管理/角色管理 path 为 /system/user、/system/role；构建产物验证通过；门禁红项与预存清单一致零新增）
+- 2026-09-03: Planner — kickoff sprint-035（web/010 修复侧边栏系统管理菜单 404 问题，4 条验收标准；菜单路径 /users→/system/user、/roles→/system/role）
+- 2026-09-03: Evaluator — pass sprint-044（web/020，平均分 9.8/10）
+- 2026-09-03: Generator — done sprint-044（web/020 移除侧边栏底部折叠按钮，仅保留顶栏左侧折叠按钮，SidebarFooterToggleRemovedSpec 7/7 + 冒烟 web-020 通过；Sidebar.vue 移除 footer 模板/脚本/样式，构建产物验证通过；门禁红项与预存清单一致零新增）
+- 2026-09-03: Planner — kickoff sprint-044（web/020 移除侧边栏底部折叠按钮，仅保留顶栏左侧折叠按钮，4 条验收标准）
+- 2026-09-02: Generator — done sprint-043（web/019 侧边栏菜单图标尺寸修复，SidebarIconSizeSpec 3/3 + 冒烟 web-019 通过；Sidebar.vue 三处 .sidebar__icon 显式定宽 16×16px，构建产物含 width:16px height:16px；门禁红项与预存清单一致零新增；提交 32397e0/ac17843）
 - 2026-09-02: Planner — kickoff sprint-043（web/019 修复侧边栏菜单图标尺寸过大，4 条验收标准；Sidebar.vue 三处 .sidebar__icon 显式定宽 16×16px，SVG 图标不响应 font-size 需显式 width/height）
-- 2026-09-02: Generator — done sprint-042（web/018 侧边栏菜单图标全局注册，SidebarIconSpec 3/3 + 冒烟 web-018 通过；main.ts 批量注册 @element-plus/icons-vue，构建产物含注册代码 Object.entries + .component()；门禁红项与预存清单一致零新增；提交 2c409c5/c92d315）
 - 2026-09-02: Planner — kickoff sprint-041（web/017 修复顶栏用户下拉菜单 UI 突兀与尺寸异常，4 条验收标准；浏览器实测基线：菜单高 419.7px、项行高 78~106px 不一——EP 图标无显式尺寸被 flex 拉伸成 68~96px 巨图，弹层 EP 默认白底 4px 圆角未主题化、暗色下白底近白字不可读）
 - 2026-09-02: Evaluator — pass sprint-040（web/016 CSS 变量注入入口修复 + web/015 一并验收，平均分 9.6/10；门禁/冒烟红项经两次 stash 对照证实为基线预存、零回归）
 - 2026-09-02: Generator — done sprint-040（web/016 修复 CSS 主题变量源未注入入口，StylesEntrySpec 3/3 + 产物含变量定义实证 + 冒烟 web-016 通过；提交 f663a31/e32c6eb；门禁 3 项预存失败/错误与本改动无关见挂起区）

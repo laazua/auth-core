@@ -2,14 +2,16 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟡 sprint-043 规划完成（web/019 Planner 完成，注册 task.md）
-- 当前模块: web
-- 当前功能点: web/019（PLANNED）
+- 状态: 🟢 sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023）
+- 当前模块: model
+- 当前功能点: model/008（AWAITING_REVIEW），model/007 ✅（评审通过）
 
 ## 下一步动作
-  Generator：按 `.harness/generator.md` 实现 sprint-043（web/019 修复侧边栏菜单图标尺寸过大）。首个实现要点：在 `frontend/src/components/Sidebar.vue` 三处 `.sidebar__icon` 样式规则中各增 `width: 16px; height: 16px;`；同步按 TDD 先写 `frontend/src/__tests__/sidebar-icon-size.spec.ts` 三条源级静态用例（AC1/AC2/AC3）留 RED 证据。
+  Evaluator：评审 model/008（抽取 RoleService 接口），验收标准逐条核对
 
 ## 挂起
+- 2026-09-03: Planner(sprint-049) — 新增 web/025（主内容区图标间距优化），前置依赖 web/003/007/008/016/024 均 ✅，不阻塞 web/017/023 评审；web/011 待规划优先级不变。
+- 2026-09-03: Planner(sprint-048) — 新增 web/024（主内容区图标尺寸异常），前置依赖 web/003/007/008/016 均 ✅，不阻塞 web/017/023 评审；web/011 待规划优先级不变。
 - 2026-09-02: Planner(sprint-041) — 台账盘点仍待决：web/010（sprint-035）评审并入账未完成，registry 行仍 🔄、阶段总览计数已按实际行修正；web/011 预存红项治理优先级维持。本次新增注册 web/017 不依赖二者。
 - 2026-09-02: Planner(sprint-041) — 浏览器实测基线（playwright 登录 admin/admin123456）：用户下拉菜单高 419.7px、项行高 78~106px 不一（EP 图标 svg 无显式尺寸被 flex 拉伸 68~96px）；弹层 EP 默认白底/4px 圆角；暗色下弹层白底近白字不可读。基线截图 /tmp/dropdown-light.png、/tmp/dropdown-dark.png，修复后由 Generator/Evaluator 同法复测对比。
 - 2026-09-02: Generator(sprint-040) — 门禁/冒烟预存失败登记（与本改动零关联，stash 对照实证）：① 前端 test 14 预存失败（LoginView.spec.ts 1 + system/IndexView.spec.ts 13，Element Plus 组件解析缺失）；② npm run lint 全量卡死/分片含预存错误；③ npm run build 350 预存 TS 错误（32 文件，属 web/011 范围）；④ 冒烟 roles-001/roles-002（RoleControllerTest#assignPermissionsInvalidPermissionReturns400 expected 400 but was 409，同 infra-002 排除列表）/web-013（LoginView 预存失败致 '19 passed' 不中）。均建议由 web/011「修复前端构建错误与失败测试」统一处理，Evaluator 评审时可对照裁决。web/017（sprint-041）继续沿用此对照口径。
@@ -21,6 +23,11 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-09-04: Generator — done model/008（Service 接口化重构，门禁+冒烟通过；创建 RoleService 接口 + RoleServiceImpl 实现类，Controller 依赖接口，10/10 测试通过）
+- 2026-09-04: Planner — kickoff sprint-051（model/008 抽取 RoleService 接口，4 条验收标准）
+- 2026-09-04: Evaluator — pass sprint-050（model/007，平均分 9.8/10）
+- 2026-09-03: Planner — kickoff sprint-049（web/025，4 条验收标准）
+- 2026-09-03: Planner — kickoff sprint-048（web/024，3 条验收标准）
 - 2026-08-31: Generator — done sprint-032（web/008，UI现代化优化+白天/晚上模式切换，前端测试 44/44 通过）
 - 2026-08-28: Evaluator — pass sprint-031（integration/002，平均分 10.0/10）
 - 2026-08-28: Evaluator — pass sprint-030（integration/001，平均分 10.0/10）

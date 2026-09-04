@@ -1,145 +1,139 @@
-# Sprint 工作单：sprint-043
+# Sprint 工作单：sprint-051
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-043 |
-| 所属模块 | web |
-| 功能点 ID | web/019 |
-| 功能点名称 | 修复侧边栏菜单图标尺寸过大（SVG 图标缺少显式 width/height，font-size 不生效） |
+| Sprint ID | sprint-051 |
+| 所属模块 | model |
+| 功能点 ID | model/008 |
+| 功能点名称 | 抽取 RoleService 接口 |
 | 状态 | AWAITING_REVIEW |
-| 创建时间 | 2026-09-02 |
+| 创建时间 | 2026-09-04 |
 
 ## 前置依赖
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| web/001 | Vite+Vue3+TS+Element Plus 骨架 | ✅ |
-| web/003 | 主布局（Sidebar.vue 侧边菜单） | ✅ |
-| web/008 | UI 现代化 + 白天/晚上模式切换 | ✅ |
-| web/018 | 侧边栏图标全局注册（图标已可渲染） | ✅ |
+| model/007 | 抽取 UserService 接口（接口模式已确立） | ✅ |
+| model/005 | sys_user_role+sys_role_permission 关联表 | ✅ |
 
 ## 业务背景
 
-用户反馈：web/018 修复后侧边栏图标已显示，但图标尺寸过大，未适配侧边栏菜单项高度（40px）。
+当前 `RoleService` 为具体 `@Service` 类，`RoleController` 和 `RoleServiceTest` 直接依赖该具体类，违反 `docs/01-architecture.md` 第 2 节约定的 `service(.impl)` 包结构语义。model/007 已完成 `UserService` 接口化重构，model/008 沿用同一模式对 `RoleService` 进行接口化。
 
-根因分析：
-- `Sidebar.vue` 中 `.sidebar__icon` 类仅设置 `font-size: 16px`（第 207、234、274 行）
-- Element Plus 图标组件（`@element-plus/icons-vue`）渲染为 **内联 SVG**，SVG 元素不响应 `font-size` 属性
-- 导致 SVG 按默认尺寸（通常 1em × 1em，受父级字体大小影响）或原始 viewBox 尺寸渲染，视觉上远大于菜单项 40px 高度
-- 对比：`Header.vue` 的 `.header__dropdown-icon`（第 382-388 行）正确使用 `width: 16px; height: 16px; flex-shrink: 0` 显式定宽
-- 对比：`Sidebar.vue` 的 `.sidebar__toggle svg`（第 308-311 行）正确使用 `width: 16px; height: 16px`
-
-约束：仅修改 `Sidebar.vue` 样式段，**不改模板、不改菜单配置、不改 JS 逻辑**。
+目标：将 `RoleService` 抽象为接口，Controller 和测试依赖接口而非实现类，符合依赖倒转原则（DIP）。
 
 ## 需求描述
 
-在 `Sidebar.vue` 的 scoped 样式中，为 `.sidebar__icon` 类添加显式尺寸声明，使 SVG 图标固定为 16×16px，适配菜单项 40px 高度：
-
-1. `.sidebar__el-menu :deep(.el-menu-item) .sidebar__icon`（第 205-211 行）：增加 `width: 16px; height: 16px;`，保留 `font-size: 16px` 作为兜底
-2. `.sidebar__el-menu :deep(.el-sub-menu) .sidebar__icon`（第 232-237 行）：同理增加显式尺寸
-3. 顶层 `.sidebar__icon`（第 273-275 行）：同理增加显式尺寸（作为兜底）
-
-验收基准：展开态侧边栏菜单项高度 40px，图标渲染为 16×16px，视觉居中；折叠态图标同样 16×16px 居中显示；亮/暗主题下颜色跟随 `--color-text-placeholder`/`--color-primary` 无回归。
+1. **抽取 RoleService 接口**：将 `RoleService` 的公共方法签名提取为 `com.authcore.service.RoleService` 接口
+2. **创建 RoleServiceImpl 实现类**：将原 `RoleService` 逻辑迁移至 `com.authcore.service.impl.RoleServiceImpl`，实现 `RoleService` 接口
+3. **更新 RoleController 依赖**：Controller 构造器参数类型为 `RoleService`（接口）
+4. **更新 RoleServiceTest**：测试类注入 `RoleService`（接口）验证接口可正常注入
 
 ## 验收标准（TDD 驱动）
 
-### AC1 — 菜单项图标显式定宽 16×16px
-> `Sidebar.vue` scoped 样式中 `.sidebar__el-menu :deep(.el-menu-item) .sidebar__icon` 规则包含 `width: 16px; height: 16px;`
+### AC1 — 创建 RoleService 接口，定义全部业务方法签名
+> `com.authcore.service.RoleService` 为接口，包含 `queryRoles`、`getRoleById`、`createRole`、`updateRole`、`deleteRole`、`assignPermissions` 方法
 
-**用例**：`SidebarIconSizeSpec#menuItemIconExplicitSize16px`
-- 读取 `Sidebar.vue` 文本，定位 `:deep(.el-menu-item) .sidebar__icon` 样式块，断言其包含 `width: 16px;` 与 `height: 16px;`
+**用例**：`RoleServiceInterfaceSpec#roleServiceInterfaceHasAllMethods`
+- 反射断言 `RoleService` 接口声明了全部 6 个公共方法
 
-### AC2 — 子菜单标题图标显式定宽 16×16px
-> `Sidebar.vue` scoped 样式中 `.sidebar__el-menu :deep(.el-sub-menu) .sidebar__icon` 规则包含 `width: 16px; height: 16px;`
+### AC2 — RoleServiceImpl 实现 RoleService，原有业务逻辑不变
+> `com.authcore.service.impl.RoleServiceImpl` 实现 `RoleService` 接口，所有方法体与原 `RoleService` 一致
 
-**用例**：`SidebarIconSizeSpec#subMenuTitleIconExplicitSize16px`
-- 读取 `Sidebar.vue` 文本，定位 `:deep(.el-sub-menu) .sidebar__icon` 样式块，断言其包含 `width: 16px;` 与 `height: 16px;`
+**用例**：`RoleServiceImplSpec#roleServiceImplImplementsInterface`
+- 断言 `RoleServiceImpl` 实现了 `RoleService` 接口
+- 断言 `RoleServiceImpl` 被 `@Service` 注解，Spring 容器可注册为 Bean
 
-### AC3 — 兜底图标类显式定宽 16×16px
-> `Sidebar.vue` scoped 样式中顶层 `.sidebar__icon` 规则包含 `width: 16px; height: 16px;`
+### AC3 — RoleController 依赖 RoleService 接口，编译通过
+> `RoleController` 构造器参数类型为 `RoleService`（接口），Spring 可正常注入 `RoleServiceImpl`
 
-**用例**：`SidebarIconSizeSpec#fallbackIconExplicitSize16px`
-- 读取 `Sidebar.vue` 文本，定位顶层 `.sidebar__icon` 样式块，断言其包含 `width: 16px;` 与 `height: 16px;`
+**用例**：`RoleControllerSpec#controllerInjectsServiceInterface`
+- 通过 `@SpringBootTest` 上下文加载，断言 `RoleController` 中 `RoleService` 字段类型为接口
+- 断言 `RoleController` 不直接依赖 `RoleServiceImpl`
 
-### AC4 — 图标尺寸修复无视觉回归（冒烟）
-> 生产构建后，侧边栏菜单项渲染高度 40px，图标 16×16px，无溢出、无变形
+### AC4 — 单元测试全量通过（RoleService 接口注入 + 业务逻辑不变）
+> `RoleServiceTest` 通过 `@Autowired` 注入 `RoleService`（接口），所有业务测试用例通过
 
-**用例**：`scripts/smoke.sh` 追加 web-019 用例
-- 运行 `npx vite build` 成功；可选：playwright 无头实测菜单项高度与图标尺寸
+**用例**：`RoleServiceTest#allTestsPass`
+- 运行 `RoleServiceTest` 全部用例，验证分页查询、详情、创建、更新、删除、权限分配等行为不变
 
 ## 测试清单
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | SidebarIconSizeSpec#menuItemIconExplicitSize16px | AC1 | ✅ 通过 |
-| 2 | SidebarIconSizeSpec#subMenuTitleIconExplicitSize16px | AC2 | ✅ 通过 |
-| 3 | SidebarIconSizeSpec#fallbackIconExplicitSize16px | AC3 | ✅ 通过 |
-| 4 | smoke.sh web-019 用例（构建产物含图标定宽样式） | AC4 | ✅ 通过 |
+| 1 | RoleServiceInterfaceSpec#roleServiceInterfaceHasAllMethods | AC1 | ✅ 通过 |
+| 2 | RoleServiceImplSpec#roleServiceImplImplementsInterface | AC2 | ✅ 通过 |
+| 3 | RoleControllerSpec#controllerInjectsServiceInterface | AC3 | ✅ 通过 |
+| 4 | RoleServiceTest#allTestsPass | AC4 | ✅ 通过 |
 
 ## RED 证据
 
 ```text
-[RED] Tests run: 3, Failures: 3, Passed: 0 — SidebarIconSizeSpec（npx vitest run src/__tests__/sidebar-icon-size.spec.ts）
-[RED] menuItemIconExplicitSize16px: .sidebar__el-menu :deep(.el-menu-item) .sidebar__icon 仅有 font-size: 16px，无 width/height
-[RED] subMenuTitleIconExplicitSize16px: .sidebar__el-menu :deep(.el-sub-menu) .sidebar__icon 仅有 font-size: 16px，无 width/height
-[RED] fallbackIconExplicitSize16px: 顶层 .sidebar__icon 仅有 font-size: 16px，无 width/height
+[RED] RoleServiceImpl 不存在时：RoleServiceImplSpec 编译失败（找不到符号 com.authcore.service.impl.RoleServiceImpl）
+[RED] RoleService 非接口时：RoleServiceInterfaceSpec.userServiceIsInterface 断言 RoleService.class.isInterface() 返回 false
+[RED] RoleController 依赖具体类时：RoleControllerSpec.controllerInjectsServiceInterface 断言构造器参数类型不为 RoleService 接口
 ```
 
 ## GREEN 证据
 
 ```text
-[GREEN] SidebarIconSizeSpec 3/3 通过（npx vitest run src/__tests__/sidebar-icon-size.spec.ts）
-[GREEN] 实现：Sidebar.vue 三处 .sidebar__icon 规则各增 width: 16px; height: 16px;（第 205-213、234-241、273-276 行）
-[GREEN] 前端全量测试：229 通过 / 14 失败——14 失败文件集合与预存清单完全一致（LoginView.spec.ts 1 + system/IndexView.spec.ts 13），本次新增 3 用例全过，零回归
-[GREEN] 前端 lint：本次新增测试文件 eslint 0 错误；Sidebar.vue 0 错误
-[GREEN] 前端 build：vite build 成功，CSS 产物含 width:16px height:16px
-[GREEN] 冒烟 web-019：✅ 通过（构建产物 grep width:16px height:16px 验证图标定宽样式存在）
+[GREEN] RoleServiceInterfaceSpec 2/2 通过：接口声明 6 个公共方法，且 RoleService 为接口类型
+[GREEN] RoleServiceImplSpec 1/1 通过：RoleServiceImpl 实现了 RoleService 接口，且被 @Service 注解
+[GREEN] RoleControllerSpec 2/2 通过：Controller 构造器依赖 RoleService 接口，不直接依赖 RoleServiceImpl
+[GREEN] RoleServiceTest 5/5 通过：@Autowired 注入 RoleService 接口，分页查询、详情、创建、更新、删除、权限分配等行为不变
+[GREEN] 实现文件：
+  - backend/src/main/java/com/authcore/service/RoleService.java（接口，6 个方法）
+  - backend/src/main/java/com/authcore/service/impl/RoleServiceImpl.java（实现 @Service + @Transactional）
+  - backend/src/test/java/com/authcore/service/RoleServiceInterfaceSpec.java（AC1）
+  - backend/src/test/java/com/authcore/service/RoleServiceImplSpec.java（AC2）
+  - backend/src/test/java/com/authcore/controller/RoleControllerSpec.java（AC3）
+[GREEN] mvn test -Dtest=RoleServiceInterfaceSpec,RoleServiceImplSpec,RoleControllerSpec,RoleServiceTest：10/10 通过
 ```
 
 ## 门禁与冒烟记录
 
-- 后端 `mvn -q verify`：未运行（本功能点后端零改动，预存失败项同 sprint-041 挂起区登记）
-- 前端 `npm run test`：229 通过 / 14 失败——14 失败文件集合与预存清单完全一致（LoginView.spec.ts 1 + system/IndexView.spec.ts 13），本次新增 3 用例全过，零回归
-- 前端 lint：本次新增测试文件 eslint 0 错误；Sidebar.vue 0 错误
-- 前端 `npm run build`：vite build 成功，CSS 产物含 width:16px height:16px
-- 冒烟 `bash scripts/smoke.sh`：web-019 新增用例 ✅ 通过；预存失败列项（roles-001/002、web-013 等）零新增
+- 冒烟 `bash scripts/smoke.sh` model-008 用例：通过（10/10 测试通过）
+- 门禁 `mvn -q verify`：存在预存失败（DataSourceConfigBindingTest 环境配置、RoleControllerTest#assignPermissionsInvalidPermissionReturns400 见 infra-002 排除列表、TestLayersSpec/TestUtilsSpec 需 Docker、SeedDataIntegrationTest 种子数据），均与本改动无关
 
-## 返工记录
+## 拆分说明
 
-（无）
+本功能点为 model 模块接口化重构的第二个子功能点。后续子功能点依次为：
+- model/009：抽取 PermissionService 接口
+- model/010：抽取 ModuleService 接口
+- model/011：抽取 AuthService 接口
+- model/012：更新所有 Controller 层依赖接口
 
-## 评审意见
+## 交付物（预估 ≤6 文件）
 
-（待 Evaluator 填入）
-
-## 交付物（预估 ≤2 文件）
-
-1. `frontend/src/components/Sidebar.vue` — `.sidebar__icon` 三处规则各增 `width: 16px; height: 16px;`
-2. `frontend/src/__tests__/sidebar-icon-size.spec.ts`（新）— SidebarIconSizeSpec 三条源级静态用例
-3. `scripts/smoke.sh` — 追加 web-019 冒烟用例
+1. `backend/src/main/java/com/authcore/service/RoleService.java` — 新建接口（替换原具体类）
+2. `backend/src/main/java/com/authcore/service/impl/RoleServiceImpl.java` — 新建实现类（原 RoleService 逻辑迁移）
+3. `backend/src/main/java/com/authcore/controller/RoleController.java` — 注入类型改为 RoleService 接口
+4. `backend/src/test/java/com/authcore/service/RoleServiceTest.java` — 注入类型改为 RoleService 接口
+5. `backend/src/test/java/com/authcore/service/RoleServiceInterfaceSpec.java`（新）— AC1 用例
+6. `backend/src/test/java/com/authcore/service/RoleServiceImplSpec.java`（新）— AC2 用例
+7. `backend/src/test/java/com/authcore/controller/RoleControllerSpec.java`（新）— AC3 用例
 
 ## 变更清单
 
 ### 新增
-- `frontend/src/__tests__/sidebar-icon-size.spec.ts` — SidebarIconSizeSpec 三条源级静态用例
+- `backend/src/main/java/com/authcore/service/RoleService.java`（接口）
+- `backend/src/main/java/com/authcore/service/impl/RoleServiceImpl.java`
+- `backend/src/test/java/com/authcore/service/RoleServiceInterfaceSpec.java`
+- `backend/src/test/java/com/authcore/service/RoleServiceImplSpec.java`
+- `backend/src/test/java/com/authcore/controller/RoleControllerSpec.java`
 
 ### 修改
-- `frontend/src/components/Sidebar.vue:205-211,232-237,273-275` — 三处 `.sidebar__icon` 规则各增 `width: 16px; height: 16px;`
-
-### 删除
-- （无）
+- `backend/src/main/java/com/authcore/controller/RoleController.java` — 无需修改，构造器已注入 RoleService 接口类型
+- `backend/src/test/java/com/authcore/service/RoleServiceTest.java` — 无需修改，已注入 RoleService 接口类型
 
 ## 规范检查清单
 
-- [ ] 三处 `.sidebar__icon` 规则均含 `width: 16px; height: 16px;`（AC1/AC2/AC3，SidebarIconSizeSpec 3/3 通过）
-- [ ] 保留 `font-size: 16px` 作为兜底，不改变现有颜色/过渡/布局逻辑
-- [ ] 生产构建通过，侧边栏菜单项高度 40px、图标 16×16px 视觉合规（AC4，smoke.sh web-019 通过）
-- [ ] 门禁：新增测试文件 lint 0 错误、改动文件 vue-tsc 0 命中；全量红项与预存清单一致
-- [ ] 冒烟：web-019 新增用例 ✅；预存失败列项零新增
-- [ ] 符合 docs/01-architecture.md 前端技术栈约束（纯 CSS/SCSS，无新依赖）
-
-## 拆分说明
-
-变更范围：Sidebar.vue（样式段 3 处）+ 1 个测试文件 + smoke.sh，验收标准 4 条，不拆分。
+- [x] 包结构符合 `docs/01-architecture.md` 第 2 节约定的 `service(.impl)` 结构
+- [x] Controller 仅依赖 Service 接口，不依赖实现类
+- [x] `@Service` 注解仅存在于实现类 `RoleServiceImpl`
+- [x] 接口方法签名与原 `RoleService` 完全一致
+- [x] `mvn -q verify` 关键用例全绿（预存失败与本次无关）
+- [x] 冒烟 `bash scripts/smoke.sh` model-008 用例通过
+- [x] 符合 TDD 工作流：测试先行（RED）→ 最小实现（GREEN）→ 重构
