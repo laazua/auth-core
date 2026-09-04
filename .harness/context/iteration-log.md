@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-09-04: Evaluator — pass sprint-052（model/009，平均分 9.8/10，4 条验收标准全满足，门禁+冒烟通过）
 - 2026-09-04: Generator — done model/009（Service 接口化重构，门禁+冒烟通过；创建 PermissionService 接口 + PermissionServiceImpl 实现类，Controller 依赖接口，11/11 测试通过）
 - 2026-09-04: Planner — kickoff sprint-052（model/009 抽取 PermissionService 接口，4 条验收标准；前置依赖 model/008、model/005 均 ✅，不阻塞 model/010）
 - 2026-09-04: Evaluator — pass sprint-051（model/008，平均分 9.6/10，4 条验收标准全满足，门禁+冒烟通过）
