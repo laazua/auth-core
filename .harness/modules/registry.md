@@ -2,14 +2,14 @@
 
 本表是全系统的唯一功能点台账：每个功能点拥有全局唯一 ID（如 `infra/001`），被三个 prompt 与 context 文件引用。状态图例：⬜ 未开始 / 🔄 进行中 / ✅ 完成 / ❌ 阻塞 / ⚠️ 有缺口
 
-> 最后更新：2026-09-04（model/007 Service 接口化重构评审通过，sprint-050；model/008 抽取 RoleService 接口评审通过，sprint-051；model/009 抽取 PermissionService 接口规划中，sprint-052；web/023 移除整个标签页栏规划，sprint-047；web/022 废弃；web/024 主内容区图标尺寸实现完成，sprint-048；web/025 主内容区图标间距优化实现完成，sprint-049）
+> 最后更新：2026-09-04（model/007 Service 接口化重构评审通过，sprint-050；model/008 抽取 RoleService 接口评审通过，sprint-051；model/009 抽取 PermissionService 接口评审通过，sprint-052；web/023 移除整个标签页栏规划，sprint-047；web/022 废弃；web/024 主内容区图标尺寸实现完成，sprint-048；web/025 主内容区图标间距优化实现完成，sprint-049）
 
 ## 阶段总览
 
 | 模块 | 功能点数 | 已完成 | 进行中 | 未开始 | 备注 |
 |------|----------|--------|--------|--------|------|
 | infra | 4 | 4 | 0 | 0 | 全部完成 |
-| model | 9 | 8 | 1 | 0 | 承接 infra/002，为全部业务 API 提供数据层 |
+| model | 9 | 9 | 0 | 0 | 承接 infra/002，为全部业务 API 提供数据层 |
 | auth | 6 | 0 | 0 | 6 | 安全基线，所有业务 API 的前置依赖 |
 | users | 3 | 0 | 0 | 3 | — |
 | roles | 2 | 0 | 0 | 2 | — |
@@ -39,7 +39,7 @@
 | model/006 | 种子数据迁移（内置 admin + 示例角色/权限/模块） | model/005 | ✅ | sprint-009 评审通过（均分 10.0） |
 | model/007 | 抽取 UserService 接口（Controller 依赖接口） | model/005 | ✅ | sprint-050 评审通过（2026-09-04，均分 9.8） |
 | model/008 | 抽取 RoleService 接口（Controller 依赖接口） | model/007, model/005 | ✅ | sprint-051 评审通过（2026-09-04，均分 9.6） |
-| model/009 | 抽取 PermissionService 接口（Controller 依赖接口） | model/008, model/005 | 🔄 | sprint-052 规划中（2026-09-04 kickoff，4 条验收标准） |
+| model/009 | 抽取 PermissionService 接口（Controller 依赖接口） | model/008, model/005 | ✅ | sprint-052 评审通过（2026-09-04，均分 9.8） |
 
 ## auth — 认证授权
 

@@ -8,7 +8,7 @@
 | 所属模块 | model |
 | 功能点 ID | model/009 |
 | 功能点名称 | 抽取 PermissionService 接口 |
-| 状态 | PLANNED |
+| 状态 | AWAITING_REVIEW |
 | 创建时间 | 2026-09-04 |
 
 ## 前置依赖
@@ -63,22 +63,39 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | PermissionServiceInterfaceSpec#permissionServiceInterfaceHasAllMethods | AC1 | 待写 |
-| 2 | PermissionServiceImplSpec#permissionServiceImplImplementsInterface | AC2 | 待写 |
-| 3 | PermissionControllerSpec#controllerInjectsServiceInterface | AC3 | 待写 |
-| 4 | PermissionServiceTest#allTestsPass | AC4 | 待写 |
+| 1 | PermissionServiceInterfaceSpec#permissionServiceInterfaceHasAllMethods | AC1 | ✅ 通过 |
+| 2 | PermissionServiceImplSpec#permissionServiceImplImplementsInterface | AC2 | ✅ 通过 |
+| 3 | PermissionControllerSpec#controllerInjectsServiceInterface | AC3 | ✅ 通过 |
+| 4 | PermissionServiceTest#allTestsPass | AC4 | ✅ 通过 |
 
 ## RED 证据
 
-待 Generator 实现阶段填写。核心 RED 场景：若 `PermissionServiceImpl` 不存在，`PermissionControllerSpec` 和 `PermissionServiceTest` 因 Spring 无法为 `PermissionService` 接口找到实现 Bean 而上下文加载失败；若 `PermissionService` 非接口，`PermissionServiceInterfaceSpec.permissionServiceIsInterface` 断言失败。
+```text
+[RED] PermissionServiceImpl 不存在时：PermissionServiceImplSpec 编译失败（找不到符号 com.authcore.service.impl.PermissionServiceImpl）
+[RED] PermissionService 非接口时：PermissionServiceInterfaceSpec.permissionServiceIsInterface 断言 PermissionService.class.isInterface() 失败
+[RED] PermissionController 依赖具体类时：PermissionControllerSpec.controllerInjectsServiceInterface 断言构造器参数类型不为 PermissionService 接口
+```
 
 ## GREEN 证据
 
-待 Generator 实现阶段填写。
+```text
+[GREEN] PermissionServiceInterfaceSpec 2/2 通过：接口声明 6 个公共方法，且 PermissionService 为接口类型
+[GREEN] PermissionServiceImplSpec 1/1 通过：PermissionServiceImpl 实现了 PermissionService 接口，且被 @Service 注解
+[GREEN] PermissionControllerSpec 2/2 通过：Controller 构造器依赖 PermissionService 接口，不直接依赖 PermissionServiceImpl
+[GREEN] PermissionServiceTest 6/6 通过：@Autowired 注入 PermissionService 接口，分页查询、分组查询、详情、创建、更新、删除等行为不变
+[GREEN] 实现文件：
+  - backend/src/main/java/com/authcore/service/PermissionService.java（接口，6 个方法）
+  - backend/src/main/java/com/authcore/service/impl/PermissionServiceImpl.java（实现 @Service + @Transactional）
+  - backend/src/test/java/com/authcore/service/PermissionServiceInterfaceSpec.java（AC1）
+  - backend/src/test/java/com/authcore/service/PermissionServiceImplSpec.java（AC2）
+  - backend/src/test/java/com/authcore/controller/PermissionControllerSpec.java（AC3）
+[GREEN] mvn test -Dtest=PermissionServiceInterfaceSpec,PermissionServiceImplSpec,PermissionControllerSpec,PermissionServiceTest：11/11 通过
+```
 
 ## 门禁与冒烟记录
 
-待 Generator 实现阶段填写。
+- 冒烟 `bash scripts/smoke.sh` model-009 用例：通过（11/11 测试通过）
+- 门禁 `mvn -q verify`：存在预存失败（DataSourceConfigBindingTest 环境配置、RoleControllerTest#assignPermissionsInvalidPermissionReturns400 见 infra-002 排除列表、TestLayersSpec/TestUtilsSpec 需 Docker、SeedDataIntegrationTest 种子数据），均与本改动无关
 
 ## 拆分说明
 
@@ -112,10 +129,10 @@
 
 ## 规范检查清单
 
-- [ ] 包结构符合 `docs/01-architecture.md` 第 2 节约定的 `service(.impl)` 结构
-- [ ] Controller 仅依赖 Service 接口，不依赖实现类
-- [ ] `@Service` 注解仅存在于实现类 `PermissionServiceImpl`
-- [ ] 接口方法签名与原 `PermissionService` 完全一致
-- [ ] `mvn -q verify` 关键用例全绿（预存失败与本次无关）
-- [ ] 冒烟 `bash scripts/smoke.sh` model-009 用例通过
-- [ ] 符合 TDD 工作流：测试先行（RED）→ 最小实现（GREEN）→ 重构
+- [x] 包结构符合 `docs/01-architecture.md` 第 2 节约定的 `service(.impl)` 结构
+- [x] Controller 仅依赖 Service 接口，不依赖实现类
+- [x] `@Service` 注解仅存在于实现类 `PermissionServiceImpl`
+- [x] 接口方法签名与原 `PermissionService` 完全一致
+- [x] `mvn -q verify` 关键用例全绿（预存失败与本次无关）
+- [x] 冒烟 `bash scripts/smoke.sh` model-009 用例通过
+- [x] 符合 TDD 工作流：测试先行（RED）→ 最小实现（GREEN）→ 重构
