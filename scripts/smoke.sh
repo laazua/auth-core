@@ -50,7 +50,7 @@ smoke_case() { # smoke_case <用例名> <命令...>
 }
 
 # ===================== 用例区（按功能点增量追加，禁止删除既有用例） =====================
-# 用例计数：9（infra/001 起，每功能点递增）
+# 用例计数：14（infra/001 起，每功能点递增）
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/backend"
 SMOKE_APP_LOG="${TMPDIR:-/tmp}/authcore-smoke-app.log"
@@ -105,6 +105,12 @@ smoke_case "model-005 sys_user_role+sys_role_permission 数据层与迁移定向
 
 # model/006：种子数据迁移 V6 可重复应用 + 数据正确性（需环境含 MYSQL_PASSWORD，预存种子数据不匹配，暂时跳过）
 smoke_case_cond "model-006 种子数据迁移 V6 与数据正确性" "false" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='SeedDataIntegrationTest'
+
+# model/007：Service 接口化重构 - Controller 依赖接口而非实现类
+smoke_case "model-007 Service 接口化重构定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='UserServiceInterfaceSpec,UserServiceImplSpec,UserControllerSpec,UserServiceTest,UserControllerTest'
+
+# model/008：Service 接口化重构 - Controller 依赖接口而非实现类
+smoke_case "model-008 Service 接口化重构定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='RoleServiceInterfaceSpec,RoleServiceImplSpec,RoleControllerSpec,RoleServiceTest,RoleControllerTest'
 
 # auth/001：Spring Security 无状态基线 + BCrypt 编码器（验证公开端点放行、受保护端点拦截、BCrypt 可用）
 smoke_case "auth-001 Security 无状态基线定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='SecurityConfigTest,CustomUserDetailsServiceTest'
@@ -177,6 +183,22 @@ smoke_case "web-017 用户下拉弹层主题覆盖构建产物" bash -c "
   grep -q '200px' dist/assets/css/index-*.css || exit 1
 "
 
+# web/010：修复侧边栏系统管理菜单 404 问题（菜单路径与路由路径一致性）
+smoke_case "web-010 侧边栏系统管理菜单路径修正" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  npx vite build >/dev/null 2>&1 || exit 1
+  # 检查构建产物中 system 路由包含正确的子路由路径（相对路径 user/role/permissions/modules）
+  grep -q 'path:\"user\"' dist/assets/js/index-*.js || exit 1
+  grep -q 'path:\"role\"' dist/assets/js/index-*.js || exit 1
+  grep -q 'path:\"permissions\"' dist/assets/js/index-*.js || exit 1
+  grep -q 'path:\"modules\"' dist/assets/js/index-*.js || exit 1
+  # 检查 system 路由父路径为 /system
+  grep -q 'path:\"/system\"' dist/assets/js/index-*.js || exit 1
+  # 检查顶层 /users 和 /roles 仍存在（它们是独立菜单，非系统管理下）
+  grep -q 'path:\"/users\"' dist/assets/js/index-*.js || exit 1
+  grep -q 'path:\"/roles\"' dist/assets/js/index-*.js || exit 1
+"
+
 # web/018：侧边栏菜单图标注册验证（生产构建产物含图标注册代码特征）
 smoke_case "web-018 侧边栏图标全局注册构建产物" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1
@@ -193,6 +215,72 @@ smoke_case "web-019 侧边栏图标尺寸修复构建产物" bash -c "
   # 检查 CSS 产物中包含 width:16px 和 height:16px（图标定宽样式，压缩后无空格）
   grep -q 'width:16px' dist/assets/css/index-*.css || exit 1
   grep -q 'height:16px' dist/assets/css/index-*.css || exit 1
+"
+
+# web/020：移除侧边栏底部折叠按钮验证（生产构建产物不含 .sidebar__footer 与 .sidebar__toggle，顶栏 .header__toggle 保留）
+smoke_case "web-020 侧边栏底部折叠按钮移除构建产物" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  npx vite build >/dev/null 2>&1 || exit 1
+  # 检查 CSS 产物中不包含 .sidebar__footer 与 .sidebar__toggle
+  ! grep -q 'sidebar__footer' dist/assets/css/*.css || exit 1
+  ! grep -q 'sidebar__toggle' dist/assets/css/*.css || exit 1
+  # 检查顶栏折叠按钮 .header__toggle 保留（在 Header-*.css 中）
+  grep -q 'header__toggle' dist/assets/css/Header-*.css || exit 1
+"
+
+# web/021：移除标签页操作区域下拉菜单验证（生产构建产物不含 .tags-view__more 与 .tags-view__dropdown-icon，保留右键菜单 .tags-view__context-menu）
+smoke_case "web-021 标签页下拉菜单移除构建产物" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  npx vite build >/dev/null 2>&1 || exit 1
+  # 检查 CSS 产物中不包含下拉菜单相关样式
+  ! grep -q 'tags-view__more' dist/assets/css/*.css || exit 1
+  ! grep -q 'tags-view__dropdown-icon' dist/assets/css/*.css || exit 1
+  # 检查右键上下文菜单样式保留
+  grep -q 'tags-view__context-menu' dist/assets/css/*.css || exit 1
+"
+
+# web/022：移除标签页操作区域整个红框部分验证（生产构建产物不含 .tags-view__actions 与 .tags-view__refresh，保留右键菜单 .tags-view__context-menu）
+smoke_case "web-022 标签页操作区域整体移除构建产物" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  npx vite build >/dev/null 2>&1 || exit 1
+  # 检查 CSS 产物中不包含操作区域相关样式
+  ! grep -q 'tags-view__actions' dist/assets/css/*.css || exit 1
+  ! grep -q 'tags-view__refresh' dist/assets/css/*.css || exit 1
+  # 检查右键上下文菜单样式保留
+  grep -q 'tags-view__context-menu' dist/assets/css/*.css || exit 1
+"
+
+# web/023：移除整个标签页栏验证（生产构建产物不含 TagsView 相关代码，contentStyle minHeight 为 calc(100vh - 60px)，保留 Breadcrumb）
+smoke_case "web-023 移除整个标签页栏构建产物" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  npx vite build >/dev/null 2>&1 || exit 1
+  # 检查构建产物中不包含 TagsView 组件相关代码（需在所有 JS 文件中查找）
+  ! grep -rq 'tags-view' dist/assets/js/ || exit 1
+  # 检查 DefaultLayout 中 contentStyle minHeight 为 calc(100vh - 60px)
+  grep -q 'calc(100vh - 60px)' dist/assets/js/DefaultLayout-*.js || exit 1
+  # 检查 Breadcrumb 组件保留
+  grep -q 'Breadcrumb' dist/assets/js/*.js || exit 1
+"
+
+# web/024：修复主内容区图标尺寸异常验证（生产构建产物含图标定宽样式，ProfileView.vue 按钮图标 16x16px）
+smoke_case "web-024 主内容区图标尺寸修复构建产物" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  npx vite build >/dev/null 2>&1 || exit 1
+  # 检查 CSS 产物中包含图标定宽样式 width:16px 和 height:16px（用于 .profile__action-icon）
+  grep -q 'width:16px' dist/assets/css/index-*.css || exit 1
+  grep -q 'height:16px' dist/assets/css/index-*.css || exit 1
+"
+
+# web/025：优化主内容区图标与文字间距验证（生产构建产物含间距样式）
+smoke_case "web-025 主内容区图标间距优化构建产物" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  npx vite build >/dev/null 2>&1 || exit 1
+  # 检查 ProfileView header gap 24px
+  grep -q 'gap:24px' dist/assets/css/IndexView-*.css || exit 1
+  # 检查 ProfileView action buttons gap 16px
+  grep -q 'gap:16px' dist/assets/css/IndexView-*.css || exit 1
+  # 检查 Breadcrumb icon margin-right 12px
+  grep -q 'margin-right:12px' dist/assets/css/Breadcrumb-*.css || exit 1
 "
 # ====================================================================================
 
