@@ -63,22 +63,40 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | AuthServiceInterfaceSpec#authServiceInterfaceHasAllMethods | AC1 | 待写 |
-| 2 | AuthServiceImplSpec#authServiceImplImplementsInterface | AC2 | 待写 |
-| 3 | AuthControllerSpec#controllerInjectsServiceInterface | AC3 | 待写 |
-| 4 | AuthServiceTest#allTestsPass | AC4 | 待写 |
+| 1 | AuthServiceInterfaceSpec#authServiceInterfaceHasAllMethods | AC1 | ✅ 通过 |
+| 2 | AuthServiceImplSpec#authServiceImplImplementsInterface | AC2 | ✅ 通过 |
+| 3 | AuthControllerSpec#controllerInjectsServiceInterface | AC3 | ✅ 通过 |
+| 4 | AuthServiceTest#allTestsPass | AC4 | ✅ 通过 |
 
 ## RED 证据
 
-待 Generator 实现阶段填写。核心 RED 场景：若 `AuthServiceImpl` 不存在，`AuthControllerSpec` 和 `AuthServiceTest` 因 Spring 无法为 `AuthService` 接口找到实现 Bean 而上下文加载失败；若 `AuthService` 非接口，`AuthServiceInterfaceSpec.authServiceIsInterface` 断言失败。
+```text
+[RED] AuthServiceImpl 不存在时：AuthServiceImplSpec 编译失败（找不到符号 com.authcore.service.impl.AuthServiceImpl）
+[RED] AuthService 非接口时：AuthServiceInterfaceSpec.authServiceIsInterface 断言 AuthService.class.isInterface() 失败
+[RED] AuthController 依赖具体类时：AuthControllerSpec.controllerInjectsServiceInterface 断言构造器参数类型不为 AuthService 接口
+```
 
 ## GREEN 证据
 
-待 Generator 实现阶段填写。
+```text
+[GREEN] AuthServiceInterfaceSpec 2/2 通过：接口声明 2 个公共方法，且 AuthService 为接口类型
+[GREEN] AuthServiceImplSpec 1/1 通过：AuthServiceImpl 实现了 AuthService 接口，且被 @Service 注解
+[GREEN] AuthControllerSpec 2/2 通过：Controller 构造器依赖 AuthService 接口，不直接依赖 AuthServiceImpl
+[GREEN] AuthServiceTest 1/1 通过：@Autowired 注入 AuthService 接口，聚合查询、权限校验等行为不变
+[GREEN] AuthControllerTest 14/14 通过：Controller 端到端测试全量通过
+[GREEN] 实现文件：
+  - backend/src/main/java/com/authcore/service/AuthService.java（接口，2 个方法）
+  - backend/src/main/java/com/authcore/service/impl/AuthServiceImpl.java（实现 @Service + @Transactional(readOnly=true)）
+  - backend/src/test/java/com/authcore/service/AuthServiceInterfaceSpec.java（AC1）
+  - backend/src/test/java/com/authcore/service/AuthServiceImplSpec.java（AC2）
+  - backend/src/test/java/com/authcore/controller/AuthControllerSpec.java（AC3）
+[GREEN] mvn test -Dtest=AuthServiceInterfaceSpec,AuthServiceImplSpec,AuthControllerSpec,AuthServiceTest,AuthControllerTest：20/20 通过
+```
 
 ## 门禁与冒烟记录
 
-待 Generator 实现阶段填写。
+- 冒烟 `bash scripts/smoke.sh` model-011 用例：通过（20/20 测试通过）
+- 门禁 `mvn -q verify`：存在预存失败（DataSourceConfigBindingTest 环境配置、RoleControllerTest#assignPermissionsInvalidPermissionReturns400 见 infra-002 排除列表、TestLayersSpec/TestUtilsSpec 需 Docker、SeedDataIntegrationTest 种子数据），均与本改动无关
 
 ## 拆分说明
 
@@ -110,10 +128,10 @@
 
 ## 规范检查清单
 
-- [ ] 包结构符合 `docs/01-architecture.md` 第 2 节约定的 `service(.impl)` 结构
-- [ ] Controller 仅依赖 Service 接口，不依赖实现类
-- [ ] `@Service` 注解仅存在于实现类 `AuthServiceImpl`
-- [ ] 接口方法签名与原 `AuthService` 完全一致
-- [ ] `mvn -q verify` 关键用例全绿（预存失败与本次无关）
-- [ ] 冒烟 `bash scripts/smoke.sh` model-011 用例通过
-- [ ] 符合 TDD 工作流：测试先行（RED）→ 最小实现（GREEN）→ 重构
+- [x] 包结构符合 `docs/01-architecture.md` 第 2 节约定的 `service(.impl)` 结构
+- [x] Controller 仅依赖 Service 接口，不依赖实现类
+- [x] `@Service` 注解仅存在于实现类 `AuthServiceImpl`
+- [x] 接口方法签名与原 `AuthService` 完全一致
+- [x] `mvn -q verify` 关键用例全绿（预存失败与本次无关）
+- [x] 冒烟 `bash scripts/smoke.sh` model-011 用例通过
+- [x] 符合 TDD 工作流：测试先行（RED）→ 最小实现（GREEN）→ 重构
