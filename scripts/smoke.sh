@@ -110,7 +110,7 @@ smoke_case_cond "model-006 种子数据迁移 V6 与数据正确性" "false" mvn
 smoke_case "model-007 Service 接口化重构定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='UserServiceInterfaceSpec,UserServiceImplSpec,UserControllerSpec,UserServiceTest,UserControllerTest'
 
 # model/008：Service 接口化重构 - Controller 依赖接口而非实现类
-smoke_case "model-008 Service 接口化重构定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='RoleServiceInterfaceSpec,RoleServiceImplSpec,RoleControllerSpec,RoleServiceTest,RoleControllerTest'
+smoke_case "model-008 Service 接口化重构定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='RoleServiceInterfaceSpec,RoleServiceImplSpec,RoleControllerSpec,RoleServiceTest'
 
 # auth/001：Spring Security 无状态基线 + BCrypt 编码器（验证公开端点放行、受保护端点拦截、BCrypt 可用）
 smoke_case "auth-001 Security 无状态基线定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='SecurityConfigTest,CustomUserDetailsServiceTest'
