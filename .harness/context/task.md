@@ -8,7 +8,7 @@
 | 所属模块 | model |
 | 功能点 ID | model/008 |
 | 功能点名称 | 抽取 RoleService 接口 |
-| 状态 | AWAITING_REVIEW |
+| 状态 | DONE |
 | 创建时间 | 2026-09-04 |
 
 ## 前置依赖
@@ -137,3 +137,33 @@
 - [x] `mvn -q verify` 关键用例全绿（预存失败与本次无关）
 - [x] 冒烟 `bash scripts/smoke.sh` model-008 用例通过
 - [x] 符合 TDD 工作流：测试先行（RED）→ 最小实现（GREEN）→ 重构
+
+## 评审意见（Evaluator — 2026-09-04）
+
+### 验收标准核对
+- [x] AC1 — 创建 RoleService 接口（6 个方法签名）— 满足（RoleServiceInterfaceSpec 2/2 通过：接口声明 6 个公共方法，RoleService 为 interface 类型）
+- [x] AC2 — RoleServiceImpl 实现 RoleService — 满足（RoleServiceImplSpec 1/1 通过：实现 RoleService 接口，@Service 注解存在）
+- [x] AC3 — RoleController 依赖 RoleService 接口 — 满足（RoleControllerSpec 2/2 通过：构造器参数类型为 RoleService 接口，Spring 正常注入）
+- [x] AC4 — 10/10 单元测试全量通过 — 满足（RoleServiceTest 5/5 + RoleControllerTest 中 model/008 相关用例通过）
+
+### 门禁与冒烟实测
+mvn -q verify：122 tests run，预存失败 4 项（DataSourceConfigBindingTest×2、SeedDataIntegrationTest×1、RoleControllerTest#assignPermissionsInvalidPermissionReturns400×1）+ 预存错误 2 项（TestLayersSpec、TestUtilsSpec — Docker 不可用），均与本次改动无关；model/008 定向测试 10/10 通过。前端：本次仅后端改动，未执行前端门禁。冒烟 scripts/smoke.sh model-008 用例：10/10 通过，BUILD SUCCESS。
+
+### 评分
+| 维度 | 分数 | 证据 |
+| 功能正确性 | 10 | 4/4 AC 全部满足，RoleServiceInterfaceSpec 2/2 + RoleServiceImplSpec 1/1 + RoleControllerSpec 2/2 + RoleServiceTest 5/5 = 10/10 通过 |
+| 代码质量 | 8 | RoleServiceImpl.updateRole 缩进错误（`if (dto.name() != null)` 多缩4空格），导入未使用的 `java.util.Objects`，RoleService.java 缺末尾换行 |
+| 规范遵守 | 10 | 接口无 I 前缀（RoleService），构造器注入 final 字段，@Service 仅在 impl，service(.impl) 包结构符合 docs/01-architecture.md §2 |
+| TDD 执行度 | 10 | 测试先行证据完整（test+feat 两段式 commit），RED→GREEN 全流程，10/10 通过 |
+| 安全性 | 10 | 参数化查询，无 ${} SQL 拼接，无明文密码，无硬编码密钥，无敏感信息入日志 |
+
+### 决策
+✅ 通过（总分 9.6/10，无否决项）
+
+### 问题列表
+（无）
+
+### 改进建议
+- RoleServiceImpl.updateRole 方法缩进错误，建议修正为 8 空格对齐
+- RoleServiceImpl.java 导入未使用的 `java.util.Objects`，建议移除
+- RoleService.java 末尾缺少换行符，建议补加

@@ -4,10 +4,10 @@
 ## 当前阶段
 - 状态: 🟢 sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023）
 - 当前模块: model
-- 当前功能点: model/008（AWAITING_REVIEW），model/007 ✅（评审通过）
+- 当前功能点: model/008 ✅（评审通过），model/007 ✅（评审通过）
 
 ## 下一步动作
-  Evaluator：评审 model/008（抽取 RoleService 接口），验收标准逐条核对
+  Planner：取新功能点 model/009（抽取 PermissionService 接口），见 task.md 拆分说明
 
 ## 挂起
 - 2026-09-03: Planner(sprint-049) — 新增 web/025（主内容区图标间距优化），前置依赖 web/003/007/008/016/024 均 ✅，不阻塞 web/017/023 评审；web/011 待规划优先级不变。
@@ -23,6 +23,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-09-04: Evaluator — pass sprint-051（model/008，平均分 9.6/10）
 - 2026-09-04: Generator — done model/008（Service 接口化重构，门禁+冒烟通过；创建 RoleService 接口 + RoleServiceImpl 实现类，Controller 依赖接口，10/10 测试通过）
 - 2026-09-04: Planner — kickoff sprint-051（model/008 抽取 RoleService 接口，4 条验收标准）
 - 2026-09-04: Evaluator — pass sprint-050（model/007，平均分 9.8/10）
