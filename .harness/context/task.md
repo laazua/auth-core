@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/026 |
 | 功能点名称 | 修复登录成功后不跳转首页（API 基础路径缺少 /v1 导致 /auth/me 404） |
-| 状态 | AWAITING_REVIEW |
+| 状态 | DONE |
 | 创建时间 | 2026-09-07 |
 
 ## 前置依赖
@@ -111,8 +111,8 @@ Received:
 
 ## 规范检查清单
 
-- [ ] `npm run build` 零 TS 错误
-- [ ] `npm run lint` 全绿、不卡死
-- [ ] `npm run test` 全绿（含新增测试用例）
-- [ ] `bash scripts/smoke.sh` 全通过（含新增冒烟用例）
-- [ ] 符合前端编码规范（Vue 3 + TS strict + ESLint + Prettier）
+- [x] `npm run build` 零 TS 错误
+- [x] `npm run lint` 全绿、不卡死
+- [x] `npm run test` 全绿（含新增测试用例）
+- [x] `bash scripts/smoke.sh` 全通过（含新增冒烟用例）
+- [x] 符合前端编码规范（Vue 3 + TS strict + ESLint + Prettier）
