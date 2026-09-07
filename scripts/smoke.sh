@@ -291,6 +291,17 @@ smoke_case "web-025 主内容区图标间距优化构建产物" bash -c "
   # 检查 Breadcrumb icon margin-right 12px
   grep -q 'margin-right:12px' dist/assets/css/Breadcrumb-*.css || exit 1
 "
+
+# web/026：修复登录跳转失败（API 基础路径修正 + 错误处理增强）验证
+smoke_case "web-026 登录跳转修复验证" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  # 验证 API 基础路径配置正确
+  grep -q 'VITE_API_BASE_URL=/api/v1' .env || exit 1
+  # 验证 LoginView 登录成功跳转测试通过
+  npm run test -- --run src/views/LoginView.spec.ts 2>&1 | grep -q '23 passed' || exit 1
+  # 验证构建产物正常产出
+  npx vite build >/dev/null 2>&1 || exit 1
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

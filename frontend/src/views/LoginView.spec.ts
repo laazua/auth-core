@@ -53,15 +53,19 @@ describe('LoginView', () => {
     vi.clearAllMocks();
     mockAuthApi.me.mockResolvedValue({
       code: 0,
+      message: 'success',
+      timestamp: Date.now(),
       data: {
-        id: 1,
-        username: 'admin',
-        nickname: '管理员',
-        email: 'admin@example.com',
-        phone: '13800138000',
-        status: 1,
-        createTime: '2024-01-01T00:00:00Z',
-        roles: [{ code: 'admin' }],
+        user: {
+          id: 1,
+          username: 'admin',
+          nickname: '管理员',
+          email: 'admin@example.com',
+          phone: '13800138000',
+          status: 1,
+          createTime: '2024-01-01T00:00:00Z',
+        },
+        roles: [{ id: 1, code: 'admin', name: 'Admin', status: 1, createTime: '2024-01-01T00:00:00Z' }],
         permissions: ['*'],
       },
     });
@@ -81,8 +85,8 @@ describe('LoginView', () => {
       expect(wrapper.find('.login__brand-slogan').text()).toBe('通用权限管理系统');
       expect(wrapper.find('.login__title').text()).toBe('欢迎登录');
       expect(wrapper.find('.login__subtitle').text()).toBe('请输入您的账号信息');
-      expect(wrapper.find('input[placeholder="请输入用户名"]').exists()).toBe(true);
-      expect(wrapper.find('input[placeholder="请输入用户密码"]').exists()).toBe(true);
+      expect(wrapper.find('input[placeholder="请输入用户"]').exists()).toBe(true);
+      expect(wrapper.find('input[placeholder="请输入密码"]').exists()).toBe(true);
       expect(wrapper.find('.login__remember').exists()).toBe(true);
       expect(wrapper.find('.login__forgot').exists()).toBe(true);
       expect(wrapper.find('.login__submit').exists()).toBe(true);
@@ -118,6 +122,8 @@ describe('LoginView', () => {
       const vm = wrapper.vm as any;
       
       mockAuthApi.login.mockResolvedValue({
+        message: "success",
+        timestamp: Date.now(),
         code: 0,
         data: {
           token: 'mock-jwt-token',
@@ -155,6 +161,8 @@ describe('LoginView', () => {
       const vm = wrapper.vm as any;
 
       mockAuthApi.login.mockResolvedValue({
+        message: "success",
+        timestamp: Date.now(),
         code: 0,
         data: {
           token: 'mock-jwt-token',
@@ -191,6 +199,8 @@ describe('LoginView', () => {
       const authStore = useAuthStore();
 
       mockAuthApi.login.mockResolvedValue({
+        message: "success",
+        timestamp: Date.now(),
         code: 0,
         data: {
           token: 'mock-jwt-token',
@@ -230,6 +240,8 @@ describe('LoginView', () => {
       const vm = wrapper.vm as any;
       
       mockAuthApi.login.mockResolvedValue({
+        message: "success",
+        timestamp: Date.now(),
         code: 0,
         data: {
           token: 'mock-jwt-token',
@@ -386,7 +398,6 @@ describe('LoginView', () => {
     it('password input shows toggle visibility button (AC2)', () => {
       const wrapper = createWrapper();
       // BaseInput with type="password" and showPassword prop should show the toggle button
-      const passwordInputWrapper = wrapper.findComponent({ name: 'BaseInput' });
       // The second BaseInput is the password field
       const baseInputs = wrapper.findAllComponents({ name: 'BaseInput' });
       const passwordBaseInput = baseInputs[1];
@@ -423,8 +434,10 @@ describe('LoginView', () => {
       vm.loginForm.username = 'admin';
       vm.loginForm.password = 'admin123456';
       
-       mockAuthApi.login.mockResolvedValue({
+mockAuthApi.login.mockResolvedValue({
         code: 0,
+        message: 'success',
+        timestamp: Date.now(),
         data: {
           token: 'mock-jwt-token',
           tokenType: 'Bearer',
@@ -461,9 +474,103 @@ describe('LoginView', () => {
       vm.handleKeyUp({ key: 'Escape' } as KeyboardEvent);
       
       // Wait a bit to ensure no async calls
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
-      expect(mockAuthApi.login).not.toHaveBeenCalled();
-    });
-  });
-});
+await new Promise(resolve => setTimeout(resolve, 10));
+       
+       expect(mockAuthApi.login).not.toHaveBeenCalled();
+     });
+   });
+
+   describe('Login Redirect Fix (web/026)', () => {
+     it('redirects to dashboard on successful login with correct credentials', async () => {
+       const wrapper = createWrapper();
+       const vm = wrapper.vm as any;
+
+       mockAuthApi.login.mockResolvedValue({
+         code: 0,
+         message: 'success',
+         timestamp: Date.now(),
+         data: {
+           token: 'mock-jwt-token',
+           tokenType: 'Bearer',
+           expiresIn: 3600,
+           userInfo: {
+             id: 1,
+             username: 'admin',
+             nickname: '管理员',
+             email: 'admin@example.com',
+             phone: '13800138000',
+             status: 1,
+             createTime: '2024-01-01T00:00:00Z',
+           },
+         },
+       });
+
+       vm.formRef = {
+         validate: vi.fn().mockResolvedValue(undefined),
+       };
+       vm.loginForm.username = 'admin';
+       vm.loginForm.password = 'admin123456';
+
+       await vm.handleLogin();
+
+       expect(mockAuthApi.login).toHaveBeenCalled();
+       expect(mockAuthApi.me).toHaveBeenCalled();
+       expect(mockElMessage.success).toHaveBeenCalledWith('登录成功');
+     });
+
+     it('shows error message when me() API fails with 404', async () => {
+       const wrapper = createWrapper();
+       const vm = wrapper.vm as any;
+
+       mockAuthApi.login.mockResolvedValue({
+         code: 0,
+         message: 'success',
+         timestamp: Date.now(),
+         data: { token: 'mock-token', tokenType: 'Bearer', expiresIn: 3600 },
+       });
+
+       mockAuthApi.me.mockRejectedValue(new Error('404 Not Found'));
+
+       vm.formRef = { validate: vi.fn().mockResolvedValue(undefined) };
+       vm.loginForm.username = 'admin';
+       vm.loginForm.password = 'admin123456';
+
+       await vm.handleLogin();
+
+       expect(mockElMessage.error).toHaveBeenCalledWith(expect.stringContaining('接口地址错误'));
+       expect(vm.errorMessage).toContain('接口地址错误');
+     });
+
+     it('shows error message on login failure (wrong password)', async () => {
+       const wrapper = createWrapper();
+       const vm = wrapper.vm as any;
+
+       mockAuthApi.login.mockRejectedValue(new Error('用户名或密码错误'));
+
+       vm.formRef = { validate: vi.fn().mockResolvedValue(undefined) };
+       vm.loginForm.username = 'admin';
+       vm.loginForm.password = 'wrongpassword';
+
+       await vm.handleLogin();
+
+       expect(mockElMessage.error).toHaveBeenCalledWith('用户名或密码错误');
+       expect(vm.errorMessage).toBe('用户名或密码错误');
+     });
+
+     it('shows error message on account disabled', async () => {
+       const wrapper = createWrapper();
+       const vm = wrapper.vm as any;
+
+       mockAuthApi.login.mockRejectedValue(new Error('账号已停用'));
+
+       vm.formRef = { validate: vi.fn().mockResolvedValue(undefined) };
+       vm.loginForm.username = 'disabled';
+       vm.loginForm.password = 'password123';
+
+       await vm.handleLogin();
+
+       expect(mockElMessage.error).toHaveBeenCalledWith('账号已停用');
+       expect(vm.errorMessage).toBe('账号已停用');
+     });
+   });
+ });

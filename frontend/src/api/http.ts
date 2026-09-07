@@ -56,7 +56,7 @@ const createHttp = (): AxiosInstance => {
         return Promise.reject(new Error(message));
       }
 
-      return response.data;
+      return response;
     },
     (error: AxiosError<Result>) => {
       const { response } = error;
@@ -72,7 +72,7 @@ const createHttp = (): AxiosInstance => {
             ElMessage.error(data?.message || '权限不足');
             break;
           case 404:
-            ElMessage.error('请求资源不存在');
+            ElMessage.error('接口不存在 (404)，请检查 API 路径配置');
             break;
           case 500:
             ElMessage.error(data?.message || '服务器内部错误');

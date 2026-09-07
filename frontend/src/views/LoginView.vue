@@ -74,7 +74,17 @@ const handleLogin = async () => {
       }
     }
   } catch (error: unknown) {
-    const message = (error as Error).message || '登录失败';
+    let message = '登录失败';
+    if (error instanceof Error) {
+      message = error.message;
+    } else if (typeof error === 'string') {
+      message = error;
+    } else if (error && typeof error === 'object' && 'message' in error) {
+      message = String((error as any).message);
+    }
+    if (message.includes('404') || message.includes('Network Error') || message.includes('ECONNABORTED')) {
+      message = '接口地址错误，请检查 API 基础路径配置 (VITE_API_BASE_URL)';
+    }
     errorMessage.value = message;
     ElMessage.error(message);
   } finally {

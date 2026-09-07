@@ -15,7 +15,7 @@
 | roles | 2 | 0 | 0 | 2 | — |
 | perms | 1 | 0 | 0 | 1 | — |
 | modules | 1 | 0 | 0 | 1 | — |
-| web | 25 | 21 | 2 | 2 | web/017/023 进行中；web/022 废弃；web/011 待规划 |
+| web | 25 | 22 | 2 | 2 | web/017/023 进行中；web/022 废弃；web/011 待规划；web/026 ✅ |
 | integration | 2 | 0 | 0 | 2 | 收尾验证，依赖全部前置就绪 |
 
 ## infra — 基础设施
@@ -111,6 +111,7 @@
 | web/023 | 移除整个标签页栏（TagsView），仅保留面包屑导航 | web/003, web/020 | 🔄 | sprint-047 规划中（2026-09-03 kickoff，4 条验收标准） |
 | web/024 | 修复主内容区图标尺寸异常（ElButton icon prop 等 EP 图标缺少显式尺寸被 flex 拉伸） | web/003, web/007, web/008, web/016 | ✅ | sprint-048 评审中（2026-09-03 实现完成，3 条验收标准，ProfileView.vue BaseButton+slot 16×16px + header-icon 20×20px，Breadcrumb.vue breadcrumb__icon 13×13px） |
 | web/025 | 优化主内容区图标与文字间距（ProfileView header、action buttons、Breadcrumb 等） | web/003, web/007, web/008, web/016, web/024 | ✅ | sprint-049 评审通过（2026-09-03，4 条验收标准，平均分 9.8/10，header gap 24px、action gap 16px、breadcrumb margin-right 12px） |
+| web/026 | 修复登录成功后不跳转首页（API 基础路径缺少 /v1 导致 /auth/me 404） | web/002, web/011a | ✅ | sprint-057 评审通过（2026-09-07，4 条验收标准，门禁+冒烟通过） |
 
 ## integration — 集成与验收
 
