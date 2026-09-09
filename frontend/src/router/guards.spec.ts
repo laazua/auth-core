@@ -3,18 +3,34 @@ import { createRouter, createWebHistory, Router } from 'vue-router';
 import { createPinia, setActivePinia } from 'pinia';
 import { authGuard, guestGuard, permissionGuard, roleGuard } from '@/router/guards';
 import { useAuthStore } from '@/stores/auth';
+import { generateRoutes } from '@/router/routes';
 
 vi.mock('@/stores/auth');
 
-const mockAuthStore = {
-  isAuthenticated: false,
-  token: null,
-  roles: [],
-  permissions: [],
-  hasPermission: vi.fn(),
-  hasRole: vi.fn(),
-  hasAnyRole: vi.fn(),
+const createMockAuthStore = () => {
+  const store = {
+    isAuthenticated: false,
+    token: null as string | null,
+    roles: [] as string[],
+    permissions: [] as string[],
+    hasPermission: vi.fn(),
+    hasRole: vi.fn(),
+    hasAnyRole: vi.fn(),
+    setToken: vi.fn((newToken: string | null) => {
+      store.token = newToken;
+      store.isAuthenticated = !!newToken;
+    }),
+    setRoles: vi.fn((newRoles: string[]) => {
+      store.roles = newRoles;
+    }),
+    setPermissions: vi.fn((newPermissions: string[]) => {
+      store.permissions = newPermissions;
+    }),
+  };
+  return store;
 };
+
+const mockAuthStore = createMockAuthStore();
 
 vi.mocked(useAuthStore).mockReturnValue(mockAuthStore as unknown as ReturnType<typeof useAuthStore>);
 
@@ -44,6 +60,9 @@ describe('Router Guards', () => {
     mockAuthStore.hasPermission.mockReturnValue(false);
     mockAuthStore.hasRole.mockReturnValue(false);
     mockAuthStore.hasAnyRole.mockReturnValue(false);
+    mockAuthStore.setToken.mockClear();
+    mockAuthStore.setRoles.mockClear();
+    mockAuthStore.setPermissions.mockClear();
 
     router = createTestRouter([
       { path: '/login', name: 'Login', meta: { public: true } },
@@ -56,7 +75,7 @@ describe('Router Guards', () => {
   });
 
   const setupAuthGuard = (r: Router) => {
-    r.beforeEach(async (to, from, next) => {
+    r.beforeEach(async (to, _from, next) => {
       const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
       const isPublic = to.matched.some((record) => record.meta.public);
 
@@ -335,6 +354,87 @@ describe('Router Guards', () => {
       await guard(to as any, from as any, next);
 
       expect(next).toHaveBeenCalledWith();
+    });
+  });
+
+  describe('Login Redirect with Dynamic Routes (web/026)', () => {
+    let router: Router;
+    let authStore: ReturnType<typeof useAuthStore>;
+    let dynamicRoutesLoaded: boolean;
+
+    const createTestRouterWithGuards = () => {
+      dynamicRoutesLoaded = false;
+      const r = createRouter({
+        history: createWebHistory(),
+        routes: [
+          { path: '/login', name: 'Login', component: { template: '<div>Login</div>' }, meta: { public: true } },
+          { path: '/dashboard', name: 'Dashboard', component: { template: '<div>Dashboard</div>' }, meta: { requiresAuth: true } },
+          { path: '/user', name: 'User', component: { template: '<div>User</div>' }, meta: { requiresAuth: true } },
+        ],
+      });
+
+      r.beforeEach(async (to, _from, next) => {
+        const store = useAuthStore();
+        const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+        const isPublic = to.matched.some((record) => record.meta.public);
+
+        if (requiresAuth && !store.isAuthenticated) {
+          next({ name: 'Login', query: { redirect: to.fullPath } });
+          return;
+        }
+
+        if (isPublic && store.isAuthenticated && to.name === 'Login') {
+          next({ name: 'Dashboard' });
+          return;
+        }
+
+        if (store.isAuthenticated && !dynamicRoutesLoaded) {
+          try {
+            const roles = store.roles;
+            const accessibleRoutes = generateRoutes(roles);
+            accessibleRoutes.forEach((route) => {
+              r.addRoute(route);
+            });
+            dynamicRoutesLoaded = true;
+            next({ ...to, replace: true });
+            return;
+          } catch (error) {
+            console.error('Failed to load dynamic routes:', error);
+          }
+        }
+
+        next();
+      });
+
+      return r;
+    };
+
+    beforeEach(() => {
+      setActivePinia(createPinia());
+      vi.clearAllMocks();
+      
+      // Reset mock auth store state
+      mockAuthStore.isAuthenticated = false;
+      mockAuthStore.token = null;
+      mockAuthStore.roles = [];
+      mockAuthStore.permissions = [];
+      mockAuthStore.setToken.mockClear();
+      mockAuthStore.setRoles.mockClear();
+      mockAuthStore.setPermissions.mockClear();
+
+      router = createTestRouterWithGuards();
+      authStore = useAuthStore();
+    });
+
+    it('allows redirect to dashboard after login without blocking on dynamicRoutesLoaded', async () => {
+      authStore.setToken('mock-token');
+      authStore.setRoles(['admin']);
+      authStore.setPermissions(['*']);
+
+      await router.push('/login?redirect=/dashboard');
+      await router.push('/dashboard');
+
+      expect(router.currentRoute.value.name).toBe('Dashboard');
     });
   });
 });
