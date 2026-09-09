@@ -7,7 +7,7 @@
 - 当前功能点: web/011（PLANNED），web/011a 🔄（规划中），web/017 🔄（规划中），web/023 🔄（规划中），web/026 ✅（已完成），web/027 ✅（已完成），web/029 ✅（已完成）
 
 ## 下一步动作
-  Evaluator：评审 web/029（修复侧边栏菜单导航404问题，Router Guard 动态路由加载修复），见 .harness/context/task.md
+  Planner：取下一个功能点，web/017、web/023、web/011 仍在规划中
 
 ## 挂起
 - 2026-09-03: Planner(sprint-049) — 新增 web/025（主内容区图标间距优化），前置依赖 web/003/007/008/016/024 均 ✅，不阻塞 web/017/023 评审；web/011 待规划优先级不变。

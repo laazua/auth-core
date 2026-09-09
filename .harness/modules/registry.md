@@ -113,7 +113,7 @@
 | web/025 | 优化主内容区图标与文字间距（ProfileView header、action buttons、Breadcrumb 等） | web/003, web/007, web/008, web/016, web/024 | ✅ | sprint-049 评审通过（2026-09-03，4 条验收标准，平均分 9.8/10，header gap 24px、action gap 16px、breadcrumb margin-right 12px） |
 | web/026 | 修复登录成功后不跳转首页（API 基础路径缺少 /v1 导致 /auth/me 404） | web/002, web/011a | ✅ | sprint-057 评审通过（2026-09-07，4 条验收标准，门禁+冒烟通过） |
 | web/027 | 修复远程开发环境 CORS 与代理配置导致的 403 错误 | web/011a, web/026 | ✅ | sprint-059 评审通过（2026-09-08，3 条验收标准，门禁+冒烟通过） |
-| web/029 | 修复侧边栏菜单导航404问题（动态路由未加载与菜单路径错误） | web/010, web/026, web/027 | 🔄 | sprint-060 规划中（2026-09-09 kickoff，4 条验收标准） |
+| web/029 | 修复侧边栏菜单导航404问题（动态路由未加载与菜单路径错误） | web/010, web/026, web/027 | ✅ | sprint-060 评审通过（2026-09-09，平均分 8.6/10，门禁+冒烟通过，router.spec.ts 9 passed, useMenu.spec.ts 10 passed, system-menu-path-fix.spec.ts 6 passed） |
 
 ## integration — 集成与验收
 

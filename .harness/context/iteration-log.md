@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-09-09: Evaluator — pass sprint-060（web/029，平均分 8.6/10）
 - 2026-09-09: Generator — done sprint-060（web/029 修复侧边栏菜单导航404问题，Router Guard case 3 移除 dynamicRoutesLoaded=true 改由 case 4 加载动态路由 + system-menu-path-fix 路径断言修正，门禁+冒烟通过，router.spec.ts 9 passed, useMenu.spec.ts 10 passed, system-menu-path-fix.spec.ts 6 passed, vite build 通过）
 - 2026-09-09: Planner — kickoff sprint-060（web/029 修复侧边栏菜单导航404问题，4 条验收标准，前置依赖 web/010/web/026/web/027）
 - 2026-09-08: Generator — done sprint-059（web/027 修复远程开发环境 CORS 与代理配置导致的 403 错误，CorsConfig 读取环境变量 cors.allowed-origins、vite.config.ts 代理 target 读取 VITE_API_PROXY_TARGET、前端 .env 新增配置，门禁+冒烟通过，2/2 CORS 测试通过，前端构建正常）
