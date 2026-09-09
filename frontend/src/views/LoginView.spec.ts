@@ -522,12 +522,25 @@ await new Promise(resolve => setTimeout(resolve, 10));
        const wrapper = createWrapper();
        const vm = wrapper.vm as any;
 
-       mockAuthApi.login.mockResolvedValue({
-         code: 0,
-         message: 'success',
-         timestamp: Date.now(),
-         data: { token: 'mock-token', tokenType: 'Bearer', expiresIn: 3600 },
-       });
+mockAuthApi.login.mockResolvedValue({
+          code: 0,
+          message: 'success',
+          timestamp: Date.now(),
+          data: {
+            token: 'mock-token',
+            tokenType: 'Bearer',
+            expiresIn: 3600,
+            userInfo: {
+              id: 1,
+              username: 'admin',
+              nickname: '管理员',
+              email: 'admin@example.com',
+              phone: '13800138000',
+              status: 1,
+              createTime: '2024-01-01T00:00:00Z',
+            },
+          },
+        });
 
        mockAuthApi.me.mockRejectedValue(new Error('404 Not Found'));
 
@@ -557,20 +570,53 @@ await new Promise(resolve => setTimeout(resolve, 10));
        expect(vm.errorMessage).toBe('用户名或密码错误');
      });
 
-     it('shows error message on account disabled', async () => {
-       const wrapper = createWrapper();
-       const vm = wrapper.vm as any;
+it('shows error message on account disabled', async () => {
+        const wrapper = createWrapper();
+        const vm = wrapper.vm as any;
 
-       mockAuthApi.login.mockRejectedValue(new Error('账号已停用'));
+        mockAuthApi.login.mockRejectedValue(new Error('账号已停用'));
 
-       vm.formRef = { validate: vi.fn().mockResolvedValue(undefined) };
-       vm.loginForm.username = 'disabled';
-       vm.loginForm.password = 'password123';
+        vm.formRef = { validate: vi.fn().mockResolvedValue(undefined) };
+        vm.loginForm.username = 'disabled';
+        vm.loginForm.password = 'password123';
 
-       await vm.handleLogin();
+        await vm.handleLogin();
 
-       expect(mockElMessage.error).toHaveBeenCalledWith('账号已停用');
-       expect(vm.errorMessage).toBe('账号已停用');
-     });
-   });
- });
+        expect(mockElMessage.error).toHaveBeenCalledWith('账号已停用');
+        expect(vm.errorMessage).toBe('账号已停用');
+      });
+    });
+
+  describe('Login Redirect (web/028)', () => {
+    it('redirects to dashboard after successful login', async () => {
+      const router = createRouter({
+        history: createWebHistory(),
+        routes: [
+          { path: '/login', name: 'Login', component: LoginView, meta: { public: true } },
+          { path: '/dashboard', name: 'Dashboard', component: { template: '<div>Dashboard</div>' }, meta: { requiresAuth: true } },
+        ],
+      });
+      router.push('/login?redirect=/dashboard');
+      await router.isReady();
+
+      const wrapper = mount(LoginView, {
+        global: { plugins: [router], components: { BaseButton, BaseInput } },
+      });
+      const vm = wrapper.vm as any;
+
+      mockAuthApi.login.mockResolvedValue({
+        code: 0, message: 'success', timestamp: Date.now(),
+        data: { token: 'mock-jwt-token', tokenType: 'Bearer', expiresIn: 3600, userInfo: { id: 1, username: 'admin', nickname: '管理员', email: 'admin@example.com', phone: '13800138000', status: 1, createTime: '2024-01-01T00:00:00Z' } },
+      });
+
+      vm.formRef = { validate: vi.fn().mockResolvedValue(undefined) };
+      vm.loginForm.username = 'admin';
+      vm.loginForm.password = 'admin123456';
+
+      await vm.handleLogin();
+
+      // 验证路由跳转
+      expect(router.currentRoute.value.name).toBe('Dashboard');
+    });
+  });
+  });
