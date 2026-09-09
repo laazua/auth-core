@@ -50,7 +50,7 @@ smoke_case() { # smoke_case <用例名> <命令...>
 }
 
 # ===================== 用例区（按功能点增量追加，禁止删除既有用例） =====================
-# 用例计数：17（infra/001 起，每功能点递增）
+# 用例计数：25（infra/001 起，每功能点递增）
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/backend"
 SMOKE_APP_LOG="${TMPDIR:-/tmp}/authcore-smoke-app.log"
@@ -123,6 +123,9 @@ smoke_case "model-011 Service 接口化重构定向测试" mvn -q -f "$APP_DIR/p
 
 # auth/001：Spring Security 无状态基线 + BCrypt 编码器（验证公开端点放行、受保护端点拦截、BCrypt 可用）
 smoke_case "auth-001 Security 无状态基线定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='SecurityConfigTest,CustomUserDetailsServiceTest'
+
+# web/027：CORS 允许远程前端源（验证 OPTIONS 预检请求放行 192.168.165.89:3003）
+smoke_case "web-027 CORS 允许远程前端源" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='CorsConfigTest'
 
 # auth/003：JWT 校验过滤器 + SecurityContext 注入（验证有效 token 通过、无效/无/非 Bearer 返回 401 code=1401）
 smoke_case "auth-003 JWT 过滤器与 SecurityContext 定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='JwtAuthenticationFilterTest'
@@ -299,6 +302,19 @@ smoke_case "web-026 登录跳转修复验证" bash -c "
   grep -q 'VITE_API_BASE_URL=/api/v1' .env || exit 1
   # 验证 LoginView 登录成功跳转测试通过
   npm run test -- --run src/views/LoginView.spec.ts 2>&1 | grep -q '23 passed' || exit 1
+  # 验证构建产物正常产出
+  npx vite build >/dev/null 2>&1 || exit 1
+"
+
+# web/029：修复侧边栏菜单导航404问题（Router Guard 动态路由加载 + 测试断言修正）验证
+smoke_case "web-029 Router Guard 动态路由加载修复验证" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  # 验证 Router Guard 动态路由测试通过
+  npm run test -- --run src/__tests__/router.spec.ts 2>&1 | grep -q '9 passed' || exit 1
+  # 验证 useMenu 菜单路径测试通过
+  npm run test -- --run src/composables/useMenu.spec.ts 2>&1 | grep -q '10 passed' || exit 1
+  # 验证 system-menu-path-fix 路径断言测试通过
+  npm run test -- --run src/__tests__/system-menu-path-fix.spec.ts 2>&1 | grep -q '6 passed' || exit 1
   # 验证构建产物正常产出
   npx vite build >/dev/null 2>&1 || exit 1
 "
