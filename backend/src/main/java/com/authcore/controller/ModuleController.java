@@ -5,6 +5,7 @@ import com.authcore.dto.module.ModuleCreateDTO;
 import com.authcore.dto.module.ModuleQueryDTO;
 import com.authcore.dto.module.ModuleUpdateDTO;
 import com.authcore.dto.module.ModuleVO;
+import com.authcore.dto.permission.PermissionSimpleVO;
 import com.authcore.dto.permission.PermissionVO;
 import com.authcore.service.ModuleService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -117,5 +118,17 @@ public class ModuleController {
     public Result<Void> deleteModule(@PathVariable Long id) {
         moduleService.deleteModule(id);
         return Result.okMessage("删除成功");
+    }
+
+    /**
+     * 查询所有权限精简列表（仅含 id、code、name）。
+     *
+     * @return 权限精简对象列表，供前端下拉选项使用
+     */
+    @Operation(summary = "查询所有权限精简列表（用于下拉选项）")
+    @GetMapping("/permissions/all")
+    public Result<List<PermissionSimpleVO>> listAllPermissions() {
+        List<PermissionSimpleVO> permissions = moduleService.listAllPermissions();
+        return Result.ok(permissions);
     }
 }

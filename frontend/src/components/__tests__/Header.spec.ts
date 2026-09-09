@@ -45,17 +45,19 @@ describe('Header.vue', () => {
         username: 'admin',
         nickname: 'Admin User',
         email: 'admin@example.com',
+        phone: '13800138000',
         avatar: undefined,
         status: 1,
-        createdAt: '2026-01-01T00:00:00Z',
-        updatedAt: '2026-01-01T00:00:00Z',
+        createTime: '2026-01-01T00:00:00Z',
+        updateTime: '2026-01-01T00:00:00Z',
+        lastLoginTime: undefined,
       },
       roles: ['admin'],
       permissions: ['*'],
       token: 'mock-token',
       logout: vi.fn(),
-    };
-    (useAuthStore as vi.Mock).mockReturnValue(authStoreMock);
+    } as any;
+    (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(authStoreMock);
     mockRouter.push.mockReset();
     mockRouter.resolve.mockImplementation((path: string) => ({
       path,

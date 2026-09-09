@@ -142,11 +142,11 @@ defineOptions({
         label="角色编码"
         prop="code"
       >
-        <BaseInput
-          v-model="form.code"
-          placeholder="请输入角色编码 (如 ROLE_ADMIN)"
-          maxlength="50"
-        />
+<BaseInput
+           v-model="form.code"
+           placeholder="请输入角色编码 (如 ROLE_ADMIN)"
+           :maxlength="50"
+         />
       </el-form-item>
 
       <el-form-item
@@ -162,30 +162,30 @@ defineOptions({
       </el-form-item>
 
       <el-form-item label="角色名" prop="name">
-        <BaseInput
-          v-model="form.name"
-          placeholder="请输入角色名"
-          maxlength="50"
-        />
+<BaseInput
+           v-model="form.name"
+           placeholder="请输入角色名"
+           :maxlength="50"
+         />
       </el-form-item>
 
       <el-form-item label="描述" prop="description">
-        <ElInput
-          v-model="form.description"
-          type="textarea"
-          :rows="3"
-          placeholder="请输入描述 (可选)"
-          maxlength="200"
-          style="width: 100%"
-        />
+<ElInput
+           v-model="form.description"
+           type="textarea"
+           :rows="3"
+           placeholder="请输入描述 (可选)"
+           :maxlength="200"
+           style="width: 100%"
+         />
       </el-form-item>
 
       <el-form-item label="状态" prop="status">
-        <BaseSelect
-          v-model="form.status"
-          :options="statusOptions"
-          placeholder="请选择状态"
-        />
+<BaseSelect
+           v-model="form.status as number | null"
+           :options="statusOptions"
+           placeholder="请选择状态"
+         />
       </el-form-item>
     </el-form>
 

@@ -25,7 +25,7 @@ const queryForm = reactive<RoleQuery>({
   size: 10,
   code: '',
   name: '',
-  status: undefined,
+  status: undefined as number | undefined,
 });
 
 const statusOptions = [
@@ -34,7 +34,7 @@ const statusOptions = [
   { label: '停用', value: 0 },
 ];
 
-const columns = [
+const columns: import('@/components/BaseTable.vue').Column[] = [
   { prop: 'name', label: '角色名', minWidth: 150 },
   { prop: 'code', label: '编码', minWidth: 150 },
   {
@@ -79,7 +79,7 @@ const columns = [
           class: 'role-table__action-permissions',
           onClick: () => handlePermissionAssign(row),
         }, { default: () => '权限分配' }),
-        authStore.hasPermission('role:delete') && row.id !== 1 && h(BaseButton, {
+        canDelete && row.id !== 1 && h(BaseButton, {
           size: 'small',
           variant: 'danger',
           class: 'role-table__action-delete',
@@ -122,14 +122,6 @@ const fetchRoleList = async () => {
 const handleSearch = () => {
   page.value = 1;
   queryForm.name = queryForm.code;
-  fetchRoleList();
-};
-
-const handleReset = () => {
-  queryForm.code = '';
-  queryForm.name = '';
-  queryForm.status = undefined;
-  page.value = 1;
   fetchRoleList();
 };
 
@@ -186,9 +178,9 @@ const handlePermissionAssign = async (row: RoleVO) => {
   permissionAssignDrawerVisible.value = true;
 };
 
-const handleCreateSubmit = async (data: RoleCreateRequest) => {
+const handleCreateSubmit = async (data: RoleCreateRequest | RoleUpdateRequest) => {
   try {
-    await roleApi.create(data);
+    await roleApi.create(data as RoleCreateRequest);
     ElMessage.success('创建成功');
     createDrawerVisible.value = false;
     fetchRoleList();
@@ -227,6 +219,25 @@ const handlePermissionAssignSubmit = async (permissionIds: number[]) => {
 onMounted(() => {
   fetchRoleList();
 });
+
+defineExpose({
+  fetchRoleList,
+  handleSearch,
+  handleCreateSubmit,
+  handleEditSubmit,
+  handleStatusToggle,
+  handleDelete,
+  handlePermissionAssign,
+  handlePermissionAssignSubmit,
+  handleCreate,
+  handleEdit,
+  handlePageChange,
+  handleSizeChange,
+  canCreate,
+  canDelete,
+  canAssignPermission,
+});
+
 </script>
 
 <template>
@@ -235,21 +246,21 @@ onMounted(() => {
       <template #header>
         <div class="role-toolbar">
           <div class="role-toolbar__search">
-            <BaseInput
-              v-model="queryForm.code"
-              placeholder="角色名/编码"
-              clearable
-              @change="handleSearch"
-            />
+<BaseInput
+               v-model="queryForm.code as string"
+               placeholder="角色名/编码"
+               clearable
+               @change="handleSearch"
+             />
           </div>
           <div class="role-toolbar__filter">
-            <BaseSelect
-              v-model="queryForm.status"
-              :options="statusOptions"
-              placeholder="全部状态"
-              style="width: 140px"
-              @change="handleSearch"
-            />
+<BaseSelect
+               v-model="queryForm.status as string | number | null"
+               :options="statusOptions"
+               placeholder="全部状态"
+               style="width: 140px"
+               @change="handleSearch"
+             />
           </div>
           <div class="role-toolbar__actions">
             <BaseButton

@@ -1,6 +1,7 @@
 package com.authcore.service;
 
 import com.authcore.common.BusinessException;
+import com.authcore.dto.permission.PermissionSimpleVO;
 import com.authcore.dto.role.RoleCreateDTO;
 import com.authcore.dto.role.RoleQueryDTO;
 import com.authcore.dto.role.RoleUpdateDTO;
@@ -17,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -210,5 +213,26 @@ class RoleServiceTest {
                 () -> roleService.deleteRole(role3.getId()));
         assertEquals(1104, exPermRef.getCode(), "有权限引用应抛 1104");
         assertNotNull(roleMapper.selectById(role3.getId()), "有权限引用角色不应被删除");
+    }
+
+    /**
+     * AC2: listAllPermissions 返回所有权限精简列表。
+     * Given 种子数据包含权限
+     * When listAllPermissions()
+     * Then 返回 List<PermissionSimpleVO> 非空、每项含 id/code/name
+     */
+    @Test
+    @DisplayName("listAllPermissions 返回所有权限精简列表")
+    void listAllPermissionsReturnsSimpleList() {
+        List<PermissionSimpleVO> permissions = roleService.listAllPermissions();
+
+        assertNotNull(permissions, "权限列表不应为空");
+        assertTrue(permissions.size() > 0, "权限列表应非空");
+
+        for (PermissionSimpleVO vo : permissions) {
+            assertNotNull(vo.id(), "id 不应为空");
+            assertNotNull(vo.code(), "code 不应为空");
+            assertNotNull(vo.name(), "name 不应为空");
+        }
     }
 }

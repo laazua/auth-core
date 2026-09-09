@@ -2,7 +2,7 @@ import { http, type Result } from './http';
 import type {
   LoginRequest,
   LoginResponse,
-  UserInfo,
+  MeResponse,
   ChangePasswordRequest,
   ResetPasswordRequest,
 } from '@/types/auth';
@@ -16,7 +16,7 @@ export const authApi = {
     return http.post('/auth/logout');
   },
 
-  me(): Promise<Result<UserInfo>> {
+  me(): Promise<Result<MeResponse>> {
     return http.get('/auth/me');
   },
 

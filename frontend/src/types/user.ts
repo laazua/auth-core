@@ -43,6 +43,7 @@ export interface UserCreateRequest {
   phone: string;
   status?: number;
   roleIds?: number[];
+  confirmPassword?: string;
 }
 
 export interface UserUpdateRequest {

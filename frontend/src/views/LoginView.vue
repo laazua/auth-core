@@ -12,9 +12,6 @@ const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 
-// Provide router to auth store for dynamic route registration
-authStore.setRouter(router);
-
 const loginForm = reactive({
   username: '',
   password: '',
@@ -58,24 +55,45 @@ const handleLogin = async () => {
 
   try {
     const loginResponse = await authApi.login(loginForm);
+    console.log('[Login] loginResponse:', loginResponse);
     if (loginResponse.code === 0 && loginResponse.data) {
       const { token } = loginResponse.data;
       authStore.setToken(token);
+      console.log('[Login] token set, isAuthenticated:', authStore.isAuthenticated);
       const meResponse = await authApi.me();
+      console.log('[Login] meResponse:', meResponse);
       if (meResponse.code === 0 && meResponse.data) {
         const { user, roles, permissions } = meResponse.data;
-        authStore.login(token, user, roles.map(r => r.code), permissions);
+        console.log('[Login] user:', user, 'roles:', roles, 'permissions:', permissions);
+        authStore.login(token, user, roles.map((r: any) => r.code), permissions);
+        console.log('[Login] authStore after login - token:', authStore.token, 'roles:', authStore.roles, 'permissions:', authStore.permissions);
         ElMessage.success('登录成功');
 
         const redirect = (route.query.redirect as string) || '/dashboard';
+        console.log('[Login] redirect to:', redirect);
         await router.push(redirect);
+        console.log('[Login] router.push completed, current route:', router.currentRoute.value.name, router.currentRoute.value.path);
       } else {
         throw new Error(meResponse.message || '获取用户信息失败');
       }
+    } else {
+      throw new Error(loginResponse.message || '登录失败');
     }
   } catch (error: unknown) {
     let message = '登录失败';
-    if (error instanceof Error) {
+    const axiosError = error as { response?: { status: number; data?: { code: number; message: string } } };
+    if (axiosError.response) {
+      const { status, data } = axiosError.response;
+      if (status === 401 && data?.code === 1401) {
+        if (authStore.token) {
+          message = '获取用户信息失败，令牌可能已过期，请重新登录';
+        } else {
+          message = data.message || '用户名或密码错误';
+        }
+      } else {
+        message = data?.message || `请求失败 (${status})`;
+      }
+    } else if (error instanceof Error) {
       message = error.message;
     } else if (typeof error === 'string') {
       message = error;

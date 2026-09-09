@@ -21,10 +21,10 @@ const mockAuthStore = {
   roles: ['admin'],
   permissions: ['*'],
   isAuthenticated: true,
-  hasPermission: vi.fn((p: string) => true),
-  hasRole: vi.fn((r: string) => true),
-  hasAnyRole: vi.fn((roles: string[]) => true),
-  hasAnyPermission: vi.fn((perms: string[]) => true),
+  hasPermission: vi.fn(() => true),
+  hasRole: vi.fn(() => true),
+  hasAnyRole: vi.fn(() => true),
+  hasAnyPermission: vi.fn(() => true),
   logout: vi.fn(),
   setToken: vi.fn(),
   setUserInfo: vi.fn(),
@@ -65,23 +65,21 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes: routes as import('vue-router').RouteRecordRaw[],
 });
 
 describe('DefaultLayout', () => {
   let wrapper: VueWrapper<any>;
   let appStore: ReturnType<typeof useAppStore>;
-  let authStore: ReturnType<typeof useAuthStore>;
 
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
 
-    (useAuthStore as vi.Mock).mockReturnValue(mockAuthStore);
-    (useAppStore as vi.Mock).mockReturnValue(mockAppStore);
+    (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockAuthStore);
+    (useAppStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockAppStore);
 
     appStore = useAppStore();
-    authStore = useAuthStore();
 
     wrapper = mount(DefaultLayout, {
       global: {
@@ -146,8 +144,6 @@ describe('DefaultLayout', () => {
 
   describe('AC3 - Sidebar Responsive', () => {
     it('detects mobile viewport and sets device to mobile', () => {
-      const handleResize = (wrapper.vm as any).handleResize;
-
       global.innerWidth = 500;
       global.dispatchEvent(new Event('resize'));
 
@@ -156,8 +152,6 @@ describe('DefaultLayout', () => {
     });
 
     it('detects desktop viewport and sets device to desktop', () => {
-      const handleResize = (wrapper.vm as any).handleResize;
-
       global.innerWidth = 1024;
       global.dispatchEvent(new Event('resize'));
 

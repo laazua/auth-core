@@ -153,11 +153,11 @@ defineOptions({
         label="模块编码"
         prop="code"
       >
-        <BaseInput
-          v-model="form.code"
-          placeholder="请输入模块编码 (如 USER_MGMT)"
-          maxlength="50"
-        />
+<BaseInput
+           v-model="form.code"
+           placeholder="请输入模块编码 (如 USER_MGMT)"
+           :maxlength="50"
+         />
       </el-form-item>
 
       <el-form-item
@@ -173,41 +173,41 @@ defineOptions({
       </el-form-item>
 
       <el-form-item label="模块名" prop="name">
-        <BaseInput
-          v-model="form.name"
-          placeholder="请输入模块名"
-          maxlength="50"
-        />
+<BaseInput
+           v-model="form.name"
+           placeholder="请输入模块名"
+           :maxlength="50"
+         />
       </el-form-item>
 
       <el-form-item label="基础URL" prop="baseUrl">
-        <BaseInput
-          v-model="form.baseUrl"
-          type="url"
-          placeholder="请输入基础URL (如 http://user-service)"
-          maxlength="200"
-          style="width: 100%"
-        />
+<BaseInput
+           v-model="form.baseUrl"
+           type="url"
+           placeholder="请输入基础URL (如 http://user-service)"
+           :maxlength="200"
+           style="width: 100%"
+         />
       </el-form-item>
 
       <el-form-item label="描述" prop="description">
-        <ElInput
-          v-model="form.description"
-          type="textarea"
-          :rows="3"
-          placeholder="请输入描述 (可选)"
-          maxlength="200"
-          style="width: 100%"
-        />
+<ElInput
+           v-model="form.description"
+           type="textarea"
+           :rows="3"
+           placeholder="请输入描述 (可选)"
+           :maxlength="200"
+           style="width: 100%"
+         />
       </el-form-item>
 
       <el-form-item label="状态" prop="status">
-        <BaseSelect
-          v-model="form.status"
-          :options="statusOptions"
-          placeholder="请选择状态"
-          style="width: 100%"
-        />
+<BaseSelect
+           v-model="form.status as number | null"
+           :options="statusOptions"
+           placeholder="请选择状态"
+           style="width: 100%"
+         />
       </el-form-item>
     </el-form>
 

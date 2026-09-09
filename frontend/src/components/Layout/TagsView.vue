@@ -87,17 +87,6 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 };
 
-const showContextMenu = (event: MouseEvent, fullPath: string) => {
-  event.preventDefault();
-  event.stopPropagation();
-  contextMenuTarget.value = fullPath;
-  contextMenuStyle.value = {
-    top: event.clientY,
-    left: event.clientX,
-  };
-  contextMenuVisible.value = true;
-};
-
 onMounted(() => {
   appStore.restoreTags();
   activeTab.value = route.fullPath;

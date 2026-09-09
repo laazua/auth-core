@@ -6,7 +6,6 @@ import { useTheme } from '@/composables/useTheme';
 import Sidebar from '@/components/Sidebar.vue';
 import Header from '@/components/Header.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
-import TagsView from '@/components/Layout/TagsView.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -17,7 +16,7 @@ const isMobile = ref(false);
 
 const contentStyle = computed(() => ({
   marginLeft: appStore.sidebarCollapsed ? '64px' : '260px',
-  minHeight: `calc(100vh - 100px)`,
+  minHeight: `calc(100vh - 60px)`,
   transition: 'margin-left 0.15s ease-out',
 }));
 
@@ -67,7 +66,6 @@ onUnmounted(() => {
         @open-change="appStore.setSidebarOpened"
       />
       <main class="layout__content">
-        <TagsView />
         <Breadcrumb :routes="route.matched" />
         <div class="layout__page">
           <router-view v-slot="{ Component }">

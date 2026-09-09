@@ -24,12 +24,12 @@ export function useTheme() {
   };
 
   const initTheme = () => {
-    const savedTheme = storage.get<'light' | 'dark'>('theme') || 'light';
+    const savedTheme = (storage.get('theme') as 'light' | 'dark' | 'system' | null) || 'light';
     const systemTheme = getSystemTheme();
     const theme = savedTheme === 'system' ? systemTheme : savedTheme;
     appStore.initTheme();
     if (theme !== appStore.theme) {
-      appStore.setTheme(theme);
+      appStore.setTheme(theme as 'light' | 'dark');
     }
   };
 
@@ -44,7 +44,7 @@ export function useTheme() {
   };
 
   const isSystemTheme = computed(() => {
-    const saved = storage.get<'light' | 'dark'>('theme');
+    const saved = storage.get('theme') as 'light' | 'dark' | 'system' | null;
     return saved === 'system';
   });
 

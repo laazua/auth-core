@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { roleApi } from '@/api/role';
 import type { RoleVO } from '@/types/role';
 import BaseButton from '@/components/BaseButton.vue';
 import BaseInput from '@/components/BaseInput.vue';
+
+interface RoleWithSelection extends RoleVO {
+  selected?: boolean;
+}
 
 interface Props {
   visible: boolean;
@@ -24,7 +28,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>();
 
 const loading = ref(false);
-const availableRoles = ref<RoleVO[]>([]);
+const availableRoles = ref<RoleWithSelection[]>([]);
 const assignedRoleIds = ref<number[]>([]);
 const searchQuery = ref('');
 const allSelected = ref(false);

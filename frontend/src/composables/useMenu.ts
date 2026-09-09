@@ -33,34 +33,34 @@ const menuConfig: MenuConfig[] = [
     icon: 'Setting',
     order: 2,
     children: [
-    {
-      path: '/users',
-      title: '用户管理',
-      icon: 'User',
-      permissions: ['user:view'],
-      order: 1,
-    },
-    {
-      path: '/roles',
-      title: '角色管理',
-      icon: 'UserFilled',
-      permissions: ['role:view'],
-      order: 2,
-    },
-    {
-      path: '/system/permissions',
-      title: '权限管理',
-      icon: 'Lock',
-      permissions: ['perm:view'],
-      order: 3,
-    },
-    {
-      path: '/system/modules',
-      title: '模块管理',
-      icon: 'Grid',
-      permissions: ['module:view'],
-      order: 4,
-    },
+      {
+        path: '/users',
+        title: '用户管理',
+        icon: 'User',
+        permissions: ['user:view'],
+        order: 1,
+      },
+      {
+        path: '/roles',
+        title: '角色管理',
+        icon: 'UserFilled',
+        permissions: ['role:view'],
+        order: 2,
+      },
+      {
+        path: '/system/permissions',
+        title: '权限管理',
+        icon: 'Lock',
+        permissions: ['perm:view'],
+        order: 3,
+      },
+      {
+        path: '/system/modules',
+        title: '模块管理',
+        icon: 'Grid',
+        permissions: ['module:view'],
+        order: 4,
+      },
     ],
   },
 ];
@@ -153,8 +153,8 @@ export const useMenu = () => {
 
     while (current) {
       items.unshift(current);
-      current = flatList.find(
-        (item) => item.children?.some((child) => child.path === current?.path)
+      current = flatList.find((item) =>
+        item.children?.some((child) => child.path === current?.path)
       );
     }
 

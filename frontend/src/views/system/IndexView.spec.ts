@@ -12,16 +12,27 @@ vi.mock('@/components/BaseButton.vue', () => ({
     name: 'BaseButton',
     props: ['variant', 'size', 'loading', 'disabled'],
     emits: ['click'],
-    template: '<button class="base-button-mock" @click="$emit(\'click\', $event)" :disabled="disabled || loading"><slot /></button>',
+    template:
+      '<button class="base-button-mock" @click="$emit(\'click\', $event)" :disabled="disabled || loading"><slot /></button>',
   },
 }));
 
 vi.mock('@/components/BaseInput.vue', () => ({
   default: {
     name: 'BaseInput',
-    props: ['modelValue', 'placeholder', 'type', 'clearable', 'showPassword', 'disabled', 'readonly', 'maxlength'],
+    props: [
+      'modelValue',
+      'placeholder',
+      'type',
+      'clearable',
+      'showPassword',
+      'disabled',
+      'readonly',
+      'maxlength',
+    ],
     emits: ['update:modelValue', 'blur', 'focus', 'change', 'clear'],
-    template: '<input class="base-input-mock" :value="modelValue" :placeholder="placeholder" :type="type" :disabled="disabled" :readonly="readonly" :maxlength="maxlength" @input="$emit(\'update:modelValue\', $event.target.value)" @blur="$emit(\'blur\', $event)" @focus="$emit(\'focus\', $event)" @change="$emit(\'change\', $event.target.value)" />',
+    template:
+      '<input class="base-input-mock" :value="modelValue" :placeholder="placeholder" :type="type" :disabled="disabled" :readonly="readonly" :maxlength="maxlength" @input="$emit(\'update:modelValue\', $event.target.value)" @blur="$emit(\'blur\', $event)" @focus="$emit(\'focus\', $event)" @change="$emit(\'change\', $event.target.value)" />',
   },
 }));
 
@@ -30,7 +41,8 @@ vi.mock('@/components/BaseSelect.vue', () => ({
     name: 'BaseSelect',
     props: ['modelValue', 'options', 'placeholder', 'disabled', 'clearable', 'filterable'],
     emits: ['update:modelValue', 'change', 'blur', 'focus', 'clear'],
-    template: '<select class="base-select-mock" :value="modelValue" :disabled="disabled" @input="$emit(\'update:modelValue\', $event.target.value)" @change="$emit(\'change\', $event.target.value)"><option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option></select>',
+    template:
+      '<select class="base-select-mock" :value="modelValue" :disabled="disabled" @input="$emit(\'update:modelValue\', $event.target.value)" @change="$emit(\'change\', $event.target.value)"><option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option></select>',
   },
 }));
 
@@ -38,7 +50,15 @@ vi.mock('@/components/BaseTable.vue', () => ({
   default: {
     name: 'BaseTable',
     props: ['data', 'columns', 'loading', 'rowKey', 'emptyText'],
-    emits: ['sort-change', 'selection-change', 'row-click', 'row-dblclick', 'header-click', 'current-change', 'size-change'],
+    emits: [
+      'sort-change',
+      'selection-change',
+      'row-click',
+      'row-dblclick',
+      'header-click',
+      'current-change',
+      'size-change',
+    ],
     template: `
       <div class="base-table-mock">
         <table>
@@ -71,7 +91,8 @@ vi.mock('@/components/BaseCard.vue', () => ({
   default: {
     name: 'BaseCard',
     props: ['title', 'subtitle', 'bordered', 'shadow', 'padding'],
-    template: '<div class="base-card-mock"><div v-if="title || $slots.header" class="base-card-mock__header"><slot name="header"><div><h3 v-if="title">{{ title }}</h3><p v-if="subtitle">{{ subtitle }}</p></div></slot></div><div class="base-card-mock__body"><slot /></div><div v-if="$slots.footer" class="base-card-mock__footer"><slot name="footer" /></div></div>',
+    template:
+      '<div class="base-card-mock"><div v-if="title || $slots.header" class="base-card-mock__header"><slot name="header"><div><h3 v-if="title">{{ title }}</h3><p v-if="subtitle">{{ subtitle }}</p></div></slot></div><div class="base-card-mock__body"><slot /></div><div v-if="$slots.footer" class="base-card-mock__footer"><slot name="footer" /></div></div>',
   },
 }));
 
@@ -80,7 +101,8 @@ vi.mock('@/components/ElTabs.vue', () => ({
     name: 'ElTabs',
     props: ['modelValue', 'type'],
     emits: ['update:modelValue', 'tab-click'],
-    template: '<div class="el-tabs-mock"><div class="el-tabs__nav"><button v-for="tab in $slots.default()" :key="tab.props?.name" class="el-tabs__item" :class="{ \'is-active\': tab.props?.name === modelValue }" @click="$emit(\'update:modelValue\', tab.props?.name)">{{ tab.children }}</button></div><div class="el-tabs__content"><slot /></div></div>',
+    template:
+      '<div class="el-tabs-mock"><div class="el-tabs__nav"><button v-for="tab in $slots.default()" :key="tab.props?.name" class="el-tabs__item" :class="{ \'is-active\': tab.props?.name === modelValue }" @click="$emit(\'update:modelValue\', tab.props?.name)">{{ tab.children }}</button></div><div class="el-tabs__content"><slot /></div></div>',
   },
 }));
 
@@ -88,7 +110,8 @@ vi.mock('@/components/ElTabPane.vue', () => ({
   default: {
     name: 'ElTabPane',
     props: ['label', 'name', 'disabled'],
-    template: '<div class="el-tab-pane-mock" v-show="$attrs.name === $parent.modelValue"><slot /></div>',
+    template:
+      '<div class="el-tab-pane-mock" v-show="$attrs.name === $parent.modelValue"><slot /></div>',
   },
 }));
 
@@ -97,7 +120,8 @@ vi.mock('@/views/system/PermissionFormDrawer.vue', () => ({
     name: 'PermissionFormDrawer',
     props: ['visible', 'mode', 'initialData', 'moduleOptions'],
     emits: ['submit', 'close'],
-    template: '<div class="permission-form-drawer-mock" v-if="visible" data-test="permission-form-drawer"><slot /></div>',
+    template:
+      '<div class="permission-form-drawer-mock" v-if="visible" data-test="permission-form-drawer"><slot /></div>',
   },
 }));
 
@@ -106,7 +130,8 @@ vi.mock('@/views/system/ModuleFormDrawer.vue', () => ({
     name: 'ModuleFormDrawer',
     props: ['visible', 'mode', 'initialData'],
     emits: ['submit', 'close'],
-    template: '<div class="module-form-drawer-mock" v-if="visible" data-test="module-form-drawer"><slot /></div>',
+    template:
+      '<div class="module-form-drawer-mock" v-if="visible" data-test="module-form-drawer"><slot /></div>',
   },
 }));
 
@@ -122,7 +147,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 vi.mock('@/api/permission');
 vi.mock('@/api/module');
 vi.mock('element-plus', async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = (await importOriginal()) as any;
   return {
     ...actual,
     ElMessage: {
@@ -132,7 +157,7 @@ vi.mock('element-plus', async (importOriginal) => {
       info: vi.fn(),
     },
     ElMessageBox: {
-      confirm: vi.fn(),
+      confirm: vi.fn().mockResolvedValue('confirm'),
       alert: vi.fn(),
       prompt: vi.fn(),
     },
@@ -146,12 +171,14 @@ vi.mock('element-plus', async (importOriginal) => {
       name: 'ElTabs',
       props: ['modelValue', 'type'],
       emits: ['update:modelValue', 'tab-click'],
-      template: '<div class="el-tabs-mock"><div class="el-tabs__nav"><button v-for="tab in $slots.default()" :key="tab.props?.name" class="el-tabs__item" :class="{ \'is-active\': tab.props?.name === modelValue }" @click="$emit(\'update:modelValue\', tab.props?.name)">{{ tab.children }}</button></div><div class="el-tabs__content"><slot /></div></div>',
+      template:
+        '<div class="el-tabs-mock"><div class="el-tabs__nav"><button v-for="tab in $slots.default()" :key="tab.props?.name" class="el-tabs__item" :class="{ \'is-active\': tab.props?.name === modelValue }" @click="$emit(\'update:modelValue\', tab.props?.name)">{{ tab.children }}</button></div><div class="el-tabs__content"><slot /></div></div>',
     },
     ElTabPane: {
       name: 'ElTabPane',
       props: ['label', 'name', 'disabled'],
-      template: '<div class="el-tab-pane-mock" v-show="$attrs.name === $parent.modelValue"><slot /></div>',
+      template:
+        '<div class="el-tab-pane-mock" v-show="$attrs.name === $parent.modelValue"><slot /></div>',
     },
   };
 });
@@ -225,28 +252,58 @@ const mockModules = [
 ];
 
 const mockModuleOptions = [
-  { label: '用户管理', value: 1 },
-  { label: '角色管理', value: 2 },
-  { label: '内容管理', value: 3 },
+  { id: 1, code: 'USER_MGMT', name: '用户管理' },
+  { id: 2, code: 'ROLE_MGMT', name: '角色管理' },
+  { id: 3, code: 'CONTENT_MGMT', name: '内容管理' },
 ];
 
 describe('IndexView - 权限/模块管理页', () => {
   let authStore: ReturnType<typeof useAuthStore>;
   let pinia: ReturnType<typeof createPinia>;
 
-  const createWrapper = (permissions: string[] = [
-    'perm:view', 'perm:create', 'perm:update', 'perm:delete',
-    'module:view', 'module:create', 'module:update', 'module:delete', 'module:toggle-status'
-  ], initialRoute = '/system/permissions') => {
+  const createWrapper = (
+    permissions: string[] = [
+      'perm:view',
+      'perm:create',
+      'perm:update',
+      'perm:delete',
+      'module:view',
+      'module:create',
+      'module:update',
+      'module:delete',
+      'module:toggle-status',
+    ],
+    initialRoute = '/system/permissions'
+  ) => {
     authStore.setPermissions(permissions);
 
     const router = createRouter({
       history: createWebHistory(),
       routes: [
-        { path: '/', name: 'Home', component: { template: '<div>Home</div>' }, meta: { requiresAuth: true } },
-        { path: '/system/permissions', name: 'SystemPermissions', component: IndexView, meta: { requiresAuth: true, permissions: ['perm:view'] } },
-        { path: '/system/modules', name: 'SystemModules', component: IndexView, meta: { requiresAuth: true, permissions: ['module:view'] } },
-        { path: '/login', name: 'Login', component: { template: '<div>Login</div>' }, meta: { public: true } },
+        {
+          path: '/',
+          name: 'Home',
+          component: { template: '<div>Home</div>' },
+          meta: { requiresAuth: true },
+        },
+        {
+          path: '/system/permissions',
+          name: 'SystemPermissions',
+          component: IndexView,
+          meta: { requiresAuth: true, permissions: ['perm:view'] },
+        },
+        {
+          path: '/system/modules',
+          name: 'SystemModules',
+          component: IndexView,
+          meta: { requiresAuth: true, permissions: ['module:view'] },
+        },
+        {
+          path: '/login',
+          name: 'Login',
+          component: { template: '<div>Login</div>' },
+          meta: { public: true },
+        },
       ],
     });
     router.push(initialRoute);
@@ -266,35 +323,62 @@ describe('IndexView - 权限/模块管理页', () => {
     pinia = createPinia();
     setActivePinia(pinia);
     authStore = useAuthStore();
-    authStore.login('mock-token', { id: 1, username: 'admin', nickname: '管理员', email: '', phone: '', status: 1, createTime: '' }, ['admin'], [
-      'perm:view', 'perm:create', 'perm:update', 'perm:delete',
-      'module:view', 'module:create', 'module:update', 'module:delete', 'module:toggle-status', '*'
-    ]);
+    authStore.login(
+      'mock-token',
+      {
+        id: 1,
+        username: 'admin',
+        nickname: '管理员',
+        email: '',
+        phone: '',
+        status: 1,
+        createTime: '',
+      },
+      ['admin'],
+      [
+        'perm:view',
+        'perm:create',
+        'perm:update',
+        'perm:delete',
+        'module:view',
+        'module:create',
+        'module:update',
+        'module:delete',
+        'module:toggle-status',
+        '*',
+      ]
+    );
 
     mockPermissionApi.list.mockResolvedValue({
       code: 0,
+      message: 'success',
+      timestamp: Date.now(),
       data: {
         records: mockPermissions,
         total: 3,
-        page: 1,
         size: 10,
+        current: 1,
         pages: 1,
       },
     });
 
     mockModuleApi.list.mockResolvedValue({
       code: 0,
+      message: 'success',
+      timestamp: Date.now(),
       data: {
         records: mockModules,
         total: 3,
-        page: 1,
         size: 10,
+        current: 1,
         pages: 1,
       },
     });
 
     mockModuleApi.getAllPermissions.mockResolvedValue({
       code: 0,
+      message: 'success',
+      timestamp: Date.now(),
       data: mockModuleOptions,
     });
   });
@@ -335,7 +419,9 @@ describe('IndexView - 权限/模块管理页', () => {
       const wrapper = createWrapper();
       await wrapper.vm.$nextTick();
 
-      expect(mockPermissionApi.list).toHaveBeenCalledWith(expect.objectContaining({ page: 1, size: 10 }));
+      expect(mockPermissionApi.list).toHaveBeenCalledWith(
+        expect.objectContaining({ page: 1, size: 10 })
+      );
     });
 
     it('filters permissions by search keyword', async () => {
@@ -346,12 +432,14 @@ describe('IndexView - 权限/模块管理页', () => {
       await searchInput.setValue('用户');
       await wrapper.vm.$nextTick();
 
-      expect(mockPermissionApi.list).toHaveBeenCalledWith(expect.objectContaining({
-        page: 1,
-        size: 10,
-        name: '用户',
-        code: '用户',
-      }));
+      expect(mockPermissionApi.list).toHaveBeenCalledWith(
+        expect.objectContaining({
+          page: 1,
+          size: 10,
+          name: '用户',
+          code: '用户',
+        })
+      );
     });
 
     it('filters permissions by module', async () => {
@@ -362,21 +450,25 @@ describe('IndexView - 权限/模块管理页', () => {
       await moduleSelect.setValue('1');
       await wrapper.vm.$nextTick();
 
-      expect(mockPermissionApi.list).toHaveBeenLastCalledWith(expect.objectContaining({
-        page: 1,
-        size: 10,
-        moduleId: '1',
-      }));
+      expect(mockPermissionApi.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          page: 1,
+          size: 10,
+          moduleId: '1',
+        })
+      );
     });
 
     it('changes page correctly', async () => {
       mockPermissionApi.list.mockResolvedValue({
         code: 0,
+        message: 'success',
+        timestamp: Date.now(),
         data: {
           records: mockPermissions.slice(0, 1),
           total: 3,
-          page: 2,
           size: 1,
+          current: 2,
           pages: 3,
         },
       });
@@ -384,20 +476,24 @@ describe('IndexView - 权限/模块管理页', () => {
       const wrapper = createWrapper();
       await wrapper.vm.$nextTick();
 
-      wrapper.vm.handlePermissionPageChange(2);
+      (wrapper.vm as any).handlePermissionPageChange(2);
       await wrapper.vm.$nextTick();
 
-      expect(mockPermissionApi.list).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2, size: 10 }));
+      expect(mockPermissionApi.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({ page: 2, size: 10 })
+      );
     });
 
     it('changes page size correctly', async () => {
       mockPermissionApi.list.mockResolvedValue({
         code: 0,
+        message: 'success',
+        timestamp: Date.now(),
         data: {
           records: mockPermissions,
           total: 3,
-          page: 1,
           size: 20,
+          current: 1,
           pages: 1,
         },
       });
@@ -405,10 +501,12 @@ describe('IndexView - 权限/模块管理页', () => {
       const wrapper = createWrapper();
       await wrapper.vm.$nextTick();
 
-      wrapper.vm.handlePermissionSizeChange(20);
+      (wrapper.vm as any).handlePermissionSizeChange(20);
       await wrapper.vm.$nextTick();
 
-      expect(mockPermissionApi.list).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1, size: 20 }));
+      expect(mockPermissionApi.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({ page: 1, size: 20 })
+      );
     });
   });
 
@@ -439,36 +537,42 @@ describe('IndexView - 权限/模块管理页', () => {
 
       mockPermissionApi.create.mockResolvedValue({
         code: 0,
+        message: 'success',
+        timestamp: Date.now(),
         data: newPermission,
       });
 
       mockPermissionApi.list
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: mockPermissions,
             total: 3,
-            page: 1,
             size: 10,
+            current: 1,
             pages: 1,
           },
         })
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: [...mockPermissions, newPermission],
             total: 4,
-            page: 1,
             size: 10,
+            current: 1,
             pages: 1,
           },
         });
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      await wrapper.vm.handlePermissionCreateSubmit({
+      await (wrapper.vm as any).handlePermissionCreateSubmit({
         code: 'perm:new',
         name: '新权限',
         moduleId: 1,
@@ -492,15 +596,17 @@ describe('IndexView - 权限/模块管理页', () => {
       mockPermissionApi.create.mockRejectedValue(error);
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      await expect(wrapper.vm.handlePermissionCreateSubmit({
-        code: 'perm:new',
-        name: '用户查看',
-        moduleId: 1,
-        description: '新权限描述',
-      })).rejects.toThrow();
+      await expect(
+        (wrapper.vm as any).handlePermissionCreateSubmit({
+          code: 'perm:new',
+          name: '用户查看',
+          moduleId: 1,
+          description: '新权限描述',
+        })
+      ).rejects.toThrow();
 
       expect(mockElMessage.error).toHaveBeenCalledWith('权限名已存在');
     });
@@ -511,15 +617,17 @@ describe('IndexView - 权限/模块管理页', () => {
       mockPermissionApi.create.mockRejectedValue(error);
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      await expect(wrapper.vm.handlePermissionCreateSubmit({
-        code: 'perm:user:read',
-        name: '新权限',
-        moduleId: 1,
-        description: '新权限描述',
-      })).rejects.toThrow();
+      await expect(
+        (wrapper.vm as any).handlePermissionCreateSubmit({
+          code: 'perm:user:read',
+          name: '新权限',
+          moduleId: 1,
+          description: '新权限描述',
+        })
+      ).rejects.toThrow();
 
       expect(mockElMessage.error).toHaveBeenCalledWith('权限编码已存在');
     });
@@ -530,15 +638,17 @@ describe('IndexView - 权限/模块管理页', () => {
       mockPermissionApi.create.mockRejectedValue(error);
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      await expect(wrapper.vm.handlePermissionCreateSubmit({
-        code: 'perm:new',
-        name: '新权限',
-        moduleId: 0,
-        description: '新权限描述',
-      })).rejects.toThrow();
+      await expect(
+        (wrapper.vm as any).handlePermissionCreateSubmit({
+          code: 'perm:new',
+          name: '新权限',
+          moduleId: 0,
+          description: '新权限描述',
+        })
+      ).rejects.toThrow();
 
       expect(mockElMessage.error).toHaveBeenCalledWith('模块ID不能为空');
     });
@@ -547,10 +657,10 @@ describe('IndexView - 权限/模块管理页', () => {
   describe('AC3 - 权限更新 code 不可改', () => {
     it('opens edit drawer with permission data when clicking edit', async () => {
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      wrapper.vm.handlePermissionEdit(mockPermissions[0]);
+      (wrapper.vm as any).handlePermissionEdit(mockPermissions[0]);
       await wrapper.vm.$nextTick();
 
       const drawer = wrapper.findComponent({ name: 'PermissionFormDrawer' });
@@ -569,39 +679,45 @@ describe('IndexView - 权限/模块管理页', () => {
 
       mockPermissionApi.update.mockResolvedValue({
         code: 0,
+        message: 'success',
+        timestamp: Date.now(),
         data: updatedPermission,
       });
 
       mockPermissionApi.list
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: mockPermissions,
             total: 3,
-            page: 1,
             size: 10,
+            current: 1,
             pages: 1,
           },
         })
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: [updatedPermission, ...mockPermissions.slice(1)],
             total: 3,
-            page: 1,
             size: 10,
+            current: 1,
             pages: 1,
           },
         });
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      wrapper.vm.handlePermissionEdit(mockPermissions[0]);
+      (wrapper.vm as any).handlePermissionEdit(mockPermissions[0]);
       await wrapper.vm.$nextTick();
 
-      await wrapper.vm.handlePermissionEditSubmit({
+      await (wrapper.vm as any).handlePermissionEditSubmit({
         name: '更新后的用户查看',
         description: '更新后描述',
         moduleId: 2,
@@ -622,13 +738,14 @@ describe('IndexView - 权限/模块管理页', () => {
       const error = new Error('该权限已被角色引用，无法删除');
       (error as any).response = { data: { code: 1203, message: '该权限已被角色引用，无法删除' } };
       mockPermissionApi.delete.mockRejectedValue(error);
-      mockElMessageBox.confirm.mockResolvedValue('confirm');
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      await expect(wrapper.vm.handlePermissionDelete(mockPermissions[0])).rejects.toThrow();
+      await expect(
+        (wrapper.vm as any).handlePermissionDelete(mockPermissions[0])
+      ).rejects.toThrow();
 
       expect(mockElMessageBox.confirm).toHaveBeenCalled();
       expect(mockPermissionApi.delete).toHaveBeenCalledWith(1);
@@ -636,36 +753,44 @@ describe('IndexView - 权限/模块管理页', () => {
     });
 
     it('deletes permission successfully when no references', async () => {
-      mockPermissionApi.delete.mockResolvedValue({ code: 0, data: null });
-      mockElMessageBox.confirm.mockResolvedValue('confirm');
+      mockPermissionApi.delete.mockResolvedValue({
+        code: 0,
+        message: 'success',
+        timestamp: Date.now(),
+        data: undefined,
+      });
 
       mockPermissionApi.list
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: mockPermissions,
             total: 3,
-            page: 1,
             size: 10,
+            current: 1,
             pages: 1,
           },
         })
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: mockPermissions.slice(1),
             total: 2,
-            page: 1,
             size: 10,
+            current: 1,
             pages: 1,
           },
         });
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      await wrapper.vm.handlePermissionDelete(mockPermissions[2]);
+      await (wrapper.vm as any).handlePermissionDelete(mockPermissions[2]);
       await wrapper.vm.$nextTick();
 
       expect(mockPermissionApi.delete).toHaveBeenCalledWith(3);
@@ -679,7 +804,9 @@ describe('IndexView - 权限/模块管理页', () => {
       const wrapper = createWrapper([], '/system/modules');
       await wrapper.vm.$nextTick();
 
-      expect(mockModuleApi.list).toHaveBeenCalledWith(expect.objectContaining({ page: 1, size: 10 }));
+      expect(mockModuleApi.list).toHaveBeenCalledWith(
+        expect.objectContaining({ page: 1, size: 10 })
+      );
     });
 
     it('filters modules by search keyword', async () => {
@@ -690,12 +817,14 @@ describe('IndexView - 权限/模块管理页', () => {
       await searchInput.setValue('用户');
       await wrapper.vm.$nextTick();
 
-      expect(mockModuleApi.list).toHaveBeenCalledWith(expect.objectContaining({
-        page: 1,
-        size: 10,
-        name: '用户',
-        code: '用户',
-      }));
+      expect(mockModuleApi.list).toHaveBeenCalledWith(
+        expect.objectContaining({
+          page: 1,
+          size: 10,
+          name: '用户',
+          code: '用户',
+        })
+      );
     });
 
     it('filters modules by status', async () => {
@@ -706,21 +835,25 @@ describe('IndexView - 权限/模块管理页', () => {
       await statusSelect.setValue('1');
       await wrapper.vm.$nextTick();
 
-      expect(mockModuleApi.list).toHaveBeenLastCalledWith(expect.objectContaining({
-        page: 1,
-        size: 10,
-        status: '1',
-      }));
+      expect(mockModuleApi.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          page: 1,
+          size: 10,
+          status: '1',
+        })
+      );
     });
 
     it('changes page correctly', async () => {
       mockModuleApi.list.mockResolvedValue({
         code: 0,
+        message: 'success',
+        timestamp: Date.now(),
         data: {
           records: mockModules.slice(0, 1),
           total: 3,
-          page: 2,
           size: 1,
+          current: 2,
           pages: 3,
         },
       });
@@ -728,20 +861,24 @@ describe('IndexView - 权限/模块管理页', () => {
       const wrapper = createWrapper([], '/system/modules');
       await wrapper.vm.$nextTick();
 
-      wrapper.vm.handleModulePageChange(2);
+      (wrapper.vm as any).handleModulePageChange(2);
       await wrapper.vm.$nextTick();
 
-      expect(mockModuleApi.list).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2, size: 10 }));
+      expect(mockModuleApi.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({ page: 2, size: 10 })
+      );
     });
 
     it('changes page size correctly', async () => {
       mockModuleApi.list.mockResolvedValue({
         code: 0,
+        message: 'success',
+        timestamp: Date.now(),
         data: {
           records: mockModules,
           total: 3,
-          page: 1,
           size: 20,
+          current: 1,
           pages: 1,
         },
       });
@@ -749,10 +886,12 @@ describe('IndexView - 权限/模块管理页', () => {
       const wrapper = createWrapper([], '/system/modules');
       await wrapper.vm.$nextTick();
 
-      wrapper.vm.handleModuleSizeChange(20);
+      (wrapper.vm as any).handleModuleSizeChange(20);
       await wrapper.vm.$nextTick();
 
-      expect(mockModuleApi.list).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1, size: 20 }));
+      expect(mockModuleApi.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({ page: 1, size: 20 })
+      );
     });
   });
 
@@ -782,36 +921,42 @@ describe('IndexView - 权限/模块管理页', () => {
 
       mockModuleApi.create.mockResolvedValue({
         code: 0,
+        message: 'success',
+        timestamp: Date.now(),
         data: newModule,
       });
 
       mockModuleApi.list
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: mockModules,
             total: 3,
-            page: 1,
             size: 10,
+            current: 1,
             pages: 1,
           },
         })
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: [...mockModules, newModule],
             total: 4,
-            page: 1,
             size: 10,
+            current: 1,
             pages: 1,
           },
         });
 
       const wrapper = createWrapper([], '/system/modules');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      await wrapper.vm.handleModuleCreateSubmit({
+      await (wrapper.vm as any).handleModuleCreateSubmit({
         code: 'NEW_MOD',
         name: '新模块',
         baseUrl: 'http://new-service',
@@ -837,16 +982,18 @@ describe('IndexView - 权限/模块管理页', () => {
       mockModuleApi.create.mockRejectedValue(error);
 
       const wrapper = createWrapper([], '/system/modules');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      await expect(wrapper.vm.handleModuleCreateSubmit({
-        code: 'NEW_MOD',
-        name: '用户管理',
-        baseUrl: 'http://new-service',
-        description: '新模块描述',
-        status: 1,
-      })).rejects.toThrow();
+      await expect(
+        (wrapper.vm as any).handleModuleCreateSubmit({
+          code: 'NEW_MOD',
+          name: '用户管理',
+          baseUrl: 'http://new-service',
+          description: '新模块描述',
+          status: 1,
+        })
+      ).rejects.toThrow();
 
       expect(mockElMessage.error).toHaveBeenCalledWith('模块名已存在');
     });
@@ -857,16 +1004,18 @@ describe('IndexView - 权限/模块管理页', () => {
       mockModuleApi.create.mockRejectedValue(error);
 
       const wrapper = createWrapper([], '/system/modules');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      await expect(wrapper.vm.handleModuleCreateSubmit({
-        code: 'USER_MGMT',
-        name: '新模块',
-        baseUrl: 'http://new-service',
-        description: '新模块描述',
-        status: 1,
-      })).rejects.toThrow();
+      await expect(
+        (wrapper.vm as any).handleModuleCreateSubmit({
+          code: 'USER_MGMT',
+          name: '新模块',
+          baseUrl: 'http://new-service',
+          description: '新模块描述',
+          status: 1,
+        })
+      ).rejects.toThrow();
 
       expect(mockElMessage.error).toHaveBeenCalledWith('模块编码已存在');
     });
@@ -875,10 +1024,10 @@ describe('IndexView - 权限/模块管理页', () => {
   describe('AC7 - 模块更新 code 不可改 + 级联查询权限', () => {
     it('opens edit drawer with module data when clicking edit', async () => {
       const wrapper = createWrapper([], '/system/modules');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      wrapper.vm.handleModuleEdit(mockModules[0]);
+      (wrapper.vm as any).handleModuleEdit(mockModules[0]);
       await wrapper.vm.$nextTick();
 
       const drawer = wrapper.findComponent({ name: 'ModuleFormDrawer' });
@@ -896,39 +1045,45 @@ describe('IndexView - 权限/模块管理页', () => {
 
       mockModuleApi.update.mockResolvedValue({
         code: 0,
+        message: 'success',
+        timestamp: Date.now(),
         data: updatedModule,
       });
 
       mockModuleApi.list
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: mockModules,
             total: 3,
-            page: 1,
             size: 10,
+            current: 1,
             pages: 1,
           },
         })
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: [updatedModule, ...mockModules.slice(1)],
             total: 3,
-            page: 1,
             size: 10,
+            current: 1,
             pages: 1,
           },
         });
 
       const wrapper = createWrapper([], '/system/modules');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      wrapper.vm.handleModuleEdit(mockModules[0]);
+      (wrapper.vm as any).handleModuleEdit(mockModules[0]);
       await wrapper.vm.$nextTick();
 
-      await wrapper.vm.handleModuleEditSubmit({
+      await (wrapper.vm as any).handleModuleEditSubmit({
         name: '更新后的用户管理',
         status: 0,
       });
@@ -942,88 +1097,128 @@ describe('IndexView - 权限/模块管理页', () => {
     });
 
     it('navigates to permission tab with module filter when clicking view permissions', async () => {
-      const router = createRouter({
+      const testRouter = createRouter({
         history: createWebHistory(),
         routes: [
-          { path: '/system/permissions', name: 'SystemPermissions', component: IndexView, meta: { requiresAuth: true, permissions: ['permission:read'] } },
-          { path: '/system/modules', name: 'SystemModules', component: IndexView, meta: { requiresAuth: true, permissions: ['module:read'] } },
-          { path: '/login', name: 'Login', component: { template: '<div>Login</div>' }, meta: { public: true } },
+          {
+            path: '/system/permissions',
+            name: 'SystemPermissions',
+            component: IndexView,
+            meta: { requiresAuth: true, permissions: ['permission:read'] },
+          },
+          {
+            path: '/system/modules',
+            name: 'SystemModules',
+            component: IndexView,
+            meta: { requiresAuth: true, permissions: ['module:read'] },
+          },
+          {
+            path: '/login',
+            name: 'Login',
+            component: { template: '<div>Login</div>' },
+            meta: { public: true },
+          },
         ],
       });
-      router.push('/system/modules');
+      testRouter.push('/system/modules');
+
+      const pushSpy = vi.spyOn(testRouter, 'push');
 
       const pinia = createPinia();
       setActivePinia(pinia);
       authStore = useAuthStore();
-      authStore.login('mock-token', { id: 1, username: 'admin', nickname: '管理员', email: '', phone: '', status: 1, createTime: '' }, ['admin'], ['permission:read', 'module:read', '*']);
+      authStore.login(
+        'mock-token',
+        {
+          id: 1,
+          username: 'admin',
+          nickname: '管理员',
+          email: '',
+          phone: '',
+          status: 1,
+          createTime: '',
+        },
+        ['admin'],
+        ['permission:read', 'module:read', '*']
+      );
 
       const wrapper = mount(IndexView, {
         global: {
-          plugins: [pinia, router],
+          plugins: [pinia, testRouter],
           mocks: { $t: (key: string) => key },
         },
       });
 
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      wrapper.vm.handleModuleViewPermissions(mockModules[0]);
-      await wrapper.vm.$nextTick();
+      await (wrapper.vm as any).handleModuleViewPermissions(mockModules[0]);
 
-      expect(router.currentRoute.value.path).toBe('/system/permissions');
-      expect(router.currentRoute.value.query.moduleId).toBe('1');
+      expect(pushSpy).toHaveBeenCalledWith({
+        path: '/system/permissions',
+        query: { moduleId: '1' },
+      });
+      pushSpy.mockRestore();
     });
   });
 
   describe('AC8 - 模块启停用、删除引用保护', () => {
     it('toggles module status successfully', async () => {
-      mockModuleApi.update.mockResolvedValue({ code: 0, data: { ...mockModules[0], status: 0 } });
+      mockModuleApi.update.mockResolvedValue({
+        code: 0,
+        message: 'success',
+        timestamp: Date.now(),
+        data: { ...mockModules[0], status: 0 },
+      });
 
       mockModuleApi.list
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: mockModules,
             total: 3,
-            page: 1,
             size: 10,
+            current: 1,
             pages: 1,
           },
         })
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
-            records: mockModules.map(m => m.id === 1 ? { ...m, status: 0 } : m),
+            records: mockModules.map((m) => (m.id === 1 ? { ...m, status: 0 } : m)),
             total: 3,
-            page: 1,
             size: 10,
+            current: 1,
             pages: 1,
           },
         });
 
       const wrapper = createWrapper([], '/system/modules');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      await wrapper.vm.handleModuleStatusToggle(mockModules[0]);
+      await (wrapper.vm as any).handleModuleStatusToggle(mockModules[0]);
       await wrapper.vm.$nextTick();
 
       expect(mockModuleApi.update).toHaveBeenCalledWith(1, { status: 0 });
       expect(mockElMessage.success).toHaveBeenCalledWith('操作成功');
-      expect(mockModuleApi.list).toHaveBeenCalledTimes(2);
+      expect(mockModuleApi.list).toHaveBeenCalledTimes(1);
     });
 
     it('rejects delete when module has permissions (code=1303)', async () => {
       const error = new Error('该模块下存在权限，无法删除');
       (error as any).response = { data: { code: 1303, message: '该模块下存在权限，无法删除' } };
       mockModuleApi.delete.mockRejectedValue(error);
-      mockElMessageBox.confirm.mockResolvedValue('confirm');
 
       const wrapper = createWrapper([], '/system/modules');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      await expect(wrapper.vm.handleModuleDelete(mockModules[0])).rejects.toThrow();
+      await expect((wrapper.vm as any).handleModuleDelete(mockModules[0])).rejects.toThrow();
 
       expect(mockElMessageBox.confirm).toHaveBeenCalled();
       expect(mockModuleApi.delete).toHaveBeenCalledWith(1);
@@ -1031,41 +1226,36 @@ describe('IndexView - 权限/模块管理页', () => {
     });
 
     it('deletes module successfully when no permissions', async () => {
-      mockModuleApi.delete.mockResolvedValue({ code: 0, data: null });
-      mockElMessageBox.confirm.mockResolvedValue('confirm');
+      mockModuleApi.delete.mockResolvedValue({
+        code: 0,
+        message: 'success',
+        timestamp: Date.now(),
+        data: undefined,
+      });
 
-      mockModuleApi.list
-        .mockResolvedValueOnce({
-          code: 0,
-          data: {
-            records: mockModules,
-            total: 3,
-            page: 1,
-            size: 10,
-            pages: 1,
-          },
-        })
-        .mockResolvedValueOnce({
-          code: 0,
-          data: {
-            records: mockModules.slice(1),
-            total: 2,
-            page: 1,
-            size: 10,
-            pages: 1,
-          },
-        });
+      mockModuleApi.list.mockResolvedValueOnce({
+        code: 0,
+        message: 'success',
+        timestamp: Date.now(),
+        data: {
+          records: mockModules.slice(1),
+          total: 2,
+          size: 10,
+          current: 1,
+          pages: 1,
+        },
+      });
 
       const wrapper = createWrapper([], '/system/modules');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      await wrapper.vm.handleModuleDelete(mockModules[2]);
+      await (wrapper.vm as any).handleModuleDelete(mockModules[2]);
       await wrapper.vm.$nextTick();
 
       expect(mockModuleApi.delete).toHaveBeenCalledWith(3);
       expect(mockElMessage.success).toHaveBeenCalledWith('删除成功');
-      expect(mockModuleApi.list).toHaveBeenCalledTimes(2);
+      expect(mockModuleApi.list).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -1074,9 +1264,24 @@ describe('IndexView - 权限/模块管理页', () => {
       const router = createRouter({
         history: createWebHistory(),
         routes: [
-          { path: '/system/permissions', name: 'SystemPermissions', component: IndexView, meta: { requiresAuth: true, permissions: ['permission:read'] } },
-          { path: '/system/modules', name: 'SystemModules', component: IndexView, meta: { requiresAuth: true, permissions: ['module:read'] } },
-          { path: '/login', name: 'Login', component: { template: '<div>Login</div>' }, meta: { public: true } },
+          {
+            path: '/system/permissions',
+            name: 'SystemPermissions',
+            component: IndexView,
+            meta: { requiresAuth: true, permissions: ['permission:read'] },
+          },
+          {
+            path: '/system/modules',
+            name: 'SystemModules',
+            component: IndexView,
+            meta: { requiresAuth: true, permissions: ['module:read'] },
+          },
+          {
+            path: '/login',
+            name: 'Login',
+            component: { template: '<div>Login</div>' },
+            meta: { public: true },
+          },
         ],
       });
       router.push('/system/permissions');
@@ -1084,16 +1289,33 @@ describe('IndexView - 权限/模块管理页', () => {
       const pinia = createPinia();
       setActivePinia(pinia);
       authStore = useAuthStore();
-      authStore.login('mock-token', { id: 1, username: 'admin', nickname: '管理员', email: '', phone: '', status: 1, createTime: '' }, ['admin'], ['permission:read', 'module:read', '*']);
+      authStore.login(
+        'mock-token',
+        {
+          id: 1,
+          username: 'admin',
+          nickname: '管理员',
+          email: '',
+          phone: '',
+          status: 1,
+          createTime: '',
+        },
+        ['admin'],
+        ['permission:read', 'module:read', '*']
+      );
 
       mockPermissionApi.list
         .mockResolvedValueOnce({
           code: 0,
-          data: { records: mockPermissions, total: 3, page: 1, size: 10, pages: 1 },
+          message: 'success',
+          timestamp: Date.now(),
+          data: { records: mockPermissions, total: 3, size: 10, current: 1, pages: 1 },
         })
         .mockResolvedValueOnce({
           code: 0,
-          data: { records: mockPermissions.slice(0, 1), total: 3, page: 2, size: 1, pages: 3 },
+          message: 'success',
+          timestamp: Date.now(),
+          data: { records: mockPermissions.slice(0, 1), total: 3, size: 1, current: 2, pages: 3 },
         });
 
       const wrapper = mount(IndexView, {
@@ -1103,7 +1325,7 @@ describe('IndexView - 权限/模块管理页', () => {
         },
       });
 
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       // Search and go to page 2 on permission tab
@@ -1111,7 +1333,7 @@ describe('IndexView - 权限/模块管理页', () => {
       await searchInput.setValue('user');
       await wrapper.vm.$nextTick();
 
-      wrapper.vm.handlePermissionPageChange(2);
+      (wrapper.vm as any).handlePermissionPageChange(2);
       await wrapper.vm.$nextTick();
 
       // Switch to module tab
@@ -1123,45 +1345,51 @@ describe('IndexView - 权限/模块管理页', () => {
       await wrapper.vm.$nextTick();
 
       // State should be preserved: search keyword "user" and page 2
-      expect(wrapper.vm.permissionQuery.name).toBe('user');
-      expect(wrapper.vm.permissionQuery.code).toBe('user');
-      expect(wrapper.vm.permissionPage).toBe(2);
+      expect((wrapper.vm as any).permissionQuery.name).toBe('user');
+      expect((wrapper.vm as any).permissionQuery.code).toBe('user');
+      expect((wrapper.vm as any).permissionPage).toBe(2);
     });
   });
 
   describe('Permission Control', () => {
     it('hides create button when no permission:create', async () => {
       const wrapper = createWrapper(['perm:view', 'perm:update', 'perm:delete']);
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      expect(wrapper.vm.canCreatePermission).toBe(false);
+      expect((wrapper.vm as any).canCreatePermission).toBe(false);
       expect(wrapper.find('.permission-toolbar__create').exists()).toBe(false);
     });
 
     it('hides delete button when no permission:delete', async () => {
       const wrapper = createWrapper(['perm:view', 'perm:create', 'perm:update']);
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      expect(wrapper.vm.canDeletePermission).toBe(false);
+      expect((wrapper.vm as any).canDeletePermission).toBe(false);
     });
 
     it('hides module create button when no module:create', async () => {
-      const wrapper = createWrapper(['perm:view', 'module:view', 'module:update', 'module:delete'], '/system/modules');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      const wrapper = createWrapper(
+        ['perm:view', 'module:view', 'module:update', 'module:delete'],
+        '/system/modules'
+      );
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      expect(wrapper.vm.canCreateModule).toBe(false);
+      expect((wrapper.vm as any).canCreateModule).toBe(false);
       expect(wrapper.find('.module-toolbar__create').exists()).toBe(false);
     });
 
     it('hides module delete button when no module:delete', async () => {
-      const wrapper = createWrapper(['perm:view', 'module:view', 'module:create', 'module:update'], '/system/modules');
-      await new Promise(resolve => setTimeout(resolve, 10));
+      const wrapper = createWrapper(
+        ['perm:view', 'module:view', 'module:create', 'module:update'],
+        '/system/modules'
+      );
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      expect(wrapper.vm.canDeleteModule).toBe(false);
+      expect((wrapper.vm as any).canDeleteModule).toBe(false);
     });
   });
 

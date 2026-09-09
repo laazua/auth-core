@@ -9,7 +9,6 @@ vi.mock('@/stores/app', () => ({
 }));
 
 describe('useTheme', () => {
-  let appStore: ReturnType<typeof useAppStore>;
   let originalMatchMedia: typeof window.matchMedia;
 
   beforeEach(() => {
@@ -56,7 +55,7 @@ describe('useTheme', () => {
 
   const getAppStore = (theme: 'light' | 'dark' = 'light') => {
     const store = createMockAppStore(theme);
-    (useAppStore as vi.Mock).mockReturnValue(store);
+    (useAppStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(store);
     return store;
   };
 
@@ -199,7 +198,7 @@ describe('useTheme', () => {
   describe('AC4: darkModeGradientBackground', () => {
     it('dark mode uses dark gradient variables when data-theme=dark', () => {
       vi.spyOn(storage, 'get').mockReturnValue('dark');
-      const store = getAppStore('dark');
+      getAppStore('dark');
       const { initTheme } = useTheme();
 
       initTheme();

@@ -37,7 +37,7 @@ const createHttp = (): AxiosInstance => {
     }
   );
 
-  http.interceptors.response.use(
+http.interceptors.response.use(
     (response: AxiosResponse<Result>) => {
       const { data } = response;
 
@@ -56,7 +56,8 @@ const createHttp = (): AxiosInstance => {
         return Promise.reject(new Error(message));
       }
 
-      return response;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return data as any;
     },
     (error: AxiosError<Result>) => {
       const { response } = error;

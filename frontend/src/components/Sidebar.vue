@@ -3,7 +3,6 @@ import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAppStore } from '@/stores/app';
 import { ElMenu, ElMenuItem, ElSubMenu } from 'element-plus';
-import { Fold, Expand } from '@element-plus/icons-vue';
 import { useMenu, type MenuConfig } from '@/composables/useMenu';
 
 interface Props {
@@ -40,9 +39,7 @@ const handleOpenChange = (opened: boolean) => {
   emit('open-change', opened);
 };
 
-const toggleCollapse = () => {
-  emit('toggle');
-};
+
 </script>
 
 <template>
@@ -84,15 +81,6 @@ const toggleCollapse = () => {
           </el-menu-item>
         </template>
       </el-menu>
-    </div>
-    <div class="sidebar__footer">
-      <button
-        class="sidebar__toggle"
-        :aria-label="isCollapsed ? '展开侧边栏' : '折叠侧边栏'"
-        @click="toggleCollapse"
-      >
-        <component :is="isCollapsed ? Expand : Fold" />
-      </button>
     </div>
   </aside>
 </template>
@@ -285,36 +273,6 @@ const toggleCollapse = () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.sidebar__footer {
-  padding: 12px;
-  border-top: 1px solid var(--color-border-light);
-  flex-shrink: 0;
-}
-
-.sidebar__toggle {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 32px;
-  border-radius: 8px;
-  color: var(--color-text-secondary);
-  background: transparent;
-  border: 1px solid var(--color-border-light);
-  transition: all var(--transition-duration-base) var(--transition-timing);
-
-  &:hover {
-    background: var(--color-bg-hover);
-    color: var(--color-primary);
-    border-color: var(--color-primary);
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
 }
 
 @media (max-width: 767.98px) {

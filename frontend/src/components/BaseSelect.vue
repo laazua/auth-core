@@ -8,7 +8,7 @@
   }
 
   interface Props {
-    modelValue: string | number | null;
+    modelValue: string | number | null | (string | number)[];
     options: Option[];
     placeholder?: string;
     label?: string;
@@ -28,8 +28,8 @@
   });
 
   const emit = defineEmits<{
-    'update:modelValue': [value: string | number | null];
-    change: [value: string | number | null];
+    'update:modelValue': [value: string | number | null | (string | number)[]];
+    change: [value: string | number | null | (string | number)[]];
     blur: [event: FocusEvent];
     focus: [event: FocusEvent];
     clear: [];
@@ -48,7 +48,7 @@
 
   const selectedOptions = computed(() => {
     if (props.multiple && Array.isArray(props.modelValue)) {
-      return props.options.filter((opt) => props.modelValue!.includes(opt.value));
+      return props.options.filter((opt) => (props.modelValue as (string | number)[]).includes(opt.value));
     }
     if (!props.multiple && props.modelValue !== null) {
       return props.options.find((opt) => opt.value === props.modelValue);
@@ -60,7 +60,7 @@
     if (props.multiple && Array.isArray(selectedOptions.value)) {
       return selectedOptions.value.map((opt) => opt.label).join(', ');
     }
-    if (selectedOptions.value) {
+    if (selectedOptions.value && !Array.isArray(selectedOptions.value)) {
       return selectedOptions.value.label;
     }
     return '';
@@ -88,7 +88,7 @@
     if (option.disabled) return;
 
     if (props.multiple) {
-      const current = (props.modelValue as (string | number)[]) || [];
+      const current = (Array.isArray(props.modelValue) ? [...props.modelValue] : []) as (string | number)[];
       const index = current.indexOf(option.value);
       if (index > -1) {
         current.splice(index, 1);
@@ -96,16 +96,19 @@
         current.push(option.value);
       }
       emit('update:modelValue', current);
+      emit('change', current);
     } else {
       emit('update:modelValue', option.value);
+      emit('change', option.value);
       isOpen.value = false;
     }
-    emit('change', props.multiple ? (props.modelValue as (string | number)[]) : option.value);
   };
 
   const handleClear = (event: Event) => {
     event.stopPropagation();
-    emit('update:modelValue', props.multiple ? [] : null);
+    const clearedValue = props.multiple ? [] : null;
+    emit('update:modelValue', clearedValue);
+    emit('change', clearedValue);
     emit('clear');
     isOpen.value = false;
   };
@@ -207,7 +210,7 @@
             'base-select__option',
             {
               'base-select__option--selected': props.multiple
-                ? (modelValue as any[])?.includes(option.value)
+                ? (Array.isArray(modelValue) ? modelValue : [])?.includes(option.value)
                 : modelValue === option.value,
               'base-select__option--disabled': option.disabled,
             },
@@ -215,7 +218,7 @@
           role="option"
           :aria-selected="
             props.multiple
-              ? (modelValue as any[])?.includes(option.value)
+              ? (Array.isArray(modelValue) ? modelValue : [])?.includes(option.value)
               : modelValue === option.value
           "
           @click="handleSelect(option)"

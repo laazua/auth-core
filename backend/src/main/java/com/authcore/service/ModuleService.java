@@ -6,6 +6,7 @@ import com.authcore.dto.module.ModuleQueryDTO;
 import com.authcore.dto.module.ModuleUpdateDTO;
 import com.authcore.dto.module.ModuleVO;
 import com.authcore.dto.permission.PermissionVO;
+import com.authcore.dto.permission.PermissionSimpleVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
 import java.util.List;
@@ -66,4 +67,11 @@ public interface ModuleService {
      * @throws BusinessException code=1001 模块不存在；code=1302 存在权限引用
      */
     void deleteModule(Long id);
+
+    /**
+     * 查询所有权限精简列表（仅含 id、code、name）。
+     *
+     * @return 权限精简对象列表，供前端下拉选项使用
+     */
+    List<PermissionSimpleVO> listAllPermissions();
 }

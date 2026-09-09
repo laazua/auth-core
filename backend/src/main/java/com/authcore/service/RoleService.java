@@ -1,6 +1,7 @@
 package com.authcore.service;
 
 import com.authcore.common.BusinessException;
+import com.authcore.dto.permission.PermissionSimpleVO;
 import com.authcore.dto.role.RoleCreateDTO;
 import com.authcore.dto.role.RoleQueryDTO;
 import com.authcore.dto.role.RoleUpdateDTO;
@@ -70,4 +71,11 @@ public interface RoleService {
      * @throws BusinessException code=1001 角色不存在；code=1201 权限不存在
      */
     void assignPermissions(Long roleId, List<Long> permissionIds);
+
+    /**
+     * 查询所有权限精简列表（仅含 id、code、name）。
+     *
+     * @return 权限精简对象列表，供前端下拉选项使用
+     */
+    List<PermissionSimpleVO> listAllPermissions();
 }

@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/auth';
 
 export const authGuard = async (
   to: RouteLocationNormalized,
-  from: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
   next: NavigationGuardNext
 ) => {
   const authStore = useAuthStore();
@@ -17,8 +17,8 @@ export const authGuard = async (
 };
 
 export const guestGuard = async (
-  to: RouteLocationNormalized,
-  from: RouteLocationNormalized,
+  _to: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
   next: NavigationGuardNext
 ) => {
   const authStore = useAuthStore();
@@ -34,7 +34,7 @@ export const guestGuard = async (
 export const permissionGuard = (requiredPermissions: string[]) => {
   return async (
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized,
+    _from: RouteLocationNormalized,
     next: NavigationGuardNext
   ) => {
     const authStore = useAuthStore();
@@ -58,7 +58,7 @@ export const permissionGuard = (requiredPermissions: string[]) => {
 export const roleGuard = (requiredRoles: string[]) => {
   return async (
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized,
+    _from: RouteLocationNormalized,
     next: NavigationGuardNext
   ) => {
     const authStore = useAuthStore();

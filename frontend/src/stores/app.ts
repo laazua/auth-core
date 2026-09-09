@@ -14,9 +14,9 @@ export interface TagView {
 }
 
 export const useAppStore = defineStore('app', () => {
-  const sidebarCollapsed = ref<boolean>(storage.get('sidebarCollapsed') || false);
+  const sidebarCollapsed = ref<boolean>(Boolean(storage.get('sidebarCollapsed')));
   const sidebarOpened = ref<boolean>(false);
-  const theme = ref<'light' | 'dark'>(storage.get('theme') || 'light');
+  const theme = ref<'light' | 'dark'>((storage.get('theme') as 'light' | 'dark') || 'light');
   const breadcrumbs = ref<BreadcrumbItem[]>([]);
   const device = ref<'desktop' | 'tablet' | 'mobile'>('desktop');
   const menuList = ref<MenuConfig[]>([]);
@@ -147,7 +147,7 @@ export const useAppStore = defineStore('app', () => {
     if (savedCached && Array.isArray(savedCached)) {
       cachedViews.value = savedCached;
     }
-    if (savedActive) {
+    if (savedActive && typeof savedActive === 'string') {
       activeTag.value = savedActive;
     }
   };

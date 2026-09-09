@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach, type Mock } from 'vitest';
 
 // Mock @vueuse/core BEFORE any imports
 vi.mock('@vueuse/core', () => ({
@@ -107,7 +107,7 @@ vi.mock('@/api/permission');
 vi.mock('element-plus', async (importOriginal) => {
   const actual = await importOriginal();
   return {
-    ...actual,
+    ...(actual as Record<string, any>),
     ElMessage: {
       success: vi.fn(),
       error: vi.fn(),
@@ -115,9 +115,9 @@ vi.mock('element-plus', async (importOriginal) => {
       info: vi.fn(),
     },
     ElMessageBox: {
-      confirm: vi.fn(),
-      alert: vi.fn(),
-      prompt: vi.fn(),
+      confirm: vi.fn().mockResolvedValue(undefined),
+      alert: vi.fn().mockResolvedValue(undefined),
+      prompt: vi.fn().mockResolvedValue(undefined),
     },
     ElPagination: {
       name: 'ElPagination',
@@ -178,6 +178,9 @@ const mockPermissionTree = [
     sort: 1,
     status: 1,
     createTime: '2024-01-01T00:00:00Z',
+    moduleId: 1,
+    moduleName: '系统管理',
+    description: '系统管理模块',
     children: [
       {
         id: 11,
@@ -188,11 +191,14 @@ const mockPermissionTree = [
         sort: 1,
         status: 1,
         createTime: '2024-01-01T00:00:00Z',
+        moduleId: 1,
+        moduleName: '系统管理',
+        description: '用户管理',
         children: [
-          { id: 1, code: 'user:view', name: '用户查看', type: 2, parentId: 11, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
-          { id: 2, code: 'user:create', name: '用户新增', type: 2, parentId: 11, sort: 2, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
-          { id: 3, code: 'user:update', name: '用户编辑', type: 2, parentId: 11, sort: 3, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
-          { id: 4, code: 'user:delete', name: '用户删除', type: 2, parentId: 11, sort: 4, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
+          { id: 1, code: 'user:view', name: '用户查看', type: 2, parentId: 11, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '用户管理', description: '用户查看', children: [] },
+          { id: 2, code: 'user:create', name: '用户新增', type: 2, parentId: 11, sort: 2, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '用户管理', description: '用户新增', children: [] },
+          { id: 3, code: 'user:update', name: '用户编辑', type: 2, parentId: 11, sort: 3, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '用户管理', description: '用户编辑', children: [] },
+          { id: 4, code: 'user:delete', name: '用户删除', type: 2, parentId: 11, sort: 4, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '用户管理', description: '用户删除', children: [] },
         ],
       },
       {
@@ -204,12 +210,15 @@ const mockPermissionTree = [
         sort: 2,
         status: 1,
         createTime: '2024-01-01T00:00:00Z',
+        moduleId: 1,
+        moduleName: '系统管理',
+        description: '角色管理',
         children: [
-          { id: 5, code: 'role:view', name: '角色查看', type: 2, parentId: 12, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
-          { id: 6, code: 'role:create', name: '角色新增', type: 2, parentId: 12, sort: 2, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
-          { id: 7, code: 'role:update', name: '角色编辑', type: 2, parentId: 12, sort: 3, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
-          { id: 8, code: 'role:delete', name: '角色删除', type: 2, parentId: 12, sort: 4, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
-          { id: 9, code: 'role:assign-permission', name: '权限分配', type: 2, parentId: 12, sort: 5, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
+          { id: 5, code: 'role:view', name: '角色查看', type: 2, parentId: 12, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '角色管理', description: '角色查看', children: [] },
+          { id: 6, code: 'role:create', name: '角色新增', type: 2, parentId: 12, sort: 2, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '角色管理', description: '角色新增', children: [] },
+          { id: 7, code: 'role:update', name: '角色编辑', type: 2, parentId: 12, sort: 3, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '角色管理', description: '角色编辑', children: [] },
+          { id: 8, code: 'role:delete', name: '角色删除', type: 2, parentId: 12, sort: 4, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '角色管理', description: '角色删除', children: [] },
+          { id: 9, code: 'role:assign-permission', name: '权限分配', type: 2, parentId: 12, sort: 5, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '角色管理', description: '权限分配', children: [] },
         ],
       },
     ],
@@ -223,6 +232,9 @@ const mockPermissionTree = [
     sort: 2,
     status: 1,
     createTime: '2024-01-01T00:00:00Z',
+    moduleId: 2,
+    moduleName: '内容管理',
+    description: '内容管理模块',
     children: [
       {
         id: 21,
@@ -233,11 +245,14 @@ const mockPermissionTree = [
         sort: 1,
         status: 1,
         createTime: '2024-01-01T00:00:00Z',
+        moduleId: 2,
+        moduleName: '内容管理',
+        description: '文章管理',
         children: [
-          { id: 10, code: 'article:read', name: '文章查看', type: 2, parentId: 21, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
-          { id: 11, code: 'article:create', name: '文章新增', type: 2, parentId: 21, sort: 2, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
-          { id: 12, code: 'article:update', name: '文章编辑', type: 2, parentId: 21, sort: 3, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
-          { id: 13, code: 'article:delete', name: '文章删除', type: 2, parentId: 21, sort: 4, status: 1, createTime: '2024-01-01T00:00:00Z', children: [] },
+          { id: 10, code: 'article:read', name: '文章查看', type: 2, parentId: 21, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 2, moduleName: '文章管理', description: '文章查看', children: [] },
+          { id: 11, code: 'article:create', name: '文章新增', type: 2, parentId: 21, sort: 2, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 2, moduleName: '文章管理', description: '文章新增', children: [] },
+          { id: 12, code: 'article:update', name: '文章编辑', type: 2, parentId: 21, sort: 3, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 2, moduleName: '文章管理', description: '文章编辑', children: [] },
+          { id: 13, code: 'article:delete', name: '文章删除', type: 2, parentId: 21, sort: 4, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 2, moduleName: '文章管理', description: '文章删除', children: [] },
         ],
       },
     ],
@@ -280,10 +295,12 @@ describe('IndexView - 角色管理页', () => {
 
     mockRoleApi.list.mockResolvedValue({
       code: 0,
+      message: 'success',
+      timestamp: Date.now(),
       data: {
         records: mockRoles,
         total: 3,
-        page: 1,
+        current: 1,
         size: 10,
         pages: 1,
       },
@@ -373,10 +390,12 @@ describe('IndexView - 角色管理页', () => {
     it('changes page correctly', async () => {
       mockRoleApi.list.mockResolvedValue({
         code: 0,
+        message: 'success',
+        timestamp: Date.now(),
         data: {
           records: mockRoles.slice(0, 1),
           total: 3,
-          page: 2,
+          current: 2,
           size: 1,
           pages: 3,
         },
@@ -394,10 +413,12 @@ describe('IndexView - 角色管理页', () => {
     it('changes page size correctly', async () => {
       mockRoleApi.list.mockResolvedValue({
         code: 0,
+        message: 'success',
+        timestamp: Date.now(),
         data: {
           records: mockRoles,
           total: 3,
-          page: 1,
+          current: 1,
           size: 20,
           pages: 1,
         },
@@ -439,26 +460,32 @@ describe('IndexView - 角色管理页', () => {
 
       mockRoleApi.create.mockResolvedValue({
         code: 0,
+        message: 'success',
+        timestamp: Date.now(),
         data: newRole,
       });
 
       mockRoleApi.list
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: mockRoles,
             total: 3,
-            page: 1,
+            current: 1,
             size: 10,
             pages: 1,
           },
         })
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: [...mockRoles, newRole],
             total: 4,
-            page: 1,
+            current: 1,
             size: 10,
             pages: 1,
           },
@@ -550,26 +577,32 @@ describe('IndexView - 角色管理页', () => {
 
       mockRoleApi.update.mockResolvedValue({
         code: 0,
+        message: 'success',
+        timestamp: Date.now(),
         data: updatedRole,
       });
 
       mockRoleApi.list
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: mockRoles,
             total: 3,
-            page: 1,
+            current: 1,
             size: 10,
             pages: 1,
           },
         })
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: [updatedRole, ...mockRoles.slice(1)],
             total: 3,
-            page: 1,
+            current: 1,
             size: 10,
             pages: 1,
           },
@@ -600,25 +633,34 @@ describe('IndexView - 角色管理页', () => {
 
   describe('AC4 - 启停用、删除引用保护', () => {
     it('toggles role status successfully', async () => {
-      mockRoleApi.update.mockResolvedValue({ code: 0, data: { ...mockRoles[0], status: 0 } });
+      mockRoleApi.update.mockResolvedValue({ 
+        code: 0, 
+        message: 'success', 
+        timestamp: Date.now(), 
+        data: { ...mockRoles[0], status: 0 } 
+      });
 
       mockRoleApi.list
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: mockRoles,
             total: 3,
-            page: 1,
+            current: 1,
             size: 10,
             pages: 1,
           },
         })
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: mockRoles.map(r => r.id === 1 ? { ...r, status: 0 } : r),
             total: 3,
-            page: 1,
+            current: 1,
             size: 10,
             pages: 1,
           },
@@ -640,7 +682,7 @@ describe('IndexView - 角色管理页', () => {
       const error = new Error('该角色已被用户引用，无法删除');
       (error as any).response = { data: { code: 1103, message: '该角色已被用户引用，无法删除' } };
       mockRoleApi.delete.mockRejectedValue(error);
-      mockElMessageBox.confirm.mockResolvedValue('confirm');
+      (mockElMessageBox.confirm as Mock).mockResolvedValue('confirm');
 
       const wrapper = createWrapper();
       await new Promise(resolve => setTimeout(resolve, 10));
@@ -657,7 +699,7 @@ describe('IndexView - 角色管理页', () => {
       const error = new Error('该角色已分配权限，无法删除');
       (error as any).response = { data: { code: 1104, message: '该角色已分配权限，无法删除' } };
       mockRoleApi.delete.mockRejectedValue(error);
-      mockElMessageBox.confirm.mockResolvedValue('confirm');
+      (mockElMessageBox.confirm as Mock).mockResolvedValue('confirm');
 
       const wrapper = createWrapper();
       await new Promise(resolve => setTimeout(resolve, 10));
@@ -671,26 +713,35 @@ describe('IndexView - 角色管理页', () => {
     });
 
     it('deletes role successfully when no references', async () => {
-      mockRoleApi.delete.mockResolvedValue({ code: 0, data: null });
-      mockElMessageBox.confirm.mockResolvedValue('confirm');
+      mockRoleApi.delete.mockResolvedValue({ 
+        code: 0, 
+        message: 'success', 
+        timestamp: Date.now(), 
+        data: undefined 
+      });
+      (mockElMessageBox.confirm as Mock).mockResolvedValue('confirm');
 
       mockRoleApi.list
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: mockRoles,
             total: 3,
-            page: 1,
+            current: 1,
             size: 10,
             pages: 1,
           },
         })
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: mockRoles.slice(1),
             total: 2,
-            page: 1,
+            current: 1,
             size: 10,
             pages: 1,
           },
@@ -738,29 +789,42 @@ describe('IndexView - 角色管理页', () => {
     it('saves permission assignment successfully', async () => {
       mockPermissionApi.getTree.mockResolvedValue({
         code: 0,
+        message: 'success',
+        timestamp: Date.now(),
         data: mockPermissionTree,
       });
 
       mockRoleApi.getById.mockResolvedValue({
         code: 0,
+        message: 'success',
+        timestamp: Date.now(),
         data: mockRoles[0],
       });
 
-      mockRoleApi.assignPermissions.mockResolvedValue({ code: 0, data: null });
+      mockRoleApi.assignPermissions.mockResolvedValue({ 
+        code: 0, 
+        message: 'success', 
+        timestamp: Date.now(), 
+        data: undefined 
+      });
 
       mockRoleApi.list
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: mockRoles,
             total: 3,
-            page: 1,
+            current: 1,
             size: 10,
             pages: 1,
           },
         })
         .mockResolvedValueOnce({
           code: 0,
+          message: 'success',
+          timestamp: Date.now(),
           data: {
             records: [{
               ...mockRoles[0],
@@ -771,7 +835,7 @@ describe('IndexView - 角色管理页', () => {
               ],
             }, ...mockRoles.slice(1)],
             total: 3,
-            page: 1,
+            current: 1,
             size: 10,
             pages: 1,
           },

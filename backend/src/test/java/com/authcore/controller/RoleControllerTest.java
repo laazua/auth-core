@@ -542,4 +542,40 @@ class RoleControllerTest {
         long finalCount = rolePermissionMapper.selectCount(queryWrapper);
         assertEquals(0, finalCount, "清空后权限关联应为 0");
     }
+
+    /**
+     * AC2: RoleController GET /roles/permissions/all 返回权限精简列表。
+     * Given 种子数据包含权限
+     * When GET /api/v1/roles/permissions/all
+     * Then status=200、code=0、data 为非空数组、每项含 id/code/name
+     */
+    @Test
+    @DisplayName("GET /roles/permissions/all 返回权限精简列表")
+    void listAllPermissionsReturnsSimpleList() throws Exception {
+        String token = getAdminToken();
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+        String response = mockMvc.perform(get("/api/v1/roles/permissions/all")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.data").isArray())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var root = mapper.readTree(response);
+        var list = root.path("data");
+
+        assertTrue(list.isArray() && list.size() > 0, "权限列表应非空");
+
+        // 验证每项仅含 id、code、name 三字段
+        for (var item : list) {
+            assertNotNull(item.path("id").asText(), "id 不应为空");
+            assertNotNull(item.path("code").asText(), "code 不应为空");
+            assertNotNull(item.path("name").asText(), "name 不应为空");
+            // 不应包含其他字段
+            assertEquals(3, item.size(), "每项应仅含 id/code/name 三字段");
+        }
+    }
 }

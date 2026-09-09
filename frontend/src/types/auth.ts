@@ -9,6 +9,14 @@ export interface UserInfo {
   createTime: string;
   updateTime?: string;
   lastLoginTime?: string;
+  roles?: RoleVO[];
+  permissions?: string[];
+}
+
+export interface MeResponse {
+  user: UserInfo;
+  roles: RoleVO[];
+  permissions: string[];
 }
 
 export interface LoginRequest {

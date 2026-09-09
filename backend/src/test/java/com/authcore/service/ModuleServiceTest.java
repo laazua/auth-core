@@ -5,6 +5,7 @@ import com.authcore.dto.module.ModuleCreateDTO;
 import com.authcore.dto.module.ModuleQueryDTO;
 import com.authcore.dto.module.ModuleUpdateDTO;
 import com.authcore.dto.module.ModuleVO;
+import com.authcore.dto.permission.PermissionSimpleVO;
 import com.authcore.dto.permission.PermissionVO;
 import com.authcore.entity.SysModule;
 import com.authcore.entity.SysPermission;
@@ -248,5 +249,26 @@ class ModuleServiceTest {
                 () -> moduleService.deleteModule(module2.getId()));
         assertEquals(1302, exPermRef.getCode(), "有权限引用应抛 1302");
         assertNotNull(moduleMapper.selectById(module2.getId()), "有引用模块不应被删除");
+    }
+
+    /**
+     * AC1: listAllPermissions 返回所有权限精简列表。
+     * Given 种子数据包含权限
+     * When listAllPermissions()
+     * Then 返回 List<PermissionSimpleVO> 非空、每项含 id/code/name
+     */
+    @Test
+    @DisplayName("listAllPermissions 返回所有权限精简列表")
+    void listAllPermissionsReturnsSimpleList() {
+        List<PermissionSimpleVO> permissions = moduleService.listAllPermissions();
+
+        assertNotNull(permissions, "权限列表不应为空");
+        assertTrue(permissions.size() > 0, "权限列表应非空");
+
+        for (PermissionSimpleVO vo : permissions) {
+            assertNotNull(vo.id(), "id 不应为空");
+            assertNotNull(vo.code(), "code 不应为空");
+            assertNotNull(vo.name(), "name 不应为空");
+        }
     }
 }

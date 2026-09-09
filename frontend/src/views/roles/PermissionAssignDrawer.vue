@@ -37,7 +37,7 @@ const treeProps = computed(() => ({
   label: 'name',
   id: 'id',
   disabled: (data: PermissionTreeNode) => data.status === 0,
-}));
+})) as import('element-plus').TreeOptionProps;
 
 const filteredTree = computed(() => {
   if (!searchQuery.value) return permissionTree.value;

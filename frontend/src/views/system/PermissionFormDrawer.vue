@@ -154,7 +154,7 @@ defineOptions({
         <BaseInput
           v-model="form.code"
           placeholder="请输入权限编码 (如 perm:user:view)"
-          maxlength="100"
+          :maxlength="100"
         />
       </el-form-item>
 
@@ -174,7 +174,7 @@ defineOptions({
         <BaseInput
           v-model="form.name"
           placeholder="请输入权限名"
-          maxlength="50"
+          :maxlength="50"
         />
       </el-form-item>
 
@@ -193,7 +193,7 @@ defineOptions({
           type="textarea"
           :rows="3"
           placeholder="请输入描述 (可选)"
-          maxlength="200"
+          :maxlength="200"
           style="width: 100%"
         />
       </el-form-item>

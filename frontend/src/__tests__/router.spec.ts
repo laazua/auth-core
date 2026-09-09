@@ -144,113 +144,138 @@ describe('Route Access Control - AC1: systemRouteAllowsPermissionBasedAccess', (
 
     const routes = generateRoutes(mockAuthStore.roles);
 
-     const systemRoute = routes.find((r) => r.path === '/system');
-     expect(systemRoute).toBeDefined();
-     expect(systemRoute?.meta?.roles).toBeUndefined();
-   });
- });
+    const systemRoute = routes.find((r) => r.path === '/system');
+    expect(systemRoute).toBeDefined();
+    expect(systemRoute?.meta?.roles).toBeUndefined();
+  });
+});
 
 describe('AC1: Dynamic Route Loading After Dashboard Navigation', () => {
-   it('Dashboard navigation does not set dynamicRoutesLoaded flag before routes are loaded', async () => {
-     mockAuthStore.isAuthenticated = true;
-     mockAuthStore.roles = ['admin'];
+  it('Dashboard navigation does not set dynamicRoutesLoaded flag before routes are loaded', async () => {
+    mockAuthStore.isAuthenticated = true;
+    mockAuthStore.roles = ['admin'];
 
-     const testRouter = createRouter({
-       history: createWebHistory(),
-       routes: [
-         { path: '/login', name: 'Login', component: { template: '<div>Login</div>' }, meta: { public: true } },
-         { path: '/dashboard', name: 'Dashboard', component: { template: '<div>Dashboard</div>' }, meta: { requiresAuth: true } },
-         { path: '/:pathMatch(.*)*', name: 'NotFound', component: { template: '<div>404</div>' } },
-       ],
-     });
+    const testRouter = createRouter({
+      history: createWebHistory(),
+      routes: [
+        {
+          path: '/login',
+          name: 'Login',
+          component: { template: '<div>Login</div>' },
+          meta: { public: true },
+        },
+        {
+          path: '/dashboard',
+          name: 'Dashboard',
+          component: { template: '<div>Dashboard</div>' },
+          meta: { requiresAuth: true },
+        },
+        { path: '/:pathMatch(.*)*', name: 'NotFound', component: { template: '<div>404</div>' } },
+      ],
+    });
 
-     let dynamicRoutesLoaded = false;
-     testRouter.beforeEach(async (to, _from, next) => {
-       const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
-       const isPublic = to.matched.some((record) => record.meta.public);
+    let dynamicRoutesLoaded = false;
+    testRouter.beforeEach(async (to, _from, next) => {
+      const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+      const isPublic = to.matched.some((record) => record.meta.public);
 
-       if (requiresAuth && !mockAuthStore.isAuthenticated) {
-         next({ name: 'Login', query: { redirect: to.fullPath } });
-         return;
-       }
+      if (requiresAuth && !mockAuthStore.isAuthenticated) {
+        next({ name: 'Login', query: { redirect: to.fullPath } });
+        return;
+      }
 
-       if (isPublic && mockAuthStore.isAuthenticated && to.name === 'Login') {
-         next({ name: 'Dashboard' });
-         return;
-       }
+      if (isPublic && mockAuthStore.isAuthenticated && to.name === 'Login') {
+        next({ name: 'Dashboard' });
+        return;
+      }
 
-       if (to.name === 'Dashboard' && mockAuthStore.isAuthenticated && !dynamicRoutesLoaded) {
-         next();
-         return;
-       }
+      if (to.name === 'Dashboard' && mockAuthStore.isAuthenticated && !dynamicRoutesLoaded) {
+        next();
+        return;
+      }
 
-       if (mockAuthStore.isAuthenticated && !dynamicRoutesLoaded) {
-         dynamicRoutesLoaded = true;
-         next({ ...to, replace: true });
-         return;
-       }
+      if (mockAuthStore.isAuthenticated && !dynamicRoutesLoaded) {
+        dynamicRoutesLoaded = true;
+        next({ ...to, replace: true });
+        return;
+      }
 
-       next();
-     });
+      next();
+    });
 
-     await testRouter.push('/dashboard');
-     await testRouter.isReady();
+    await testRouter.push('/dashboard');
+    await testRouter.isReady();
 
-     expect(dynamicRoutesLoaded).toBe(false);
-   });
+    expect(dynamicRoutesLoaded).toBe(false);
+  });
 
-   it('subsequent navigation to /users loads dynamic routes after Dashboard', async () => {
-     mockAuthStore.isAuthenticated = true;
-     mockAuthStore.roles = ['admin'];
+  it('subsequent navigation to /users loads dynamic routes after Dashboard', async () => {
+    mockAuthStore.isAuthenticated = true;
+    mockAuthStore.roles = ['admin'];
 
-     const testRouter = createRouter({
-       history: createWebHistory(),
-       routes: [
-         { path: '/login', name: 'Login', component: { template: '<div>Login</div>' }, meta: { public: true } },
-         { path: '/dashboard', name: 'Dashboard', component: { template: '<div>Dashboard</div>' }, meta: { requiresAuth: true } },
-         { path: '/users', name: 'Users', component: { template: '<div>Users</div>' }, meta: { requiresAuth: true } },
-         { path: '/:pathMatch(.*)*', name: 'NotFound', component: { template: '<div>404</div>' } },
-       ],
-     });
+    const testRouter = createRouter({
+      history: createWebHistory(),
+      routes: [
+        {
+          path: '/login',
+          name: 'Login',
+          component: { template: '<div>Login</div>' },
+          meta: { public: true },
+        },
+        {
+          path: '/dashboard',
+          name: 'Dashboard',
+          component: { template: '<div>Dashboard</div>' },
+          meta: { requiresAuth: true },
+        },
+        {
+          path: '/users',
+          name: 'Users',
+          component: { template: '<div>Users</div>' },
+          meta: { requiresAuth: true },
+        },
+        { path: '/:pathMatch(.*)*', name: 'NotFound', component: { template: '<div>404</div>' } },
+      ],
+    });
 
-     let dynamicRoutesLoaded = false;
-     testRouter.beforeEach(async (to, _from, next) => {
-       const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
-       const isPublic = to.matched.some((record) => record.meta.public);
+    let dynamicRoutesLoaded = false;
+    testRouter.beforeEach(async (to, _from, next) => {
+      const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+      const isPublic = to.matched.some((record) => record.meta.public);
 
-       if (requiresAuth && !mockAuthStore.isAuthenticated) {
-         next({ name: 'Login', query: { redirect: to.fullPath } });
-         return;
-       }
+      if (requiresAuth && !mockAuthStore.isAuthenticated) {
+        next({ name: 'Login', query: { redirect: to.fullPath } });
+        return;
+      }
 
-       if (isPublic && mockAuthStore.isAuthenticated && to.name === 'Login') {
-         next({ name: 'Dashboard' });
-         return;
-       }
+      if (isPublic && mockAuthStore.isAuthenticated && to.name === 'Login') {
+        next({ name: 'Dashboard' });
+        return;
+      }
 
-       if (to.name === 'Dashboard' && mockAuthStore.isAuthenticated && !dynamicRoutesLoaded) {
-         next();
-         return;
-       }
+      if (to.name === 'Dashboard' && mockAuthStore.isAuthenticated && !dynamicRoutesLoaded) {
+        next();
+        return;
+      }
 
-       if (mockAuthStore.isAuthenticated && !dynamicRoutesLoaded) {
-         dynamicRoutesLoaded = true;
-         next({ ...to, replace: true });
-         return;
-       }
+      if (mockAuthStore.isAuthenticated && !dynamicRoutesLoaded) {
+        dynamicRoutesLoaded = true;
+        next({ ...to, replace: true });
+        return;
+      }
 
-       next();
-     });
+      next();
+    });
 
-     await testRouter.push('/dashboard');
-     await testRouter.isReady();
+    await testRouter.push('/dashboard');
+    await testRouter.isReady();
 
-     expect(dynamicRoutesLoaded).toBe(false);
+    expect(dynamicRoutesLoaded).toBe(false);
 
-     await testRouter.push('/users');
-     await testRouter.isReady();
+    await testRouter.push('/users');
+    await testRouter.isReady();
 
-     expect(dynamicRoutesLoaded).toBe(true);
-     expect(testRouter.currentRoute.value.name).toBe('Users');
-   });
- });
+    expect(dynamicRoutesLoaded).toBe(true);
+    expect(testRouter.currentRoute.value.name).toBe('Users');
+  });
+});

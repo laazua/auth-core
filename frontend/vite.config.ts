@@ -42,9 +42,8 @@ export default defineConfig(({ mode }) => {
       port: Number(env.VITE_PORT) || 3000,
       proxy: {
         '/api': {
-          target: 'http://localhost:9998',
+          target: env.VITE_API_PROXY_TARGET || 'http://localhost:9998',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, '/api/v1'),
         },
       },
     },

@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed, watch, h } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, reactive, onMounted, computed, h } from 'vue';
 import { ElMessage, ElMessageBox, ElPagination } from 'element-plus';
 import { useAuthStore } from '@/stores/auth';
 import { userApi } from '@/api/user';
-import { roleApi } from '@/api/role';
-import type { UserVO, UserQuery, UserCreateRequest, UserUpdateRequest, AssignRolesRequest } from '@/types/user';
-import type { RoleVO } from '@/types/role';
+import type { UserVO, UserCreateRequest, UserUpdateRequest } from '@/types/user';
 import BaseCard from '@/components/BaseCard.vue';
 import BaseButton from '@/components/BaseButton.vue';
 import BaseInput from '@/components/BaseInput.vue';
@@ -15,7 +12,6 @@ import BaseTable from '@/components/BaseTable.vue';
 import UserFormDrawer from './UserFormDrawer.vue';
 import RoleAssignDrawer from './RoleAssignDrawer.vue';
 
-const router = useRouter();
 const authStore = useAuthStore();
 
 const loading = ref(false);
@@ -24,14 +20,14 @@ const total = ref(0);
 const page = ref(1);
 const pageSize = ref(10);
 
-const queryForm = reactive<UserQuery>({
+const queryForm = reactive({
   page: 1,
   size: 10,
   username: '',
   nickname: '',
   email: '',
   phone: '',
-  status: '',
+  status: undefined as number | undefined,
 });
 
 const statusOptions = [
@@ -40,7 +36,18 @@ const statusOptions = [
   { label: '停用', value: 0 },
 ];
 
-const columns = [
+// Type for columns with proper typing for BaseTable
+interface Column {
+  prop: string;
+  label: string;
+  minWidth?: string | number;
+  width?: string | number;
+  fixed?: boolean | 'left' | 'right';
+  formatter?: (row: unknown) => string;
+  render?: (row: unknown) => unknown;
+}
+
+const columns: Column[] = [
   { prop: 'username', label: '用户名', minWidth: 120 },
   { prop: 'nickname', label: '昵称', minWidth: 100 },
   { prop: 'email', label: '邮箱', minWidth: 180 },
@@ -49,8 +56,8 @@ const columns = [
     prop: 'status',
     label: '状态',
     width: 100,
-    formatter: (row: UserVO) => {
-      const status = row.status;
+    formatter: (row: unknown) => {
+      const status = (row as { status: number }).status;
       return status === 1 ? '启用' : '停用';
     },
   },
@@ -58,16 +65,18 @@ const columns = [
     prop: 'roles',
     label: '角色',
     minWidth: 150,
-    formatter: (row: UserVO) => {
-      return row.roles?.map(r => r.name).join(', ') || '—';
+    formatter: (row: unknown) => {
+      const roles = (row as { roles?: Array<{ name: string }> }).roles;
+      return roles?.map(r => r.name).join(', ') || '—';
     },
   },
   {
     prop: 'createTime',
     label: '创建时间',
     width: 180,
-    formatter: (row: UserVO) => {
-      return row.createTime ? new Date(row.createTime).toLocaleString('zh-CN') : '—';
+    formatter: (row: unknown) => {
+      const createTime = (row as { createTime?: string }).createTime;
+      return createTime ? new Date(createTime).toLocaleString('zh-CN') : '—';
     },
   },
   {
@@ -75,31 +84,32 @@ const columns = [
     label: '操作',
     width: 280,
     fixed: 'right',
-    render: (row: UserVO) => {
+    render: (row: unknown) => {
+      const user = row as UserVO;
       return h('div', { class: 'user-table__actions' }, [
         h(BaseButton, {
           size: 'small',
           variant: 'primary',
           class: 'user-table__action-edit',
-          onClick: () => handleEdit(row),
+          onClick: () => handleEdit(user),
         }, { default: () => '编辑' }),
-        row.id !== 1 && h(BaseButton, {
+        user.id !== 1 && h(BaseButton, {
           size: 'small',
-          variant: row.status === 1 ? 'warning' : 'success',
+          variant: user.status === 1 ? 'warning' : 'success',
           class: 'user-table__action-status',
-          onClick: () => handleStatusToggle(row),
-        }, { default: () => row.status === 1 ? '停用' : '启用' }),
-        authStore.hasPermission('user:reset-password') && row.id !== 1 && h(BaseButton, {
+          onClick: () => handleStatusToggle(user),
+        }, { default: () => user.status === 1 ? '停用' : '启用' }),
+        authStore.hasPermission('user:reset-password') && user.id !== 1 && h(BaseButton, {
           size: 'small',
           variant: 'danger',
           class: 'user-table__action-reset',
-          onClick: () => handleResetPassword(row),
+          onClick: () => handleResetPassword(user),
         }, { default: () => '重置密码' }),
         authStore.hasPermission('user:assign-role') && h(BaseButton, {
           size: 'small',
           variant: 'info',
           class: 'user-table__action-roles',
-          onClick: () => handleRoleAssign(row),
+          onClick: () => handleRoleAssign(user),
         }, { default: () => '角色分配' }),
       ]);
     },
@@ -113,8 +123,6 @@ const roleAssignDrawerVisible = ref(false);
 const roleAssignUserId = ref<number | null>(null);
 
 const canCreate = computed(() => authStore.hasPermission('user:create'));
-const canResetPassword = computed(() => authStore.hasPermission('user:reset-password'));
-const canAssignRole = computed(() => authStore.hasPermission('user:assign-role'));
 
 const fetchUserList = async () => {
   loading.value = true;
@@ -141,16 +149,6 @@ const handleSearch = () => {
   queryForm.nickname = queryForm.username;
   queryForm.email = queryForm.username;
   queryForm.phone = queryForm.username;
-  fetchUserList();
-};
-
-const handleReset = () => {
-  queryForm.username = '';
-  queryForm.nickname = '';
-  queryForm.email = '';
-  queryForm.phone = '';
-  queryForm.status = '';
-  page.value = 1;
   fetchUserList();
 };
 
@@ -210,9 +208,9 @@ const handleRoleAssign = async (row: UserVO) => {
   roleAssignDrawerVisible.value = true;
 };
 
-const handleCreateSubmit = async (data: UserCreateRequest) => {
+const handleCreateSubmit = async (data: UserCreateRequest | UserUpdateRequest) => {
   try {
-    const { confirmPassword, ...createData } = data;
+    const { confirmPassword, ...createData } = data as UserCreateRequest;
     await userApi.create(createData);
     ElMessage.success('创建成功');
     createDrawerVisible.value = false;
@@ -252,6 +250,19 @@ const handleRoleAssignSubmit = async (roleIds: number[]) => {
 onMounted(() => {
   fetchUserList();
 });
+
+defineExpose({
+  handleCreateSubmit,
+  handleEditSubmit,
+  handleResetPassword,
+  handleRoleAssign,
+  handleRoleAssignSubmit,
+  handleCreate,
+  handleEdit,
+  handleStatusToggle,
+  canCreate,
+});
+
 </script>
 
 <template>
@@ -268,8 +279,8 @@ onMounted(() => {
             />
           </div>
           <div class="user-toolbar__filter">
-            <BaseSelect
-              v-model="queryForm.status"
+<BaseSelect
+               v-model="queryForm.status as string | number | null"
               :options="statusOptions"
               placeholder="全部状态"
               style="width: 140px"

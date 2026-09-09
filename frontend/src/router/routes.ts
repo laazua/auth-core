@@ -146,8 +146,9 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
 export const generateRoutes = (roles: string[]): RouteRecordRaw[] => {
   const accessibleRoutes = asyncRoutes.filter((route) => {
     if (!route.meta?.roles) return true;
-    return route.meta.roles.some((role) => roles.includes(role));
+    return route.meta.roles.some((role: string) => roles.includes(role));
   });
 
-  return [...layoutRoutes, ...accessibleRoutes, { path: '/:pathMatch(.*)*', redirect: '/404' }];
+  const routes: RouteRecordRaw[] = [...layoutRoutes, ...(accessibleRoutes as RouteRecordRaw[]), { path: '/:pathMatch(.*)*', redirect: '/404' }];
+  return routes;
 };

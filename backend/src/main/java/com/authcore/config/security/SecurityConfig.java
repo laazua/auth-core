@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.CorsFilter;
 
 /**
  * Spring Security 无状态基线配置。
@@ -37,6 +38,7 @@ public class SecurityConfig {
     private final JwtProperties jwtProperties;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final CorsFilter corsFilter;
 
     /**
      * 构造器注入。
@@ -45,13 +47,16 @@ public class SecurityConfig {
      * @param jwtProperties               JWT 配置属性
      * @param jwtTokenProvider            JWT 生成/校验组件
      * @param jwtAuthenticationEntryPoint JWT 认证入口点
+     * @param corsFilter                  CORS 过滤器
      */
     public SecurityConfig(CustomUserDetailsService userDetailsService, JwtProperties jwtProperties,
-                          JwtTokenProvider jwtTokenProvider, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
+                          JwtTokenProvider jwtTokenProvider, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
+                          CorsFilter corsFilter) {
         this.userDetailsService = userDetailsService;
         this.jwtProperties = jwtProperties;
         this.jwtTokenProvider = jwtTokenProvider;
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
+        this.corsFilter = corsFilter;
     }
 
     /**
@@ -87,6 +92,8 @@ public class SecurityConfig {
                 )
                 // JWT 认证过滤器（在 UsernamePasswordAuthenticationFilter 之前）
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                // CORS 过滤器（在 JWT 过滤器之前处理预检请求）
+                .addFilterBefore(corsFilter, JwtAuthenticationFilter.class)
                 // 认证提供者
                 .authenticationProvider(daoAuthenticationProvider());
 

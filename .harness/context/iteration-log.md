@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-09: Generator — done sprint-061（web/030 修复权限管理页模块下拉选项接口 404，新增 ModuleController/RoleController GET /permissions/all 端点 + PermissionSimpleVO DTO，4 条验收标准测试先行全部转绿，后端核心测试通过）
+- 2026-09-09: Planner — kickoff sprint-061（web/030 修复权限管理页模块下拉选项接口 404，4 条验收标准，前置依赖 web/006/modules/001/perms/001 均 ✅）
 - 2026-09-09: Evaluator — pass sprint-060（web/029，平均分 8.6/10）
 - 2026-09-09: Generator — done sprint-060（web/029 修复侧边栏菜单导航404问题，Router Guard case 3 移除 dynamicRoutesLoaded=true 改由 case 4 加载动态路由 + system-menu-path-fix 路径断言修正，门禁+冒烟通过，router.spec.ts 9 passed, useMenu.spec.ts 10 passed, system-menu-path-fix.spec.ts 6 passed, vite build 通过）
 - 2026-09-09: Planner — kickoff sprint-060（web/029 修复侧边栏菜单导航404问题，4 条验收标准，前置依赖 web/010/web/026/web/027）

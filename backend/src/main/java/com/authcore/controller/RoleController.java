@@ -1,6 +1,7 @@
 package com.authcore.controller;
 
 import com.authcore.common.Result;
+import com.authcore.dto.permission.PermissionSimpleVO;
 import com.authcore.dto.role.RoleCreateDTO;
 import com.authcore.dto.role.RolePermissionAssignDTO;
 import com.authcore.dto.role.RoleQueryDTO;
@@ -119,5 +120,17 @@ public class RoleController {
     public Result<Void> assignPermissions(@PathVariable Long id, @Valid @RequestBody RolePermissionAssignDTO dto) {
         roleService.assignPermissions(id, dto.permissionIds());
         return Result.okMessage("权限分配成功");
+    }
+
+    /**
+     * 查询所有权限精简列表（仅含 id、code、name）。
+     *
+     * @return 权限精简对象列表，供前端下拉选项使用
+     */
+    @Operation(summary = "查询所有权限精简列表（用于下拉选项）")
+    @GetMapping("/permissions/all")
+    public Result<List<PermissionSimpleVO>> listAllPermissions() {
+        List<PermissionSimpleVO> permissions = roleService.listAllPermissions();
+        return Result.ok(permissions);
     }
 }

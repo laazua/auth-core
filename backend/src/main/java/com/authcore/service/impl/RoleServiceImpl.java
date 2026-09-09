@@ -1,6 +1,7 @@
 package com.authcore.service.impl;
 
 import com.authcore.common.BusinessException;
+import com.authcore.dto.permission.PermissionSimpleVO;
 import com.authcore.dto.role.RoleCreateDTO;
 import com.authcore.dto.role.RoleQueryDTO;
 import com.authcore.dto.role.RoleUpdateDTO;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 角色业务服务实现（roles/001）。
@@ -188,5 +190,17 @@ public class RoleServiceImpl implements RoleService {
                 role.getCreatedAt(),
                 role.getUpdatedAt()
         );
+    }
+
+    @Override
+    public List<PermissionSimpleVO> listAllPermissions() {
+        List<SysPermission> permissions = permissionMapper.selectList(
+                new LambdaQueryWrapper<SysPermission>()
+                        .select(SysPermission::getId, SysPermission::getCode, SysPermission::getName)
+                        .orderByAsc(SysPermission::getId)
+        );
+        return permissions.stream()
+                .map(p -> new PermissionSimpleVO(p.getId(), p.getCode(), p.getName()))
+                .collect(Collectors.toList());
     }
 }

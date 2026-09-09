@@ -8,15 +8,13 @@ vi.mock('@/stores/auth', () => ({
 }));
 
 describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
-  let authStore: ReturnType<typeof useAuthStore>;
-
   const mockAdminAuthStore = {
     roles: ['admin'],
     permissions: ['*'],
-    hasPermission: vi.fn((p: string) => true),
-    hasRole: vi.fn((r: string) => true),
-    hasAnyRole: vi.fn((roles: string[]) => true),
-    hasAnyPermission: vi.fn((perms: string[]) => true),
+    hasPermission: vi.fn(() => true),
+    hasRole: vi.fn(() => true),
+    hasAnyRole: vi.fn(() => true),
+    hasAnyPermission: vi.fn(() => true),
   };
 
   const mockUserAuthStore = {
@@ -44,7 +42,7 @@ describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
 
   describe('AC2 - Menu Permission Filtering', () => {
     it('returns all menu items for admin user with * permission', () => {
-      (useAuthStore as vi.Mock).mockReturnValue(mockAdminAuthStore);
+      (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockAdminAuthStore);
       const { generateMenuTree } = useMenu();
       const menu = generateMenuTree();
 
@@ -55,7 +53,7 @@ describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
     });
 
     it('filters menu items based on user permissions for regular user', () => {
-      (useAuthStore as vi.Mock).mockReturnValue(mockUserAuthStore);
+      (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockUserAuthStore);
       const { generateMenuTree } = useMenu();
       const menu = generateMenuTree();
 
@@ -70,7 +68,7 @@ describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
     });
 
     it('hides entire module when user has no permissions for any child', () => {
-      (useAuthStore as vi.Mock).mockReturnValue(mockLimitedAuthStore);
+      (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockLimitedAuthStore);
       const { generateMenuTree } = useMenu();
       const menu = generateMenuTree();
 
@@ -81,7 +79,7 @@ describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
     });
 
     it('includes dashboard for all authenticated users', () => {
-      (useAuthStore as vi.Mock).mockReturnValue(mockLimitedAuthStore);
+      (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockLimitedAuthStore);
       const { generateMenuTree } = useMenu();
       const menu = generateMenuTree();
 
@@ -91,7 +89,7 @@ describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
     });
 
     it('handles nested menu structures correctly', () => {
-      (useAuthStore as vi.Mock).mockReturnValue(mockAdminAuthStore);
+      (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockAdminAuthStore);
       const { generateMenuTree } = useMenu();
       const menu = generateMenuTree();
 
@@ -107,7 +105,7 @@ describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
 
   describe('Menu Configuration', () => {
     it('returns menu config with correct structure', () => {
-      (useAuthStore as vi.Mock).mockReturnValue(mockAdminAuthStore);
+      (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockAdminAuthStore);
       const { getMenuConfig } = useMenu();
       const config = getMenuConfig();
 
@@ -122,7 +120,7 @@ describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
     });
 
     it('menu config includes module grouping', () => {
-      (useAuthStore as vi.Mock).mockReturnValue(mockAdminAuthStore);
+      (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockAdminAuthStore);
       const { getMenuConfig } = useMenu();
       const config = getMenuConfig();
 
@@ -135,7 +133,7 @@ describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
 
   describe('Permission Helper Functions', () => {
     it('filters menu items by permission', () => {
-      (useAuthStore as vi.Mock).mockReturnValue(mockUserAuthStore);
+      (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockUserAuthStore);
       const { filterMenuByPermission } = useMenu();
 
       const testMenu = [
@@ -151,7 +149,7 @@ describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
     });
 
     it('handles empty permissions array', () => {
-      (useAuthStore as vi.Mock).mockReturnValue(mockUserAuthStore);
+      (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockUserAuthStore);
       const { filterMenuByPermission } = useMenu();
 
       const testMenu = [
@@ -170,16 +168,16 @@ describe('Menu Config - AC2: menuPointsToFunctionalPages', () => {
   const mockAdminAuthStore = {
     roles: ['admin'],
     permissions: ['*'],
-    hasPermission: vi.fn((p: string) => true),
-    hasRole: vi.fn((r: string) => true),
-    hasAnyRole: vi.fn((roles: string[]) => true),
-    hasAnyPermission: vi.fn((perms: string[]) => true),
+    hasPermission: vi.fn(() => true),
+    hasRole: vi.fn(() => true),
+    hasAnyRole: vi.fn(() => true),
+    hasAnyPermission: vi.fn(() => true),
   };
 
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
-    (useAuthStore as vi.Mock).mockReturnValue(mockAdminAuthStore);
+    (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockAdminAuthStore);
   });
 
   it('menu items point to correct functional pages', () => {

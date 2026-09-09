@@ -29,7 +29,7 @@ export interface RoleQuery {
   size?: number;
   code?: string;
   name?: string;
-  status?: number;
+  status?: string | number;
 }
 
 export interface RoleCreateRequest {

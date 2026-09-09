@@ -1,24 +1,22 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
-  import type { TableColumnCtx } from 'element-plus';
 
-  interface Column<T = unknown> {
+  export interface Column {
     prop: string;
     label: string;
     width?: string | number;
     minWidth?: string | number;
     fixed?: boolean | 'left' | 'right';
     sortable?: boolean;
-    formatter?: (row: T, column: TableColumnCtx<T>, cellValue: unknown, index: number) => string;
+    formatter?: (...args: any[]) => string;
     align?: 'left' | 'center' | 'right';
     headerAlign?: 'left' | 'center' | 'right';
     showOverflowTooltip?: boolean;
-    render?: (row: T, column: TableColumnCtx<T>, cellValue: unknown, index: number) => unknown;
+    render?: (...args: any[]) => unknown;
   }
 
-  interface Props<T = unknown> {
-    data: T[];
-    columns: Column<T>[];
+  interface Props {
+    data: unknown[];
+    columns: Column[];
     border?: boolean;
     stripe?: boolean;
     highlightCurrentRow?: boolean;
@@ -40,32 +38,30 @@
   });
 
   const emit = defineEmits<{
-    'sort-change': [column: Column, prop: string, order: string];
+    'sort-change': [column: unknown, prop: string, order: string];
     'selection-change': [selection: unknown[]];
-    'row-click': [row: unknown, column: Column, event: MouseEvent];
-    'row-dblclick': [row: unknown, column: Column, event: MouseEvent];
-    'header-click': [column: Column, event: MouseEvent];
+    'row-click': [row: unknown, column: unknown, event: MouseEvent];
+    'row-dblclick': [row: unknown, column: unknown, event: MouseEvent];
+    'header-click': [column: unknown, event: MouseEvent];
   }>();
 
-  const tableRef = ref();
-
-  const handleSortChange = (column: Column, prop: string, order: string) => {
-    emit('sort-change', column, prop, order);
+  const handleSortChange = (data: { column: unknown; prop: string | null; order: 'ascending' | 'descending' | null }) => {
+    emit('sort-change', data.column, data.prop ?? '', data.order ?? '');
   };
 
   const handleSelectionChange = (selection: unknown[]) => {
     emit('selection-change', selection);
   };
 
-  const handleRowClick = (row: unknown, column: Column, event: MouseEvent) => {
+  const handleRowClick = (row: unknown, column: unknown, event: MouseEvent) => {
     emit('row-click', row, column, event);
   };
 
-  const handleRowDblclick = (row: unknown, column: Column, event: MouseEvent) => {
+  const handleRowDblclick = (row: unknown, column: unknown, event: MouseEvent) => {
     emit('row-dblclick', row, column, event);
   };
 
-  const handleHeaderClick = (column: Column, event: MouseEvent) => {
+  const handleHeaderClick = (column: unknown, event: MouseEvent) => {
     emit('header-click', column, event);
   };
 </script>
@@ -74,7 +70,7 @@
   <el-table
     ref="tableRef"
     v-bind="$attrs"
-    :data="data"
+    :data="data as unknown as Record<string, unknown>[]"
     :border="border"
     :stripe="stripe"
     :highlight-current-row="highlightCurrentRow"
@@ -102,7 +98,7 @@
         :align="column.align"
         :header-align="column.headerAlign"
         :show-overflow-tooltip="column.showOverflowTooltip"
-        :formatter="column.formatter"
+        :formatter="column.formatter as ((row: unknown, column: unknown, cellValue: unknown, index: number) => string) | undefined"
       />
       <el-table-column
         v-else

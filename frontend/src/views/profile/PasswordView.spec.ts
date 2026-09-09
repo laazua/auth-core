@@ -13,7 +13,7 @@ import { ElBreadcrumb, ElBreadcrumbItem, ElForm, ElFormItem } from 'element-plus
 
 vi.mock('@/api/user');
 vi.mock('element-plus', async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = await importOriginal<typeof import('element-plus')>();
   return {
     ...actual,
     ElMessage: {
@@ -205,7 +205,7 @@ describe('PasswordView', () => {
       vm.form.newPassword = 'ValidPass123!';
       vm.form.confirmPassword = 'ValidPass123!';
 
-      mockUserApi.changePassword.mockResolvedValue({ code: 0 });
+      mockUserApi.changePassword.mockResolvedValue({ code: 0, message: 'success', timestamp: Date.now(), data: undefined });
 
       await vm.handleSubmit();
 
@@ -233,6 +233,8 @@ describe('PasswordView', () => {
       mockUserApi.changePassword.mockResolvedValue({
         code: 1005,
         message: '旧密码错误',
+        timestamp: Date.now(),
+        data: undefined,
       });
 
       await vm.handleSubmit();
@@ -274,7 +276,7 @@ describe('PasswordView', () => {
       vm.form.newPassword = 'NewPass123!';
       vm.form.confirmPassword = 'NewPass123!';
 
-      mockUserApi.changePassword.mockResolvedValue({ code: 0 });
+      mockUserApi.changePassword.mockResolvedValue({ code: 0, message: 'success', timestamp: Date.now(), data: undefined });
 
       const logoutSpy = vi.spyOn(authStore, 'logout');
 

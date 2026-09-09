@@ -5,6 +5,7 @@ import com.authcore.dto.module.ModuleCreateDTO;
 import com.authcore.dto.module.ModuleQueryDTO;
 import com.authcore.dto.module.ModuleUpdateDTO;
 import com.authcore.dto.module.ModuleVO;
+import com.authcore.dto.permission.PermissionSimpleVO;
 import com.authcore.dto.permission.PermissionVO;
 import com.authcore.entity.SysModule;
 import com.authcore.entity.SysPermission;
@@ -155,6 +156,18 @@ public class ModuleServiceImpl implements ModuleService {
         }
 
         moduleMapper.deleteById(id);
+    }
+
+    @Override
+    public List<PermissionSimpleVO> listAllPermissions() {
+        List<SysModule> modules = moduleMapper.selectList(
+                new LambdaQueryWrapper<SysModule>()
+                        .select(SysModule::getId, SysModule::getCode, SysModule::getName)
+                        .orderByAsc(SysModule::getId)
+        );
+        return modules.stream()
+                .map(m -> new PermissionSimpleVO(m.getId(), m.getCode(), m.getName()))
+                .collect(Collectors.toList());
     }
 
     private ModuleVO toVO(SysModule module) {

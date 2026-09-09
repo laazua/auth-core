@@ -26,28 +26,47 @@ router.beforeEach(async (to, _from, next) => {
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
   const isPublic = to.matched.some((record) => record.meta.public);
 
+  console.log(
+    '[Guard] to:',
+    to.name,
+    to.path,
+    'requiresAuth:',
+    requiresAuth,
+    'isPublic:',
+    isPublic,
+    'isAuthenticated:',
+    authStore.isAuthenticated,
+    'dynamicRoutesLoaded:',
+    dynamicRoutesLoaded,
+    'roles:',
+    authStore.roles
+  );
+
   // 1. 未认证访问受保护路由 -> 重定向登录
   if (requiresAuth && !authStore.isAuthenticated) {
+    console.log('[Guard] Redirect to Login');
     next({ name: 'Login', query: { redirect: to.fullPath } });
     return;
   }
 
   // 2. 已认证访问登录页 -> 重定向 dashboard
   if (isPublic && authStore.isAuthenticated && to.name === 'Login') {
+    console.log('[Guard] Authenticated on Login page, redirect to Dashboard');
     next({ name: 'Dashboard' });
     return;
   }
 
   // 3. 首次登录后跳转 dashboard：直接放行，不加载动态路由
-  //    判断依据：目标是 Dashboard 且动态路由未加载
+  //    动态路由将在后续导航中由 case 4 加载
   if (to.name === 'Dashboard' && authStore.isAuthenticated && !dynamicRoutesLoaded) {
-    dynamicRoutesLoaded = true; // 标记已加载，避免重复
+    console.log('[Guard] First login redirect to Dashboard, allowing through');
     next();
     return;
   }
 
   // 4. 其他已认证场景且动态路由未加载 -> 加载动态路由
   if (authStore.isAuthenticated && !dynamicRoutesLoaded) {
+    console.log('[Guard] Loading dynamic routes for roles:', authStore.roles);
     try {
       const roles = authStore.roles;
       const accessibleRoutes = generateRoutes(roles);
@@ -61,6 +80,7 @@ router.beforeEach(async (to, _from, next) => {
     }
   }
 
+  console.log('[Guard] Allowing through');
   next();
 });
 

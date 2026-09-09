@@ -27,7 +27,7 @@ const emit = defineEmits<Emits>();
 
 const formRef = ref<InstanceType<typeof ElForm>>();
 
-const form = reactive<UserCreateRequest>({
+const form = reactive({
   username: '',
   password: '',
   confirmPassword: '',
@@ -35,7 +35,7 @@ const form = reactive<UserCreateRequest>({
   email: '',
   phone: '',
   status: 1,
-  roleIds: [],
+  roleIds: [] as number[],
 });
 
 const rules = {
@@ -68,7 +68,7 @@ const rules = {
   ],
 };
 
-function validateConfirmPassword(rule: any, value: string, callback: (error?: Error) => void) {
+function validateConfirmPassword(_rule: any, value: string, callback: (error?: Error) => void) {
   if (value !== form.password) {
     callback(new Error('两次输入的密码不一致'));
   } else {
@@ -178,7 +178,7 @@ defineOptions({
         <BaseInput
           v-model="form.username"
           placeholder="请输入用户名"
-          maxlength="20"
+          :maxlength="20"
         />
       </el-form-item>
 
@@ -203,7 +203,7 @@ defineOptions({
           type="password"
           placeholder="请输入密码"
           show-password
-          maxlength="30"
+          :maxlength="30"
           :disabled="isEditMode"
         />
         <template #error>
@@ -221,7 +221,7 @@ defineOptions({
           type="password"
           placeholder="请再次输入密码"
           show-password
-          maxlength="30"
+          :maxlength="30"
         />
       </el-form-item>
 
@@ -235,7 +235,7 @@ defineOptions({
           type="password"
           placeholder="请再次输入密码"
           show-password
-          maxlength="30"
+          :maxlength="30"
           :disabled="isEditMode"
         />
         <template #error>
@@ -247,7 +247,7 @@ defineOptions({
         <BaseInput
           v-model="form.nickname"
           placeholder="请输入昵称"
-          maxlength="50"
+          :maxlength="50"
         />
       </el-form-item>
 
@@ -256,7 +256,7 @@ defineOptions({
           v-model="form.email"
           type="email"
           placeholder="请输入邮箱"
-          maxlength="100"
+          :maxlength="100"
         />
       </el-form-item>
 
@@ -265,7 +265,7 @@ defineOptions({
           v-model="form.phone"
           type="tel"
           placeholder="请输入手机号"
-          maxlength="11"
+          :maxlength="11"
         />
       </el-form-item>
 

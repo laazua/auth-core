@@ -41,7 +41,7 @@ const permissionQueryForSelect = reactive<{ moduleId: string }>({
 
 const moduleOptions = ref<{ label: string; value: number }[]>([]);
 
-const permissionColumns = [
+const permissionColumns: any[] = [
   { prop: 'name', label: '权限名', minWidth: 150 },
   { prop: 'code', label: '编码', minWidth: 180 },
   {
@@ -113,7 +113,7 @@ const statusOptions = [
   { label: '停用', value: 0 },
 ];
 
-const moduleColumns = [
+const moduleColumns: any[] = [
   { prop: 'name', label: '模块名', minWidth: 150 },
   { prop: 'code', label: '编码', minWidth: 150 },
   { prop: 'baseUrl', label: '基础URL', minWidth: 200, showOverflowTooltip: true },
@@ -467,12 +467,12 @@ onMounted(async () => {
           <template #header>
             <div class="permission-toolbar">
               <div class="permission-toolbar__search">
-                <BaseInput
-                  v-model="permissionQuery.code"
-                  placeholder="权限名/编码"
-                  clearable
-                  @change="handlePermissionSearch"
-                />
+<BaseInput
+                   v-model="permissionQuery.code as string"
+                   placeholder="权限名/编码"
+                   clearable
+                   @change="handlePermissionSearch"
+                 />
               </div>
               <div class="permission-toolbar__filter">
                 <BaseSelect
@@ -546,21 +546,21 @@ onMounted(async () => {
           <template #header>
             <div class="module-toolbar">
               <div class="module-toolbar__search">
-                <BaseInput
-                  v-model="moduleQuery.code"
-                  placeholder="模块名/编码"
-                  clearable
-                  @change="handleModuleSearch"
-                />
+<BaseInput
+                   v-model="moduleQuery.code as string"
+                   placeholder="模块名/编码"
+                   clearable
+                   @change="handleModuleSearch"
+                 />
               </div>
               <div class="module-toolbar__filter">
-                <BaseSelect
-                  v-model="moduleQuery.status"
-                  :options="statusOptions"
-                  placeholder="全部状态"
-                  style="width: 140px"
-                  @change="handleModuleSearch"
-                />
+<BaseSelect
+                   v-model="moduleQuery.status as string | number | null"
+                   :options="statusOptions"
+                   placeholder="全部状态"
+                   style="width: 140px"
+                   @change="handleModuleSearch"
+                 />
               </div>
               <div class="module-toolbar__actions">
                 <BaseButton
