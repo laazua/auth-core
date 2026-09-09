@@ -2,7 +2,7 @@
 
 本表是全系统的唯一功能点台账：每个功能点拥有全局唯一 ID（如 `infra/001`），被三个 prompt 与 context 文件引用。状态图例：⬜ 未开始 / 🔄 进行中 / ✅ 完成 / ❌ 阻塞 / ⚠️ 有缺口
 
-> 最后更新：2026-09-04（model/007 Service 接口化重构评审通过，sprint-050；model/008 抽取 RoleService 接口评审通过，sprint-051；model/009 抽取 PermissionService 接口评审通过，sprint-052；model/010 抽取 ModuleService 接口评审通过，sprint-053；model/011 抽取 AuthService 接口评审通过，sprint-054；model/012 更新所有 Controller 层依赖接口验收确认，sprint-055；web/023 移除整个标签页栏规划，sprint-047；web/022 废弃；web/024 主内容区图标尺寸实现完成，sprint-048；web/025 主内容区图标间距优化实现完成，sprint-049）
+> 最后更新：2026-09-09（web/029 修复侧边栏菜单导航404问题规划中）
 
 ## 阶段总览
 
@@ -15,7 +15,7 @@
 | roles | 2 | 0 | 0 | 2 | — |
 | perms | 1 | 0 | 0 | 1 | — |
 | modules | 1 | 0 | 0 | 1 | — |
-| web | 25 | 22 | 2 | 2 | web/017/023 进行中；web/022 废弃；web/011 待规划；web/026 ✅ |
+| web | 25 | 23 | 3 | 1 | web/017/023 进行中；web/022 废弃；web/011 待规划；web/026/027 ✅；web/029 规划中 |
 | integration | 2 | 0 | 0 | 2 | 收尾验证，依赖全部前置就绪 |
 
 ## infra — 基础设施
@@ -112,6 +112,8 @@
 | web/024 | 修复主内容区图标尺寸异常（ElButton icon prop 等 EP 图标缺少显式尺寸被 flex 拉伸） | web/003, web/007, web/008, web/016 | ✅ | sprint-048 评审中（2026-09-03 实现完成，3 条验收标准，ProfileView.vue BaseButton+slot 16×16px + header-icon 20×20px，Breadcrumb.vue breadcrumb__icon 13×13px） |
 | web/025 | 优化主内容区图标与文字间距（ProfileView header、action buttons、Breadcrumb 等） | web/003, web/007, web/008, web/016, web/024 | ✅ | sprint-049 评审通过（2026-09-03，4 条验收标准，平均分 9.8/10，header gap 24px、action gap 16px、breadcrumb margin-right 12px） |
 | web/026 | 修复登录成功后不跳转首页（API 基础路径缺少 /v1 导致 /auth/me 404） | web/002, web/011a | ✅ | sprint-057 评审通过（2026-09-07，4 条验收标准，门禁+冒烟通过） |
+| web/027 | 修复远程开发环境 CORS 与代理配置导致的 403 错误 | web/011a, web/026 | ✅ | sprint-059 评审通过（2026-09-08，3 条验收标准，门禁+冒烟通过） |
+| web/029 | 修复侧边栏菜单导航404问题（动态路由未加载与菜单路径错误） | web/010, web/026, web/027 | 🔄 | sprint-060 规划中（2026-09-09 kickoff，4 条验收标准） |
 
 ## integration — 集成与验收
 

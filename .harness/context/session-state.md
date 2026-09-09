@@ -2,12 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟢 sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023），sprint-057 评审通过（web/026 ✅），sprint-059 实现完成（web/027 ✅）
+- 状态: 🟢 sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023），sprint-057 评审通过（web/026 ✅），sprint-059 实现完成（web/027 ✅），sprint-060 待评审（web/029 ✅）
 - 当前模块: web
-- 当前功能点: web/011（PLANNED），web/011a 🔄（规划中），web/017 🔄（规划中），web/023 🔄（规划中），web/026 ✅（已完成），web/027 ✅（已完成）
+- 当前功能点: web/011（PLANNED），web/011a 🔄（规划中），web/017 🔄（规划中），web/023 🔄（规划中），web/026 ✅（已完成），web/027 ✅（已完成），web/029 ✅（已完成）
 
 ## 下一步动作
-  Evaluator：评审 web/027（修复远程开发环境 CORS 与代理配置导致的 403 错误），见 .harness/context/task.md
+  Evaluator：评审 web/029（修复侧边栏菜单导航404问题，Router Guard 动态路由加载修复），见 .harness/context/task.md
 
 ## 挂起
 - 2026-09-03: Planner(sprint-049) — 新增 web/025（主内容区图标间距优化），前置依赖 web/003/007/008/016/024 均 ✅，不阻塞 web/017/023 评审；web/011 待规划优先级不变。
