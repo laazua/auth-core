@@ -318,6 +318,15 @@ smoke_case "web-029 Router Guard 动态路由加载修复验证" bash -c "
   # 验证构建产物正常产出
   npx vite build >/dev/null 2>&1 || exit 1
 "
+
+# web/031：修复用户管理新增/编辑抽屉确认按钮不可点击问题（loading 绑定修正）验证
+smoke_case "web-031 用户表单抽屉确认按钮 loading 修复验证" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  # 验证 UserFormDrawer 单测通过（4 用例：AC1 新增/编辑模式按钮可点击，AC2 新增/编辑模式提交期间 loading）
+  npm run test -- --run src/views/users/UserFormDrawer.spec.ts 2>&1 | grep -q '4 passed' || exit 1
+  # 验证构建产物正常产出
+  npx vite build >/dev/null 2>&1 || exit 1
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

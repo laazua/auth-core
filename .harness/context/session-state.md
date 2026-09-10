@@ -2,12 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟢 sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023），sprint-057 评审通过（web/026 ✅），sprint-059 评审通过（web/027 ✅），sprint-060 待评审（web/029 ✅），sprint-061 待评审（web/030 ✅）
+- 状态: 🟢 sprint-062 实现完成（web/031 ✅），sprint-063 实现完成（web/032 ✅），sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023），sprint-057 评审通过（web/026 ✅），sprint-059 评审通过（web/027 ✅），sprint-060 待评审（web/029 ✅），sprint-061 待评审（web/030 ✅）
 - 当前模块: web
-- 当前功能点: web/011（PLANNED），web/011a 🔄（规划中），web/017 🔄（规划中），web/023 🔄（规划中），web/026 ✅（已完成），web/027 ✅（已完成），web/029 ✅（已完成），web/030 ✅（待评审）
+- 当前功能点: web/011（PLANNED），web/011a 🔄（规划中），web/017 🔄（规划中），web/023 🔄（规划中），web/026 ✅（已完成），web/027 ✅（已完成），web/029 ✅（已完成），web/030 ✅（待评审），web/031 ✅（待评审），web/032 ✅（已完成）
 
 ## 下一步动作
-  Evaluator：评审 web/030（sprint-061），验证后端新增端点 /modules/permissions/all（返回模块列表）与 /roles/permissions/all（返回权限列表）功能正确、测试先行证据完整、门禁与冒烟通过
+  Evaluator：评审 web/032（sprint-063），验证 vite.config.ts historyApiFallback、nginx.conf try_files、前端构建通过、核心路由测试全绿、冒烟通过
 
 ## 挂起
 - 2026-09-03: Planner(sprint-049) — 新增 web/025（主内容区图标间距优化），前置依赖 web/003/007/008/016/024 均 ✅，不阻塞 web/017/023 评审；web/011 待规划优先级不变。
@@ -23,6 +23,8 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-09-10: Generator — done sprint-063（web/032 修复 SPA 路由刷新 404 问题，vite.config.ts historyApiFallback + nginx.conf try_files，前端构建通过，核心路由测试 45/45 通过，冒烟通过）
+- 2026-09-10: Planner — kickoff sprint-063（web/032 修复 SPA 路由刷新 404 问题，3 条验收标准）
 - 2026-09-09: Planner — kickoff sprint-XXX（web/028 修复登录后跳转 Dashboard 失败，1 条验收标准）
 - 2026-09-04: Planner — kickoff sprint-056（web/011 修复前端构建错误与失败测试，web/011a 修复 TS 编译错误为首子功能点，前置依赖 web/010 ✅）
 - 2026-09-04: Planner — kickoff sprint-055（model/012 更新所有 Controller 层依赖接口，验收确认，5 条验收标准全满足，model 模块全 12 点完成）

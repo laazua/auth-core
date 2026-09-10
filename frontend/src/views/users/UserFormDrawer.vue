@@ -26,6 +26,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>();
 
 const formRef = ref<InstanceType<typeof ElForm>>();
+const submitting = ref(false);
 
 const form = reactive({
   username: '',
@@ -107,6 +108,7 @@ const fillForm = (data: UserVO) => {
 const handleSubmit = () => {
   formRef.value?.validate((valid) => {
     if (valid) {
+      submitting.value = true;
       if (isEditMode.value) {
         const { password, confirmPassword, username, ...updateData } = form;
         emit('submit', updateData as UserUpdateRequest);
@@ -127,6 +129,7 @@ watch(
   (newVal) => {
     if (newVal) {
       resetForm();
+      submitting.value = false;
       if (isEditMode.value && props.initialData) {
         fillForm(props.initialData);
       }
@@ -135,6 +138,7 @@ watch(
       });
     } else {
       resetForm();
+      submitting.value = false;
     }
   },
   { immediate: true }
@@ -281,7 +285,7 @@ defineOptions({
     <template #footer>
       <div class="user-form__footer">
         <BaseButton variant="default" @click="handleClose">取消</BaseButton>
-        <BaseButton variant="primary" @click="handleSubmit" :loading="props.visible">确定</BaseButton>
+        <BaseButton variant="primary" @click="handleSubmit" :loading="submitting">确定</BaseButton>
       </div>
     </template>
   </el-drawer>

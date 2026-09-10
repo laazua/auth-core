@@ -19,29 +19,6 @@
 
 ---
 
-## 🔐 环境变量 (必需)
-
-创建 `.env` 文件 (两种部署方式通用):
-
-```bash
-# ========== 数据库 (必需) ==========
-MYSQL_URL=jdbc:mysql://<host>:3306/authcore?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
-MYSQL_USERNAME=root
-MYSQL_PASSWORD=your_strong_password
-
-# ========== JWT (必需) ==========
-JWT_SECRET=your-random-secret-min-32-chars
-JWT_EXPIRE_HOURS=2
-
-# ========== 可选开关 ==========
-FLYWAY_ENABLED=true           # 生产必须开启
-DB_HEALTH_ENABLED=true        # 生产建议开启
-```
-
-> ⚠️ **安全警告**: `JWT_SECRET` ≥32字符随机串，`MYSQL_PASSWORD` 强密码，**严禁写入代码/配置文件/镜像**，仅通过环境变量/密钥管理系统注入
-
----
-
 ## 🖥️ 方式一：主机直接部署 (裸机/系统服务)
 
 ### 1️⃣ 准备环境
