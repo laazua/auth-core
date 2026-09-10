@@ -841,6 +841,155 @@ class UserControllerTest {
     }
 
     /**
+     * AC6: 启用用户独立端点。
+     * When POST /api/v1/users/{id}/enable
+     * Then status=200、用户状态变为启用
+     */
+    @Test
+    @DisplayName("启用用户独立端点")
+    void enableUserReturnsOk() throws Exception {
+        String token = getAdminToken();
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+        // 先创建一个测试用户
+        String username = unique("enable_user");
+        String createBody = """
+                {
+                    "username": "%s",
+                    "password": "Pass1234",
+                    "nickname": "启用测试",
+                    "email": "enable@test.com",
+                    "phone": "13900003000"
+                }
+                """.formatted(username);
+
+        String createResponse = mockMvc.perform(post("/api/v1/users")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var createRoot = mapper.readTree(createResponse);
+        Long userId = createRoot.path("data").path("id").asLong();
+
+        // 先停用用户
+        String disableBody = """
+                {
+                    "status": 0
+                }
+                """;
+        mockMvc.perform(patch("/api/v1/users/" + userId + "/status")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(disableBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0));
+
+        // 通过独立端点启用用户：POST /api/v1/users/{id}/enable
+        mockMvc.perform(post("/api/v1/users/" + userId + "/enable")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.message").value("启用成功"));
+
+        // 验证启用后可登录
+        String loginBody = """
+                {
+                    "username": "%s",
+                    "password": "Pass1234"
+                }
+                """.formatted(username);
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0));
+
+        // 清理
+        mockMvc.perform(delete("/api/v1/users/" + userId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * AC7: 停用用户独立端点。
+     * When POST /api/v1/users/{id}/disable
+     * Then status=200、用户状态变为停用
+     */
+    @Test
+    @DisplayName("停用用户独立端点")
+    void disableUserReturnsOk() throws Exception {
+        String token = getAdminToken();
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+        // 先创建一个测试用户
+        String username = unique("disable_user");
+        String createBody = """
+                {
+                    "username": "%s",
+                    "password": "Pass1234",
+                    "nickname": "停用测试",
+                    "email": "disable@test.com",
+                    "phone": "13900003001"
+                }
+                """.formatted(username);
+
+        String createResponse = mockMvc.perform(post("/api/v1/users")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var createRoot = mapper.readTree(createResponse);
+        Long userId = createRoot.path("data").path("id").asLong();
+
+        // 通过独立端点停用用户：POST /api/v1/users/{id}/disable
+        mockMvc.perform(post("/api/v1/users/" + userId + "/disable")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.message").value("停用成功"));
+
+        // 验证停用后不可登录
+        String loginBody = """
+                {
+                    "username": "%s",
+                    "password": "Pass1234"
+                }
+                """.formatted(username);
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginBody))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(1401));
+
+        // 清理：先启用再删除（被停用用户可能无法删除，取决于业务逻辑）
+        String enableBody = """
+                {
+                    "status": 1
+                }
+                """;
+        mockMvc.perform(patch("/api/v1/users/" + userId + "/status")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(enableBody))
+                .andExpect(status().isOk());
+        mockMvc.perform(delete("/api/v1/users/" + userId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
+    /**
      * AC5: 非管理员重置返回 403。
      * Given 普通用户 token
      * When POST /api/v1/users/{id}/password/reset {newPassword:"NewPass"}

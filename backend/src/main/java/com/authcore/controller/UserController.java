@@ -117,6 +117,32 @@ public class UserController {
     }
 
     /**
+     * 启用用户。
+     *
+     * @param id 用户 ID
+     * @return 空载荷成功响应
+     */
+    @Operation(summary = "启用用户")
+    @PostMapping("/{id}/enable")
+    public Result<Void> enableUser(@PathVariable Long id) {
+        userService.toggleStatus(id, 1);
+        return Result.okMessage("启用成功");
+    }
+
+    /**
+     * 停用用户。
+     *
+     * @param id 用户 ID
+     * @return 空载荷成功响应
+     */
+    @Operation(summary = "停用用户")
+    @PostMapping("/{id}/disable")
+    public Result<Void> disableUser(@PathVariable Long id) {
+        userService.toggleStatus(id, 0);
+        return Result.okMessage("停用成功");
+    }
+
+    /**
      * 删除用户（引用保护：存在 sys_user_role 则拒绝，code=1101）。
      *
      * @param id 用户 ID
