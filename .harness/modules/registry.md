@@ -2,7 +2,7 @@
 
 本表是全系统的唯一功能点台账：每个功能点拥有全局唯一 ID（如 `infra/001`），被三个 prompt 与 context 文件引用。状态图例：⬜ 未开始 / 🔄 进行中 / ✅ 完成 / ❌ 阻塞 / ⚠️ 有缺口
 
-> 最后更新：2026-09-28（sprint-066 规划，新增 web/035 登录后首导航 404 修复）
+> 最后更新：2026-09-28（sprint-066 实现完成，web/035 登录后首导航 404 修复待评审）
 
 ## 阶段总览
 
@@ -119,7 +119,7 @@
 | web/032 | 修复 SPA 路由刷新页面 404 问题（History 模式回退配置） | web/001 | ✅ | sprint-063 实现完成（2026-09-10，3 条验收标准，vite.config.ts historyApiFallback + nginx.conf try_files，前端构建通过，核心路由测试全绿） |
 | web/033 | 登录页新增显示密码功能（密码框可见性切换按钮，可切换明文/掩码显示） | web/002, web/013 | ✅ | sprint-064 评审通过（2026-09-28，平均分 8.9/10，4 条验收标准全满足，测试先行 3/3，冒烟 web-033 通过；预存红项基线对照） |
 | web/034 | 系统管理菜单用户/角色路由迁移至 /system/users 与 /system/roles（修复访问 404，统一 URL 体系） | web/003, web/004, web/005, web/010, web/029 | ✅ | sprint-065 评审通过（2026-09-28，平均分 8.8/10，4 条 AC 全满足，测试先行 9 RED→28/28 GREEN，冒烟 web-034 通过；基线对照豁免否决项 6） |
-| web/035 | 修复登录后首次导航受保护路由落 404（动态路由首载 next({ ...to }) 携带 NotFound name 陷阱） | web/001, web/029, web/034 | 🔄 | sprint-066 规划完成（2026-09-28，4 条 AC；Planner 只读取证已复现根因：to.name='NotFound' 时 vue-router 按 name 优先解析致重导航回 catch-all，修复写法 fullPath 导航已验证） |
+| web/035 | 修复登录后首次导航受保护路由落 404（动态路由首载 next({ ...to }) 携带 NotFound name 陷阱） | web/001, web/029, web/034 | 🔄 | sprint-066 实现完成（2026-09-28，4 条 AC 全满足，测试先行 2 failed RED→14/14 GREEN，冒烟 web-035 通过；守卫 case 4 改传 path/query/hash，计数同步 11→14；待评审） |
 
 ## integration — 集成与验收
 

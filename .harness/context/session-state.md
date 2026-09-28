@@ -2,12 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟡 sprint-066 规划完成（web/035 PLANNED，待 Generator 实现）；sprint-065 评审通过（web/034 ✅）；sprint-064 评审通过（web/033 ✅），sprint-063 实现完成待评审（web/032），sprint-062 实现完成待评审（web/031），sprint-061 待评审（web/030），sprint-060 待评审（web/029），sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023），sprint-057 评审通过（web/026 ✅），sprint-059 评审通过（web/027 ✅）
+- 状态: 🟠 sprint-066 实现完成待评审（web/035 AWAITING_REVIEW）；sprint-065 评审通过（web/034 ✅）；sprint-064 评审通过（web/033 ✅），sprint-063 实现完成待评审（web/032），sprint-062 实现完成待评审（web/031），sprint-061 待评审（web/030），sprint-060 待评审（web/029），sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023），sprint-057 评审通过（web/026 ✅），sprint-059 评审通过（web/027 ✅）
 - 当前模块: web
-- 当前功能点: web/035 🔄（sprint-066 规划完成，待实现），web/011（PLANNED），web/011a 🔄（规划中），web/017 🔄（规划中），web/023 🔄（规划中）
+- 当前功能点: web/035 🔄（sprint-066 实现完成，AWAITING_REVIEW），web/011（PLANNED），web/011a 🔄（规划中），web/017 🔄（规划中），web/023 🔄（规划中）
 
 ## 下一步动作
-  Generator：读 `.harness/generator.md` 并严格执行，实现 sprint-066（web/035 登录后首次导航受保护路由落 404 修复）：TDD 测试先行，AC1/AC2 用真实 `@/router` 单例跑完整守卫时序，先写 `frontend/src/__tests__/router.spec.ts` web-035 用例确认 RED，再改 `frontend/src/router/index.ts` case 4（`next({ path: to.path, query: to.query, hash: to.hash, replace: true })` 替换 `next({ ...to, replace: true })`，fullPath 内嵌 query 会被 resolve 丢弃故不可用），追加冒烟 web-035，门禁/冒烟沿基线对照裁决（见挂起区）。
+  Evaluator：读 `.harness/evaluator.md` 并严格执行，评审 sprint-066（web/035 登录后首次导航受保护路由落 404 修复）：复跑 `bash scripts/smoke.sh` 与前端全量测试对照基线（test 基线 20 failed、冒烟基线 10 失败、后端 6 失败、lint 全量卡死预存），按 review-criteria 七步与评分模板出评审报告；重点核验 AC1/AC2 用真实 `@/router` 单例的 RED 证据（2 failed 实时留痕，提交 328612e）与修复行 index.ts:77 的 name 陷阱消除。
 
 ## 挂起
 - 2026-09-28: Generator(sprint-065) — 冒烟口径同步两处登记（供 Evaluator 对照）：① `web-010` 断言随本功能点演进为新口径（原断言固化占位 `path:"user"`/`path:"role"` 与顶级 `path:"/users"`/`path:"/roles"`，与 web/034 迁移目标直接冲突，首跑即失败；用例未删除，断言更新为 users/roles 子路由 + `/system/users`、`/system/roles` 存在 + 旧路径精确匹配移除，更新后 ✅）；② `web-029` grep 计数同步（router.spec 9→11、system-menu-path-fix 6→7，因本次新增 3 条用例过期，用例未删除）。门禁基线对照实测：`mvn -q verify` 130 用例 4F+2E 与基线逐条一致；前端 test 20 failed 与基线逐条一致（271=268+3）；冒烟 47 用例 10 失败与基线逐条一致零新增；`npm run lint` 全量卡死第 5 次复现（300s），分片 lint 本次 5 文件仅剩 3 处预存 prettier（useMenu.spec:26/207、routes:124，`git show HEAD:` 复测确认）零新增。

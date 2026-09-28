@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/035 |
 | 功能点名称 | 修复登录后首次导航受保护路由落 404 问题（动态路由首载 next 展开 to 携带 NotFound name 陷阱） |
-| 状态 | PLANNED |
+| 状态 | AWAITING_REVIEW |
 | 创建时间 | 2026-09-28 |
 
 ## 前置依赖
@@ -41,6 +41,11 @@ Planner 只读取证（一次性脚本 `/tmp/opencode/repro-guard.mjs`，复刻 
 
 ## 验收标准（TDD 驱动）
 
+- [x] AC1 — 登录后首次导航受保护路由一次即达不落 404
+- [x] AC2 — 首载重导航保留目标 query 参数
+- [x] AC3 — web/029 守卫语义不回归且二次导航正常
+- [x] AC4 — 全量测试零新增失败且冒烟 web-035 通过
+
 ### AC1 — 登录后首次导航受保护路由一次即达不落 404
 > 测试内 mock `@/stores/auth` 为已认证，`import router from '@/router'`（真实守卫单例）：先 `await router.push('/dashboard')`（case 3 放行、动态路由未加载），再 `await router.push('/system/users')`，断言 `router.currentRoute.value.name === 'UsersIndex'` 且 `matched` 中存在 `path==='/system/users'`、`name !== 'NotFound'`；随后 `await router.push('/system/permissions')` 同样命中（name==='Permissions'、非 NotFound）。
 
@@ -67,11 +72,11 @@ Planner 只读取证（一次性脚本 `/tmp/opencode/repro-guard.mjs`，复刻 
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | router.spec.ts#web-035 动态路由首载导航 > 登录后首次导航 /system/users 与 /system/permissions 一次即达不落 404 | AC1 | ⬜ 待 RED→GREEN |
-| 2 | router.spec.ts#web-035 动态路由首载导航 > 首载导航保留目标 query 参数 | AC2 | ⬜ 待 RED→GREEN |
-| 3 | router.spec.ts#web-035 动态路由首载导航 > 动态路由加载完成后二次导航直达且 web/029 既有用例保持通过 | AC3 | ⬜ 待 RED→GREEN |
-| 4 | 全量前端测试基线对照（实现前 20 failed / 271 passed，零新增失败） | AC4 | ⬜ 待基线复测 |
-| 5 | 冒烟 web-035 动态路由首载导航验证 | AC1~AC4 | ⬜ 待追加 |
+| 1 | router.spec.ts#web-035 动态路由首载导航 > 登录后首次导航 /system/users 与 /system/permissions 一次即达不落 404 | AC1 | ✅ RED（2 failed 实时留痕）→ GREEN |
+| 2 | router.spec.ts#web-035 动态路由首载导航 > 首载导航保留目标 query 参数 | AC2 | ✅ RED（实时留痕）→ GREEN |
+| 3 | router.spec.ts#web-035 动态路由首载导航 > 动态路由加载完成后二次导航直达且 web/029 既有用例保持通过 | AC3 | ✅（回归类，修复前后均绿，实现后 14/14） |
+| 4 | 全量前端测试基线对照（实现前 20 failed / 271 passed，零新增失败） | AC4 | ✅ 实测 20 failed / 274 passed（294 = 基线 291 + 新增 3，failed 清单零新增） |
+| 5 | 冒烟 web-035 动态路由首载导航验证 | AC1~AC4 | ✅ 单跑通过，全量 48 用例 10 失败与基线逐条一致零新增 |
 
 ## RED 证据
 
@@ -90,7 +95,11 @@ Planner 只读取证（一次性脚本 `/tmp/opencode/repro-guard.mjs`，复刻 
 
 ## 门禁与冒烟记录
 
-> Generator 填写：前端门禁、后端门禁（零后端改动，基线对照口径）、`bash scripts/smoke.sh`（新增 web-035）。
+- 后端 `mvn -q verify`：130 用例 4 Failures + 2 Errors，与基线逐条一致（DataSourceConfigBinding ×2、RoleControllerTest 409、SeedData 22≠2、TestLayers/TestUtils Docker 缺失），零后端改动、零新增 ✅（基线对照裁决口径）
+- 前端全量测试：`Test Files 6 failed | 27 passed (33)`，`Tests 20 failed | 274 passed (294)`——failed 20 与 2026-09-28 基线逐条一致，新增 3 用例全绿零新增失败 ✅
+- 前端 `npm run build`：✓ built in 17.33s ✅
+- `npm run lint`：全量卡死为预存（沿基线对照裁决不重跑）；分片 lint `npx eslint src/router/index.ts src/__tests__/router.spec.ts` 零告警（exit 0）✅
+- `bash scripts/smoke.sh`：48 用例（47+新增 web-035），10 失败与基线逐条一致（infra-001、model-008/010、roles-001/002、web-013、web-020/021/022、web-026）零新增；**web-035 单跑 ✅ 通过**；计数同步两处（web-029/web-034 用例 router.spec `11 passed`→`14 passed`，用例未删除）
 
 ## 拆分说明
 
@@ -98,28 +107,32 @@ Planner 只读取证（一次性脚本 `/tmp/opencode/repro-guard.mjs`，复刻 
 
 ## 交付物（预估 3 文件）
 
-1. `frontend/src/router/index.ts` — case 4 重导航由 `next({ ...to, replace: true })` 改为按目标 path 解析（如 `next({ path: to.fullPath, replace: true })`），剥离 NotFound name 陷阱
+1. `frontend/src/router/index.ts` — case 4 重导航剥离 NotFound name，改为按 path/query/hash 解析
 2. `frontend/src/__tests__/router.spec.ts` — 新增 web-035 describe（AC1/AC2/AC3 用例，先于实现；AC1/AC2 用真实 `@/router` 单例跑完整时序）
 3. `scripts/smoke.sh` — 追加 `web-035` 冒烟用例（不删除、不改动既有用例）
 
 ## 变更清单
 
-### 修改
+### 新增
+- （无）
 
-- `frontend/src/router/index.ts`：
-  - case 4（约 :75）`next({ ...to, replace: true })` → `next({ path: to.path, query: to.query, hash: to.hash, replace: true })`：`to` 在目标未注册时 `name==='NotFound'`，展开后 vue-router 按 name 优先解析致重导航回 catch-all；显式传 path/query/hash 保留参数（fullPath 内嵌 query 会被 resolve 丢弃，已取证证伪）
-- `frontend/src/__tests__/router.spec.ts`：
-  - 新增 `web-035 动态路由首载导航` describe（AC1/AC2/AC3），AC1/AC2 直接 `import router from '@/router'` 复用真实守卫（非复刻），需注意单例动态路由状态在一个用例内完成完整时序
-- `scripts/smoke.sh`：
-  - 追加 `web-035` 用例：过滤跑 web-035 3 条单测 + `npm run build`（形态对齐 web-034）
+### 修改
+- `frontend/src/router/index.ts`:75-79 — case 4 重导航 `next({ ...to, replace: true })` → `next({ path: to.path, query: to.query, hash: to.hash, replace: true })`：`to` 在目标未注册时 `name==='NotFound'`，展开后 vue-router 按 name 优先解析致重导航回 catch-all；显式传 path/query/hash 保留参数（附 why 注释）
+- `frontend/src/__tests__/router.spec.ts`:341-391 — 新增 `web-035 动态路由首载导航` describe：AC1/AC2/AC3 三条用例，`vi.resetModules()` + 动态 `import('@/router')` 每例取 fresh 单例跑真实守卫时序（AC1 首击即达 users/permissions；AC2 query 保留 fullPath；AC3 二次导航 roles 直达）
+- `scripts/smoke.sh`:316-321 — web-029 用例 router.spec 计数注释与断言 `11 passed`→`14 passed`（用例未删，计数随新增用例同步）
+- `scripts/smoke.sh`:354-355 — web-034 用例同上计数同步 `11 passed`→`14 passed`
+- `scripts/smoke.sh`:365-376 — 追加 `web-035 动态路由首载导航验证` 冒烟用例（`-t 'web-035'` 3 passed + 全量 14 passed + 生产构建）
+
+### 删除
+- （无）
 
 ## 规范检查清单
 
-- [ ] `mvn -q verify` 后端门禁（本功能点零后端改动，基线对照口径）
-- [ ] `npm run lint && npm run test && npm run build` 前端门禁（test 零新增失败；lint 全量卡死为预存，分片零新增）
-- [ ] `bash scripts/smoke.sh` 新增 web-035 单跑通过（整体预存红项基线对照口径）
-- [ ] 符合 Vue 3 / Vite / TypeScript strict 编码规范
-- [ ] 符合 TDD 工作流（测试先行、RED 证据完整、GREEN 实现、REFACTOR 全绿）
+- [x] `mvn -q verify` 后端门禁（本功能点零后端改动，基线对照口径）
+- [x] `npm run lint && npm run test && npm run build` 前端门禁（test 零新增失败；lint 全量卡死为预存，分片零新增）
+- [x] `bash scripts/smoke.sh` 新增 web-035 单跑通过（整体预存红项基线对照口径）
+- [x] 符合 Vue 3 / Vite / TypeScript strict 编码规范
+- [x] 符合 TDD 工作流（测试先行、RED 证据完整、GREEN 实现、REFACTOR 全绿）
 
 ## 评审记录
 
