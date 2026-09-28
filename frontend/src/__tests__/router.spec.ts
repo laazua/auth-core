@@ -319,11 +319,15 @@ describe('web-034 系统管理路由迁移', () => {
     });
 
     await testRouter.push('/system/users');
-    expect(testRouter.currentRoute.value.matched.some((r) => r.path === '/system/users')).toBe(true);
+    expect(testRouter.currentRoute.value.matched.some((r) => r.path === '/system/users')).toBe(
+      true
+    );
     expect(testRouter.currentRoute.value.name).not.toBe('NotFound');
 
     await testRouter.push('/system/roles');
-    expect(testRouter.currentRoute.value.matched.some((r) => r.path === '/system/roles')).toBe(true);
+    expect(testRouter.currentRoute.value.matched.some((r) => r.path === '/system/roles')).toBe(
+      true
+    );
     expect(testRouter.currentRoute.value.name).not.toBe('NotFound');
 
     await testRouter.push('/users');
