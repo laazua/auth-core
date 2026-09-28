@@ -2,14 +2,16 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟢 sprint-064 评审通过（web/033 ✅），sprint-063 实现完成待评审（web/032），sprint-062 实现完成待评审（web/031），sprint-061 待评审（web/030），sprint-060 待评审（web/029），sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023），sprint-057 评审通过（web/026 ✅），sprint-059 评审通过（web/027 ✅）
+- 状态: 🟡 sprint-065 实现完成待评审（web/034 AWAITING_REVIEW）；sprint-064 评审通过（web/033 ✅），sprint-063 实现完成待评审（web/032），sprint-062 实现完成待评审（web/031），sprint-061 待评审（web/030），sprint-060 待评审（web/029），sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023），sprint-057 评审通过（web/026 ✅），sprint-059 评审通过（web/027 ✅）
 - 当前模块: web
-- 当前功能点: web/033 ✅（已完成，sprint-064），web/011（PLANNED），web/011a 🔄（规划中），web/017 🔄（规划中），web/023 🔄（规划中），web/026 ✅，web/027 ✅，web/029 ✅，web/030 ✅（待评审），web/031 ✅（待评审），web/032 ✅（待评审）
+- 当前功能点: web/034 ✅（待评审，sprint-065，工作单 `.harness/context/task.md`），web/011（PLANNED），web/011a 🔄（规划中），web/017 🔄（规划中），web/023 🔄（规划中）
 
 ## 下一步动作
-  Planner：取下一功能点。建议优先级：① 清理 Evaluator 积压（sprint-047/048/060/061/062/063 六项待评审，见挂起区）；② 新功能点建议 web/011a（修复前端 TS 编译错误，前置 web/010 ✅，可一并治理预存 lint 卡死/冒烟过期用例）
+  Evaluator：读 `.harness/evaluator.md` 并严格执行，评审 `.harness/context/task.md`（sprint-065 / web/034）。重点核查：① RED 证据实时性（9 failed 摘录）与两段式提交（b64e858 test RED → 9c894c5 feat GREEN → 73c8616 refactor）；② 基线对照（后端 mvn 6 失败、前端 test 20 失败、冒烟 10 失败均与改动前基线逐条一致）；③ 冒烟口径同步两处（web-010 断言演进为新口径、web-029 计数 9→11/6→7，用例均保留）的合理性；④ 分片 lint 预存 3 处经 HEAD 版复测确认、零新增。评审积压不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
 
 ## 挂起
+- 2026-09-28: Generator(sprint-065) — 冒烟口径同步两处登记（供 Evaluator 对照）：① `web-010` 断言随本功能点演进为新口径（原断言固化占位 `path:"user"`/`path:"role"` 与顶级 `path:"/users"`/`path:"/roles"`，与 web/034 迁移目标直接冲突，首跑即失败；用例未删除，断言更新为 users/roles 子路由 + `/system/users`、`/system/roles` 存在 + 旧路径精确匹配移除，更新后 ✅）；② `web-029` grep 计数同步（router.spec 9→11、system-menu-path-fix 6→7，因本次新增 3 条用例过期，用例未删除）。门禁基线对照实测：`mvn -q verify` 130 用例 4F+2E 与基线逐条一致；前端 test 20 failed 与基线逐条一致（271=268+3）；冒烟 47 用例 10 失败与基线逐条一致零新增；`npm run lint` 全量卡死第 5 次复现（300s），分片 lint 本次 5 文件仅剩 3 处预存 prettier（useMenu.spec:26/207、routes:124，`git show HEAD:` 复测确认）零新增。
+- 2026-09-28: Planner(sprint-065) — 用户指令「侧边栏系统管理中用户/角色路由 /users、/roles 访问 404，优化为 /system/users、/system/roles；以 planner 开始依次执行」，本会话按 Planner→Generator→Evaluator 推进 web/034。口径要点：① 纯前端路由重构，无架构冲突；② 范围含移除 /system 下占位 children `user`/`role`（system/UserView.vue、RoleView.vue 仅断引用不删文件）；③ users/roles IndexView.spec 自建路由 fixture 不动（与生产路由解耦），故变更文件 6 个不触发拆分；④ 门禁/冒烟沿用「基线对照推进」裁决（前端 test 基线 20 failed、后端 6 failed、冒烟 10 failed，见下 2026-09-28 Generator(sprint-064) 登记）。Evaluator 积压不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
 - 2026-09-28: Generator(sprint-064) — 用户裁决「基线对照推进」（问答记录）：基线冒烟/后端门禁预存红项与 Generator 约束 5 冲突，用户裁定沿 sprint-040 先例登记预存红项、照常提交并置 AWAITING_REVIEW 交 Evaluator 对照裁决。基线红项清单（实现前实测）：① `mvn -q verify` 130 用例 6 失败＝TestLayersSpec/TestUtilsSpec（无 Docker）、SeedDataIntegrationTest（真实库 sys_role 22≠2）、DataSourceConfigBindingTest ×2（环境变量绑定）、RoleControllerTest 409（已登记）；② 冒烟 45 用例 10 失败＝infra-001（健康探测 90s 超时）、model-008/010（RoleService/ModuleServiceInterfaceSpec 方法数 expected 6 was 7）、roles-001/002（409 已登记）、web-013/026（grep '19/23 passed' 计数过期，实测 22 passed）、web-020/021/022（构建产物 grep 过期，web/022 已废弃⚠️）；③ 前端全量测试 20 失败＝既有基线（LoginView 2、DefaultLayout 1、TagsView 4、auth-token 2、system/IndexView 11，合计 20，与实测逐条一致）。均与 web/033 零关联（零后端改动）。另登记本次规划/实现两处口径修订：AC4「全量 0 failed」→「零新增失败」（基线 2 failed 属 web/011）；AC3 产物路径 `index-*.css`→`dist/assets/css/*.css`（样式按组件分 chunk，实测 BaseInput-*.css）。
 - 2026-09-28: Planner(sprint-064) — 用户指令「以 planner 开始依次执行」，本会话按 Planner→Generator→Evaluator 顺序推进 web/033；Evaluator 积压不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
 - 2026-09-03: Planner(sprint-049) — 新增 web/025（主内容区图标间距优化），前置依赖 web/003/007/008/016/024 均 ✅，不阻塞 web/017/023 评审；web/011 待规划优先级不变。
@@ -25,6 +27,8 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-09-28: Generator — done sprint-065（web/034 系统管理菜单用户/角色路由迁移 /system/users 与 /system/roles，测试先行 9 failed RED→28/28 GREEN，分片 lint 零新增、test/build 通过、冒烟 web-034 单跑通过、整体 10 失败与基线逐条一致零新增）
+- 2026-09-28: Planner — kickoff sprint-065（web/034 系统管理菜单用户/角色路由迁移至 /system/users 与 /system/roles，4 条验收标准，前置依赖 web/003/004/005/010/029 均 ✅）
 - 2026-09-28: Evaluator — pass sprint-064（web/033，平均分 8.9/10，基线对照豁免否决项 6）
 - 2026-09-28: Generator — done sprint-064（web/033 登录页新增显示密码功能，3 用例测试先行 RED→GREEN，lint/build 通过，冒烟 web-033 通过，预存红项基线对照登记）
 - 2026-09-28: Planner — kickoff sprint-064（web/033 登录页新增显示密码功能，4 条验收标准，前置依赖 web/002/web/013 均 ✅）
