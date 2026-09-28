@@ -388,38 +388,78 @@ describe('LoginView', () => {
     });
   });
 
-  describe('Password Visibility (AC1, AC2)', () => {
-    it('password input is masked by default (AC1)', () => {
+  describe('Password Visibility (AC1/AC2/AC4)', () => {
+    it('renders password masked with toggle rendered by default (AC1)', () => {
+      // Arrange
       const wrapper = createWrapper();
+
+      // Act
       const passwordInput = wrapper.find('input[placeholder="请输入密码"]');
+      const baseInputs = wrapper.findAllComponents({ name: 'BaseInput' });
+      const passwordBaseInput = baseInputs[1];
+
+      // Assert
       expect(passwordInput.attributes('type')).toBe('password');
-    });
-
-    it('password input shows toggle visibility button (AC2)', () => {
-      const wrapper = createWrapper();
-      // BaseInput with type="password" and showPassword prop should show the toggle button
-      // The second BaseInput is the password field
-      const baseInputs = wrapper.findAllComponents({ name: 'BaseInput' });
-      const passwordBaseInput = baseInputs[1];
-      expect(passwordBaseInput.props('showPassword')).toBe(false);
+      expect(passwordBaseInput.props('showPassword')).toBe(true);
       expect(passwordBaseInput.props('type')).toBe('password');
+      expect(passwordBaseInput.find('.base-input__suffix').exists()).toBe(true);
     });
 
-    it('clicking toggle button switches input type to text (AC2)', async () => {
+    it('toggle switches password type to text and back (AC2)', async () => {
+      // Arrange
       const wrapper = createWrapper();
       const baseInputs = wrapper.findAllComponents({ name: 'BaseInput' });
       const passwordBaseInput = baseInputs[1];
-      
-      // Initially password type
-      expect(passwordBaseInput.find('input').attributes('type')).toBe('password');
-      
-      // Click the toggle button (suffix icon)
       const toggleButton = passwordBaseInput.find('.base-input__suffix');
-      if (toggleButton.exists()) {
-        await toggleButton.trigger('click');
-        // After click, should be text type
-        expect(passwordBaseInput.find('input').attributes('type')).toBe('text');
-      }
+      expect(toggleButton.exists()).toBe(true);
+
+      // Act & Assert: 掩码 → 明文
+      await toggleButton.trigger('click');
+      expect(passwordBaseInput.find('input').attributes('type')).toBe('text');
+
+      // Act & Assert: 明文 → 掩码
+      await toggleButton.trigger('click');
+      expect(passwordBaseInput.find('input').attributes('type')).toBe('password');
+    });
+
+    it('toggle preserves password value and login payload (AC4)', async () => {
+      // Arrange
+      const wrapper = createWrapper();
+      const vm = wrapper.vm as any;
+      const baseInputs = wrapper.findAllComponents({ name: 'BaseInput' });
+      const passwordBaseInput = baseInputs[1];
+      await passwordBaseInput.find('input').setValue('admin123456');
+
+      // Act: 切换显隐
+      const toggleButton = passwordBaseInput.find('.base-input__suffix');
+      expect(toggleButton.exists()).toBe(true);
+      await toggleButton.trigger('click');
+
+      // Assert: 切换不改变已输入密码值
+      expect(vm.loginForm.password).toBe('admin123456');
+
+      // Act: 切换后提交登录
+      vm.formRef = { validate: vi.fn().mockResolvedValue(undefined) };
+      vm.loginForm.username = 'admin';
+      mockAuthApi.login.mockResolvedValue({
+        code: 0,
+        message: 'success',
+        timestamp: Date.now(),
+        data: {
+          token: 'mock-jwt-token',
+          tokenType: 'Bearer',
+          expiresIn: 3600,
+          userInfo: { id: 1, username: 'admin', nickname: '管理员', email: 'admin@example.com', phone: '13800138000', status: 1, createTime: '2024-01-01T00:00:00Z' },
+        },
+      });
+      await vm.handleLogin();
+
+      // Assert: 登录 payload 与切换前一致
+      expect(mockAuthApi.login).toHaveBeenCalledWith({
+        username: 'admin',
+        password: 'admin123456',
+        rememberMe: false,
+      });
     });
   });
 
