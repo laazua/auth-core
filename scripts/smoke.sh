@@ -327,6 +327,16 @@ smoke_case "web-031 用户表单抽屉确认按钮 loading 修复验证" bash -c
   # 验证构建产物正常产出
   npx vite build >/dev/null 2>&1 || exit 1
 "
+
+# web/033：登录页新增显示密码功能（密码框可见性切换）验证
+smoke_case "web-033 登录页密码可见性切换验证" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  # AC1/AC2/AC4：Password Visibility 3 条用例通过（默认掩码+按钮渲染、明文/掩码双向切换、值与登录 payload 不变）
+  npm run test -- --run src/views/LoginView.spec.ts -t 'Password Visibility' 2>&1 | grep -q '3 passed' || exit 1
+  # AC3：生产构建产物中切换按钮 .base-input__suffix 声明 pointer-events:auto（真实浏览器可点击）
+  npx vite build >/dev/null 2>&1 || exit 1
+  grep -qE '\.base-input__suffix(\[[^]]*\])?\{[^}]*pointer-events:auto' dist/assets/css/*.css || exit 1
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

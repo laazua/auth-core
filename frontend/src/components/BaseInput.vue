@@ -36,7 +36,7 @@
     clear: [];
   }>();
 
-  const showPassword = ref(props.showPassword);
+  const showPassword = ref(false);
   const isFocused = ref(false);
   const inputRef = ref<HTMLInputElement>();
 
@@ -282,6 +282,7 @@
 
     &__suffix {
       cursor: pointer;
+      pointer-events: auto;
 
       &:hover {
         color: var(--color-text-secondary);

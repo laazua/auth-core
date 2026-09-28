@@ -182,7 +182,7 @@ const handleKeyUp = (event: KeyboardEvent) => {
                 type="password"
                 placeholder="请输入密码"
                 :prefix-icon="Lock"
-                :show-password="false"
+                :show-password="true"
                 autocomplete="current-password"
                 @keyup.enter="handleLogin"
               />
