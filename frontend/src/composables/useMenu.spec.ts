@@ -61,8 +61,8 @@ describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
       expect(systemModule).toBeDefined();
       expect(systemModule?.children?.length).toBe(3);
       const childPaths = systemModule?.children?.map((c) => c.path) || [];
-      expect(childPaths).toContain('/users');
-      expect(childPaths).toContain('/roles');
+      expect(childPaths).toContain('/system/users');
+      expect(childPaths).toContain('/system/roles');
       expect(childPaths).toContain('/system/permissions');
       expect(childPaths).not.toContain('/system/modules');
     });
@@ -75,7 +75,7 @@ describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
       const systemModule = menu.find((m) => m.path === '/system');
       expect(systemModule).toBeDefined();
       expect(systemModule?.children?.length).toBe(1);
-      expect(systemModule?.children?.[0]?.path).toBe('/users');
+      expect(systemModule?.children?.[0]?.path).toBe('/system/users');
     });
 
     it('includes dashboard for all authenticated users', () => {
@@ -189,17 +189,19 @@ describe('Menu Config - AC2: menuPointsToFunctionalPages', () => {
 
     const childPaths = systemModule?.children?.map((c) => c.path) || [];
 
-    // 用户管理 -> /users (实际功能页)
-    expect(childPaths).toContain('/users');
-    // 角色管理 -> /roles (实际功能页)
-    expect(childPaths).toContain('/roles');
+    // 用户管理 -> /system/users (实际功能页)
+    expect(childPaths).toContain('/system/users');
+    // 角色管理 -> /system/roles (实际功能页)
+    expect(childPaths).toContain('/system/roles');
     // 权限管理 -> /system/permissions
     expect(childPaths).toContain('/system/permissions');
     // 模块管理 -> /system/modules
     expect(childPaths).toContain('/system/modules');
 
-    // 旧路径不应存在
+    // 旧路径不应存在（数组元素精确匹配，/system/users 不命中 /system/user）
     expect(childPaths).not.toContain('/system/user');
     expect(childPaths).not.toContain('/system/role');
+    expect(childPaths).not.toContain('/users');
+    expect(childPaths).not.toContain('/roles');
   });
 });

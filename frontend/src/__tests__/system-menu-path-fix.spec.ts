@@ -7,11 +7,11 @@ const useMenuContent = readFileSync(useMenuPath, 'utf-8');
 
 describe('SystemMenuPathFixSpec', () => {
   describe('userMenuPathFixed', () => {
-    it('useMenu.ts 中"用户管理"菜单路径为 /users', () => {
-      expect(useMenuContent).toContain("path: '/users'");
+    it('useMenu.ts 中"用户管理"菜单路径为 /system/users', () => {
+      expect(useMenuContent).toContain("path: '/system/users'");
       expect(useMenuContent).toContain("title: '用户管理'");
       const systemIndex = useMenuContent.indexOf("path: '/system'");
-      const userIndex = useMenuContent.indexOf("path: '/users'");
+      const userIndex = useMenuContent.indexOf("path: '/system/users'");
       expect(userIndex).toBeGreaterThan(systemIndex);
     });
 
@@ -21,11 +21,11 @@ describe('SystemMenuPathFixSpec', () => {
   });
 
   describe('roleMenuPathFixed', () => {
-    it('useMenu.ts 中"角色管理"菜单路径为 /roles', () => {
-      expect(useMenuContent).toContain("path: '/roles'");
+    it('useMenu.ts 中"角色管理"菜单路径为 /system/roles', () => {
+      expect(useMenuContent).toContain("path: '/system/roles'");
       expect(useMenuContent).toContain("title: '角色管理'");
       const systemIndex = useMenuContent.indexOf("path: '/system'");
-      const roleIndex = useMenuContent.indexOf("path: '/roles'");
+      const roleIndex = useMenuContent.indexOf("path: '/system/roles'");
       expect(roleIndex).toBeGreaterThan(systemIndex);
     });
 
@@ -49,6 +49,21 @@ describe('SystemMenuPathFixSpec', () => {
       const systemIndex = useMenuContent.indexOf("path: '/system'");
       const moduleIndex = useMenuContent.indexOf("path: '/system/modules'");
       expect(moduleIndex).toBeGreaterThan(systemIndex);
+    });
+  });
+
+  describe('web034SystemRouteMigration', () => {
+    it('AC1 useMenu 用户/角色菜单路径为 /system/users 与 /system/roles 且旧顶级路径不存在', () => {
+      expect(useMenuContent).toContain("path: '/system/users'");
+      expect(useMenuContent).toContain("path: '/system/roles'");
+      expect(useMenuContent).not.toContain("path: '/users'");
+      expect(useMenuContent).not.toContain("path: '/roles'");
+      const systemIndex = useMenuContent.indexOf("path: '/system'");
+      const userIndex = useMenuContent.indexOf("path: '/system/users'");
+      const roleIndex = useMenuContent.indexOf("path: '/system/roles'");
+      expect(systemIndex).toBeGreaterThanOrEqual(0);
+      expect(userIndex).toBeGreaterThan(systemIndex);
+      expect(roleIndex).toBeGreaterThan(systemIndex);
     });
   });
 });

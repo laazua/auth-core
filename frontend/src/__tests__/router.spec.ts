@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import { createPinia, setActivePinia } from 'pinia';
-import { generateRoutes } from '@/router/routes';
+import { generateRoutes, staticRoutes, layoutRoutes } from '@/router/routes';
 
 const mockAuthStore = {
   isAuthenticated: false,
@@ -131,11 +131,12 @@ describe('Route Access Control - AC1: systemRouteAllowsPermissionBasedAccess', (
     expect(systemRoute).toBeDefined();
     expect(systemRoute?.meta?.roles).toBeUndefined();
 
-    const userRoute = routes.find((r) => r.path === '/users');
-    expect(userRoute).toBeDefined();
-
-    const roleRoute = routes.find((r) => r.path === '/roles');
-    expect(roleRoute).toBeDefined();
+    const systemChildren = (systemRoute as { children?: { path: string }[] }).children ?? [];
+    const childPaths = systemChildren.map((c) => c.path);
+    expect(childPaths).toContain('users');
+    expect(childPaths).toContain('roles');
+    expect(routes.find((r) => r.path === '/users')).toBeUndefined();
+    expect(routes.find((r) => r.path === '/roles')).toBeUndefined();
   });
 
   it('generates routes with admin role still works', () => {
@@ -277,5 +278,58 @@ describe('AC1: Dynamic Route Loading After Dashboard Navigation', () => {
 
     expect(dynamicRoutesLoaded).toBe(true);
     expect(testRouter.currentRoute.value.name).toBe('Users');
+  });
+});
+
+describe('web-034 系统管理路由迁移', () => {
+  it('AC2 generateRoutes 注册 /system/users 与 /system/roles 并移除顶级 /users /roles 与占位 user /role', () => {
+    const routes = generateRoutes(['admin']);
+
+    const systemRoute = routes.find((r) => r.path === '/system');
+    expect(systemRoute).toBeDefined();
+    expect(systemRoute?.redirect).toBe('/system/permissions');
+
+    const systemChildren = (systemRoute as { children?: RouteRecordRaw[] }).children ?? [];
+    const childPaths = systemChildren.map((c) => c.path);
+    expect(childPaths).toContain('users');
+    expect(childPaths).toContain('roles');
+    expect(childPaths).toContain('permissions');
+    expect(childPaths).toContain('modules');
+    expect(childPaths).not.toContain('user');
+    expect(childPaths).not.toContain('role');
+
+    expect(routes.find((r) => r.path === '/users')).toBeUndefined();
+    expect(routes.find((r) => r.path === '/roles')).toBeUndefined();
+
+    const usersChild = systemChildren.find((c) => c.path === 'users');
+    expect(usersChild).toBeDefined();
+    expect(usersChild?.name).toBe('UsersIndex');
+    expect(String(usersChild?.component)).toContain('views/users/IndexView.vue');
+
+    const rolesChild = systemChildren.find((c) => c.path === 'roles');
+    expect(rolesChild).toBeDefined();
+    expect(rolesChild?.name).toBe('RolesIndex');
+    expect(String(rolesChild?.component)).toContain('views/roles/IndexView.vue');
+  });
+
+  it('AC3 push /system/users 与 /system/roles 可达且旧 /users /roles 落 404', async () => {
+    const testRouter = createRouter({
+      history: createWebHistory(),
+      routes: [...staticRoutes, ...layoutRoutes, ...generateRoutes(['admin'])],
+    });
+
+    await testRouter.push('/system/users');
+    expect(testRouter.currentRoute.value.matched.some((r) => r.path === '/system/users')).toBe(true);
+    expect(testRouter.currentRoute.value.name).not.toBe('NotFound');
+
+    await testRouter.push('/system/roles');
+    expect(testRouter.currentRoute.value.matched.some((r) => r.path === '/system/roles')).toBe(true);
+    expect(testRouter.currentRoute.value.name).not.toBe('NotFound');
+
+    await testRouter.push('/users');
+    expect(testRouter.currentRoute.value.name).toBe('NotFound');
+
+    await testRouter.push('/roles');
+    expect(testRouter.currentRoute.value.name).toBe('NotFound');
   });
 });
