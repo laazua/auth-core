@@ -7,7 +7,7 @@
 - 当前功能点: web/035 🔄（sprint-066 规划完成，待实现），web/011（PLANNED），web/011a 🔄（规划中），web/017 🔄（规划中），web/023 🔄（规划中）
 
 ## 下一步动作
-  Generator：读 `.harness/generator.md` 并严格执行，实现 sprint-066（web/035 登录后首次导航受保护路由落 404 修复）：TDD 测试先行，AC1/AC2 用真实 `@/router` 单例跑完整守卫时序，先写 `frontend/src/__tests__/router.spec.ts` web-035 用例确认 RED，再改 `frontend/src/router/index.ts` case 4（`next({ path: to.fullPath, replace: true })` 替换 `next({ ...to, replace: true })`），追加冒烟 web-035，门禁/冒烟沿基线对照裁决（见挂起区）。
+  Generator：读 `.harness/generator.md` 并严格执行，实现 sprint-066（web/035 登录后首次导航受保护路由落 404 修复）：TDD 测试先行，AC1/AC2 用真实 `@/router` 单例跑完整守卫时序，先写 `frontend/src/__tests__/router.spec.ts` web-035 用例确认 RED，再改 `frontend/src/router/index.ts` case 4（`next({ path: to.path, query: to.query, hash: to.hash, replace: true })` 替换 `next({ ...to, replace: true })`，fullPath 内嵌 query 会被 resolve 丢弃故不可用），追加冒烟 web-035，门禁/冒烟沿基线对照裁决（见挂起区）。
 
 ## 挂起
 - 2026-09-28: Generator(sprint-065) — 冒烟口径同步两处登记（供 Evaluator 对照）：① `web-010` 断言随本功能点演进为新口径（原断言固化占位 `path:"user"`/`path:"role"` 与顶级 `path:"/users"`/`path:"/roles"`，与 web/034 迁移目标直接冲突，首跑即失败；用例未删除，断言更新为 users/roles 子路由 + `/system/users`、`/system/roles` 存在 + 旧路径精确匹配移除，更新后 ✅）；② `web-029` grep 计数同步（router.spec 9→11、system-menu-path-fix 6→7，因本次新增 3 条用例过期，用例未删除）。门禁基线对照实测：`mvn -q verify` 130 用例 4F+2E 与基线逐条一致；前端 test 20 failed 与基线逐条一致（271=268+3）；冒烟 47 用例 10 失败与基线逐条一致零新增；`npm run lint` 全量卡死第 5 次复现（300s），分片 lint 本次 5 文件仅剩 3 处预存 prettier（useMenu.spec:26/207、routes:124，`git show HEAD:` 复测确认）零新增。

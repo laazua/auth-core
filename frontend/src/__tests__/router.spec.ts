@@ -337,3 +337,57 @@ describe('web-034 系统管理路由迁移', () => {
     expect(testRouter.currentRoute.value.name).toBe('NotFound');
   });
 });
+
+describe('web-035 动态路由首载导航', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    mockAuthStore.isAuthenticated = true;
+    mockAuthStore.token = 'valid-token';
+    mockAuthStore.roles = ['admin'];
+    mockAuthStore.permissions = ['*'];
+  });
+
+  const loadFreshRouter = async () => {
+    vi.resetModules();
+    const mod = await import('@/router');
+    return mod.default;
+  };
+
+  it('AC1 登录后首次导航 /system/users 与 /system/permissions 一次即达不落 404', async () => {
+    const router = await loadFreshRouter();
+
+    await router.push('/dashboard');
+    expect(router.currentRoute.value.name).toBe('Dashboard');
+
+    await router.push('/system/users');
+    expect(router.currentRoute.value.name).toBe('UsersIndex');
+    expect(router.currentRoute.value.matched.some((r) => r.path === '/system/users')).toBe(true);
+
+    await router.push('/system/permissions');
+    expect(router.currentRoute.value.name).toBe('Permissions');
+    expect(router.currentRoute.value.matched.some((r) => r.path === '/system/permissions')).toBe(
+      true
+    );
+  });
+
+  it('AC2 首载导航保留目标 query 参数', async () => {
+    const router = await loadFreshRouter();
+
+    await router.push('/dashboard');
+    await router.push({ path: '/system/users', query: { page: '2' } });
+
+    expect(router.currentRoute.value.name).toBe('UsersIndex');
+    expect(router.currentRoute.value.fullPath).toBe('/system/users?page=2');
+  });
+
+  it('AC3 动态路由加载完成后二次导航直达', async () => {
+    const router = await loadFreshRouter();
+
+    await router.push('/dashboard');
+    await router.push('/system/users');
+
+    await router.push('/system/roles');
+    expect(router.currentRoute.value.name).toBe('RolesIndex');
+    expect(router.currentRoute.value.matched.some((r) => r.path === '/system/roles')).toBe(true);
+  });
+});

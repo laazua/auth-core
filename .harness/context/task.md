@@ -28,7 +28,7 @@ Planner 只读取证（一次性脚本 `/tmp/opencode/repro-guard.mjs`，复刻 
 1. 刷新后 `dynamicRoutesLoaded=false`；登录后 Dashboard 导航走 case 3（`index.ts:61-65`）放行，**不加载**动态路由；
 2. 首次点击「用户管理」`push('/system/users')`：目标未注册，落入 catch-all，`to.name==='NotFound'`、`to.path='/system/users'`；
 3. case 4（`index.ts:68-76`）执行 `router.addRoute`（成功）后 `next({ ...to, replace: true })`——**展开携带 `name:'NotFound'`，vue-router 按 name 优先解析**，重导航回 NotFound 记录 → 首次点击渲染 404；此时动态路由已在同轮加载，故第二次点击直接命中 `/system/users` 恢复正常。
-4. 修复写法取证：`next({ path: to.fullPath, replace: true })`（剥离 name，经 fullPath 保留 query/hash）后，首次点击即 `name=UsersIndex, matched=['/system','/system/users']`。
+4. 修复写法取证（Generator 实现前二次取证更新）：`next({ path: to.fullPath, replace: true })` **被证伪**——vue-router `resolve({ path: '/x?a=1' })` 丢弃 path 内嵌 query；定稿写法为 `next({ path: to.path, query: to.query, hash: to.hash, replace: true })`（显式剥离 name、显式传 query/hash），取证：首击即 `name=UsersIndex, matched=['/system','/system/users'], fullPath='/system/users?page=2'`。
 
 该缺陷由 web/029 引入（case 4 写法），不特定于用户管理——**任何登录会话中首次点击的受保护非 Dashboard 路由均中招**，用户首次点击恰为用户管理。症状三段（首击 404 / 其他功能正常 / 再击正常）与取证逐条吻合。纯前端守卫缺陷，不涉及 `docs/01-architecture.md` RBAC 硬语义，无架构冲突。
 
@@ -77,6 +77,17 @@ Planner 只读取证（一次性脚本 `/tmp/opencode/repro-guard.mjs`，复刻 
 
 > Generator 于实现前执行测试清单 #1~#3 并粘贴关键失败输出。
 
+```text
+[RED] Tests run: 14, Failures: 2 — src/__tests__/router.spec.ts > web-035 动态路由首载导航
+  AC1 登录后首次导航 /system/users 与 /system/permissions 一次即达不落 404:
+    AssertionError: expected 'NotFound' to be 'UsersIndex' (router.spec.ts:363, push('/system/users') 首击落 404)
+  AC2 首载导航保留目标 query 参数:
+    AssertionError: expected 'NotFound' to be 'UsersIndex' (router.spec.ts:379, push({path:'/system/users',query:{page:'2'}}) 首击落 404)
+  AC3 动态路由加载完成后二次导航直达: passed（回归类用例，修复前后均绿）
+  Test Files 1 failed (1) | Tests 2 failed | 12 passed (14)
+（实测时间 2026-09-28，实现前执行）
+```
+
 ## 门禁与冒烟记录
 
 > Generator 填写：前端门禁、后端门禁（零后端改动，基线对照口径）、`bash scripts/smoke.sh`（新增 web-035）。
@@ -96,7 +107,7 @@ Planner 只读取证（一次性脚本 `/tmp/opencode/repro-guard.mjs`，复刻 
 ### 修改
 
 - `frontend/src/router/index.ts`：
-  - case 4（约 :75）`next({ ...to, replace: true })` → `next({ path: to.fullPath, replace: true })`：`to` 在目标未注册时 `name==='NotFound'`，展开后 vue-router 按 name 优先解析致重导航回 catch-all；按 `fullPath` 导航同时保留 query/hash
+  - case 4（约 :75）`next({ ...to, replace: true })` → `next({ path: to.path, query: to.query, hash: to.hash, replace: true })`：`to` 在目标未注册时 `name==='NotFound'`，展开后 vue-router 按 name 优先解析致重导航回 catch-all；显式传 path/query/hash 保留参数（fullPath 内嵌 query 会被 resolve 丢弃，已取证证伪）
 - `frontend/src/__tests__/router.spec.ts`：
   - 新增 `web-035 动态路由首载导航` describe（AC1/AC2/AC3），AC1/AC2 直接 `import router from '@/router'` 复用真实守卫（非复刻），需注意单例动态路由状态在一个用例内完成完整时序
 - `scripts/smoke.sh`：
