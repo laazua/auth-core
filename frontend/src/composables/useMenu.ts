@@ -34,14 +34,14 @@ const menuConfig: MenuConfig[] = [
     order: 2,
     children: [
       {
-        path: '/users',
+        path: '/system/users',
         title: '用户管理',
         icon: 'User',
         permissions: ['user:view'],
         order: 1,
       },
       {
-        path: '/roles',
+        path: '/system/roles',
         title: '角色管理',
         icon: 'UserFilled',
         permissions: ['role:view'],

@@ -196,19 +196,25 @@ smoke_case "web-017 用户下拉弹层主题覆盖构建产物" bash -c "
 "
 
 # web/010：修复侧边栏系统管理菜单 404 问题（菜单路径与路由路径一致性）
+# 2026-09-28 口径随 web/034 路由迁移演进：system 子路由 user/role→users/roles、顶级 /users /roles 移除、菜单统一 /system/users /system/roles（用例保留，断言同步为新口径）
 smoke_case "web-010 侧边栏系统管理菜单路径修正" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1
   npx vite build >/dev/null 2>&1 || exit 1
-  # 检查构建产物中 system 路由包含正确的子路由路径（相对路径 user/role/permissions/modules）
-  grep -q 'path:\"user\"' dist/assets/js/index-*.js || exit 1
-  grep -q 'path:\"role\"' dist/assets/js/index-*.js || exit 1
+  # 检查构建产物中 system 路由包含正确的子路由路径（相对路径 users/roles/permissions/modules）
+  grep -q 'path:\"users\"' dist/assets/js/index-*.js || exit 1
+  grep -q 'path:\"roles\"' dist/assets/js/index-*.js || exit 1
   grep -q 'path:\"permissions\"' dist/assets/js/index-*.js || exit 1
   grep -q 'path:\"modules\"' dist/assets/js/index-*.js || exit 1
   # 检查 system 路由父路径为 /system
   grep -q 'path:\"/system\"' dist/assets/js/index-*.js || exit 1
-  # 检查顶层 /users 和 /roles 仍存在（它们是独立菜单，非系统管理下）
-  grep -q 'path:\"/users\"' dist/assets/js/index-*.js || exit 1
-  grep -q 'path:\"/roles\"' dist/assets/js/index-*.js || exit 1
+  # 检查菜单/路由统一为 /system/users、/system/roles（useMenu 随 DefaultLayout 分 chunk）
+  grep -rq 'path:\"/system/users\"' dist/assets/js/ || exit 1
+  grep -rq 'path:\"/system/roles\"' dist/assets/js/ || exit 1
+  # 顶级 /users、/roles 独立路由与占位 user、role 子路由已移除（带闭合引号精确匹配，不命中 users/roles 前缀）
+  ! grep -rq 'path:\"/users\"' dist/assets/js/ || exit 1
+  ! grep -rq 'path:\"/roles\"' dist/assets/js/ || exit 1
+  ! grep -rq 'path:\"user\"' dist/assets/js/ || exit 1
+  ! grep -rq 'path:\"role\"' dist/assets/js/ || exit 1
 "
 
 # web/018：侧边栏菜单图标注册验证（生产构建产物含图标注册代码特征）
@@ -307,14 +313,15 @@ smoke_case "web-026 登录跳转修复验证" bash -c "
 "
 
 # web/029：修复侧边栏菜单导航404问题（Router Guard 动态路由加载 + 测试断言修正）验证
+# 2026-09-28 计数随 web/034 迁移用例同步：router.spec 9→11、system-menu-path-fix 6→7（useMenu 不变 10）
 smoke_case "web-029 Router Guard 动态路由加载修复验证" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1
   # 验证 Router Guard 动态路由测试通过
-  npm run test -- --run src/__tests__/router.spec.ts 2>&1 | grep -q '9 passed' || exit 1
+  npm run test -- --run src/__tests__/router.spec.ts 2>&1 | grep -q '11 passed' || exit 1
   # 验证 useMenu 菜单路径测试通过
   npm run test -- --run src/composables/useMenu.spec.ts 2>&1 | grep -q '10 passed' || exit 1
   # 验证 system-menu-path-fix 路径断言测试通过
-  npm run test -- --run src/__tests__/system-menu-path-fix.spec.ts 2>&1 | grep -q '6 passed' || exit 1
+  npm run test -- --run src/__tests__/system-menu-path-fix.spec.ts 2>&1 | grep -q '7 passed' || exit 1
   # 验证构建产物正常产出
   npx vite build >/dev/null 2>&1 || exit 1
 "
@@ -336,6 +343,23 @@ smoke_case "web-033 登录页密码可见性切换验证" bash -c "
   # AC3：生产构建产物中切换按钮 .base-input__suffix 声明 pointer-events:auto（真实浏览器可点击）
   npx vite build >/dev/null 2>&1 || exit 1
   grep -qE '\.base-input__suffix(\[[^]]*\])?\{[^}]*pointer-events:auto' dist/assets/css/*.css || exit 1
+"
+
+# web/034：系统管理菜单用户/角色路由迁移 /system/users 与 /system/roles 验证
+smoke_case "web-034 系统管理路由迁移验证" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  # AC1：菜单路径断言测试通过（system-menu-path-fix 7 用例，含 web-034 AC1）
+  npm run test -- --run src/__tests__/system-menu-path-fix.spec.ts 2>&1 | grep -q '7 passed' || exit 1
+  # AC2/AC3：路由注册结构与新路径可达/旧路径 404 测试通过（router.spec 11 用例，含 web-034 两条）
+  npm run test -- --run src/__tests__/router.spec.ts 2>&1 | grep -q '11 passed' || exit 1
+  # AC4：useMenu 菜单断言测试通过（10 用例）
+  npm run test -- --run src/composables/useMenu.spec.ts 2>&1 | grep -q '10 passed' || exit 1
+  # AC1/AC2：生产构建产物含新路径，且占位组件 UserView/RoleView 不再打包
+  npx vite build >/dev/null 2>&1 || exit 1
+  grep -rq '/system/users' dist/assets/js/ || exit 1
+  grep -rq '/system/roles' dist/assets/js/ || exit 1
+  ! ls dist/assets/js/ 2>/dev/null | grep -q 'UserView' || exit 1
+  ! ls dist/assets/js/ 2>/dev/null | grep -q 'RoleView' || exit 1
 "
 # ====================================================================================
 

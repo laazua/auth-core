@@ -78,15 +78,15 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
     meta: { requiresAuth: true, title: '系统管理', icon: 'Setting' },
     children: [
       {
-        path: 'user',
-        name: 'User',
-        component: () => import('@/views/system/UserView.vue'),
+        path: 'users',
+        name: 'UsersIndex',
+        component: () => import('@/views/users/IndexView.vue'),
         meta: { requiresAuth: true, title: '用户管理', icon: 'User', permissions: ['user:view'] },
       },
       {
-        path: 'role',
-        name: 'Role',
-        component: () => import('@/views/system/RoleView.vue'),
+        path: 'roles',
+        name: 'RolesIndex',
+        component: () => import('@/views/roles/IndexView.vue'),
         meta: {
           requiresAuth: true,
           title: '角色管理',
@@ -110,34 +110,6 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
         name: 'Modules',
         component: () => import('@/views/system/IndexView.vue'),
         meta: { requiresAuth: true, title: '模块管理', icon: 'Grid', permissions: ['module:view'] },
-      },
-    ],
-  },
-  {
-    path: '/users',
-    name: 'Users',
-    component: () => import('@/layouts/DefaultLayout.vue'),
-    meta: { requiresAuth: true, title: '用户管理', icon: 'User', permissions: ['user:view'] },
-    children: [
-      {
-        path: '',
-        name: 'UsersIndex',
-        component: () => import('@/views/users/IndexView.vue'),
-        meta: { requiresAuth: true, title: '用户管理', permissions: ['user:view'] },
-      },
-    ],
-  },
-  {
-    path: '/roles',
-    name: 'Roles',
-    component: () => import('@/layouts/DefaultLayout.vue'),
-    meta: { requiresAuth: true, title: '角色管理', icon: 'UserFilled', permissions: ['role:view'] },
-    children: [
-      {
-        path: '',
-        name: 'RolesIndex',
-        component: () => import('@/views/roles/IndexView.vue'),
-        meta: { requiresAuth: true, title: '角色管理', permissions: ['role:view'] },
       },
     ],
   },
