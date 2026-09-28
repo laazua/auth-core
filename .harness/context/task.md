@@ -1,111 +1,134 @@
-# Sprint 工作单：sprint-063
+# Sprint 工作单：sprint-064
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-063 |
+| Sprint ID | sprint-064 |
 | 所属模块 | web |
-| 功能点 ID | web/032 |
-| 功能点名称 | 修复 SPA 路由刷新页面 404 问题（History 模式回退配置） |
-| 状态 | DONE |
+| 功能点 ID | web/033 |
+| 功能点名称 | 登录页新增显示密码功能（密码框可见性切换按钮） |
+| 状态 | AWAITING_REVIEW |
 | 创建时间 | 2026-09-10 |
 
 ## 前置依赖
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| web/001 | Vite+Vue3+TS+Pinia+Router+Element Plus 骨架+Axios 封装 | ✅ |
+| web/002 | 登录页+路由守卫 | ✅ |
+| web/013 | 修复登录页密码输入框默认明文显示问题（默认掩码基线） | ✅ |
 
 ## 业务背景
 
-前端使用 Vue Router `createWebHistory`（History 模式）实现客户端路由。点击侧边栏菜单跳转（如 `/users`、`/system/user`）时，客户端路由拦截正常渲染页面；但用户直接在浏览器地址栏输入 URL、刷新页面或通过书签访问时，浏览器向服务器发起真实 HTTP 请求，服务器无对应后端路由 → 返回 404 Not Found。这是 SPA（单页应用）部署的通用问题，需在开发环境与生产环境分别配置回退到 `index.html`。
+登录页密码框当前固定以掩码方式显示密码（`frontend/src/views/LoginView.vue` 中 BaseInput 绑定 `:show-password="false"`），用户输入时无法核对密码字符，易导致输错、登录失败重试。BaseInput 组件本身已具备可见性切换能力（`showPassword` prop + `.base-input__suffix` 眼睛图标 + `togglePassword` 切换 `type=password/text`），但登录页显式关闭了该能力，且 BaseInput 样式中 `.base-input__suffix` 继承 `pointer-events: none`，真实浏览器下点击不会命中切换按钮。本次在登录页启用该功能并使按钮在浏览器中真实可点击，同时必须保持 web/013 既有语义：默认掩码，仅在用户主动点击切换按钮时明文显示。
 
 ## 需求描述
 
-1. **开发环境**：在 `vite.config.ts` 启用 `server.historyApiFallback: true`，使 Vite dev server 对所有未匹配静态资源的路由请求回退到 `index.html`。
-2. **生产环境**：新增 `nginx.conf`，配置 `try_files $uri $uri/ /index.html;`，使 Nginx 优先服务静态文件，其余路由回退到 `index.html` 由 Vue Router 接管。
-3. **验证修复**：开发环境 `npm run dev` 后刷新任意路由页面（`/users`、`/system/user`、`/roles`、`/permissions` 等）不再 404；生产构建 `npm run build` 产物配合 Nginx 部署后刷新任意路由页面不再 404；现有功能（登录、权限守卫、动态路由加载）不受影响。
+1. **启用切换按钮**：登录页密码框 `BaseInput` 的 `show-password` 置为 `true`，密码框默认 `type=password`（掩码）并在输入框尾部渲染可见性切换按钮（眼睛图标）。
+2. **交互切换**：点击切换按钮，密码由掩码切换为明文（`type=text`）；再次点击恢复掩码（`type=password`）；切换过程中已输入的密码值不变。
+3. **浏览器可点击**：修复 BaseInput 切换按钮的 CSS `pointer-events: none` 问题，使生产构建产物中切换按钮声明 `pointer-events: auto`，真实浏览器可点击。
+4. **不回归**：登录提交 payload（username/password）、表单校验、既有 LoginView 全部测试用例不受影响。
 
 ## 验收标准（TDD 驱动）
 
-### AC1 — 开发环境刷新任意路由不再 404
-> 启动 `npm run dev`，在浏览器直接访问 `/users`、`/system/user`、`/roles`、`/permissions` 等路由，页面正常渲染（无 404）。
+### AC1 — 密码框默认掩码且渲染可见性切换按钮 ✅ 达成（2026-09-10，用例 1 通过）
+> 挂载 LoginView 后，`input[placeholder="请输入密码"]` 的 `type="password"`；该密码 BaseInput 的 `showPassword` prop 为 `true`；其内部存在 `.base-input__suffix` 切换按钮元素。
 
-**用例**：`Playwright` e2e 测试（或手工验收脚本）启动 dev server，依次导航并刷新上述路由，断言页面标题/关键元素存在、无 404 文本。
+**用例**：`AC1 ← 用例 LoginView.spec.ts#PasswordVisibility > renders password masked with toggle rendered by default`
 
-### AC2 — 生产环境 Nginx 配置正确回退
-> `nginx.conf` 含 `try_files $uri $uri/ /index.html;`，静态资源正常服务，非静态路由回退到 `index.html`。
+### AC2 — 点击切换按钮在明文/掩码间双向切换 ✅ 达成（2026-09-10，用例 2 通过）
+> 初始 `type=password`；点击 `.base-input__suffix` 一次后该 input `type="text"`；再次点击后恢复 `type="password"`。
 
-**用例**：`bash scripts/smoke.sh` 包含的前端构建验证步骤，执行 `npm run build` 产出 `dist/`，结合 Nginx 配置模板渲染后，校验配置语法 `nginx -t` 通过。
+**用例**：`AC2 ← 用例 LoginView.spec.ts#PasswordVisibility > toggle switches password type to text and back`
 
-### AC3 — 现有功能不受影响
-> 登录流程、路由守卫权限校验、动态路由加载、侧边栏菜单导航均正常工作。
+### AC3 — 构建产物 CSS 保证切换按钮真实可点击 ✅ 达成（2026-09-10，冒烟 web-033 grep 通过）
+> `npm run build` 产物 `dist/assets/css/*.css`（实际为组件 chunk `BaseInput-*.css`）中 `.base-input__suffix` 选择器规则包含 `pointer-events: auto` 声明。（路径口径修正：Planner 原稿写 `index-*.css`，实测样式按组件分 chunk，修正为 glob 匹配，不改变判定语义）
 
-**用例**：复用现有前端测试套件（`router.spec.ts`、`useMenu.spec.ts`、`system-menu-path-fix.spec.ts` 等）全量通过；冒烟脚本 `web-029`、`web-030`、`web-031` 等现有用例通过。
+**用例**：`AC3 ← 用例 bash scripts/smoke.sh#web-033 登录页密码可见性切换验证`
+
+### AC4 — 切换显隐不改变密码值且登录提交 payload 不变 ✅ 达成（2026-09-10，用例 3 通过，全量零新增失败）
+> 输入密码后点击切换按钮，`loginForm.password` 仍等于输入原值；随后触发 `handleLogin()`，`authApi.login` 收到的参数 `{username, password, rememberMe}` 与切换前一致；Password Visibility 3 条用例全部通过。回归口径：`LoginView.spec.ts` 失败数不超过既有基线 2 条（`handles successful login response`、web/028 redirect，均属 web/011 预存红项，本次零新增失败）。
+
+**用例**：`AC4 ← 用例 LoginView.spec.ts#PasswordVisibility > toggle preserves password value and login payload`
+
+> AC4 修订记录（Planner 于 Generator 执行前修订，2026-09-10）：原稿「LoginView.spec.ts 全量用例通过（0 failed）」与预存基线冲突（实现前实测基线即 2 failed | 22 passed，属 web/011 范围），修订为「零新增失败」对照口径，修订已登记 session-state 挂起区。
 
 ## 测试清单
 
+> 先于实现写出，规则遵循 `.harness/rules/tdd-workflow.md`；Generator 运行确认 RED 后填入实际输出。
+
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | 开发环境刷新 /users 路由 | AC1 | ✅ 通过 (vite.config.ts historyApiFallback 生效) |
-| 2 | 开发环境刷新 /system/user 路由 | AC1 | ✅ 通过 (vite.config.ts historyApiFallback 生效) |
-| 3 | 开发环境刷新 /roles 路由 | AC1 | ✅ 通过 (vite.config.ts historyApiFallback 生效) |
-| 4 | 开发环境刷新 /permissions 路由 | AC1 | ✅ 通过 (vite.config.ts historyApiFallback 生效) |
-| 5 | Nginx 配置含 try_files 指令 | AC2 | ✅ 通过 (nginx.conf 第 29 行) |
-| 6 | 前端路由相关测试全绿 | AC3 | ✅ 通过 (router.spec.ts 9/9, useMenu.spec.ts 10/10, system-menu-path-fix.spec.ts 6/6) |
-| 7 | 冒烟现有用例通过 | AC3 | ✅ 通过 (web-029/030/031 等现有用例) |
+| 1 | PasswordVisibility > renders password masked with toggle rendered by default | AC1 | ✅ GREEN（先 RED：expected false to be true；后 1 passed） |
+| 2 | PasswordVisibility > toggle switches password type to text and back | AC2 | ✅ GREEN（先 RED：切换按钮不存在；后 1 passed） |
+| 3 | PasswordVisibility > toggle preserves password value and login payload | AC4 | ✅ GREEN（先 RED：切换按钮不存在；后 1 passed） |
+| 4 | 构建产物 `.base-input__suffix` 含 `pointer-events: auto` | AC3 | ✅ GREEN（BaseInput-DEEZ2xz8.css 实测含 `cursor:pointer;pointer-events:auto`） |
+| 5 | LoginView.spec.ts 全量回归（既有登录/跳转/错误/回显用例） | AC4 | ✅ 22 passed / 2 failed（与实现前基线完全一致，零新增失败） |
+| 6 | 冒烟 web-033 登录页密码可见性切换验证 | AC1~AC4 | ✅ 通过（单跑 exit=0：3 passed + 构建 + grep） |
 
 ## RED 证据
 
-- 当前 `vite.config.ts` 缺少 `server.historyApiFallback` 配置
-- 当前仓库无 `nginx.conf` 生产部署配置模板
-- 直接访问/刷新 `/users` 等路由返回 404（浏览器 Network 面板可见）
+- 执行：`npm run test -- --run src/views/LoginView.spec.ts -t "Password Visibility"`（实现前，2026-09-10）
+- 关键失败输出（Test Files 1 failed，Tests 3 failed | 21 skipped）：
+
+```text
+[RED] FAIL  LoginView > Password Visibility (AC1/AC2/AC4) > renders password masked with toggle rendered by default (AC1)
+AssertionError: expected false to be true // LoginView.spec.ts:400（showPassword prop 为 false，期望 true）
+[RED] FAIL  LoginView > Password Visibility (AC1/AC2/AC4) > toggle switches password type to text and back (AC2)
+AssertionError: expected false to be true // LoginView.spec.ts:414（.base-input__suffix 切换按钮不存在）
+[RED] FAIL  LoginView > Password Visibility (AC1/AC2/AC4) > toggle preserves password value and login payload (AC4)
+AssertionError: expected false to be true // LoginView.spec.ts:435（.base-input__suffix 切换按钮不存在）
+```
+
+- AC3（构建产物 pointer-events）：当前 `BaseInput.vue` 的 `.base-input__suffix` 继承 `pointer-events: none`，无 `pointer-events: auto` 声明 → 冒烟 web-033 grep 预期 RED（在冒烟步骤留痕）。
+- 根因：`LoginView.vue:185` 密码框 `:show-password="false"` 关闭了 BaseInput 的切换能力。
 
 ## GREEN 证据
 
-- `vite.config.ts` 第 43 行新增 `historyApiFallback: true`
-- 新增 `nginx.conf` 第 29 行含 `try_files $uri $uri/ /index.html;`（含 http 上下文，适配 Docker 部署）
-- `npm run build` 通过（18.11s，产物正常）
-- `npm run test` 路由核心测试全绿：router.spec.ts 9/9、useMenu.spec.ts 10/10、system-menu-path-fix.spec.ts 6/6、guards.spec.ts 20/20
-- 前端预存失败测试（LoginView 2、DefaultLayout 1、TagsView 4、auth-token 2、IndexView 13）与本次变更无关，属基线预存问题（session-state 已登记）
-- `nginx -t` 语法检查：配置语法正确，仅 upstream `backend` 在非 Docker 环境不可解析（属模板预期行为）
+- `frontend/src/views/LoginView.vue:185` — `:show-password="false"` → `:show-password="true"`（启用切换按钮）
+- `frontend/src/components/BaseInput.vue:39` — `const showPassword = ref(false)`：内部状态与 prop 解耦，prop 仅控制切换按钮显隐、初始始终掩码（修复 prop=true 时初始明文的语义错误，对齐 Element Plus 语义）
+- `frontend/src/components/BaseInput.vue:284-286` — `.base-input__suffix` 补充 `pointer-events: auto`（覆盖共享规则的 `pointer-events: none`，真实浏览器可点击）
+- `npm run test -- --run src/views/LoginView.spec.ts -t "Password Visibility"` → **3 passed**（Test Files 1 passed）
+- 全量前端测试：`Tests 20 failed | 268 passed (288)`，20 失败与实现前基线（2026-09-10 实测）逐条一致，零新增
+- 构建产物实测：`dist/assets/css/BaseInput-DEEZ2xz8.css` 含 `.base-input__suffix[data-v-dcc27bdb]{cursor:pointer;pointer-events:auto}`
+- `npm run lint` exit 0；`npm run build` ✓ built in 16.91s
 
 ## 门禁与冒烟记录
 
-- 后端门禁：`mvn -q verify`（无后端变更，不涉及）
-- 前端门禁：`npm run build` ✅ 通过；`npm run test` 核心路由测试 ✅ 全绿（268/288 通过，20 失败均为预存基线问题）；`npm run lint` 预存超时（非本次引入）
-- 冒烟新增用例：`web-032 开发环境路由刷新不 404`（vite.config.ts historyApiFallback 生效）、`web-032-prod Nginx 配置模板验证`（nginx.conf 含 try_files 指令）
-- 冒烟用例数：2（新增）
-- 冒烟结果：✅ 通过
+- 后端门禁：`mvn -q verify` ❌ Tests run: 130, Failures: 4, Errors: 2 —— 全部为预存/环境类（Docker 缺失 TestLayersSpec/TestUtilsSpec、真实库种子 sys_role 22≠2、DataSourceConfigBinding 环境变量绑定 ×2、RoleControllerTest#assignPermissionsInvalidPermissionReturns400 expected 400 was 409 已登记）；本次零后端改动，用户裁决基线对照推进（2026-09-10）
+- 前端门禁：`npm run lint` ✅ exit 0；`npm run test` 288 用例 20 failed | 268 passed（失败清单与实现前基线完全一致，零新增）✅；`npm run build` ✅ 16.91s
+- 冒烟新增用例：`web-033 登录页密码可见性切换验证`（单跑 ✅ exit=0，覆盖 AC1/AC2/AC4 单测 + AC3 构建产物 grep）
+- 冒烟用例数：1（新增）
+- 冒烟结果：整体 ❌（45 用例 10 失败，全部为实现前基线预存：infra-001 健康探测 90s 超时、model-008/010 接口 spec 方法数 6≠7、roles-001/002 409 已登记、web-013/026 grep 计数过期、web-020/021/022 构建产物 grep 过期且 web/022 已废弃⚠️）——用户裁决「基线对照推进」，预存红项已登记 session-state 挂起区交 Evaluator 对照裁决
 
 ## 拆分说明
 
-本功能点仅涉及 2 个配置文件变更（`vite.config.ts`、`nginx.conf`），验收标准 3 条，文件变更 2 个，作为单独 Sprint 交付，不再拆分。
+预估验收标准 4 条（未超 4 条）、业务文件变更 3 个（`LoginView.vue`、`LoginView.spec.ts`、`scripts/smoke.sh`，BaseInput.vue 至多 1 行样式修正，未超 6 个），不触发拆分，作为单独 Sprint 交付。
 
-## 交付物（预估 2 文件）
+## 交付物（预估 3~4 文件）
 
-1. `frontend/vite.config.ts` — 新增 `server.historyApiFallback: true`
-2. `nginx.conf` — 新增 Nginx 生产部署配置模板
+1. `frontend/src/views/LoginView.vue` — 密码框 `:show-password` 置为 `true`
+2. `frontend/src/views/LoginView.spec.ts` — Password Visibility 用例改写/新增（AC1/AC2/AC4，先于实现）
+3. `frontend/src/components/BaseInput.vue` — 切换按钮 `pointer-events: auto` 样式修正（1 行级）
+4. `scripts/smoke.sh` — 追加 `web-033` 冒烟用例
 
 ## 变更清单
 
 ### 修改
 
-- `frontend/vite.config.ts`：
-  - 在 `server` 配置中新增 `historyApiFallback: true`
-
-### 新增
-
-- `nginx.conf`：
-  - 标准 SPA 部署配置：监听 80、root 指向 `/usr/share/nginx/html`、index index.html、`try_files $uri $uri/ /index.html;`、反向代理 `/api` 到后端
+- `frontend/src/views/LoginView.vue`：
+  - 密码框 BaseInput 的 `:show-password="false"` 改为 `:show-password="true"`（默认掩码语义不变，仍为 `type="password"`）
+- `frontend/src/components/BaseInput.vue`：
+  - 切换按钮 `.base-input__suffix`（`togglePassword` 所在 span）补充 `pointer-events: auto`，覆盖 `&__prefix,&__suffix` 规则中的 `pointer-events: none`；仅作用于可点击切换按钮，不影响 prefix/纯展示 suffix 的既有行为
+- `frontend/src/views/LoginView.spec.ts`：
+  - 改写 `Password Visibility (AC1, AC2)` 既有用例（当前断言 `showPassword` prop 为 `false`、切换按钮存在时才断言，属条件断言）为 AC1/AC2/AC4 三条确定性用例
+- `scripts/smoke.sh`：
+  - 追加 `web-033` 用例：Password Visibility 3 条单测通过（`-t` 过滤，规避预存失败干扰）+ `npx vite build` 后 grep `dist/assets/css/*.css` 中 `.base-input__suffix` 含 `pointer-events: auto`（未删除、未改动既有用例）
 
 ## 规范检查清单
 
-- [x] `mvn -q verify` 后端门禁通过（无后端变更）
-- [x] `npm run build` 前端构建通过
-- [x] `npm run test` 前端核心路由测试通过（预存失败 20 用例非本次引入）
-- [ ] `npm run lint` 前端 lint 通过（预存失败除外）
-- [x] `bash scripts/smoke.sh` 冒烟测试通过（含 web-032 新增用例，后端核心测试全绿）
-- [x] 符合 Vue 3 / Vite 编码规范
+- [~] `mvn -q verify` 后端门禁：基线预存 6 失败（零后端改动，用户裁决基线对照，登记挂起区）
+- [x] `npm run lint && npm run test && npm run build` 前端门禁通过（lint exit 0、build 通过、test 零新增失败=基线 20 条）
+- [~] `bash scripts/smoke.sh`：新增 web-033 单跑 ✅；整体 45 用例 10 失败均为实现前预存（用户裁决基线对照，登记挂起区）
+- [x] 符合 Vue 3 / Vite / Element Plus 编码规范
 - [x] 符合 TDD 工作流（测试先行、RED 证据完整、GREEN 实现、REFACTOR 无坏味道）

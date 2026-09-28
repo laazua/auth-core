@@ -2,14 +2,16 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟢 sprint-062 实现完成（web/031 ✅），sprint-063 实现完成（web/032 ✅），sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023），sprint-057 评审通过（web/026 ✅），sprint-059 评审通过（web/027 ✅），sprint-060 待评审（web/029 ✅），sprint-061 待评审（web/030 ✅）
+- 状态: 🟢 sprint-064 实现完成待评审（web/033），sprint-063 实现完成待评审（web/032），sprint-062 实现完成待评审（web/031），sprint-061 待评审（web/030），sprint-060 待评审（web/029），sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023），sprint-057 评审通过（web/026 ✅），sprint-059 评审通过（web/027 ✅）
 - 当前模块: web
-- 当前功能点: web/011（PLANNED），web/011a 🔄（规划中），web/017 🔄（规划中），web/023 🔄（规划中），web/026 ✅（已完成），web/027 ✅（已完成），web/029 ✅（已完成），web/030 ✅（待评审），web/031 ✅（待评审），web/032 ✅（已完成）
+- 当前功能点: web/033 ✅（待评审，sprint-064），web/011（PLANNED），web/011a 🔄（规划中），web/017 🔄（规划中），web/023 🔄（规划中），web/026 ✅，web/027 ✅，web/029 ✅，web/030 ✅（待评审），web/031 ✅（待评审），web/032 ✅（待评审）
 
 ## 下一步动作
-  Evaluator：评审 web/032（sprint-063），验证 vite.config.ts historyApiFallback、nginx.conf try_files、前端构建通过、核心路由测试全绿、冒烟通过
+  Evaluator：评审 web/033（sprint-064），按 `.harness/rules/review-criteria.md` 复核：① Password Visibility 3 用例 RED→GREEN 证据链；② LoginView.vue `:show-password=true` 与 BaseInput `ref(false)` 默认掩码语义（web/013 不回归）；③ 构建产物 `.base-input__suffix{pointer-events:auto}` 真实可点击；④ 全量前端测试零新增失败（268/288=基线）；⑤ 亲自复跑 `bash scripts/smoke.sh`，重点对照 web-033 通过与预存 10 项失败的基线归因（见挂起区用户裁决）
 
 ## 挂起
+- 2026-09-10: Generator(sprint-064) — 用户裁决「基线对照推进」（问答记录）：基线冒烟/后端门禁预存红项与 Generator 约束 5 冲突，用户裁定沿 sprint-040 先例登记预存红项、照常提交并置 AWAITING_REVIEW 交 Evaluator 对照裁决。基线红项清单（实现前实测）：① `mvn -q verify` 130 用例 6 失败＝TestLayersSpec/TestUtilsSpec（无 Docker）、SeedDataIntegrationTest（真实库 sys_role 22≠2）、DataSourceConfigBindingTest ×2（环境变量绑定）、RoleControllerTest 409（已登记）；② 冒烟 45 用例 10 失败＝infra-001（健康探测 90s 超时）、model-008/010（RoleService/ModuleServiceInterfaceSpec 方法数 expected 6 was 7）、roles-001/002（409 已登记）、web-013/026（grep '19/23 passed' 计数过期，实测 22 passed）、web-020/021/022（构建产物 grep 过期，web/022 已废弃⚠️）；③ 前端全量测试 20 失败＝既有基线（LoginView 2、DefaultLayout 1、TagsView 4、auth-token 2、IndexView 13）。均与 web/033 零关联（零后端改动）。另登记本次规划/实现两处口径修订：AC4「全量 0 failed」→「零新增失败」（基线 2 failed 属 web/011）；AC3 产物路径 `index-*.css`→`dist/assets/css/*.css`（样式按组件分 chunk，实测 BaseInput-*.css）。
+- 2026-09-10: Planner(sprint-064) — 用户指令「以 planner 开始依次执行」，本会话按 Planner→Generator→Evaluator 顺序推进 web/033；Evaluator 积压不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
 - 2026-09-03: Planner(sprint-049) — 新增 web/025（主内容区图标间距优化），前置依赖 web/003/007/008/016/024 均 ✅，不阻塞 web/017/023 评审；web/011 待规划优先级不变。
 - 2026-09-03: Planner(sprint-048) — 新增 web/024（主内容区图标尺寸异常），前置依赖 web/003/007/008/016 均 ✅，不阻塞 web/017/023 评审；web/011 待规划优先级不变。
 - 2026-09-02: Planner(sprint-041) — 台账盘点仍待决：web/010（sprint-035）评审并入账未完成，registry 行仍 🔄、阶段总览计数已按实际行修正；web/011 预存红项治理优先级维持。本次新增注册 web/017 不依赖二者。
@@ -23,6 +25,8 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-09-10: Generator — done sprint-064（web/033 登录页新增显示密码功能，3 用例测试先行 RED→GREEN，lint/build 通过，冒烟 web-033 通过，预存红项基线对照登记）
+- 2026-09-10: Planner — kickoff sprint-064（web/033 登录页新增显示密码功能，4 条验收标准，前置依赖 web/002/web/013 均 ✅）
 - 2026-09-10: Generator — done sprint-063（web/032 修复 SPA 路由刷新 404 问题，vite.config.ts historyApiFallback + nginx.conf try_files，前端构建通过，核心路由测试 45/45 通过，冒烟通过）
 - 2026-09-10: Planner — kickoff sprint-063（web/032 修复 SPA 路由刷新 404 问题，3 条验收标准）
 - 2026-09-09: Planner — kickoff sprint-XXX（web/028 修复登录后跳转 Dashboard 失败，1 条验收标准）

@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-10: Generator — done sprint-064（web/033 登录页新增显示密码功能，测试先行 3/3 RED→GREEN，lint/build 通过、前端测试 268/288 零新增失败，冒烟 web-033 单跑通过；整体冒烟 10 项与后端门禁 6 项预存红项经用户裁决「基线对照推进」登记挂起区）
+- 2026-09-10: Planner — kickoff sprint-064（web/033 登录页新增显示密码功能，4 条验收标准，前置依赖 web/002/web/013 均 ✅）
 - 2026-09-10: Generator — done sprint-063（web/032 修复 SPA 路由刷新 404 问题，vite.config.ts historyApiFallback + nginx.conf try_files，前端构建通过，核心路由测试 45/45 通过，冒烟通过）
 - 2026-09-10: Planner — kickoff sprint-063（web/032 修复 SPA 路由刷新 404 问题，3 条验收标准，前置依赖 web/001 ✅）
 - 2026-09-10: Generator — done sprint-062（web/031 修复用户管理新增/编辑抽屉确认按钮不可点击问题，3 条验收标准测试先行全部转绿，前端构建通过，冒烟 web-031 通过）
