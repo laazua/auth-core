@@ -72,7 +72,9 @@ router.beforeEach(async (to, _from, next) => {
       const accessibleRoutes = generateRoutes(roles);
       accessibleRoutes.forEach((route) => router.addRoute(route));
       dynamicRoutesLoaded = true;
-      next({ ...to, replace: true });
+      // to 此时可能匹配 catch-all（name='NotFound'），展开 {...to} 会被 vue-router 按 name 优先解析回 404；
+      // 显式只传 path/query/hash，按目标 path 重新匹配动态路由
+      next({ path: to.path, query: to.query, hash: to.hash, replace: true });
       return;
     } catch (error) {
       console.error('Failed to load dynamic routes:', error);

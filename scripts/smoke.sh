@@ -314,10 +314,11 @@ smoke_case "web-026 登录跳转修复验证" bash -c "
 
 # web/029：修复侧边栏菜单导航404问题（Router Guard 动态路由加载 + 测试断言修正）验证
 # 2026-09-28 计数随 web/034 迁移用例同步：router.spec 9→11、system-menu-path-fix 6→7（useMenu 不变 10）
+# 2026-09-28 计数随 web/035 首载导航用例同步：router.spec 11→14（新增 web-035 三条）
 smoke_case "web-029 Router Guard 动态路由加载修复验证" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1
   # 验证 Router Guard 动态路由测试通过
-  npm run test -- --run src/__tests__/router.spec.ts 2>&1 | grep -q '11 passed' || exit 1
+  npm run test -- --run src/__tests__/router.spec.ts 2>&1 | grep -q '14 passed' || exit 1
   # 验证 useMenu 菜单路径测试通过
   npm run test -- --run src/composables/useMenu.spec.ts 2>&1 | grep -q '10 passed' || exit 1
   # 验证 system-menu-path-fix 路径断言测试通过
@@ -350,8 +351,8 @@ smoke_case "web-034 系统管理路由迁移验证" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1
   # AC1：菜单路径断言测试通过（system-menu-path-fix 7 用例，含 web-034 AC1）
   npm run test -- --run src/__tests__/system-menu-path-fix.spec.ts 2>&1 | grep -q '7 passed' || exit 1
-  # AC2/AC3：路由注册结构与新路径可达/旧路径 404 测试通过（router.spec 11 用例，含 web-034 两条）
-  npm run test -- --run src/__tests__/router.spec.ts 2>&1 | grep -q '11 passed' || exit 1
+  # AC2/AC3：路由注册结构与新路径可达/旧路径 404 测试通过（router.spec 14 用例，含 web-034 两条与 web-035 三条）
+  npm run test -- --run src/__tests__/router.spec.ts 2>&1 | grep -q '14 passed' || exit 1
   # AC4：useMenu 菜单断言测试通过（10 用例）
   npm run test -- --run src/composables/useMenu.spec.ts 2>&1 | grep -q '10 passed' || exit 1
   # AC1/AC2：生产构建产物含新路径，且占位组件 UserView/RoleView 不再打包
@@ -360,6 +361,17 @@ smoke_case "web-034 系统管理路由迁移验证" bash -c "
   grep -rq '/system/roles' dist/assets/js/ || exit 1
   ! ls dist/assets/js/ 2>/dev/null | grep -q 'UserView' || exit 1
   ! ls dist/assets/js/ 2>/dev/null | grep -q 'RoleView' || exit 1
+"
+
+# web/035：修复登录后首次导航受保护路由落 404（动态路由首载 next 展开 to 携带 NotFound name 陷阱）验证
+smoke_case "web-035 动态路由首载导航验证" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  # AC1/AC2/AC3：web-035 三条守卫用例（真实 @/router 首载时序：首击即达、query 保留、二次导航直达）通过
+  npm run test -- --run src/__tests__/router.spec.ts -t 'web-035' 2>&1 | grep -q '3 passed' || exit 1
+  # AC1~AC3：router.spec 全量 14 用例通过（含 web-029 复刻用例与 web-034 迁移用例不回归）
+  npm run test -- --run src/__tests__/router.spec.ts 2>&1 | grep -q '14 passed' || exit 1
+  # AC4：生产构建产物正常产出
+  npx vite build >/dev/null 2>&1 || exit 1
 "
 # ====================================================================================
 
