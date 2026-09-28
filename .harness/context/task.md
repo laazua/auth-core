@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/034 |
 | 功能点名称 | 系统管理菜单用户/角色路由迁移至 /system/users 与 /system/roles |
-| 状态 | AWAITING_REVIEW |
+| 状态 | DONE |
 | 创建时间 | 2026-09-28 |
 
 ## 前置依赖
@@ -161,4 +161,4 @@ AssertionError: expected [ '/users', '/roles', …(2) ] to include '/system/user
 
 ## 评审记录
 
-> Evaluator 填写。
+- 2026-09-28: Evaluator — pass sprint-065（平均分 8.8/10，4 条 AC 全满足；门禁/冒烟亲测：`mvn -q verify` 130 用例 4F+2E、前端 test 20 failed | 271 passed、冒烟 47 用例 10 失败，三者均经与基线逐条对照确认零新增；lint 全量卡死第 6 次复现（exit 124），分片 lint 3 处预存经 `git show 54c941a:` 基线版本复测确认、本次零新增；冒烟增量 +1（web-034 单跑 ✅，smoke_case 48→49 亲测）；`vite preview` 亲测 `/system/users`、`/system/roles` HTTP 200；否决项 6 依用户 2026-09-28「基线对照推进」裁决豁免，豁免依据见挂起区）
