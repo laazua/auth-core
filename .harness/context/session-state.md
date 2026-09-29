@@ -2,12 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟢 sprint-069 实现完成待评审（modules/002 AWAITING_REVIEW，门禁+冒烟通过）；sprint-068 评审通过（web/037 ✅，均分 9.5/10）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
+- 状态: 🟢 sprint-069 评审通过（modules/002 ✅，均分 9.0/10）；sprint-068 评审通过（web/037 ✅，均分 9.5/10）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
 - 当前模块: modules
-- 当前功能点: modules/002（AWAITING_REVIEW，模块（外部服务）统一访问入口，sprint-069 工作单 `.harness/context/task.md`）
+- 当前功能点: modules/002 ✅（sprint-069 评审通过）；web/011（PLANNED），web/017 🔄（规划中），web/023 🔄（规划中），web/036 🔄（036b/036c 待规划）
 
 ## 下一步动作
-  Evaluator：读 `.harness/evaluator.md` 并严格执行，工作单 `.harness/context/task.md`（sprint-069，modules/002）。复核要点：① AC1-AC4 逐条判定（AC1 为实现前即绿的守护断言，RED 由 AC2/AC3 五条承担，已在工作单如实登记，TDD 维度按此口径核验不构成伪造）；② 亲自复跑 `mvn -q verify`（预期 136 用例 4F+2E 与基线逐条一致）、`bash scripts/smoke.sh`（预期 51 用例、modules-002 ✅、9 失败为基线子集）；③ 对照挂起区 Planner 语义裁量与 §4 透传口径登记核验实现是否越界（未引入服务凭证、未改表、未动 SecurityConfig/GlobalExceptionHandler/既有 check API）；④ 变更范围 6 文件三方一致（test RED→feat GREEN→docs 提交序）；⑤ 遗留不回归项：modules/003（服务凭证，需 §3 仲裁）、web/038（前端适配）均未实现属预期。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
+  Planner：取下一功能点。建议优先级：① 清理 Evaluator 积压（sprint-047/048/060/061/062/063 六项待评审，见挂起区，长期积压建议优先消化）；② web/036b（暗色模式局部白底缺陷修复：BaseTable 遮罩失效选择器、settings 非法 variant prop、deep 覆盖补漏、暗色系协调；前置 web/036a ✅，与 web/017 同源可一并收口）；③ web/038（模块管理页「外部服务」语义适配，前置 modules/002 ✅ 已就绪，承接 modules/002 拆分预留）；④ modules/003（服务级接入凭证与服务登录，前置架构 §3 字段契约仲裁或 sys_user 服务账号零改表方案，须先完成仲裁）；另可选 web/011a（修复前端 TS 编译错误，前置 web/010 ✅）。挂起区「串联 :deep() 编译失效 42 处」预存缺陷，规划 web/036c 时对照。
 
 ## 挂起
 - 2026-09-29: Planner(sprint-069) — 用户需求「模块管理的模块不是指当前系统的用户/角色/权限，而是指别的运行服务，该服务需通过当前系统登录认证后才能通过当前系统访问」。澄清问答（两问：认证主体与凭证形态 / 经系统访问的深度）被用户中断并指示「继续」，Planner 按架构一致性裁量（登记如下，Evaluator/用户可复核推翻）：① 「登录认证」= 访问方须持 auth-core 有效 JWT（复用 auth/002/003），**不引入服务级凭证**，避免与架构 §3「字段名与约束为契约，不得增删改名」冲突；服务级凭证与「服务登录」另立 modules/003 预留，启动前须先走 §3 仲裁（或 sys_user 服务账号零改表方案）。② 「通过当前系统进行访问」= auth-core 网关代理：认证 + 模块级准入（由 §6.1 权限必须归属模块、§6.5 停用模块下权限无效推导）后按 sys_module.base_url 反向转发。架构口径登记：§4「响应体统一 Result」未覆盖代理场景，裁量=网关自身准入错误响应仍为 Result{code}，转发成功的下游响应按代理语义原样透传状态码与体；如需强制包裹 Result 由用户裁决。预存事实（explore 2026-09-29 实证）：base_url 为死字段、系统仅用户 JWT 一种凭证、auth/005 check 不涉访问通道。
@@ -32,6 +32,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-09-29: Evaluator — pass sprint-069（modules/002，平均分 9.0/10，基线对照豁免否决项 6）
 - 2026-09-29: Generator — done sprint-069（modules/002 模块（外部服务）统一访问入口，测试先行 5 failed RED→6/6 GREEN，mvn 136 用例 4F+2E 与基线逐条一致零新增，前端零改动 test 20 failed/build ✓/lint 卡死预存对照留痕，冒烟 51 用例 modules-002 通过、9 失败为基线子集零新增）
 - 2026-09-29: Planner — kickoff sprint-069（modules/002 模块（外部服务）统一访问入口：认证+模块级准入+按 base_url 网关转发，4 条验收标准，前置 auth/003/auth/004/modules/001/model/004/model/010 均 ✅，预估 6 文件顶格不拆分本功能点；总体需求拆分 modules/002 本次 / modules/003 服务凭证预留 / web/038 前端适配预留；语义裁量与 §4 透传口径已登记挂起区）
 - 2026-09-29: Evaluator — pass sprint-067（web/036a，平均分 9.3/10，基线对照豁免否决项 6）

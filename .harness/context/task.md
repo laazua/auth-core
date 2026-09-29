@@ -8,7 +8,7 @@
 | 所属模块 | modules |
 | 功能点 ID | modules/002 |
 | 功能点名称 | 模块（外部服务）统一访问入口——经认证与模块级权限准入后按 base_url 转发 |
-| 状态 | AWAITING_REVIEW |
+| 状态 | DONE |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -185,4 +185,4 @@ AC1 accessWithoutTokenReturns401 实现前即绿：Security 默认对未注册�
 
 ## 评审记录
 
-- （待 Evaluator）
+- 2026-09-29: Evaluator — **通过**（第 1 轮，平均分 9.0/10：功能 9 / 质量 9 / 规范 9 / TDD 9 / 安全 9）。验收标准 4/4 满足（亲测：mvn 136 用例 4F+2E 与基线逐条一致零新增、前端 test 20 failed/build ✓17.64s/lint 卡死 124 预存、冒烟 51 用例 modules-002 ✅ 且 9 失败为基线子集零新增、smoke 增量 +3/-0）；变更范围三方一致（6 业务 + 4 元数据零夹带，RED 提交 acd4a89 中实现文件不存在的 test-first 物证亲验）；六个一票否决逐一核对均未命中（否决项 6 按「基线对照推进」用户裁决口径豁免，先例 sprint-064~068）。改进建议见报告（RestTemplate 超时、base_url SSRF 白名单、路径级细粒度、AC1 守护断言长期价值）。
