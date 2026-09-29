@@ -99,7 +99,7 @@ onUnmounted(() => {
 .layout__content {
   flex: 1;
   overflow: auto;
-  padding: 0 24px 24px;
+  padding: 16px 24px 24px;
   min-width: 0;
 }
 

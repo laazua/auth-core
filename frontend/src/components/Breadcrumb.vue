@@ -56,7 +56,7 @@
 
 <style scoped lang="scss">
   .breadcrumb {
-    margin-bottom: 16px;
+    margin-bottom: 24px;
     font-size: 13px;
 
     :deep(.el-breadcrumb) {
@@ -87,6 +87,13 @@
         pointer-events: none;
       }
     }
+  }
+
+  /* 单 :deep() 写法：使 .el-breadcrumb__inner 成为 flex 容器，
+     图标与文字同行且垂直居中（串联 :deep() 在 scoped 编译中会残留字面量失效） */
+  .breadcrumb :deep(.el-breadcrumb__inner) {
+    display: inline-flex;
+    align-items: center;
   }
 
   .breadcrumb__icon {

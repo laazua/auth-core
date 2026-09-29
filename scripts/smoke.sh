@@ -388,6 +388,18 @@ smoke_case "web-036a EP 暗色变量接入与双轨同步验证" bash -c "
   grep -rq -- '--el-bg-color:#fff' dist/assets/css/*.css || exit 1
   grep -rqE -- '--color-bg-page: *#020617' dist/assets/css/*.css || exit 1
 "
+
+# web/037：面包屑导航间距优化与图标横排（与顶栏 16px/与内容卡片 24px 留白 + .el-breadcrumb__inner flex 使图标同行）验证
+smoke_case "web-037 面包屑间距与图标横排验证" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  # AC1/AC2/AC3 单测：源码层三断言（顶距 16px、底距 24px、单 :deep() 横排规则 + 图标尺寸不回归）
+  npm run test -- --run src/components/__tests__/breadcrumb-nav.spec.ts 2>&1 | grep -q '3 passed' || exit 1
+  # AC3 产物层：横排规则与两处间距进包（单 :deep() 编译后无字面残留）
+  npx vite build >/dev/null 2>&1 || exit 1
+  grep -rqE '\.layout__content\[[^{]*\{[^}]*padding:16px 24px 24px' dist/assets/css/*.css || exit 1
+  grep -rqE '\.breadcrumb\[[^{]*\{[^}]*margin-bottom:24px' dist/assets/css/*.css || exit 1
+  grep -rqE '\.breadcrumb\[[^{]* \.el-breadcrumb__inner\{[^}]*display:inline-flex' dist/assets/css/*.css || exit 1
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
