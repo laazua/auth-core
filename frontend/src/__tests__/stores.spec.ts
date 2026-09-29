@@ -160,5 +160,33 @@ describe('Pinia Stores', () => {
       expect(store.device).toBe('desktop');
       expect(store.isMobile).toBe(false);
     });
+
+    describe('web-036a 主题双轨同步', () => {
+      it('toggleTheme 与 setTheme 同步维护 data-theme 属性与 dark class', () => {
+        document.documentElement.removeAttribute('data-theme');
+        document.documentElement.classList.remove('dark');
+        const store = useAppStore();
+
+        store.toggleTheme();
+
+        expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+        expect(document.documentElement.classList.contains('dark')).toBe(true);
+
+        store.toggleTheme();
+
+        expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+        expect(document.documentElement.classList.contains('dark')).toBe(false);
+
+        store.setTheme('dark');
+
+        expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+        expect(document.documentElement.classList.contains('dark')).toBe(true);
+
+        store.setTheme('light');
+
+        expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+        expect(document.documentElement.classList.contains('dark')).toBe(false);
+      });
+    });
   });
 });

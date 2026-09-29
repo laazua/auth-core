@@ -219,4 +219,28 @@ describe('useTheme', () => {
       expect(document.documentElement.getAttribute('data-theme')).toBe('light');
     });
   });
+
+  describe('web-036a 主题双轨同步', () => {
+    it('initTheme 恢复 dark 与 light 时双轨状态一致', async () => {
+      const { useAppStore: realUseAppStore } =
+        await vi.importActual<typeof import('@/stores/app')>('@/stores/app');
+      document.documentElement.classList.remove('dark');
+
+      vi.spyOn(storage, 'get').mockReturnValue('dark');
+      setActivePinia(createPinia());
+      const darkStore = realUseAppStore();
+      darkStore.initTheme();
+
+      expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+      expect(document.documentElement.classList.contains('dark')).toBe(true);
+
+      vi.spyOn(storage, 'get').mockReturnValue(null);
+      setActivePinia(createPinia());
+      const lightStore = realUseAppStore();
+      lightStore.initTheme();
+
+      expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+      expect(document.documentElement.classList.contains('dark')).toBe(false);
+    });
+  });
 });
