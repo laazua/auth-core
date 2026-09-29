@@ -175,7 +175,8 @@ smoke_case "web-014 用户下拉菜单功能修复验证" bash -c "
 # web/015：DefaultLayout.vue 渐变背景修复验证（前端单测 + 样式解析）
 smoke_case "web-015 DefaultLayout 渐变背景修复验证" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1
-  npm run test -- --run src/layouts/__tests__/DefaultLayout.spec.ts src/views/__tests__/DashboardView.spec.ts src/__tests__/styles.spec.ts src/composables/useTheme.spec.ts 2>&1 | grep -q '27 passed'
+  # 2026-09-29 计数随 web/036a 新增双轨用例同步：useTheme.spec 13→14，四文件合计 27→28（用例未删除）
+  npm run test -- --run src/layouts/__tests__/DefaultLayout.spec.ts src/views/__tests__/DashboardView.spec.ts src/__tests__/styles.spec.ts src/composables/useTheme.spec.ts 2>&1 | grep -q '28 passed'
 "
 
 # web/016：CSS 主题变量源注入样式入口修复验证（生产构建产物含 --gradient-bg 与主色 #1D4ED8 定义）
@@ -372,6 +373,20 @@ smoke_case "web-035 动态路由首载导航验证" bash -c "
   npm run test -- --run src/__tests__/router.spec.ts 2>&1 | grep -q '14 passed' || exit 1
   # AC4：生产构建产物正常产出
   npx vite build >/dev/null 2>&1 || exit 1
+"
+
+# web/036a：暗色模式接入 Element Plus 暗色变量体系（html.dark 双轨同步 + EP dark css-vars 进包）验证
+smoke_case "web-036a EP 暗色变量接入与双轨同步验证" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  # AC1：stores.spec 主题双轨用例通过（toggleTheme/setTheme 同步 data-theme 与 dark class）
+  npm run test -- --run src/__tests__/stores.spec.ts -t 'web-036a' 2>&1 | grep -q '1 passed' || exit 1
+  # AC2：useTheme.spec 初始化双轨用例通过（initTheme 恢复 dark/light 双轨一致）
+  npm run test -- --run src/composables/useTheme.spec.ts -t 'web-036a' 2>&1 | grep -q '1 passed' || exit 1
+  # AC3：生产构建产物三断言（.dark 作用域 EP 暗值规则进包 + 亮色 --el-bg-color 白值不回归 + 自研 [data-theme=dark] 暗段仍在）
+  npx vite build >/dev/null 2>&1 || exit 1
+  grep -rqE '\.dark\{[^}]*--el-' dist/assets/css/*.css || exit 1
+  grep -rq -- '--el-bg-color:#fff' dist/assets/css/*.css || exit 1
+  grep -rqE -- '--color-bg-page: *#020617' dist/assets/css/*.css || exit 1
 "
 # ====================================================================================
 

@@ -54,6 +54,8 @@ export const useAppStore = defineStore('app', () => {
 
   const applyTheme = (newTheme: 'light' | 'dark') => {
     document.documentElement.setAttribute('data-theme', newTheme);
+    // 双轨同步：dark class 驱动 Element Plus 内置暗色变量（--el-*），data-theme 驱动自研变量（--color-*）
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
   };
 
   const setBreadcrumbs = (crumbs: BreadcrumbItem[]) => {

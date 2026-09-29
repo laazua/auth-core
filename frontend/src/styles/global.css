@@ -1,6 +1,9 @@
 @import './variables.scss';
 @import './reset.css';
 @import './element-plus.scss';
+/* Element Plus 内置暗色变量（.dark 作用域），必须在亮色 EP 变量之后引入，
+   与 stores/app.ts applyTheme() 的 html.dark class 双轨同步配套生效 */
+@import 'element-plus/theme-chalk/dark/css-vars.css';
 
 .container {
   width: 100%;
