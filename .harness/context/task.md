@@ -91,7 +91,7 @@ Planner 只读调研（explore 2026-09-29 实证）关键事实：
 > ③ 模块码不存在 → 400 + `code=1304`；
 > ④ 模块 `base_url` 为空 → 400 + `code=1305`。
 
-**用例**：`AC3 ← 用例 GatewayControllerTest#rejectsAccessWhenNotPermitted`
+**用例**：`AC3 ← 用例 GatewayControllerTest#rejectsWhenUserHasNoModulePermission / rejectsWhenModuleDisabled / rejectsWhenModuleNotFound / rejectsWhenBaseUrlMissing`（Planner 原登记单一方法名，Generator 按 coding-standards「一用例一行为」拆为 4 个方法，AC 语义不变）
 
 ### AC4 — 后端门禁零新增失败且冒烟 modules-002 通过
 > `mvn -q verify` 失败集与实现前基线逐条一致零新增（基线 130 用例 4 Failures + 2 Errors：TestLayersSpec/TestUtilsSpec 无 Docker、SeedDataIntegrationTest、DataSourceConfigBindingTest ×2、RoleControllerTest 409，2026-09-29 口径）；本功能点零前端改动，前端门禁不适用（如实注明）；`bash scripts/smoke.sh` 新增 `modules-002` 用例（定向跑 GatewayControllerTest）且单跑通过、整体失败与基线逐条一致零新增。
@@ -104,18 +104,28 @@ Planner 只读调研（explore 2026-09-29 实证）关键事实：
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | GatewayControllerTest#accessWithoutTokenReturns401 | AC1 | 待 Generator 执行（Security 默认行为守护断言，如实登记是否 RED） |
-| 2 | GatewayControllerTest#forwardsToModuleServiceWhenAuthorized | AC2 | 待 Generator 执行（预期 RED：端点不存在/未转发） |
-| 3 | GatewayControllerTest#rejectsAccessWhenNotPermitted | AC3 | 待 Generator 执行（预期 RED：四种情形断言均不满足） |
-| 4 | 冒烟 modules-002 网关定向测试（mvn -Dtest=GatewayControllerTest） | AC4 | 待 Generator 追加并执行 |
-| 5 | 后端全量门禁基线对照（实现前 130 用例 4F+2E 清单留痕） | AC4 | 待 Generator 实测登记 |
+| 1 | GatewayControllerTest#accessWithoutTokenReturns401 | AC1 | ✅ 实现前即绿（Security 默认保护新路径，守护断言如实登记，非 RED；实现中若被放行则失败） |
+| 2 | GatewayControllerTest#forwardsToModuleServiceWhenAuthorized | AC2 | ✅ RED（1 failed 实时留痕）→ 待 GREEN |
+| 3 | GatewayControllerTest#rejectsWhenUserHasNoModulePermission | AC3-① | ✅ RED（实时留痕）→ 待 GREEN |
+| 4 | GatewayControllerTest#rejectsWhenModuleDisabled | AC3-② | ✅ RED（实时留痕）→ 待 GREEN |
+| 5 | GatewayControllerTest#rejectsWhenModuleNotFound | AC3-③ | ✅ RED（实时留痕）→ 待 GREEN |
+| 6 | GatewayControllerTest#rejectsWhenBaseUrlMissing | AC3-④ | ✅ RED（实时留痕）→ 待 GREEN |
+| 7 | 冒烟 modules-002 网关定向测试（mvn -Dtest=GatewayControllerTest） | AC4 | 待 Generator 追加并执行 |
+| 8 | 后端全量门禁基线对照（实现前 130 用例 4F+2E 清单留痕） | AC4 | 待 Generator 实测登记 |
 
 ## RED 证据
 
-> Generator 于实现前执行测试清单 #1~#3 并粘贴关键失败输出；#1 若非 RED 须如实说明。
+> Generator 于实现前执行测试清单 #1~#6 并粘贴关键失败输出（实时留痕）。
 
 ```text
-[RED]（待 Generator 填写）
+[RED] mvn -q -f backend/pom.xml test -Dtest=GatewayControllerTest（实现前执行，2026-09-29）
+Tests run: 6, Failures: 5, Errors: 0, Skipped: 0
+[RED] GatewayControllerTest.forwardsToModuleServiceWhenAuthorized:163 Status expected:<201> but was:<500>
+[RED] GatewayControllerTest.rejectsWhenUserHasNoModulePermission:199 Status expected:<403> but was:<500>
+[RED] GatewayControllerTest.rejectsWhenModuleDisabled:223 Status expected:<403> but was:<500>
+[RED] GatewayControllerTest.rejectsWhenModuleNotFound:241 Status expected:<400> but was:<500>
+[RED] GatewayControllerTest.rejectsWhenBaseUrlMissing:265 Status expected:<400> but was:<500>
+AC1 accessWithoutTokenReturns401 实现前即绿：Security 默认对未注册路径的未认证请求返回 401+1401（守护断言，如实登记不伪造 RED）
 ```
 
 ## 门禁与冒烟记录
