@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-29: Generator — done sprint-068（web/037 面包屑间距与图标横排，测试先行 3 failed RED→3/3 GREEN，mvn 130 用例 4F+2E 与基线逐条一致，前端 test 20 failed/279 passed 零新增、build ✓ 17.55s、分片 lint 改动文件零告警，冒烟 50 用例 web-037 通过且 9 失败为基线子集零新增）
+- 2026-09-29: Planner — kickoff sprint-068（web/037 面包屑导航间距优化与图标横排，4 条 AC，前置 web/003/web/025 均 ✅；只读 CSS 层叠实证根因：.el-breadcrumb__inner 块化后非 flex 叠加全局 svg{display:block} 致图标竖排、.layout__content 顶距 0 与 .breadcrumb 底距 16px 致与 head/main 紧凑；经澄清问答用户确认「导航栏」指面包屑导航，预估 4 文件不拆分）
 - 2026-09-29: Evaluator — pass sprint-067（web/036a，平均分 9.3/10）
 - 2026-09-29: Generator — done sprint-067（web/036a 暗色模式接入 Element Plus 暗色变量体系，测试先行 2 failed RED→27/27 GREEN，mvn 130 用例 4F+2E 与基线逐条一致，前端 test 20 failed/276 passed 零新增，冒烟 49 用例 web-036a 通过且 9 失败为基线子集零新增，web-015 计数同步 27→28）
 - 2026-09-29: Planner — kickoff sprint-067（web/036a 暗色模式全站 UI 协调治理·接入 Element Plus 暗色变量体系，4 条 AC，前置 web/001/003/008/016 均 ✅；根因：自研 --color-* data-theme 与 EP --el-* 两套变量只切一套，EP dark css-vars 未引入、html.dark 未挂；超 6 文件拆分 036a/036b/036c，本次仅注册 web/036a）
