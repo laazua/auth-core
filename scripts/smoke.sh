@@ -400,6 +400,9 @@ smoke_case "web-037 面包屑间距与图标横排验证" bash -c "
   grep -rqE '\.breadcrumb\[[^{]*\{[^}]*margin-bottom:24px' dist/assets/css/*.css || exit 1
   grep -rqE '\.breadcrumb\[[^{]* \.el-breadcrumb__inner\{[^}]*display:inline-flex' dist/assets/css/*.css || exit 1
 "
+
+# modules/002：模块（外部服务）统一访问入口（认证+模块级准入+按 base_url 转发，Authorization 不外泄、拒绝面不触达下游）定向测试
+smoke_case "modules-002 模块统一访问入口网关定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='GatewayControllerTest'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

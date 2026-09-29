@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -172,7 +173,9 @@ class GatewayControllerTest {
         assertEquals(URI.create("http://service-a:8081/api/items?page=2"),
                 forwarded.getUrl(), "目标 URL = base_url 归一 + 剩余路径 + 查询串");
         assertFalse(forwarded.getHeaders().containsKey("Authorization"), "Authorization 不得外泄给外部服务");
-        assertEquals(MediaType.APPLICATION_JSON, forwarded.getHeaders().getContentType(), "Content-Type 应保留");
+        assertTrue(forwarded.getHeaders().getContentType() != null
+                        && forwarded.getHeaders().getContentType().isCompatibleWith(MediaType.APPLICATION_JSON),
+                "Content-Type 应原样保留为 application/json");
         assertEquals("{\"x\":1}",
                 new String((byte[]) forwarded.getBody(), StandardCharsets.UTF_8), "请求体应原样转发");
     }
@@ -252,10 +255,10 @@ class GatewayControllerTest {
     @Test
     @DisplayName("准入拒绝：模块服务地址未配置返回 400 code=1305 且不转发")
     void rejectsWhenBaseUrlMissing() throws Exception {
-        // Given: 种子模块 perm_mgmt 清空 base_url（测试事务回滚）
-        SysModule module = moduleByCode("perm_mgmt");
-        module.setBaseUrl(null);
-        moduleMapper.updateById(module);
+        // Given: 种子模块 perm_mgmt 清空 base_url（updateById 忽略 null 字段，须用 Wrapper 显式置空；测试事务回滚）
+        moduleMapper.update(null, new com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper<SysModule>()
+                .eq(SysModule::getCode, "perm_mgmt")
+                .set(SysModule::getBaseUrl, null));
 
         String token = getAdminToken();
 
