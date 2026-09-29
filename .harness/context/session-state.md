@@ -2,12 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟡 sprint-067 实现完成待评审（web/036a，AWAITING_REVIEW）；sprint-066 评审通过（web/035 ✅）；sprint-065 评审通过（web/034 ✅）；sprint-064 评审通过（web/033 ✅），sprint-063 实现完成待评审（web/032），sprint-062 实现完成待评审（web/031），sprint-061 待评审（web/030），sprint-060 待评审（web/029），sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023），sprint-057 评审通过（web/026 ✅），sprint-059 评审通过（web/027 ✅）
+- 状态: 🟢 sprint-067 评审通过（web/036a ✅，均分 9.3/10）；sprint-066 评审通过（web/035 ✅）；sprint-065 评审通过（web/034 ✅）；sprint-064 评审通过（web/033 ✅），sprint-063 实现完成待评审（web/032），sprint-062 实现完成待评审（web/031），sprint-061 待评审（web/030），sprint-060 待评审（web/029），sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023），sprint-057 评审通过（web/026 ✅），sprint-059 评审通过（web/027 ✅）
 - 当前模块: web
-- 当前功能点: web/036a 🔄（sprint-067 实现完成待评审，工作单见 `.harness/context/task.md`）；web/011（PLANNED），web/017 🔄（规划中），web/023 🔄（规划中）
+- 当前功能点: web/036a ✅（sprint-067 评审通过）；web/036 🔄（036b/036c 待规划），web/011（PLANNED），web/017 🔄（规划中），web/023 🔄（规划中）
 
 ## 下一步动作
-  Evaluator：评审 `.harness/context/task.md`（sprint-067 / web/036a，状态 AWAITING_REVIEW），按 `.harness/rules/review-criteria.md` 执行。要点对照：① RED 证据 2 failed + 产物 RED 实证；② 门禁基线对照——mvn 130 用例 4F+2E 逐条一致、前端 test 20 failed/276 passed 零新增、build ✓、分片 lint --fix 后零告警；③ 冒烟 49 用例失败 9 条为基线 10 条子集（infra-001 本轮转绿属环境波动）零新增、web-036a 单跑通过、web-015 计数同步 27→28；④ 变更 6 业务文件未超熔断；⑤ 可选浏览器实测暗色下表格/抽屉视觉效果（Playwright 本机不可用未执行，见 task.md AC3 辅助证据节）。Evaluator 积压七项仍待评审：sprint-047/048/060/061/062/063 + 本次 sprint-067。
+  Planner：取下一功能点。建议优先级：① 新功能点 web/036b（暗色模式局部白底缺陷修复：BaseTable.vue 遮罩失效选择器、settings 非法 variant prop、分页/树/弹层 deep 覆盖补漏、EP 暗值与自研 slate 暗色系协调映射；前置 web/036a ✅，与 web/017 同源可一并收口）；② 清理 Evaluator 积压（sprint-047/048/060/061/062/063 六项待评审，见挂起区）；③ 可选：web/011a（修复前端 TS 编译错误，前置 web/010 ✅）。
 
 ## 挂起
 - 2026-09-29: Planner(sprint-067) — 用户指令「登录系统后暗色模式整个系统有的区域暗色有的区域白色，重新优化整系统 UI 更美观；以 planner 开始依次执行」。只读调研定位根因：自研 `--color-*`（variables.scss:184-265 `[data-theme=dark]`）与 Element Plus `--el-*` 两套变量体系只切了一套——全仓未引入 `element-plus/theme-chalk/dark/css-vars.css`、`applyTheme()`（stores/app.ts:55-57）只写 `data-theme` 不挂 `html.dark`，致表格/抽屉×6/分页×4/消息框/树/选择器等 EP 原生组件恒白底。无架构冲突（EP 为技术栈表内选型）。拆分登记（总变更 >6 文件）：web/036a 体系接入（本次 sprint-067，6 文件顶格含熔断）/ web/036b 局部白底缺陷（BaseTable.vue:196-202 选择器编译失效、settings/IndexView.vue:146,159 非法 variant prop、deep 覆盖补漏、暗色系协调）/ web/036c 打磨治理（死代码 Layout.vue/TagsView.vue/styles.index.ts、smoke web-015/016/017 过期 grep）。与 web/017（sprint-041 待评审，EP 弹层白底）同源，评审 sprint-067 时一并对照避免重复。门禁/冒烟沿用基线对照口径（sprint-066 实测）。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
@@ -28,6 +28,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-09-29: Evaluator — pass sprint-067（web/036a，平均分 9.3/10，基线对照豁免否决项 6）
 - 2026-09-29: Generator — done sprint-067（web/036a 暗色模式接入 EP 暗色变量体系，2 failed RED→27/27 GREEN，门禁基线对照零新增，冒烟 49 用例 web-036a 通过、9 失败为基线子集）
 - 2026-09-29: Planner — kickoff sprint-067（web/036a 暗色模式全站 UI 协调治理·接入 Element Plus 暗色变量体系，4 条验收标准，前置依赖 web/001/003/008/016 均 ✅，拆分 036a/036b/036c）
 - 2026-09-28: Evaluator — pass sprint-066（web/035，平均分 9.1/10，基线对照豁免否决项 6）
