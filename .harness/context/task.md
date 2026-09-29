@@ -8,7 +8,7 @@
 | 所属模块 | modules |
 | 功能点 ID | modules/002 |
 | 功能点名称 | 模块（外部服务）统一访问入口——经认证与模块级权限准入后按 base_url 转发 |
-| 状态 | PLANNED |
+| 状态 | AWAITING_REVIEW |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -69,10 +69,10 @@ Planner 只读调研（explore 2026-09-29 实证）关键事实：
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — 未认证访问网关返回 401 code=1401 且不发起下游调用
-- [ ] AC2 — 通过准入的请求按模块 base_url 转发且响应原样透传（Authorization 不外泄）
-- [ ] AC3 — 准入失败的任一情形均拒绝且不发起下游调用
-- [ ] AC4 — 后端门禁零新增失败且冒烟 modules-002 通过
+- [x] AC1 — 未认证访问网关返回 401 code=1401 且不发起下游调用
+- [x] AC2 — 通过准入的请求按模块 base_url 转发且响应原样透传（Authorization 不外泄）
+- [x] AC3 — 准入失败的任一情形均拒绝且不发起下游调用
+- [x] AC4 — 后端门禁零新增失败且冒烟 modules-002 通过
 
 ### AC1 — 未认证访问网关返回 401 code=1401 且不发起下游调用
 > 不携带 Authorization（以及携带伪造 Bearer token）请求 `GET /api/v1/gateway/ORDER/detail` → HTTP 401、响应体 `Result{code=1401}`；且下游 RestTemplate 调用零次发生（mock `verify(restTemplate, never())`）。**如实登记**：实现前 Security 默认行为对该路径即返回 401，本条为安全门槛守护断言（写入时可能即绿），RED 证据由 AC2/AC3/冒烟承担；若实现中被 permitAll 放行则本条失败。
@@ -105,13 +105,13 @@ Planner 只读调研（explore 2026-09-29 实证）关键事实：
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
 | 1 | GatewayControllerTest#accessWithoutTokenReturns401 | AC1 | ✅ 实现前即绿（Security 默认保护新路径，守护断言如实登记，非 RED；实现中若被放行则失败） |
-| 2 | GatewayControllerTest#forwardsToModuleServiceWhenAuthorized | AC2 | ✅ RED（1 failed 实时留痕）→ 待 GREEN |
-| 3 | GatewayControllerTest#rejectsWhenUserHasNoModulePermission | AC3-① | ✅ RED（实时留痕）→ 待 GREEN |
-| 4 | GatewayControllerTest#rejectsWhenModuleDisabled | AC3-② | ✅ RED（实时留痕）→ 待 GREEN |
-| 5 | GatewayControllerTest#rejectsWhenModuleNotFound | AC3-③ | ✅ RED（实时留痕）→ 待 GREEN |
-| 6 | GatewayControllerTest#rejectsWhenBaseUrlMissing | AC3-④ | ✅ RED（实时留痕）→ 待 GREEN |
-| 7 | 冒烟 modules-002 网关定向测试（mvn -Dtest=GatewayControllerTest） | AC4 | 待 Generator 追加并执行 |
-| 8 | 后端全量门禁基线对照（实现前 130 用例 4F+2E 清单留痕） | AC4 | 待 Generator 实测登记 |
+| 2 | GatewayControllerTest#forwardsToModuleServiceWhenAuthorized | AC2 | ✅ RED（实时留痕）→ GREEN（断言精修：Content-Type 按兼容性断言，原样保留含 charset） |
+| 3 | GatewayControllerTest#rejectsWhenUserHasNoModulePermission | AC3-① | ✅ RED（实时留痕）→ GREEN |
+| 4 | GatewayControllerTest#rejectsWhenModuleDisabled | AC3-② | ✅ RED（实时留痕）→ GREEN |
+| 5 | GatewayControllerTest#rejectsWhenModuleNotFound | AC3-③ | ✅ RED（实时留痕）→ GREEN |
+| 6 | GatewayControllerTest#rejectsWhenBaseUrlMissing | AC3-④ | ✅ RED（实时留痕）→ GREEN（测试数据精修：updateById 忽略 null 字段，改 LambdaUpdateWrapper.set 显式置空 base_url） |
+| 7 | 冒烟 modules-002 网关定向测试（mvn -Dtest=GatewayControllerTest） | AC4 | ✅ 已追加并随全量冒烟通过（smoke 51 用例，modules-002 ✅） |
+| 8 | 后端全量门禁基线对照（实现前 130 用例 4F+2E 清单留痕） | AC4 | ✅ 实测 136 用例（130+6 新增）4 Failures + 2 Errors 与基线逐条一致零新增，GatewayControllerTest 6/6 全绿 |
 
 ## RED 证据
 
@@ -130,11 +130,10 @@ AC1 accessWithoutTokenReturns401 实现前即绿：Security 默认对未注册�
 
 ## 门禁与冒烟记录
 
-> 待 Generator 实现后填写，含 mvn 基线对照明细、smoke 用例数与失败对照、AC1 RED 如实说明。
-
-- 后端 `mvn -q verify`：待填
-- 前端门禁：不适用（本功能点零前端改动）
-- `bash scripts/smoke.sh`：待填（新增 modules-002）
+- 后端 `mvn -q verify`：**Tests run: 136, Failures: 4, Errors: 2** —— 136 = 基线 130 + 新增 6；失败/错误与基线逐条一致（DataSourceConfigBindingTest ×2、RoleControllerTest 409、SeedDataIntegrationTest、TestLayersSpec/TestUtilsSpec Docker 缺失），**零新增失败**；GatewayControllerTest 6/6 全绿 ✅（2026-09-29 实测）
+- 前端门禁：**不适用（本功能点零前端改动）**，按基线对照口径实测留痕：`npm run test` 20 failed / 279 passed 与基线逐条一致零新增；`npm run build` ✓ built in 17.25s；`npm run lint` 全量 timeout 300s exit 124 卡死为预存（沿基线对照口径，第 7 次复现），零前端改动故无分片对象
+- `bash scripts/smoke.sh`：**51 用例（50 基线 + 新增 modules-002），失败 9 条与基线 9 条逐条一致零新增**（model-008/010、roles-001/002、web-013、web-020/021/022、web-026，均为既有预存红项）；**modules-002 单跑 ✅ 通过** ✅（2026-09-29 实测）
+- AC1 如实说明：实现前即绿（Security 默认对未注册路径的未认证请求返回 401+1401），属安全门槛守护断言，RED 证据由 AC2/AC3 五条失败承担（见上「RED 证据」）
 
 ## 拆分说明
 
@@ -170,19 +169,19 @@ AC1 accessWithoutTokenReturns401 实现前即绿：Security 默认对未注册�
 - `backend/src/test/java/com/authcore/controller/GatewayControllerTest.java` — AC1/AC2/AC3 用例（测试先行，含 never() 不转发断言）
 
 ### 修改
-- `scripts/smoke.sh` — 追加 `modules-002` 网关定向用例（不删除、不改动既有用例）
+- `scripts/smoke.sh`:403-405 — 追加 `modules-002 模块统一访问入口网关定向测试` 冒烟用例（`mvn -Dtest=GatewayControllerTest`，不删除、不改动既有用例）
 
 ### 删除
 - （无）
 
 ## 规范检查清单
 
-- [ ] `mvn -q verify` 后端门禁（基线对照零新增失败）
-- [ ] 前端门禁不适用（本功能点零前端改动，如实注明）
-- [ ] `bash scripts/smoke.sh` 新增 modules-002 单跑通过且整体与基线一致
-- [ ] 符合 Java 21 / Spring Boot 3 / Spring Security 6 编码规范与既有分层约定（controller → service 接口 → impl）
-- [ ] 符合 TDD 工作流（测试先行、RED 证据完整【AC1 如实登记】、GREEN 实现、REFACTOR 全绿）
-- [ ] 变更文件不超过 6 个（预估 6 顶格，超限熔断回报）
+- [x] `mvn -q verify` 后端门禁（136 用例 4F+2E 与基线逐条一致零新增）
+- [x] 前端门禁不适用（本功能点零前端改动；test/build/lint 基线对照实测留痕于「门禁与冒烟记录」）
+- [x] `bash scripts/smoke.sh` 新增 modules-002 单跑通过且整体 9 失败与基线逐条一致（51 用例）
+- [x] 符合 Java 21 / Spring Boot 3 / Spring Security 6 编码规范与既有分层约定（controller → service 接口 → impl，构造器注入 final 字段，无字段注入）
+- [x] 符合 TDD 工作流（测试先行、RED 证据实时留痕 5 failed、GREEN 6/6、REFACTOR 复查全绿；AC1 非 RED 如实登记）
+- [x] 变更文件不超过 6 个（实际 6：GatewayController/GatewayService/GatewayServiceImpl/RestTemplateConfig/GatewayControllerTest/smoke.sh，顶格未超熔断）
 
 ## 评审记录
 
