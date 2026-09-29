@@ -2,12 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟡 待评审：sprint-068（web/037）实现完成 AWAITING_REVIEW；sprint-067 评审通过（web/036a ✅，均分 9.3/10）；sprint-066 评审通过（web/035 ✅）；sprint-065 评审通过（web/034 ✅），sprint-064 评审通过（web/033），sprint-063 实现完成待评审（web/032），sprint-062 实现完成待评审（web/031），sprint-061 待评审（web/030），sprint-060 待评审（web/029），sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023），sprint-057 评审通过（web/026 ✅），sprint-059 评审通过（web/027 ✅）
+- 状态: 🟢 sprint-068 评审通过（web/037 ✅，均分 9.5/10）；sprint-067 评审通过（web/036a ✅，均分 9.3/10）；sprint-066 评审通过（web/035 ✅）；sprint-065 评审通过（web/034 ✅），sprint-064 评审通过（web/033），sprint-063 实现完成待评审（web/032），sprint-062 实现完成待评审（web/031），sprint-061 待评审（web/030），sprint-060 待评审（web/029），sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023），sprint-057 评审通过（web/026 ✅），sprint-059 评审通过（web/027 ✅）
 - 当前模块: web
-- 当前功能点: web/037 🔄（sprint-068 AWAITING_REVIEW，面包屑导航间距优化 + 图标横排，4 条 AC 已勾选）；web/036 🔄（036b/036c 待规划），web/011（PLANNED），web/017 🔄（规划中），web/023 🔄（规划中）
+- 当前功能点: web/037 ✅（sprint-068 评审通过）；web/036 🔄（036b/036c 待规划），web/011（PLANNED），web/017 🔄（规划中），web/023 🔄（规划中）
 
 ## 下一步动作
-  Evaluator：评审 `.harness/context/task.md`（sprint-068 / web/037，AWAITING_REVIEW），按 `.harness/rules/review-criteria.md` 复核——须亲自复跑门禁两条命令与 `bash scripts/smoke.sh`（预期 50 用例、web-037 单跑通过、9 失败为基线子集），核对 RED 证据与两段式提交序（65cc713 test RED → 21468ee feat GREEN），并对照挂起区「:deep 串联失效」预存缺陷登记避免重复开单。
+  Planner：取下一功能点。建议优先级：① 清理 Evaluator 积压（sprint-047/048/060/061/062/063 六项待评审，见挂起区，长期积压建议优先消化）；② 新功能点 web/036b（暗色模式局部白底缺陷修复：BaseTable.vue 遮罩失效选择器、settings 非法 variant prop、分页/树/弹层 deep 覆盖补漏、EP 暗值与自研 slate 暗色系协调映射；前置 web/036a ✅，与 web/017 同源可一并收口）；③ 可选：web/011a（修复前端 TS 编译错误，前置 web/010 ✅）。另注意挂起区新增「串联 :deep() 编译失效 42 处」预存缺陷，规划 web/036c 或专项时一并对照。
 
 ## 挂起
 - 2026-09-29: Generator(sprint-068) — 新发现预存缺陷登记（非阻塞，与 web/037 零关联，建议归 web/036c 打磨治理或单开）：全仓 17 个组件 42 处 scoped 样式使用**串联 `:deep()`**（如 `.a :deep(.b) :deep(.c)`）时，@vue/compiler-sfc 仅转换首个 `:deep()`，第二个原样残留为字面选择器致规则实际失效（node 实验：单 `:deep()` 正常、串联时第二个保留 `:deep(` 字面；产物 dist 实证 42 处字面残留）。影响面：Breadcrumb 颜色覆盖、Sidebar 菜单 40px/圆角/hover 等既有覆盖均未生效（EP 默认样式兜底，无崩溃）。web/037 横排规则已规避（单 `:deep()`，产物实证编译生效）。另：`frontend/src/layouts/DefaultLayout.vue` 78 处 prettier 缩进为预存（stash 对照 HEAD 实证），本功能点未做无关格式化。
