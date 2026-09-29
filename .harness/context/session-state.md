@@ -2,12 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟠 sprint-066 实现完成待评审（web/035 AWAITING_REVIEW）；sprint-065 评审通过（web/034 ✅）；sprint-064 评审通过（web/033 ✅），sprint-063 实现完成待评审（web/032），sprint-062 实现完成待评审（web/031），sprint-061 待评审（web/030），sprint-060 待评审（web/029），sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023），sprint-057 评审通过（web/026 ✅），sprint-059 评审通过（web/027 ✅）
+- 状态: 🟢 sprint-066 评审通过（web/035 ✅）；sprint-065 评审通过（web/034 ✅）；sprint-064 评审通过（web/033 ✅），sprint-063 实现完成待评审（web/032），sprint-062 实现完成待评审（web/031），sprint-061 待评审（web/030），sprint-060 待评审（web/029），sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023），sprint-057 评审通过（web/026 ✅），sprint-059 评审通过（web/027 ✅）
 - 当前模块: web
-- 当前功能点: web/035 🔄（sprint-066 实现完成，AWAITING_REVIEW），web/011（PLANNED），web/011a 🔄（规划中），web/017 🔄（规划中），web/023 🔄（规划中）
+- 当前功能点: web/035 ✅（已完成，sprint-066），web/011（PLANNED），web/011a 🔄（规划中），web/017 🔄（规划中），web/023 🔄（规划中）
 
 ## 下一步动作
-  Evaluator：读 `.harness/evaluator.md` 并严格执行，评审 sprint-066（web/035 登录后首次导航受保护路由落 404 修复）：复跑 `bash scripts/smoke.sh` 与前端全量测试对照基线（test 基线 20 failed、冒烟基线 10 失败、后端 6 失败、lint 全量卡死预存），按 review-criteria 七步与评分模板出评审报告；重点核验 AC1/AC2 用真实 `@/router` 单例的 RED 证据（2 failed 实时留痕，提交 328612e）与修复行 index.ts:77 的 name 陷阱消除。
+  Planner：取下一功能点。建议优先级：① 清理 Evaluator 积压（sprint-047/048/060/061/062/063 六项待评审，见挂起区）；② 新功能点建议 web/011a（修复前端 TS 编译错误，前置 web/010 ✅，可一并治理 lint 全量卡死与预存 prettier、冒烟过期用例）；③ 可选新功能点：治理 web/035 改进建议（登出时重置 dynamicRoutesLoaded 并移除动态路由、guard 调试日志生产关闭、/404 与 catch-all 重名 NotFound 隐患）
 
 ## 挂起
 - 2026-09-28: Generator(sprint-065) — 冒烟口径同步两处登记（供 Evaluator 对照）：① `web-010` 断言随本功能点演进为新口径（原断言固化占位 `path:"user"`/`path:"role"` 与顶级 `path:"/users"`/`path:"/roles"`，与 web/034 迁移目标直接冲突，首跑即失败；用例未删除，断言更新为 users/roles 子路由 + `/system/users`、`/system/roles` 存在 + 旧路径精确匹配移除，更新后 ✅）；② `web-029` grep 计数同步（router.spec 9→11、system-menu-path-fix 6→7，因本次新增 3 条用例过期，用例未删除）。门禁基线对照实测：`mvn -q verify` 130 用例 4F+2E 与基线逐条一致；前端 test 20 failed 与基线逐条一致（271=268+3）；冒烟 47 用例 10 失败与基线逐条一致零新增；`npm run lint` 全量卡死第 5 次复现（300s），分片 lint 本次 5 文件仅剩 3 处预存 prettier（useMenu.spec:26/207、routes:124，`git show HEAD:` 复测确认）零新增。
@@ -27,7 +27,8 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
-- 2026-09-28: Planner — kickoff sprint-066（web/035 修复登录后首次导航受保护路由落 404，4 条 AC；根因只读取证复现：`next({ ...to, replace: true })` 在 to.name='NotFound' 时按 name 优先解析回 catch-all，致首击 404、二次正常；修复写法 `next({ path: to.fullPath, replace: true })` 已在一次性脚本验证）
+- 2026-09-28: Evaluator — pass sprint-066（web/035，平均分 9.1/10，基线对照豁免否决项 6）
+- 2026-09-28: Generator — done sprint-066（web/035 登录后首导航 404 修复，测试先行 2 failed RED→14/14 GREEN，门禁基线对照零新增，冒烟 48 用例 web-035 通过且 10 失败与基线逐条一致）
 - 2026-09-28: Evaluator — pass sprint-065（web/034，平均分 8.8/10，基线对照豁免否决项 6）
 - 2026-09-28: Generator — done sprint-065（web/034 系统管理菜单用户/角色路由迁移 /system/users 与 /system/roles，测试先行 9 failed RED→28/28 GREEN，分片 lint 零新增、test/build 通过、冒烟 web-034 单跑通过、整体 10 失败与基线逐条一致零新增）
 - 2026-09-28: Planner — kickoff sprint-065（web/034 系统管理菜单用户/角色路由迁移至 /system/users 与 /system/roles，4 条验收标准，前置依赖 web/003/004/005/010/029 均 ✅）
