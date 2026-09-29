@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-29: Generator — done sprint-067（web/036a 暗色模式接入 Element Plus 暗色变量体系，测试先行 2 failed RED→27/27 GREEN，mvn 130 用例 4F+2E 与基线逐条一致，前端 test 20 failed/276 passed 零新增，冒烟 49 用例 web-036a 通过且 9 失败为基线子集零新增，web-015 计数同步 27→28）
+- 2026-09-29: Planner — kickoff sprint-067（web/036a 暗色模式全站 UI 协调治理·接入 Element Plus 暗色变量体系，4 条 AC，前置 web/001/003/008/016 均 ✅；根因：自研 --color-* data-theme 与 EP --el-* 两套变量只切一套，EP dark css-vars 未引入、html.dark 未挂；超 6 文件拆分 036a/036b/036c，本次仅注册 web/036a）
 - 2026-09-28: Evaluator — pass sprint-066（web/035，平均分 9.1/10）
 - 2026-09-28: Generator — done sprint-066（web/035 登录后首导航 404 修复，测试先行 2 failed RED→14/14 GREEN，门禁基线对照零新增，冒烟 48 用例 web-035 通过且 10 失败与基线逐条一致）
 - 2026-09-28: Planner — kickoff sprint-066（web/035 修复登录后首导航落 404，4 条 AC，3 文件预估；根因取证复现：guard case 4 `next({ ...to, replace: true })` 携带 NotFound name 被 vue-router 优先解析回 catch-all）
