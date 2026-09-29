@@ -2,14 +2,15 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟢 sprint-069 评审通过（modules/002 ✅，均分 9.0/10）；sprint-068 评审通过（web/037 ✅，均分 9.5/10）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
-- 当前模块: modules
-- 当前功能点: modules/002 ✅（sprint-069 评审通过）；web/011（PLANNED），web/017 🔄（规划中），web/023 🔄（规划中），web/036 🔄（036b/036c 待规划）
+- 状态: 🟢 sprint-070 规划完成（web/038a PLANNED）；sprint-069 评审通过（modules/002 ✅，均分 9.0/10）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
+- 当前模块: web
+- 当前功能点: web/038a（PLANNED，模块服务统一入口 a 段——Cookie 双承载与网关内嵌头剥离，sprint-070 工作单 `.harness/context/task.md`）
 
 ## 下一步动作
-  Planner：取下一功能点。建议优先级：① 清理 Evaluator 积压（sprint-047/048/060/061/062/063 六项待评审，见挂起区，长期积压建议优先消化）；② web/036b（暗色模式局部白底缺陷修复：BaseTable 遮罩失效选择器、settings 非法 variant prop、deep 覆盖补漏、暗色系协调；前置 web/036a ✅，与 web/017 同源可一并收口）；③ web/038（模块管理页「外部服务」语义适配，前置 modules/002 ✅ 已就绪，承接 modules/002 拆分预留）；④ modules/003（服务级接入凭证与服务登录，前置架构 §3 字段契约仲裁或 sys_user 服务账号零改表方案，须先完成仲裁）；另可选 web/011a（修复前端 TS 编译错误，前置 web/010 ✅）。挂起区「串联 :deep() 编译失效 42 处」预存缺陷，规划 web/036c 时对照。
+  Generator：读 `.harness/generator.md` 并严格执行，工作单 `.harness/context/task.md`（sprint-070，web/038a）。首个实现要点：① 按工作单测试清单 #1~#5 先写测试并运行留 RED 实时证据（AuthControllerTest 追加 2 方法、GatewayControllerTest 追加 3 方法）；② 实现三文件（JwtAuthenticationFilter Cookie 分支、AuthController 登录 Set-Cookie/登出清除、GatewayServiceImpl 剥 XFO/CSP）；③ 严守 6 文件熔断（filter/AuthController/GatewayServiceImpl/两测试类/smoke.sh），超出停止并回报。注意：不改 SecurityConfig 与 GlobalExceptionHandler、不碰 038b~e 范围（accessibles/字段修复/前端一律不做）；Bearer 优先于 Cookie，登出无状态语义不变。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
 
 ## 挂起
+- 2026-09-29: Planner(sprint-070) — 设计转工作单与两处口径登记（设计文档 `docs/superpowers/specs/2026-09-29-module-iframe-access-design.md` 用户逐节确认并评审通过，commit 83b19fb）：① **Cookie 双承载口径**——架构 §安全「JWT(HS256)」与登录契约（payload/2h 有效期）未限定 HTTP 承载头，本单仅新增 Set-Cookie 传输位置，签发/payload/过期/校验零改动、响应体契约不变 → 无冲突；安全权衡登记=过滤器接受 Cookie 后所有受保护端点技术上可被 Cookie 调用，依赖 SameSite=Lax 阻断跨站写、写操作仍走 Bearer。② **网关剥 XFO/CSP 口径**——属 sprint-069 §4 代理语义登记（转发成功响应原样透传）的头维度明确化：所剥两头为浏览器内嵌限制控制头、非业务契约；权衡=授权用户可将外部系统内嵌（取得响应仍需 JWT+模块权限，等同内容转发权），登记接受。③ **web/038 总需求拆分（一次只注册第一个）**：web/038a Cookie 双承载+网关头剥离（本次 sprint-070，6 文件顶格）/ 038b accessibles 可访问列表 / 038c baseUrl·createdAt 字段错位修复（硬前置）/ 038d 我的模块菜单页 / 038e iframe 视图+管理页「进入」；modules/003 服务凭证与本组无关仍待 §3 仲裁。附：设计文档第 4 节菜单机制 ID 笔误 web/005→web/003 已就地修正。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
 - 2026-09-29: Planner(sprint-069) — 用户需求「模块管理的模块不是指当前系统的用户/角色/权限，而是指别的运行服务，该服务需通过当前系统登录认证后才能通过当前系统访问」。澄清问答（两问：认证主体与凭证形态 / 经系统访问的深度）被用户中断并指示「继续」，Planner 按架构一致性裁量（登记如下，Evaluator/用户可复核推翻）：① 「登录认证」= 访问方须持 auth-core 有效 JWT（复用 auth/002/003），**不引入服务级凭证**，避免与架构 §3「字段名与约束为契约，不得增删改名」冲突；服务级凭证与「服务登录」另立 modules/003 预留，启动前须先走 §3 仲裁（或 sys_user 服务账号零改表方案）。② 「通过当前系统进行访问」= auth-core 网关代理：认证 + 模块级准入（由 §6.1 权限必须归属模块、§6.5 停用模块下权限无效推导）后按 sys_module.base_url 反向转发。架构口径登记：§4「响应体统一 Result」未覆盖代理场景，裁量=网关自身准入错误响应仍为 Result{code}，转发成功的下游响应按代理语义原样透传状态码与体；如需强制包裹 Result 由用户裁决。预存事实（explore 2026-09-29 实证）：base_url 为死字段、系统仅用户 JWT 一种凭证、auth/005 check 不涉访问通道。
 - 2026-09-29: Planner(sprint-069) — 总体需求拆分登记（一次只注册第一个子功能点）：**modules/002** 后端统一访问入口（本次 sprint-069，预估 6 文件顶格）；**modules/003** 服务级接入凭证与服务登录（预留 ⬜ 未注册，前置架构 §3 仲裁）；**web/038** 模块管理页「外部服务」语义适配（预留 ⬜ 未注册）。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
 - 2026-09-29: Generator(sprint-068) — 新发现预存缺陷登记（非阻塞，与 web/037 零关联，建议归 web/036c 打磨治理或单开）：全仓 17 个组件 42 处 scoped 样式使用**串联 `:deep()`**（如 `.a :deep(.b) :deep(.c)`）时，@vue/compiler-sfc 仅转换首个 `:deep()`，第二个原样残留为字面选择器致规则实际失效（node 实验：单 `:deep()` 正常、串联时第二个保留 `:deep(` 字面；产物 dist 实证 42 处字面残留）。影响面：Breadcrumb 颜色覆盖、Sidebar 菜单 40px/圆角/hover 等既有覆盖均未生效（EP 默认样式兜底，无崩溃）。web/037 横排规则已规避（单 `:deep()`，产物实证编译生效）。另：`frontend/src/layouts/DefaultLayout.vue` 78 处 prettier 缩进为预存（stash 对照 HEAD 实证），本功能点未做无关格式化。
@@ -32,6 +33,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-09-29: Planner — kickoff sprint-070（web/038a，4 条验收标准，设计文档 83b19fb 移交）
 - 2026-09-29: Evaluator — pass sprint-069（modules/002，平均分 9.0/10，基线对照豁免否决项 6）
 - 2026-09-29: Generator — done sprint-069（modules/002 模块（外部服务）统一访问入口，测试先行 5 failed RED→6/6 GREEN，mvn 136 用例 4F+2E 与基线逐条一致零新增，前端零改动 test 20 failed/build ✓/lint 卡死预存对照留痕，冒烟 51 用例 modules-002 通过、9 失败为基线子集零新增）
 - 2026-09-29: Planner — kickoff sprint-069（modules/002 模块（外部服务）统一访问入口：认证+模块级准入+按 base_url 网关转发，4 条验收标准，前置 auth/003/auth/004/modules/001/model/004/model/010 均 ✅，预估 6 文件顶格不拆分本功能点；总体需求拆分 modules/002 本次 / modules/003 服务凭证预留 / web/038 前端适配预留；语义裁量与 §4 透传口径已登记挂起区）

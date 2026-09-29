@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-29: Planner — kickoff sprint-070（web/038a，4 条验收标准）
+
 - 2026-09-29: Evaluator — pass sprint-069（modules/002，平均分 9.0/10，基线对照豁免否决项 6）
 
 - 2026-09-29: Generator — done sprint-069（modules/002 模块（外部服务）统一访问入口：`/api/v1/gateway/{moduleCode}/**` 认证+模块级准入+按 base_url 转发剥 Authorization，测试先行 5 failed RED→6/6 GREEN，mvn 136 用例 4F+2E 与基线逐条一致零新增，冒烟 51 用例 modules-002 通过且 9 失败为基线子集零新增）

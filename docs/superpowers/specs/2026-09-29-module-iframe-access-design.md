@@ -56,7 +56,7 @@
 
 ## 4. 前端改动
 
-1. **「我的模块」菜单**（全员登录可见，按 web/005 静态菜单机制注册，不绑具体权限码，内容自过滤）→ `MyModulesView`：调 `GET /modules/accessibles`，卡片网格（名称/编码/描述），空态提示「暂无可访问模块」，点卡片跳 `/workspace/module/:code`
+1. **「我的模块」菜单**（全员登录可见，按 web/003 动态菜单渲染机制注册，不绑具体权限码，内容自过滤）→ `MyModulesView`：调 `GET /modules/accessibles`，卡片网格（名称/编码/描述），空态提示「暂无可访问模块」，点卡片跳 `/workspace/module/:code`
 2. **iframe 视图页** `ModuleIframeView`：`src="/api/v1/gateway/${code}/"`（相对路径同源：dev 走 Vite proxy、生产同域，不写死 host），高度撑满内容区，带加载态
 3. **模块管理页操作列加「进入」**：`baseUrl 非空 && status=1` 才可点，否则 disabled 提示「未配置服务地址」，跳同一 iframe 路由
 4. **字段对齐收尾**：`types/module.ts` 读 `createdAt`；`api/module.ts` 加 `getAccessibles()`

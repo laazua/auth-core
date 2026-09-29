@@ -1,188 +1,163 @@
-# Sprint 工作单：sprint-069
+# Sprint 工作单：sprint-070
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-069 |
-| 所属模块 | modules |
-| 功能点 ID | modules/002 |
-| 功能点名称 | 模块（外部服务）统一访问入口——经认证与模块级权限准入后按 base_url 转发 |
-| 状态 | DONE |
+| Sprint ID | sprint-070 |
+| 所属模块 | web |
+| 功能点 ID | web/038a |
+| 功能点名称 | 模块服务统一入口（a 段）——JWT Cookie 双承载与网关内嵌响应头剥离（后端支撑） |
+| 状态 | PLANNED |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| auth/003 | JWT 校验过滤器 + SecurityContext 注入（网关 401/1401 门槛与当前登录用户身份来源） | ✅ |
-| auth/004 | GET /api/v1/auth/me 权限聚合（AuthService.getCurrentUserInfo 提供用户权限码集合，准入判定来源） | ✅ |
-| modules/001 | 模块 CRUD API（模块存在性/状态/base_url 的数据来源与 ModuleService 接口） | ✅ |
-| model/004 | sys_permission 表 module_id 非空（架构 §6.1 权限必须归属模块，模块级准入的判定依据） | ✅ |
-| model/010 | ModuleService 接口化（model/012「Controller 依赖接口」约定） | ✅ |
+| auth/002 | 登录签发 JWT（Cookie 的签发来源，登录响应挂 Set-Cookie 的落点） | ✅ |
+| auth/003 | JWT 校验过滤器 JwtAuthenticationFilter（本单在其内新增 Cookie 承载分支） | ✅ |
+| auth/006 | POST /api/v1/auth/logout 登出接口（无状态语义，本单在其响应挂清 Cookie 指令） | ✅ |
+| modules/002 | 网关准入与转发 GatewayService（Cookie 认证验证端点与下游响应头剥离落点，sprint-069 评审通过） | ✅ |
+| web/002 | 前端登录/登出既有调用（响应体契约不变、前端零改动的前提） | ✅ |
 
 ## 业务背景
 
-用户需求（原文）：「关于模块管理，我想要的是这里的模块不是指当前系统的用户，角色，权限等，而是指别的运行服务，该服务需要通过在当前系统进行登录认证后，才能通过当前系统进行访问」。
+用户需求（原文，2026-09-29 澄清收敛）：
 
-Planner 只读调研（explore 2026-09-29 实证）关键事实：
+1. 「我想要的效果是在进行模块配置后，能在当前系统中点击url然后就跳转到该模块的系统服务」
+2. 「我的要求是当前系统做统一的jwt鉴权，管理员给指定的用户授权后它能够看到自己可以访问的模块并进行访问」
+3. 「我的意思跳转的模块服务，还是在当前系统中进行」→ 形态选定「系统内嵌页面（iframe）」；入口选定「新菜单页 + 管理页可进入」。
 
-1. **base_url 是死字段**：`V3__create_sys_module.sql:6` 已有 `base_url VARCHAR(255) NULL`（注释语义即模块服务地址），但全仓无任何逻辑消费它——仅 CRUD 存取与前端列展示，外部服务在本系统中只是死数据；
-2. **只有一种凭证**：系统仅有用户 JWT（auth/002 login / auth/003 过滤器），无服务级凭证、client_id/secret 概念；
-3. **check API 不是访问通道**：`POST /api/v1/auth/check`（auth/005）为「userId + permissionCode」校验，要求用户 JWT，不涉及模块维度准入，更不承载对服务的访问；
-4. **SecurityConfig 天然覆盖新路径**：`SecurityConfig.java:90-91` 仅 permitAll actuator/login/logout，其余 `anyRequest().authenticated()`——新增网关路径自动受保护，无需修改 SecurityConfig。
+**设计文档**（用户逐节确认后评审通过，commit 83b19fb）：`docs/superpowers/specs/2026-09-29-module-iframe-access-design.md`。本工作单为该设计拆分后的**第一个子功能点 web/038a**，后续 038b~038e 依序规划。
 
-**语义澄清裁量**（澄清问答被用户中断并指示「继续」，Planner 按架构一致性裁量，已登记 session-state 挂起区，Evaluator/用户可复核推翻）：
+**本段解决的问题**：
 
-- **「登录认证」= 有效 JWT 准入**：访问方（终端用户或以服务账号身份的调用方）须先持有 auth-core 签发的有效 JWT（复用 auth/002/003），不引入服务级新凭证类型——避免与架构 §3「字段名与约束为契约，不得增删改名」冲突；「服务级凭证与服务登录」另立 modules/003 预留，启动前须先走 §3 仲裁（或采用 sys_user 服务账号零改表方案）。
-- **「通过当前系统进行访问」= 网关代理**：auth-core 作为统一入口，对目标模块（外部服务）做认证 + 模块级准入裁决后，按模块 `base_url` 反向转发请求；base_url 由死字段变为真实路由依据。
+- 浏览器同源 iframe 导航无法携带 `Authorization: Bearer` 头 → 需为同一 JWT 增加 `HttpOnly Cookie` 承载（签名/过期/校验零改动，仅多一个传输位置）；
+- 外部系统响应常带 `X-Frame-Options` / `Content-Security-Policy: frame-ancestors` → 浏览器拒绝 iframe 渲染，网关须按代理语义剥离这两个内嵌限制头。
 
-**架构对照（无冲突，一处口径登记）**：
+**架构对照（无冲突，两处口径登记）**：
 
-- 不改表结构（§3 ✓）；不引入表外技术栈——RestTemplate 属 Spring Boot Web 框架内置（§1 ✓）；接口在 `/api/v1/{resource}` 前缀内（§4 ✓）；准入语义直接由 §6.1（权限必须归属模块）与 §6.5（停用模块下权限视为无效）推导（✓）。
-- **口径登记（§4 兼容性）**：§4「响应体统一 Result 结构」未覆盖代理场景。裁量：网关**自身产生的准入错误响应**（401/403/400）仍为 `Result{code,message,data}`；转发**成功的下游响应**按代理语义原样透传状态码与响应体（下游为外部服务自有契约）。已登记 session-state 挂起区，如需强制包裹 Result 由用户裁决。
-- 错误码映射复用现状、零改动：403 抛 `AccessDeniedException` → `GlobalExceptionHandler.java:53-57` → 403+1403；新码 1304/1305 不在 409 清单 → `handleBusiness` 默认分支 400（`GlobalExceptionHandler.java:41-43`）。**注意**：抛 `BusinessException(1403)` 会被 `GlobalExceptionHandler.java:33-34` 翻成 401，必须用 `AccessDeniedException`。
+- 架构 §安全「JWT(HS256)」与登录契约（payload{uid,username,exp}、2h 有效期）未限定 HTTP 承载头；本单仅新增 Set-Cookie 承载，签发/payload/过期/校验零改动，响应体契约不变，不涉 §3 表字段 → 无冲突。
+- 网关响应头剥离 = sprint-069 已登记的代理语义（「转发成功的下游响应原样透传」）的**头维度明确化**：所剥两头是浏览器内嵌限制控制头、非业务契约；登记 session-state 挂起区。
+- 安全权衡（设计文档第 5 节已登记）：① 过滤器接受 Cookie 后所有受保护端点技术上可被 Cookie 调用 → 依赖 `SameSite=Lax` 阻断跨站写，写操作仍走 Bearer；② 剥离 XFO = 授权用户可将外部系统内嵌，取得响应仍需 JWT+模块权限，等同内容转发权，登记接受。
 
-**规模预估**：验收标准 4 条（未超 4）；预估文件变更 6 个（顶格未超 6）→ 本功能点不拆分。
+**规模预估**：验收标准 4 条（未超 4）；预估文件变更 6 个（顶格未超 6）→ 本子功能点不拆分。
 
-**总体需求拆分（一次只注册第一个子功能点 modules/002）**：
+**总体需求拆分（一次只注册第一个子功能点 web/038a；整组登记于 registry web/038 行备注）**：
 
-- **modules/002（本次 sprint-069，🔄）**：后端统一访问入口——认证 + 模块级准入 + 按 base_url 转发；
-- modules/003（预留，⬜ 未注册）：服务级接入凭证与「服务登录」——启动前须先裁决架构 §3 字段契约（或 sys_user 服务账号零改表方案）；
-- web/038（预留，⬜ 未注册）：模块管理页「外部服务」语义适配（模块即服务展示、base_url/接入状态、经网关访问说明）。
+- **web/038a（本次 sprint-070，🔄）**：后端内嵌支撑——Cookie 双承载（登录下发/登出清除/过滤器读取）+ 网关剥离下游 XFO/CSP；
+- web/038b（预留 ⬜）：`GET /modules/accessibles` 可访问模块列表（可见性=准入同源，前置 modules/002/auth/004）；
+- web/038c（预留 ⬜）：`baseUrl/createdAt` 字段错位修复（硬前置：页面配置存不进 base_url，后端 DTO @JsonAlias + 前端读 createdAt）；
+- web/038d（预留 ⬜）：「我的模块」菜单页（前置 038b，卡片网格+空态+跳转）；
+- web/038e（预留 ⬜）：iframe 内嵌视图 + 管理页「进入」（前置 038a/038d，点击访问闭环）。
 
 **关联登记**：Evaluator 积压六项不变（sprint-047/048/060/061/062/063），见 session-state 挂起区。
 
 ## 需求描述
 
-1. **网关端点**：`ALL /api/v1/gateway/{moduleCode}/**`，承接对模块（外部服务）的访问请求；moduleCode 后的剩余路径为转发目标子路径。
-2. **认证门槛**：未携带或携带无效/过期 JWT → HTTP 401、`Result.code=1401`（复用 JwtAuthenticationEntryPoint 现有行为），且不发起任何下游调用。
-3. **准入裁决**（当前用户身份从 SecurityContext 取，不信任请求体）：
-   - 模块码不存在 → HTTP 400、`code=1304`；
-   - 模块存在但 `base_url` 为空 → HTTP 400、`code=1305`；
-   - 当前用户对模块无任何**有效**权限（模块启用：其下权限中至少一个属于当前用户权限码集合；模块停用时其下权限按 §6.5 视为无效）→ HTTP 403、`code=1403`（抛 AccessDeniedException 翻译）；
-   - 任一拒绝情形均不发起下游调用。
-4. **转发**：通过准入后，以 RestTemplate 将**请求方法、查询串、请求体**转发至 `base_url + 剩余路径`（base_url 尾部 `/` 归一去重）；**剥离 Authorization 头**（JWT 不外泄给外部服务）；下游响应的**状态码与响应体原样透传**。
-5. **不回归**：后端既有测试零新增失败；前端零改动；冒烟追加 `modules-002` 用例。
+1. **登录下发 Cookie**：POST `/api/v1/auth/login` 成功时响应追加 `Set-Cookie: <JWT>; Max-Age={jwt.expire-hours×3600}; HttpOnly; SameSite=Lax; Path=/`；响应体 JSON 契约不变（token 照常返回，前端 axios 零改动）。
+2. **登出清除 Cookie**：POST `/api/v1/auth/logout` 响应追加同名 Cookie 清除指令（`Max-Age=0`）；服务端无状态语义不变（不引入 token 黑名单）。
+3. **过滤器双承载**：JwtAuthenticationFilter 在请求缺失 `Authorization` 头时，读取同名 Cookie 的值按**完全相同**的校验逻辑（签名/过期）填充 SecurityContext；Bearer 存在时行为与现状逐字节一致（承载优先级：Bearer > Cookie）。
+4. **网关内嵌支撑**：GatewayServiceImpl 转发下游响应时剥离 `X-Frame-Options` 与 `Content-Security-Policy` 两个响应头；其余行为（状态码/响应体原样透传、剥离请求侧 Authorization、模块级准入 1304/1305/403+1403/401+1401）与 sprint-069 逐条一致不回归。
 
-> 范围边界（防蔓延）：准入粒度=模块级（模块下任一有效权限即放行该模块全部路径），**不做**路径级/接口级细粒度鉴权；**不做**服务级凭证与服务登录（归 modules/003）；**不做**前端改造（归 web/038）；**不做**下游超时/重试/熔断/流式响应；**不修改**既有模块 CRUD、auth/005 check API 与 SecurityConfig（默认已保护）；**不修改** GlobalExceptionHandler（1304/1305 走默认 400 分支）。实现中预估变更文件超过 6 个，Generator 必须停止实现并回报 Planner 重新拆分。
+> 范围边界（防蔓延）：**不做** accessibles 接口（归 038b）、字段错位修复（归 038c）、任何前端改动（归 038d/038e）；**不改** SecurityConfig（sprint-069 实证 `anyRequest().authenticated()` 天然覆盖，仅动过滤器）与 GlobalExceptionHandler；**不改** JWT 签发/payload/过期语义与登录响应体契约；**不引入**第二套会话体系（Cookie 仅是同一 JWT 的另一承载）。实现中预估变更文件超过 6 个，Generator 必须停止实现并回报 Planner 重新拆分。
 
 ## 验收标准（TDD 驱动）
 
-- [x] AC1 — 未认证访问网关返回 401 code=1401 且不发起下游调用
-- [x] AC2 — 通过准入的请求按模块 base_url 转发且响应原样透传（Authorization 不外泄）
-- [x] AC3 — 准入失败的任一情形均拒绝且不发起下游调用
-- [x] AC4 — 后端门禁零新增失败且冒烟 modules-002 通过
+- [ ] AC1 — 登录响应下发 HttpOnly/SameSite=Lax/Max-Age 匹配配置的 Cookie，登出响应清除之
+- [ ] AC2 — 无 Authorization 但携带有效 Cookie 的请求通过认证并执行网关转发
+- [ ] AC3 — 无效/过期 Cookie 且无 Bearer 时返回 401 code=1401 且不发起下游调用
+- [ ] AC4 — 网关透传响应不含 X-Frame-Options 与 Content-Security-Policy，且后端门禁零新增失败、冒烟 web-038a 通过
 
-### AC1 — 未认证访问网关返回 401 code=1401 且不发起下游调用
-> 不携带 Authorization（以及携带伪造 Bearer token）请求 `GET /api/v1/gateway/ORDER/detail` → HTTP 401、响应体 `Result{code=1401}`；且下游 RestTemplate 调用零次发生（mock `verify(restTemplate, never())`）。**如实登记**：实现前 Security 默认行为对该路径即返回 401，本条为安全门槛守护断言（写入时可能即绿），RED 证据由 AC2/AC3/冒烟承担；若实现中被 permitAll 放行则本条失败。
+### AC1 — 登录响应下发 HttpOnly/SameSite=Lax/Max-Age 匹配配置的 Cookie，登出响应清除之
+> Given 合法 username/password。When `POST /api/v1/auth/login`。Then 响应 `Set-Cookie` 含有效 JWT 值、`HttpOnly`、`SameSite=Lax`、`Path=/`、`Max-Age={测试配置 jwt.expire-hours×3600}`，响应体 token 与现状契约一致。When 携带该 Cookie `POST /api/v1/auth/logout`。Then 响应含同名 Cookie 的 `Max-Age=0` 清除指令，响应体仍为 `Result{code=0}`。
 
-**用例**：`AC1 ← 用例 GatewayControllerTest#accessWithoutTokenReturns401`
+**用例**：`AC1 ← 用例 AuthControllerTest#loginSetsHttpOnlyCookie / AuthControllerTest#logoutClearsCookie`（Planner 登记双方法，同一 AC 的下发/清除两端）
 
-### AC2 — 通过准入的请求按模块 base_url 转发且响应原样透传（Authorization 不外泄）
-> Given：模块 `ORDER`（status=1，`base_url=http://service-a:8081/`），其下权限 `order:view`，当前用户拥有该权限。When 携带有效 JWT 请求 `POST /api/v1/gateway/ORDER/api/items?page=2`、JSON 体 `{"x":1}`。Then：① 下游收到 `POST http://service-a:8081/api/items?page=2`（尾斜杠归一，剩余路径与查询串原样拼接），请求头保留 Content-Type 且**不含 Authorization**；② 请求体原样 `{"x":1}`；③ 下游返回 201 + `{"id":9}` → 网关原样返回 201 + `{"id":9}`（代理语义，见业务背景口径登记）。
+### AC2 — 无 Authorization 但携带有效 Cookie 的请求通过认证并执行网关转发
+> Given 模块 `ORDER`（启用、`base_url` 已配置）且当前用户有其下有效权限，持有有效 JWT 但**不带** Authorization 头、仅带 `Cookie: <name>=<JWT>`。When `GET /api/v1/gateway/ORDER/api/items`。Then 网关按准入放行，下游被调用恰好一次（`verify(restTemplate, times(1))`），转发请求不含 Authorization 头，响应状态码与体按代理语义透传。
 
-**用例**：`AC2 ← 用例 GatewayControllerTest#forwardsToModuleServiceWhenAuthorized`
+**用例**：`AC2 ← 用例 GatewayControllerTest#validCookieAuthenticatesGatewayRequest`
 
-### AC3 — 准入失败的任一情形均拒绝且不发起下游调用
-> 携带有效 JWT 请求网关，分别构造四种情形，逐条断言状态码与业务码，且每种情形均 `verify(restTemplate, never())`：
-> ① 模块启用、用户对该模块无任何有效权限 → 403 + `code=1403`；
-> ② 模块 status=0 停用（其下权限按 §6.5 视为无效，即使用户拥有该权限码）→ 403 + `code=1403`；
-> ③ 模块码不存在 → 400 + `code=1304`；
-> ④ 模块 `base_url` 为空 → 400 + `code=1305`。
+### AC3 — 无效/过期 Cookie 且无 Bearer 时返回 401 code=1401 且不发起下游调用
+> 携带伪造签名或已过期的 Cookie（且无 Authorization）请求网关 → HTTP 401、响应体 `Result{code=1401}`，且 `verify(restTemplate, never())`。**如实登记**：若实现前该请求即因无凭证返回 401，须核验是 Cookie 分支解析后拒绝而非仅凭无 Authorization 命中（以有效 Cookie 放行的 AC2 为对照；RED 由 AC2/AC3 的相对关系与守护断言共同承担，不得伪造）。
 
-**用例**：`AC3 ← 用例 GatewayControllerTest#rejectsWhenUserHasNoModulePermission / rejectsWhenModuleDisabled / rejectsWhenModuleNotFound / rejectsWhenBaseUrlMissing`（Planner 原登记单一方法名，Generator 按 coding-standards「一用例一行为」拆为 4 个方法，AC 语义不变）
+**用例**：`AC3 ← 用例 GatewayControllerTest#invalidCookieRejectedWith401AndNoDownstreamCall`
 
-### AC4 — 后端门禁零新增失败且冒烟 modules-002 通过
-> `mvn -q verify` 失败集与实现前基线逐条一致零新增（基线 130 用例 4 Failures + 2 Errors：TestLayersSpec/TestUtilsSpec 无 Docker、SeedDataIntegrationTest、DataSourceConfigBindingTest ×2、RoleControllerTest 409，2026-09-29 口径）；本功能点零前端改动，前端门禁不适用（如实注明）；`bash scripts/smoke.sh` 新增 `modules-002` 用例（定向跑 GatewayControllerTest）且单跑通过、整体失败与基线逐条一致零新增。
+### AC4 — 网关透传响应不含 X-Frame-Options 与 Content-Security-Policy，且门禁与冒烟通过
+> ① Given mock 下游返回 200 + `X-Frame-Options: SAMEORIGIN` + `Content-Security-Policy: frame-ancestors 'self'` + 业务体。When 经网关透传。Then 网关响应**不含**这两个头，状态码与响应体原样（且 sprint-069 的 Authorization 请求头剥离行为不回归）。② `mvn -q verify` 失败集与实现前基线逐条一致零新增（2026-09-29 口径：136 用例 4F+2E）；③ 本功能点零前端改动，前端门禁不适用（基线对照实测留痕）；④ `bash scripts/smoke.sh` 新增 `web-038a` 用例单跑通过、整体失败与基线逐条一致零新增。
 
-**用例**：`AC4 ← 用例 mvn -q verify 基线对照 + bash scripts/smoke.sh#modules-002`
+**用例**：`AC4 ← 用例 GatewayControllerTest#stripsFrameBlockingHeadersFromDownstream + mvn -q verify 基线对照 + bash scripts/smoke.sh#web-038a`
 
 ## 测试清单
 
-> 先于实现写出，规则遵循 `.harness/rules/tdd-workflow.md`；Generator 运行确认 RED 后填入实际输出（AC1 若实现前即绿须如实注明，不得伪造 RED）。
+> 先于实现写出，规则遵循 `.harness/rules/tdd-workflow.md`；Generator 运行确认 RED 后填入实际输出（若有实现前即绿的守护断言须如实注明，不得伪造 RED）。
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | GatewayControllerTest#accessWithoutTokenReturns401 | AC1 | ✅ 实现前即绿（Security 默认保护新路径，守护断言如实登记，非 RED；实现中若被放行则失败） |
-| 2 | GatewayControllerTest#forwardsToModuleServiceWhenAuthorized | AC2 | ✅ RED（实时留痕）→ GREEN（断言精修：Content-Type 按兼容性断言，原样保留含 charset） |
-| 3 | GatewayControllerTest#rejectsWhenUserHasNoModulePermission | AC3-① | ✅ RED（实时留痕）→ GREEN |
-| 4 | GatewayControllerTest#rejectsWhenModuleDisabled | AC3-② | ✅ RED（实时留痕）→ GREEN |
-| 5 | GatewayControllerTest#rejectsWhenModuleNotFound | AC3-③ | ✅ RED（实时留痕）→ GREEN |
-| 6 | GatewayControllerTest#rejectsWhenBaseUrlMissing | AC3-④ | ✅ RED（实时留痕）→ GREEN（测试数据精修：updateById 忽略 null 字段，改 LambdaUpdateWrapper.set 显式置空 base_url） |
-| 7 | 冒烟 modules-002 网关定向测试（mvn -Dtest=GatewayControllerTest） | AC4 | ✅ 已追加并随全量冒烟通过（smoke 51 用例，modules-002 ✅） |
-| 8 | 后端全量门禁基线对照（实现前 130 用例 4F+2E 清单留痕） | AC4 | ✅ 实测 136 用例（130+6 新增）4 Failures + 2 Errors 与基线逐条一致零新增，GatewayControllerTest 6/6 全绿 |
+| 1 | AuthControllerTest#loginSetsHttpOnlyCookie | AC1-下发 | （待 RED） |
+| 2 | AuthControllerTest#logoutClearsCookie | AC1-清除 | （待 RED） |
+| 3 | GatewayControllerTest#validCookieAuthenticatesGatewayRequest | AC2 | （待 RED） |
+| 4 | GatewayControllerTest#invalidCookieRejectedWith401AndNoDownstreamCall | AC3 | （待 RED） |
+| 5 | GatewayControllerTest#stripsFrameBlockingHeadersFromDownstream | AC4-① | （待 RED） |
+| 6 | 冒烟 web-038a 定向测试（追加于 scripts/smoke.sh，定向跑本单新用例） | AC4-④ | （待追加） |
+| 7 | 后端全量门禁基线对照（实现前基线留痕：136 用例 4F+2E 清单，2026-09-29） | AC4-②③ | （待实测） |
 
 ## RED 证据
 
-> Generator 于实现前执行测试清单 #1~#6 并粘贴关键失败输出（实时留痕）。
+> Generator 于实现前执行测试清单 #1~#5 并粘贴关键失败输出（实时留痕）。
 
-```text
-[RED] mvn -q -f backend/pom.xml test -Dtest=GatewayControllerTest（实现前执行，2026-09-29）
-Tests run: 6, Failures: 5, Errors: 0, Skipped: 0
-[RED] GatewayControllerTest.forwardsToModuleServiceWhenAuthorized:163 Status expected:<201> but was:<500>
-[RED] GatewayControllerTest.rejectsWhenUserHasNoModulePermission:199 Status expected:<403> but was:<500>
-[RED] GatewayControllerTest.rejectsWhenModuleDisabled:223 Status expected:<403> but was:<500>
-[RED] GatewayControllerTest.rejectsWhenModuleNotFound:241 Status expected:<400> but was:<500>
-[RED] GatewayControllerTest.rejectsWhenBaseUrlMissing:265 Status expected:<400> but was:<500>
-AC1 accessWithoutTokenReturns401 实现前即绿：Security 默认对未注册路径的未认证请求返回 401+1401（守护断言，如实登记不伪造 RED）
-```
+（待 Generator 填写）
 
 ## 门禁与冒烟记录
 
-- 后端 `mvn -q verify`：**Tests run: 136, Failures: 4, Errors: 2** —— 136 = 基线 130 + 新增 6；失败/错误与基线逐条一致（DataSourceConfigBindingTest ×2、RoleControllerTest 409、SeedDataIntegrationTest、TestLayersSpec/TestUtilsSpec Docker 缺失），**零新增失败**；GatewayControllerTest 6/6 全绿 ✅（2026-09-29 实测）
-- 前端门禁：**不适用（本功能点零前端改动）**，按基线对照口径实测留痕：`npm run test` 20 failed / 279 passed 与基线逐条一致零新增；`npm run build` ✓ built in 17.25s；`npm run lint` 全量 timeout 300s exit 124 卡死为预存（沿基线对照口径，第 7 次复现），零前端改动故无分片对象
-- `bash scripts/smoke.sh`：**51 用例（50 基线 + 新增 modules-002），失败 9 条与基线 9 条逐条一致零新增**（model-008/010、roles-001/002、web-013、web-020/021/022、web-026，均为既有预存红项）；**modules-002 单跑 ✅ 通过** ✅（2026-09-29 实测）
-- AC1 如实说明：实现前即绿（Security 默认对未注册路径的未认证请求返回 401+1401），属安全门槛守护断言，RED 证据由 AC2/AC3 五条失败承担（见上「RED 证据」）
+> Generator 亲测填写（后端 mvn -q verify / 前端门禁基线对照 / scripts/smoke.sh），Evaluator 不采信自述须亲跑。
+
+（待 Generator 填写）
 
 ## 拆分说明
 
 预估验收标准 4 条（未超 4 条）；预估文件变更 **6 个（顶格）**：
 
-1. `backend/src/main/java/com/authcore/controller/GatewayController.java` — 网关端点，解析 moduleCode 与剩余路径，调用 GatewayService（AC1-AC3）
-2. `backend/src/main/java/com/authcore/service/GatewayService.java` — 服务接口（model/012 Controller 依赖接口约定）
-3. `backend/src/main/java/com/authcore/service/impl/GatewayServiceImpl.java` — 准入裁决（模块存在/启用/base_url/权限交集）+ RestTemplate exchange 转发（AC2/AC3）
-4. `backend/src/main/java/com/authcore/config/web/RestTemplateConfig.java` — RestTemplate @Bean（转发实例注入，测试可 @MockBean/MockRestServiceServer 绑定）
-5. `backend/src/test/java/com/authcore/controller/GatewayControllerTest.java` — AC1/AC2/AC3 用例（测试先行，`@SpringBootTest + @AutoConfigureMockMvc + @ActiveProfiles("test")` 沿 AuthControllerTest 先例；测试数据沿用 IT_PREFIX 隔离先例）
-6. `scripts/smoke.sh` — 追加 `modules-002` 用例（不删除、不改动既有用例，先例 web/037）
+1. `backend/src/main/java/com/authcore/config/security/JwtAuthenticationFilter.java` — 缺 Authorization 时读同名 Cookie 走同一校验（AC2/AC3）
+2. `backend/src/main/java/com/authcore/controller/AuthController.java` — 登录响应挂 Set-Cookie、登出响应挂清除指令（AC1）
+3. `backend/src/main/java/com/authcore/service/impl/GatewayServiceImpl.java` — 下游响应剥离 X-Frame-Options 与 Content-Security-Policy（AC4-①）
+4. `backend/src/test/java/com/authcore/controller/AuthControllerTest.java` — 追加 AC1 两个方法（测试先行）
+5. `backend/src/test/java/com/authcore/controller/GatewayControllerTest.java` — 追加 AC2/AC3/AC4 三个方法（测试先行，沿 sprint-069 既有基建）
+6. `scripts/smoke.sh` — 追加 `web-038a` 用例（不删除、不改动既有用例，先例 web/037、modules/002）
 
-**超限熔断**：实现中若实际变更文件超过 6 个，Generator 必须停止实现并回报 Planner 重新拆分，不得自行扩范围。服务凭证（modules/003）、前端页面（web/038）、路径级鉴权、下游可靠性一律不做。
-
-**注册拆分（见业务背景）**：总体需求拆为 modules/002（本工作单）/ modules/003（服务凭证，预留）/ web/038（前端适配，预留），一次只注册第一个。
+**超限熔断**：实现中若实际变更文件超过 6 个，Generator 必须停止实现并回报 Planner 重新拆分，不得自行扩范围。accessibles（038b）、字段修复（038c）、一切前端改动（038d/038e）一律不做。
 
 ## 交付物（预估 6 文件）
 
-1. `backend/src/main/java/com/authcore/controller/GatewayController.java` — 网关端点
-2. `backend/src/main/java/com/authcore/service/GatewayService.java` — 服务接口
-3. `backend/src/main/java/com/authcore/service/impl/GatewayServiceImpl.java` — 准入裁决 + 转发
-4. `backend/src/main/java/com/authcore/config/web/RestTemplateConfig.java` — RestTemplate Bean
-5. `backend/src/test/java/com/authcore/controller/GatewayControllerTest.java` — AC1/AC2/AC3 用例（测试先行）
-6. `scripts/smoke.sh` — modules-002 产物/定向冒烟用例
+1. `backend/src/main/java/com/authcore/config/security/JwtAuthenticationFilter.java` — Cookie 承载分支
+2. `backend/src/main/java/com/authcore/controller/AuthController.java` — 登录/登出 Cookie 生命周期
+3. `backend/src/main/java/com/authcore/service/impl/GatewayServiceImpl.java` — 下游内嵌限制头剥离
+4. `backend/src/test/java/com/authcore/controller/AuthControllerTest.java` — AC1 用例（测试先行）
+5. `backend/src/test/java/com/authcore/controller/GatewayControllerTest.java` — AC2/AC3/AC4 用例（测试先行）
+6. `scripts/smoke.sh` — web-038a 冒烟用例
 
 ## 变更清单
 
 ### 新增
-- `backend/src/main/java/com/authcore/controller/GatewayController.java` — `ALL /api/v1/gateway/{moduleCode}/**` 网关端点（AC1-AC3）
-- `backend/src/main/java/com/authcore/service/GatewayService.java` — 准入+转发服务接口（AC2/AC3）
-- `backend/src/main/java/com/authcore/service/impl/GatewayServiceImpl.java` — 模块级准入裁决与 RestTemplate 转发、Authorization 剥离、响应透传（AC2/AC3）
-- `backend/src/main/java/com/authcore/config/web/RestTemplateConfig.java` — RestTemplate Bean（AC2 测试可绑定）
-- `backend/src/test/java/com/authcore/controller/GatewayControllerTest.java` — AC1/AC2/AC3 用例（测试先行，含 never() 不转发断言）
+- （待 Generator 填写）
 
 ### 修改
-- `scripts/smoke.sh`:403-405 — 追加 `modules-002 模块统一访问入口网关定向测试` 冒烟用例（`mvn -Dtest=GatewayControllerTest`，不删除、不改动既有用例）
+- （待 Generator 填写）
 
 ### 删除
 - （无）
 
 ## 规范检查清单
 
-- [x] `mvn -q verify` 后端门禁（136 用例 4F+2E 与基线逐条一致零新增）
-- [x] 前端门禁不适用（本功能点零前端改动；test/build/lint 基线对照实测留痕于「门禁与冒烟记录」）
-- [x] `bash scripts/smoke.sh` 新增 modules-002 单跑通过且整体 9 失败与基线逐条一致（51 用例）
-- [x] 符合 Java 21 / Spring Boot 3 / Spring Security 6 编码规范与既有分层约定（controller → service 接口 → impl，构造器注入 final 字段，无字段注入）
-- [x] 符合 TDD 工作流（测试先行、RED 证据实时留痕 5 failed、GREEN 6/6、REFACTOR 复查全绿；AC1 非 RED 如实登记）
-- [x] 变更文件不超过 6 个（实际 6：GatewayController/GatewayService/GatewayServiceImpl/RestTemplateConfig/GatewayControllerTest/smoke.sh，顶格未超熔断）
+- [ ] `mvn -q verify` 后端门禁零新增失败（基线对照）
+- [ ] 前端门禁不适用（本功能点零前端改动；test/build/lint 基线对照实测留痕于「门禁与冒烟记录」）
+- [ ] `bash scripts/smoke.sh` 新增 web-038a 单跑通过且整体与基线逐条一致
+- [ ] 符合 Java 21 / Spring Boot 3 / Spring Security 6 编码规范与既有分层约定（controller → service 接口 → impl，构造器注入 final 字段，无字段注入）
+- [ ] 符合 TDD 工作流（测试先行、RED 证据实时留痕、GREEN 复跑、REFACTOR 复查）
+- [ ] 变更文件不超过 6 个（顶格熔断，超出即回报 Planner）
 
 ## 评审记录
 
-- 2026-09-29: Evaluator — **通过**（第 1 轮，平均分 9.0/10：功能 9 / 质量 9 / 规范 9 / TDD 9 / 安全 9）。验收标准 4/4 满足（亲测：mvn 136 用例 4F+2E 与基线逐条一致零新增、前端 test 20 failed/build ✓17.64s/lint 卡死 124 预存、冒烟 51 用例 modules-002 ✅ 且 9 失败为基线子集零新增、smoke 增量 +3/-0）；变更范围三方一致（6 业务 + 4 元数据零夹带，RED 提交 acd4a89 中实现文件不存在的 test-first 物证亲验）；六个一票否决逐一核对均未命中（否决项 6 按「基线对照推进」用户裁决口径豁免，先例 sprint-064~068）。改进建议见报告（RestTemplate 超时、base_url SSRF 白名单、路径级细粒度、AC1 守护断言长期价值）。
+- （待 Evaluator）
