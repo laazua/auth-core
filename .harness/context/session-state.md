@@ -2,14 +2,16 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟢 sprint-068 评审通过（web/037 ✅，均分 9.5/10）；sprint-067 评审通过（web/036a ✅，均分 9.3/10）；sprint-066 评审通过（web/035 ✅）；sprint-065 评审通过（web/034 ✅），sprint-064 评审通过（web/033），sprint-063 实现完成待评审（web/032），sprint-062 实现完成待评审（web/031），sprint-061 待评审（web/030），sprint-060 待评审（web/029），sprint-049 评审通过（web/025 ✅），sprint-048 待评审（web/024），sprint-047 待评审（web/023），sprint-057 评审通过（web/026 ✅），sprint-059 评审通过（web/027 ✅）
-- 当前模块: web
-- 当前功能点: web/037 ✅（sprint-068 评审通过）；web/036 🔄（036b/036c 待规划），web/011（PLANNED），web/017 🔄（规划中），web/023 🔄（规划中）
+- 状态: 🟡 sprint-069 规划完成（modules/002 PLANNED，待 Generator 实现）；sprint-068 评审通过（web/037 ✅，均分 9.5/10）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
+- 当前模块: modules
+- 当前功能点: modules/002（🔄 已注册，模块（外部服务）统一访问入口，sprint-069 工作单 `.harness/context/task.md`）
 
 ## 下一步动作
-  Planner：取下一功能点。建议优先级：① 清理 Evaluator 积压（sprint-047/048/060/061/062/063 六项待评审，见挂起区，长期积压建议优先消化）；② 新功能点 web/036b（暗色模式局部白底缺陷修复：BaseTable.vue 遮罩失效选择器、settings 非法 variant prop、分页/树/弹层 deep 覆盖补漏、EP 暗值与自研 slate 暗色系协调映射；前置 web/036a ✅，与 web/017 同源可一并收口）；③ 可选：web/011a（修复前端 TS 编译错误，前置 web/010 ✅）。另注意挂起区新增「串联 :deep() 编译失效 42 处」预存缺陷，规划 web/036c 或专项时一并对照。
+  Generator：读 `.harness/generator.md` 并严格执行，工作单 `.harness/context/task.md`（sprint-069，modules/002 网关准入+按 base_url 转发）。首个实现要点：先写 `GatewayControllerTest`（AC2/AC3 取得 RED；AC1 为 Security 默认守护断言，若实现前即绿须如实登记不得伪造 RED），再实现 GatewayService 接口 + GatewayServiceImpl（准入裁决：模块存在 1304→400、base_url 空 1305→400、无有效权限/停用模块 → **必须抛 AccessDeniedException**（抛 BusinessException(1403) 会被 GlobalExceptionHandler 翻成 401）→ 403+1403；转发用 RestTemplate.exchange 透传方法/查询串/体、**剥离 Authorization**、响应原样透传）与 GatewayController（`ALL /api/v1/gateway/{moduleCode}/**`）+ RestTemplateConfig；smoke 追加 modules-002（不删改既有）。变更 6 文件顶格，超限熔断回报 Planner。门禁沿基线对照口径（mvn 130 用例 4F+2E）。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
 
 ## 挂起
+- 2026-09-29: Planner(sprint-069) — 用户需求「模块管理的模块不是指当前系统的用户/角色/权限，而是指别的运行服务，该服务需通过当前系统登录认证后才能通过当前系统访问」。澄清问答（两问：认证主体与凭证形态 / 经系统访问的深度）被用户中断并指示「继续」，Planner 按架构一致性裁量（登记如下，Evaluator/用户可复核推翻）：① 「登录认证」= 访问方须持 auth-core 有效 JWT（复用 auth/002/003），**不引入服务级凭证**，避免与架构 §3「字段名与约束为契约，不得增删改名」冲突；服务级凭证与「服务登录」另立 modules/003 预留，启动前须先走 §3 仲裁（或 sys_user 服务账号零改表方案）。② 「通过当前系统进行访问」= auth-core 网关代理：认证 + 模块级准入（由 §6.1 权限必须归属模块、§6.5 停用模块下权限无效推导）后按 sys_module.base_url 反向转发。架构口径登记：§4「响应体统一 Result」未覆盖代理场景，裁量=网关自身准入错误响应仍为 Result{code}，转发成功的下游响应按代理语义原样透传状态码与体；如需强制包裹 Result 由用户裁决。预存事实（explore 2026-09-29 实证）：base_url 为死字段、系统仅用户 JWT 一种凭证、auth/005 check 不涉访问通道。
+- 2026-09-29: Planner(sprint-069) — 总体需求拆分登记（一次只注册第一个子功能点）：**modules/002** 后端统一访问入口（本次 sprint-069，预估 6 文件顶格）；**modules/003** 服务级接入凭证与服务登录（预留 ⬜ 未注册，前置架构 §3 仲裁）；**web/038** 模块管理页「外部服务」语义适配（预留 ⬜ 未注册）。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
 - 2026-09-29: Generator(sprint-068) — 新发现预存缺陷登记（非阻塞，与 web/037 零关联，建议归 web/036c 打磨治理或单开）：全仓 17 个组件 42 处 scoped 样式使用**串联 `:deep()`**（如 `.a :deep(.b) :deep(.c)`）时，@vue/compiler-sfc 仅转换首个 `:deep()`，第二个原样残留为字面选择器致规则实际失效（node 实验：单 `:deep()` 正常、串联时第二个保留 `:deep(` 字面；产物 dist 实证 42 处字面残留）。影响面：Breadcrumb 颜色覆盖、Sidebar 菜单 40px/圆角/hover 等既有覆盖均未生效（EP 默认样式兜底，无崩溃）。web/037 横排规则已规避（单 `:deep()`，产物实证编译生效）。另：`frontend/src/layouts/DefaultLayout.vue` 78 处 prettier 缩进为预存（stash 对照 HEAD 实证），本功能点未做无关格式化。
 - 2026-09-29: Planner(sprint-068) — 用户指令「导航栏的与head和main区域太紧凑了，优化到合适的距离，另外将导航栏的图标不要放在文字的上方，放在文字左边；以 planner 开始依次执行」。澄清问答（用户选择）：「导航栏」指 **header 下方的面包屑导航**（非左侧侧边栏）。只读调研实证（产物 CSS 层叠，不入仓库）：① 图标竖排根因＝`.el-breadcrumb__item` inline-flex 使 `.el-breadcrumb__inner` 块化但内部非 flex 容器，叠加 `reset.css:63` `svg{display:block}` → svg 独占一行；② 紧凑根因＝`DefaultLayout.vue:102` `.layout__content` 顶距 0（紧贴 head）+ `Breadcrumb.vue:59` margin-bottom 16px（紧贴内容卡片）。侧边栏经核实 EP `.el-menu-item{display:flex}` 生效、图标本就在左侧，不在本次范围。无架构冲突（纯样式，不涉 §1 技术栈与 RBAC 硬语义）。预估 4 文件 4 AC 不拆分，注册 web/037。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
 - 2026-09-29: Planner(sprint-067) — 用户指令「登录系统后暗色模式整个系统有的区域暗色有的区域白色，重新优化整系统 UI 更美观；以 planner 开始依次执行」。只读调研定位根因：自研 `--color-*`（variables.scss:184-265 `[data-theme=dark]`）与 Element Plus `--el-*` 两套变量体系只切了一套——全仓未引入 `element-plus/theme-chalk/dark/css-vars.css`、`applyTheme()`（stores/app.ts:55-57）只写 `data-theme` 不挂 `html.dark`，致表格/抽屉×6/分页×4/消息框/树/选择器等 EP 原生组件恒白底。无架构冲突（EP 为技术栈表内选型）。拆分登记（总变更 >6 文件）：web/036a 体系接入（本次 sprint-067，6 文件顶格含熔断）/ web/036b 局部白底缺陷（BaseTable.vue:196-202 选择器编译失效、settings/IndexView.vue:146,159 非法 variant prop、deep 覆盖补漏、暗色系协调）/ web/036c 打磨治理（死代码 Layout.vue/TagsView.vue/styles.index.ts、smoke web-015/016/017 过期 grep）。与 web/017（sprint-041 待评审，EP 弹层白底）同源，评审 sprint-067 时一并对照避免重复。门禁/冒烟沿用基线对照口径（sprint-066 实测）。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
@@ -30,6 +32,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-09-29: Planner — kickoff sprint-069（modules/002 模块（外部服务）统一访问入口：认证+模块级准入+按 base_url 网关转发，4 条验收标准，前置 auth/003/auth/004/modules/001/model/004/model/010 均 ✅，预估 6 文件顶格不拆分本功能点；总体需求拆分 modules/002 本次 / modules/003 服务凭证预留 / web/038 前端适配预留；语义裁量与 §4 透传口径已登记挂起区）
 - 2026-09-29: Evaluator — pass sprint-067（web/036a，平均分 9.3/10，基线对照豁免否决项 6）
 - 2026-09-29: Generator — done sprint-067（web/036a 暗色模式接入 EP 暗色变量体系，2 failed RED→27/27 GREEN，门禁基线对照零新增，冒烟 49 用例 web-036a 通过、9 失败为基线子集）
 - 2026-09-29: Planner — kickoff sprint-067（web/036a 暗色模式全站 UI 协调治理·接入 Element Plus 暗色变量体系，4 条验收标准，前置依赖 web/001/003/008/016 均 ✅，拆分 036a/036b/036c）

@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-29: Planner — kickoff sprint-069（modules/002 模块（外部服务）统一访问入口：网关准入+按 base_url 转发，4 条 AC，前置 auth/003/auth/004/modules/001/model/004/model/010 均 ✅；只读调研实证 base_url 死字段、无服务凭证、check 不涉访问通道；语义裁量：登录认证=有效 JWT 准入、经系统访问=网关转发，连同 §4 Result 统一与透传口径登记挂起区；总体需求拆分 modules/002 本次 / modules/003 服务凭证预留（架构 §3 仲裁）/ web/038 前端适配预留，预估 6 文件顶格不拆分本功能点）
+
 - 2026-09-29: Evaluator — pass sprint-068（web/037，平均分 9.5/10，基线对照豁免否决项 6）
 - 2026-09-29: Generator — done sprint-068（web/037 面包屑间距与图标横排，测试先行 3 failed RED→3/3 GREEN，mvn 130 用例 4F+2E 与基线逐条一致，前端 test 20 failed/279 passed 零新增、build ✓ 17.55s、分片 lint 改动文件零告警，冒烟 50 用例 web-037 通过且 9 失败为基线子集零新增）
 - 2026-09-29: Planner — kickoff sprint-068（web/037 面包屑导航间距优化与图标横排，4 条 AC，前置 web/003/web/025 均 ✅；只读 CSS 层叠实证根因：.el-breadcrumb__inner 块化后非 flex 叠加全局 svg{display:block} 致图标竖排、.layout__content 顶距 0 与 .breadcrumb 底距 16px 致与 head/main 紧凑；经澄清问答用户确认「导航栏」指面包屑导航，预估 4 文件不拆分）

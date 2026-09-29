@@ -1,151 +1,179 @@
-# Sprint 工作单：sprint-068
+# Sprint 工作单：sprint-069
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-068 |
-| 所属模块 | web |
-| 功能点 ID | web/037 |
-| 功能点名称 | 面包屑导航间距优化（与顶栏/内容卡片留白）+ 面包屑图标改横排（图标置于文字左侧） |
-| 状态 | DONE |
+| Sprint ID | sprint-069 |
+| 所属模块 | modules |
+| 功能点 ID | modules/002 |
+| 功能点名称 | 模块（外部服务）统一访问入口——经认证与模块级权限准入后按 base_url 转发 |
+| 状态 | PLANNED |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| web/003 | 主布局(侧边菜单/顶栏)+动态菜单渲染（Breadcrumb 挂载于 DefaultLayout） | ✅ |
-| web/025 | 优化主内容区图标与文字间距（breadcrumb__icon 13×13 + margin-right 12px 现状来源） | ✅ |
+| auth/003 | JWT 校验过滤器 + SecurityContext 注入（网关 401/1401 门槛与当前登录用户身份来源） | ✅ |
+| auth/004 | GET /api/v1/auth/me 权限聚合（AuthService.getCurrentUserInfo 提供用户权限码集合，准入判定来源） | ✅ |
+| modules/001 | 模块 CRUD API（模块存在性/状态/base_url 的数据来源与 ModuleService 接口） | ✅ |
+| model/004 | sys_permission 表 module_id 非空（架构 §6.1 权限必须归属模块，模块级准入的判定依据） | ✅ |
+| model/010 | ModuleService 接口化（model/012「Controller 依赖接口」约定） | ✅ |
 
 ## 业务背景
 
-用户需求（原文）：「导航栏的与head和main区域太紧凑了，优化到合适的距离，另外将导航栏的图标不要放在文字的上方，放在文字左边」；经 Planner 澄清问答，用户确认「导航栏」指 **header 下方的面包屑导航**（非左侧侧边栏）。
+用户需求（原文）：「关于模块管理，我想要的是这里的模块不是指当前系统的用户，角色，权限等，而是指别的运行服务，该服务需要通过在当前系统进行登录认证后，才能通过当前系统进行访问」。
 
-Planner 只读调研（构建产物 CSS 层叠实证，不入仓库）已定位两处根因：
+Planner 只读调研（explore 2026-09-29 实证）关键事实：
 
-1. **图标竖排根因**：`.el-breadcrumb__item` 为 `float:left;display:inline-flex`，其子元素 `.el-breadcrumb__inner`（`a`/`span`）被块化为 block 但**内部不是 flex 容器**（EP 产物规则 `.el-breadcrumb__inner{color:...}` 无 display）；叠加全局 `reset.css:63` `svg{display:block}` → svg 独占一行、文字换行其下，即用户所见「图标在文字上方」。`Breadcrumb.vue:92-97` 的 `.breadcrumb__icon` 虽写了 `flex-shrink:0`/`margin-right:12px`，但父容器非 flex，规则形同虚设。
-2. **间距紧凑根因**：`DefaultLayout.vue:102` `.layout__content{padding: 0 24px 24px}` 顶距为 **0** → 面包屑紧贴 header 底边；`Breadcrumb.vue:59` `.breadcrumb{margin-bottom:16px}` → 与内容卡片仅 16px，用户感知与 main 区域同样紧凑。
+1. **base_url 是死字段**：`V3__create_sys_module.sql:6` 已有 `base_url VARCHAR(255) NULL`（注释语义即模块服务地址），但全仓无任何逻辑消费它——仅 CRUD 存取与前端列展示，外部服务在本系统中只是死数据；
+2. **只有一种凭证**：系统仅有用户 JWT（auth/002 login / auth/003 过滤器），无服务级凭证、client_id/secret 概念；
+3. **check API 不是访问通道**：`POST /api/v1/auth/check`（auth/005）为「userId + permissionCode」校验，要求用户 JWT，不涉及模块维度准入，更不承载对服务的访问；
+4. **SecurityConfig 天然覆盖新路径**：`SecurityConfig.java:90-91` 仅 permitAll actuator/login/logout，其余 `anyRequest().authenticated()`——新增网关路径自动受保护，无需修改 SecurityConfig。
 
-对照 `docs/01-architecture.md`：纯前端布局样式优化，不涉及 §3-§6 RBAC 硬语义与 §1 技术栈表（不引入新技术栈），**无架构冲突**，无需仲裁登记。
+**语义澄清裁量**（澄清问答被用户中断并指示「继续」，Planner 按架构一致性裁量，已登记 session-state 挂起区，Evaluator/用户可复核推翻）：
 
-**规模预估**：验收标准 4 条（未超 4）；预估文件变更 4 个（未超 6）→ 不拆分。
+- **「登录认证」= 有效 JWT 准入**：访问方（终端用户或以服务账号身份的调用方）须先持有 auth-core 签发的有效 JWT（复用 auth/002/003），不引入服务级新凭证类型——避免与架构 §3「字段名与约束为契约，不得增删改名」冲突；「服务级凭证与服务登录」另立 modules/003 预留，启动前须先走 §3 仲裁（或采用 sys_user 服务账号零改表方案）。
+- **「通过当前系统进行访问」= 网关代理**：auth-core 作为统一入口，对目标模块（外部服务）做认证 + 模块级准入裁决后，按模块 `base_url` 反向转发请求；base_url 由死字段变为真实路由依据。
 
-**关联登记**：与 web/025（主内容区图标文字间距 ✅）为同一区域的后续迭代，不重开 web/025；Evaluator 积压（sprint-047/048/060/061/062/063）不变，见 session-state 挂起区。
+**架构对照（无冲突，一处口径登记）**：
+
+- 不改表结构（§3 ✓）；不引入表外技术栈——RestTemplate 属 Spring Boot Web 框架内置（§1 ✓）；接口在 `/api/v1/{resource}` 前缀内（§4 ✓）；准入语义直接由 §6.1（权限必须归属模块）与 §6.5（停用模块下权限视为无效）推导（✓）。
+- **口径登记（§4 兼容性）**：§4「响应体统一 Result 结构」未覆盖代理场景。裁量：网关**自身产生的准入错误响应**（401/403/400）仍为 `Result{code,message,data}`；转发**成功的下游响应**按代理语义原样透传状态码与响应体（下游为外部服务自有契约）。已登记 session-state 挂起区，如需强制包裹 Result 由用户裁决。
+- 错误码映射复用现状、零改动：403 抛 `AccessDeniedException` → `GlobalExceptionHandler.java:53-57` → 403+1403；新码 1304/1305 不在 409 清单 → `handleBusiness` 默认分支 400（`GlobalExceptionHandler.java:41-43`）。**注意**：抛 `BusinessException(1403)` 会被 `GlobalExceptionHandler.java:33-34` 翻成 401，必须用 `AccessDeniedException`。
+
+**规模预估**：验收标准 4 条（未超 4）；预估文件变更 6 个（顶格未超 6）→ 本功能点不拆分。
+
+**总体需求拆分（一次只注册第一个子功能点 modules/002）**：
+
+- **modules/002（本次 sprint-069，🔄）**：后端统一访问入口——认证 + 模块级准入 + 按 base_url 转发；
+- modules/003（预留，⬜ 未注册）：服务级接入凭证与「服务登录」——启动前须先裁决架构 §3 字段契约（或 sys_user 服务账号零改表方案）；
+- web/038（预留，⬜ 未注册）：模块管理页「外部服务」语义适配（模块即服务展示、base_url/接入状态、经网关访问说明）。
+
+**关联登记**：Evaluator 积压六项不变（sprint-047/048/060/061/062/063），见 session-state 挂起区。
 
 ## 需求描述
 
-1. **与 head 留白**：面包屑与顶栏（header）之间由 0 间距改为 16px 顶部留白（`.layout__content` padding-top）。
-2. **与 main 留白**：面包屑与内容卡片（`.layout__page`）之间由 16px 增至 24px（`.breadcrumb` margin-bottom）。
-3. **图标横排**：面包屑内图标（首页 Monitor 图标与各路由 meta.icon）渲染在文字**同一行的左侧**，垂直居中；根治方式为让 `.el-breadcrumb__inner` 成为 flex 容器（或等效的行内布局规则），且 `.breadcrumb__icon` 13×13 尺寸与右侧 12px 间距不回归。
-4. **不回归**：全量前端测试零新增失败（基线：2026-09-29 实测 20 failed / 276 passed，属 web/011 预存红项）；后端零改动；冒烟追加 web-037 用例。
+1. **网关端点**：`ALL /api/v1/gateway/{moduleCode}/**`，承接对模块（外部服务）的访问请求；moduleCode 后的剩余路径为转发目标子路径。
+2. **认证门槛**：未携带或携带无效/过期 JWT → HTTP 401、`Result.code=1401`（复用 JwtAuthenticationEntryPoint 现有行为），且不发起任何下游调用。
+3. **准入裁决**（当前用户身份从 SecurityContext 取，不信任请求体）：
+   - 模块码不存在 → HTTP 400、`code=1304`；
+   - 模块存在但 `base_url` 为空 → HTTP 400、`code=1305`；
+   - 当前用户对模块无任何**有效**权限（模块启用：其下权限中至少一个属于当前用户权限码集合；模块停用时其下权限按 §6.5 视为无效）→ HTTP 403、`code=1403`（抛 AccessDeniedException 翻译）；
+   - 任一拒绝情形均不发起下游调用。
+4. **转发**：通过准入后，以 RestTemplate 将**请求方法、查询串、请求体**转发至 `base_url + 剩余路径`（base_url 尾部 `/` 归一去重）；**剥离 Authorization 头**（JWT 不外泄给外部服务）；下游响应的**状态码与响应体原样透传**。
+5. **不回归**：后端既有测试零新增失败；前端零改动；冒烟追加 `modules-002` 用例。
 
-> 范围边界（防蔓延）：本功能点只做**面包屑**的间距与图标方向，**不做**侧边栏菜单调整、不做 Header/卡片内边距改动、不做暗色模式调整（归 web/036b/036c）；实现中若预估变更文件超过 6 个，须停止并回报 Planner 重新拆分。
+> 范围边界（防蔓延）：准入粒度=模块级（模块下任一有效权限即放行该模块全部路径），**不做**路径级/接口级细粒度鉴权；**不做**服务级凭证与服务登录（归 modules/003）；**不做**前端改造（归 web/038）；**不做**下游超时/重试/熔断/流式响应；**不修改**既有模块 CRUD、auth/005 check API 与 SecurityConfig（默认已保护）；**不修改** GlobalExceptionHandler（1304/1305 走默认 400 分支）。实现中预估变更文件超过 6 个，Generator 必须停止实现并回报 Planner 重新拆分。
 
 ## 验收标准（TDD 驱动）
 
-- [x] AC1 — 面包屑与顶栏间距由 0 增至 16px
-- [x] AC2 — 面包屑与内容卡片间距由 16px 增至 24px
-- [x] AC3 — 面包屑图标渲染在文字左侧同一行且图标尺寸不回归
-- [x] AC4 — 全量测试零新增失败且冒烟 web-037 通过
+- [ ] AC1 — 未认证访问网关返回 401 code=1401 且不发起下游调用
+- [ ] AC2 — 通过准入的请求按模块 base_url 转发且响应原样透传（Authorization 不外泄）
+- [ ] AC3 — 准入失败的任一情形均拒绝且不发起下游调用
+- [ ] AC4 — 后端门禁零新增失败且冒烟 modules-002 通过
 
-### AC1 — 面包屑与顶栏间距由 0 增至 16px
-> `frontend/src/layouts/DefaultLayout.vue` 样式中 `.layout__content` 的 padding 由 `0 24px 24px` 改为 `16px 24px 24px`（顶距 0→16px，左右 24px 与底 24px 不变）。源码文本断言：`.layout__content` 规则块内含 `padding: 16px 24px 24px` 且不存在 `padding: 0 24px 24px`。
+### AC1 — 未认证访问网关返回 401 code=1401 且不发起下游调用
+> 不携带 Authorization（以及携带伪造 Bearer token）请求 `GET /api/v1/gateway/ORDER/detail` → HTTP 401、响应体 `Result{code=1401}`；且下游 RestTemplate 调用零次发生（mock `verify(restTemplate, never())`）。**如实登记**：实现前 Security 默认行为对该路径即返回 401，本条为安全门槛守护断言（写入时可能即绿），RED 证据由 AC2/AC3/冒烟承担；若实现中被 permitAll 放行则本条失败。
 
-**用例**：`AC1 ← 用例 breadcrumb-nav.spec.ts#web-037 面包屑导航优化 > layout__content 顶距 16px 与顶栏留白`
+**用例**：`AC1 ← 用例 GatewayControllerTest#accessWithoutTokenReturns401`
 
-### AC2 — 面包屑与内容卡片间距由 16px 增至 24px
-> `frontend/src/components/Breadcrumb.vue` 样式中 `.breadcrumb` 的 `margin-bottom` 由 `16px` 改为 `24px`。源码文本断言：`.breadcrumb` 规则块内含 `margin-bottom: 24px` 且不存在 `margin-bottom: 16px`。
+### AC2 — 通过准入的请求按模块 base_url 转发且响应原样透传（Authorization 不外泄）
+> Given：模块 `ORDER`（status=1，`base_url=http://service-a:8081/`），其下权限 `order:view`，当前用户拥有该权限。When 携带有效 JWT 请求 `POST /api/v1/gateway/ORDER/api/items?page=2`、JSON 体 `{"x":1}`。Then：① 下游收到 `POST http://service-a:8081/api/items?page=2`（尾斜杠归一，剩余路径与查询串原样拼接），请求头保留 Content-Type 且**不含 Authorization**；② 请求体原样 `{"x":1}`；③ 下游返回 201 + `{"id":9}` → 网关原样返回 201 + `{"id":9}`（代理语义，见业务背景口径登记）。
 
-**用例**：`AC2 ← 用例 breadcrumb-nav.spec.ts#web-037 面包屑导航优化 > breadcrumb 与内容卡片间距 24px`
+**用例**：`AC2 ← 用例 GatewayControllerTest#forwardsToModuleServiceWhenAuthorized`
 
-### AC3 — 面包屑图标渲染在文字左侧同一行且图标尺寸不回归
-> 两层判定：① 单测（源码层）——`Breadcrumb.vue` 样式中存在针对 `.el-breadcrumb__inner` 的 `display: inline-flex`（或 `display: flex`）+ `align-items: center` 规则，使图标与文字同行且垂直居中；② 冒烟（产物层）——`npm run build` 后 `dist/assets/css/*.css` 中存在选择器含 `el-breadcrumb__inner` 且声明含 `display:inline-flex`（或 `display:flex`）的规则进包。同时 `.breadcrumb__icon` 的 `width: 13px`/`height: 13px`/`margin-right: 12px` 保持不变（既有 breadcrumb-spacing.spec.ts 用例持续通过）。
+### AC3 — 准入失败的任一情形均拒绝且不发起下游调用
+> 携带有效 JWT 请求网关，分别构造四种情形，逐条断言状态码与业务码，且每种情形均 `verify(restTemplate, never())`：
+> ① 模块启用、用户对该模块无任何有效权限 → 403 + `code=1403`；
+> ② 模块 status=0 停用（其下权限按 §6.5 视为无效，即使用户拥有该权限码）→ 403 + `code=1403`；
+> ③ 模块码不存在 → 400 + `code=1304`；
+> ④ 模块 `base_url` 为空 → 400 + `code=1305`。
 
-**用例**：`AC3 ← 用例 breadcrumb-nav.spec.ts#web-037 面包屑导航优化 > el-breadcrumb__inner 横排规则与图标尺寸不回归 + bash scripts/smoke.sh#web-037 产物横排规则进包`
+**用例**：`AC3 ← 用例 GatewayControllerTest#rejectsAccessWhenNotPermitted`
 
-### AC4 — 全量测试零新增失败且冒烟 web-037 通过
-> `npm run test` 失败数不超过实现前基线 20 条（零新增失败，清单与 2026-09-29 基线逐条一致）；`npm run lint` 全量卡死为预存、分片 lint 对本次改动文件零新增告警；`npm run build` 通过；`mvn -q verify` 零后端改动与基线一致（4 Failures + 2 Errors）；`bash scripts/smoke.sh` 新增 `web-037` 用例且单跑通过、整体失败与基线逐条一致零新增。
+### AC4 — 后端门禁零新增失败且冒烟 modules-002 通过
+> `mvn -q verify` 失败集与实现前基线逐条一致零新增（基线 130 用例 4 Failures + 2 Errors：TestLayersSpec/TestUtilsSpec 无 Docker、SeedDataIntegrationTest、DataSourceConfigBindingTest ×2、RoleControllerTest 409，2026-09-29 口径）；本功能点零前端改动，前端门禁不适用（如实注明）；`bash scripts/smoke.sh` 新增 `modules-002` 用例（定向跑 GatewayControllerTest）且单跑通过、整体失败与基线逐条一致零新增。
 
-**用例**：`AC4 ← 用例 npm run test 全量基线对照 + bash scripts/smoke.sh#web-037 间距与横排产物验证整体跑`
+**用例**：`AC4 ← 用例 mvn -q verify 基线对照 + bash scripts/smoke.sh#modules-002`
 
 ## 测试清单
 
-> 先于实现写出，规则遵循 `.harness/rules/tdd-workflow.md`；Generator 运行确认 RED 后填入实际输出。
+> 先于实现写出，规则遵循 `.harness/rules/tdd-workflow.md`；Generator 运行确认 RED 后填入实际输出（AC1 若实现前即绿须如实注明，不得伪造 RED）。
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | breadcrumb-nav.spec.ts#web-037 面包屑导航优化 > layout__content 顶距 16px 与顶栏留白 | AC1 | ✅ RED（1 failed 实时留痕）→ GREEN |
-| 2 | breadcrumb-nav.spec.ts#web-037 面包屑导航优化 > breadcrumb 与内容卡片间距 24px | AC2 | ✅ RED（1 failed 实时留痕）→ GREEN |
-| 3 | breadcrumb-nav.spec.ts#web-037 面包屑导航优化 > el-breadcrumb__inner 横排规则与图标尺寸不回归 | AC3 | ✅ RED（1 failed 实时留痕）→ GREEN |
-| 4 | 冒烟 web-037 面包屑间距与图标横排产物验证（`.el-breadcrumb__inner` display 进包 + `.layout__content` 16px + `.breadcrumb` 24px 三断言） | AC3/AC4 | ✅ RED（既有产物无横排规则实证）→ GREEN（单跑通过，产物三断言全中） |
-| 5 | 全量前端测试基线对照（实现前 20 failed / 276 passed，零新增失败） | AC4 | ✅ 实测 20 failed / 279 passed（299 = 基线 296 + 新增 3，failed 分布逐条一致零新增） |
+| 1 | GatewayControllerTest#accessWithoutTokenReturns401 | AC1 | 待 Generator 执行（Security 默认行为守护断言，如实登记是否 RED） |
+| 2 | GatewayControllerTest#forwardsToModuleServiceWhenAuthorized | AC2 | 待 Generator 执行（预期 RED：端点不存在/未转发） |
+| 3 | GatewayControllerTest#rejectsAccessWhenNotPermitted | AC3 | 待 Generator 执行（预期 RED：四种情形断言均不满足） |
+| 4 | 冒烟 modules-002 网关定向测试（mvn -Dtest=GatewayControllerTest） | AC4 | 待 Generator 追加并执行 |
+| 5 | 后端全量门禁基线对照（实现前 130 用例 4F+2E 清单留痕） | AC4 | 待 Generator 实测登记 |
 
 ## RED 证据
 
-> Generator 于实现前执行测试清单 #1~#4 并粘贴关键失败输出。
+> Generator 于实现前执行测试清单 #1~#3 并粘贴关键失败输出；#1 若非 RED 须如实说明。
 
 ```text
-[RED] src/components/__tests__/breadcrumb-nav.spec.ts — web-037 面包屑导航优化 > layout__content 顶距 16px 与顶栏留白
-  AssertionError: expected '.layout__content {\n  flex: 1;\n  ove…' to match /padding:\s*16px 24px 24px/
-[RED] src/components/__tests__/breadcrumb-nav.spec.ts — web-037 面包屑导航优化 > breadcrumb 与内容卡片间距 24px
-  AssertionError: expected '.breadcrumb {\n    margin-bottom: 16p…' to match /margin-bottom:\s*24px/
-[RED] src/components/__tests__/breadcrumb-nav.spec.ts — web-037 面包屑导航优化 > el-breadcrumb__inner 横排规则与图标尺寸不回归
-  AssertionError: expected null not to be null（源码无 .breadcrumb :deep(.el-breadcrumb__inner) 单 deep 横排规则）
-  Test Files  1 failed (1) | Tests  3 failed (3)
-（实测时间 2026-09-29，实现前执行）
+[RED]（待 Generator 填写）
 ```
 
 ## 门禁与冒烟记录
 
-- 后端 `mvn -q verify`：130 用例 4 Failures + 2 Errors，与基线逐条一致（DataSourceConfigBinding ×2、RoleControllerTest 409、SeedData 22≠2、TestLayers/TestUtils Docker 缺失），零后端改动、零新增 ✅（基线对照裁决口径）
-- 前端全量测试：`Test Files 6 failed | 28 passed (34)`，`Tests 20 failed | 279 passed (299)`——failed 20 与基线逐条一致（DefaultLayout 1、auth-token 2、tags-view-actions/dropdown 4、LoginView 2、system/IndexView 11），新增 3 用例全绿零新增失败 ✅
-- 前端 `npm run build`：✓ built in 17.55s；产物三断言预检全中（`.layout__content` padding:16px 24px 24px、`.breadcrumb` margin-bottom:24px、`.breadcrumb[data-v] .el-breadcrumb__inner{display:inline-flex` 单 :deep 正确编译无字面残留）✅
-- `npm run lint`：全量卡死为预存（沿基线对照口径）；分片 lint `npx eslint src/components/Breadcrumb.vue src/layouts/DefaultLayout.vue src/components/__tests__/breadcrumb-nav.spec.ts` → 本次改动两文件 exit 0 零告警，DefaultLayout.vue 78 处 prettier 经 stash 对照实证与基线逐条一致（预存，不做无关格式化）✅
-- `bash scripts/smoke.sh`：**50 用例**（49 基线 + 新增 web-037），失败 9 条与基线 10 条子集逐条一致（model-008/010、roles-001/002、web-013、web-020/021/022、web-026；infra-001 连续第二轮转绿属环境波动）零新增；**web-037 单跑 ✅ 通过**；web-015 计数断言 `28 passed` 未受影响（本次 3 用例置于独立 spec，未并入其覆盖的四个文件）✅
-- AC3 浏览器视觉复核（非门禁）：本机无 Playwright/Chromium 未执行，产物横排规则进包 + 源码单测已构成 AC3 判定证据；实际视觉效果（图标同行、留白观感）留待 Evaluator 复核
+> 待 Generator 实现后填写，含 mvn 基线对照明细、smoke 用例数与失败对照、AC1 RED 如实说明。
+
+- 后端 `mvn -q verify`：待填
+- 前端门禁：不适用（本功能点零前端改动）
+- `bash scripts/smoke.sh`：待填（新增 modules-002）
 
 ## 拆分说明
 
-预估验收标准 4 条（未超 4 条）；预估文件变更 **4 个**：
+预估验收标准 4 条（未超 4 条）；预估文件变更 **6 个（顶格）**：
 
-1. `frontend/src/layouts/DefaultLayout.vue` — `.layout__content` padding-top 0→16px（AC1）
-2. `frontend/src/components/Breadcrumb.vue` — `.el-breadcrumb__inner` 横排规则 + `.breadcrumb` margin-bottom 16→24px（AC2/AC3）
-3. `frontend/src/components/__tests__/breadcrumb-nav.spec.ts` — 新建，AC1/AC2/AC3 用例（先于实现，源码文本断言形态沿用 web/025 breadcrumb-spacing.spec.ts 先例）
-4. `scripts/smoke.sh` — 追加 `web-037` 用例（不删除、不改动既有用例；新用例置于独立 spec，web-015 覆盖的四个文件无新增用例，计数 `28 passed` 不过期）
+1. `backend/src/main/java/com/authcore/controller/GatewayController.java` — 网关端点，解析 moduleCode 与剩余路径，调用 GatewayService（AC1-AC3）
+2. `backend/src/main/java/com/authcore/service/GatewayService.java` — 服务接口（model/012 Controller 依赖接口约定）
+3. `backend/src/main/java/com/authcore/service/impl/GatewayServiceImpl.java` — 准入裁决（模块存在/启用/base_url/权限交集）+ RestTemplate exchange 转发（AC2/AC3）
+4. `backend/src/main/java/com/authcore/config/web/RestTemplateConfig.java` — RestTemplate @Bean（转发实例注入，测试可 @MockBean/MockRestServiceServer 绑定）
+5. `backend/src/test/java/com/authcore/controller/GatewayControllerTest.java` — AC1/AC2/AC3 用例（测试先行，`@SpringBootTest + @AutoConfigureMockMvc + @ActiveProfiles("test")` 沿 AuthControllerTest 先例；测试数据沿用 IT_PREFIX 隔离先例）
+6. `scripts/smoke.sh` — 追加 `modules-002` 用例（不删除、不改动既有用例，先例 web/037）
 
-**超限熔断**：实现中若实际变更文件超过 6 个，Generator 必须停止实现并回报 Planner 重新拆分，不得自行扩范围。侧边栏、Header、卡片内边距、暗色系调整一律不做。
+**超限熔断**：实现中若实际变更文件超过 6 个，Generator 必须停止实现并回报 Planner 重新拆分，不得自行扩范围。服务凭证（modules/003）、前端页面（web/038）、路径级鉴权、下游可靠性一律不做。
 
-## 交付物（预估 4 文件）
+**注册拆分（见业务背景）**：总体需求拆为 modules/002（本工作单）/ modules/003（服务凭证，预留）/ web/038（前端适配，预留），一次只注册第一个。
 
-1. `frontend/src/layouts/DefaultLayout.vue` — 内容区顶部留白 16px
-2. `frontend/src/components/Breadcrumb.vue` — 图标横排规则 + 与卡片间距 24px
-3. `frontend/src/components/__tests__/breadcrumb-nav.spec.ts` — AC1/AC2/AC3 用例（测试先行）
-4. `scripts/smoke.sh` — web-037 产物级冒烟用例
+## 交付物（预估 6 文件）
+
+1. `backend/src/main/java/com/authcore/controller/GatewayController.java` — 网关端点
+2. `backend/src/main/java/com/authcore/service/GatewayService.java` — 服务接口
+3. `backend/src/main/java/com/authcore/service/impl/GatewayServiceImpl.java` — 准入裁决 + 转发
+4. `backend/src/main/java/com/authcore/config/web/RestTemplateConfig.java` — RestTemplate Bean
+5. `backend/src/test/java/com/authcore/controller/GatewayControllerTest.java` — AC1/AC2/AC3 用例（测试先行）
+6. `scripts/smoke.sh` — modules-002 产物/定向冒烟用例
 
 ## 变更清单
 
 ### 新增
-- `frontend/src/components/__tests__/breadcrumb-nav.spec.ts` — AC1/AC2/AC3 源码层三断言用例（测试先行，52 行）
+- `backend/src/main/java/com/authcore/controller/GatewayController.java` — `ALL /api/v1/gateway/{moduleCode}/**` 网关端点（AC1-AC3）
+- `backend/src/main/java/com/authcore/service/GatewayService.java` — 准入+转发服务接口（AC2/AC3）
+- `backend/src/main/java/com/authcore/service/impl/GatewayServiceImpl.java` — 模块级准入裁决与 RestTemplate 转发、Authorization 剥离、响应透传（AC2/AC3）
+- `backend/src/main/java/com/authcore/config/web/RestTemplateConfig.java` — RestTemplate Bean（AC2 测试可绑定）
+- `backend/src/test/java/com/authcore/controller/GatewayControllerTest.java` — AC1/AC2/AC3 用例（测试先行，含 never() 不转发断言）
 
 ### 修改
-- `frontend/src/layouts/DefaultLayout.vue`:102 — `.layout__content` padding `0 24px 24px`→`16px 24px 24px`，面包屑与顶栏留白 0→16px（AC1）
-- `frontend/src/components/Breadcrumb.vue`:59 — `.breadcrumb` margin-bottom `16px`→`24px`，面包屑与内容卡片留白 16→24px（AC2）
-- `frontend/src/components/Breadcrumb.vue`:92-97 — 新增单 `:deep(.el-breadcrumb__inner)` 规则 `display:inline-flex; align-items:center`（附 why 注释：串联 :deep() 编译残留字面量失效），图标与文字同行且垂直居中（AC3）
-- `scripts/smoke.sh`:392-404 — 追加 `web-037 面包屑间距与图标横排验证` 冒烟用例（单测 3 passed + 构建产物三断言；不删除、不改动既有用例）
+- `scripts/smoke.sh` — 追加 `modules-002` 网关定向用例（不删除、不改动既有用例）
 
 ### 删除
 - （无）
 
 ## 规范检查清单
 
-- [x] `mvn -q verify` 后端门禁（本功能点零后端改动，基线对照口径：130 用例 4F+2E 逐条一致）
-- [x] `npm run lint && npm run test && npm run build` 前端门禁（test 零新增失败；lint 全量卡死为预存，分片本次改动文件零告警、DefaultLayout 78 处预存与基线一致；build 通过）
-- [x] `bash scripts/smoke.sh` 新增 web-037 单跑通过（50 用例，9 失败为基线 10 条子集，预存红项基线对照口径）
-- [x] 符合 Vue 3 / Vite / TypeScript strict 编码规范
-- [x] 符合 TDD 工作流（测试先行、RED 证据完整、GREEN 实现、REFACTOR 全绿）
-- [x] 变更文件不超过 6 个（实际 4 个：DefaultLayout.vue、Breadcrumb.vue、breadcrumb-nav.spec.ts、smoke.sh，未超熔断）
+- [ ] `mvn -q verify` 后端门禁（基线对照零新增失败）
+- [ ] 前端门禁不适用（本功能点零前端改动，如实注明）
+- [ ] `bash scripts/smoke.sh` 新增 modules-002 单跑通过且整体与基线一致
+- [ ] 符合 Java 21 / Spring Boot 3 / Spring Security 6 编码规范与既有分层约定（controller → service 接口 → impl）
+- [ ] 符合 TDD 工作流（测试先行、RED 证据完整【AC1 如实登记】、GREEN 实现、REFACTOR 全绿）
+- [ ] 变更文件不超过 6 个（预估 6 顶格，超限熔断回报）
 
 ## 评审记录
 
-- 2026-09-29: Evaluator — **通过**（第 1 轮，平均分 9.5/10：功能 9 / 质量 9.5 / 规范 9.5 / TDD 9.5 / 安全 10）。验收标准 4/4 满足（产物三断言亲验、breadcrumb-spacing 4/4 不回归）；变更范围三方一致（4 业务文件 + 4 元数据，无夹带，test→feat→docs 提交序物证成立，RED 提交时实现文件旧值亲验）；亲测门禁：mvn 130 用例 4F+2E 与基线逐条一致、全量 lint 卡死 exit 124 预存（第 6 次复现）+ 分片改动文件零告警、前端 test 20 failed/279 passed 分布逐条一致零新增、build ✓ 17.08s；亲跑冒烟 50 用例，web-037 ✅、9 失败为基线 10 条子集零新增、smoke 增量 +1/-0。六个一票否决项逐一核对均未命中（否决项 6 按「基线对照推进」用户裁决口径豁免，先例 sprint-067）。改进建议见报告（全局 svg reset 审计、:deep 串联 42 处归 web/036c、视觉截图补证）。
+- （待 Evaluator）
