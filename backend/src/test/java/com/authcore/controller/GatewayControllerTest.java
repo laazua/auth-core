@@ -35,6 +35,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -268,5 +269,97 @@ class GatewayControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(1305));
         verify(restTemplate, never()).exchange(any(RequestEntity.class), eq(byte[].class));
+    }
+
+    /**
+     * AC2 (web/038a): 无 Authorization 但携带有效 Cookie 的请求通过认证并执行网关转发。
+     * Given user_mgmt base_url 已配置、admin 持有 user:view，携带有效 AUTH_TOKEN Cookie（不带 Authorization）
+     * When POST /api/v1/gateway/user_mgmt/api/items（body {"x":1}）
+     * Then 下游被调用一次：无 Authorization、无 Cookie 头、body 原样；网关 200 透传下游体
+     */
+    @Test
+    @DisplayName("携带有效 Cookie 的请求经网关认证并转发且凭据不外泄")
+    void validCookieAuthenticatesGatewayRequest() throws Exception {
+        // Given: 种子模块指向下游，取得仅存在于 Cookie 的凭证
+        SysModule module = moduleByCode("user_mgmt");
+        module.setBaseUrl("http://service-a:8081/");
+        moduleMapper.updateById(module);
+
+        when(restTemplate.exchange(any(RequestEntity.class), eq(byte[].class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body("{\"ok\":true}".getBytes(StandardCharsets.UTF_8)));
+
+        String token = getAdminToken();
+
+        // When: 仅携带 Cookie、无 Authorization 访问网关
+        mockMvc.perform(post(GATEWAY + "user_mgmt/api/items")
+                        .cookie(new jakarta.servlet.http.Cookie(
+                                "AUTH_TOKEN", token))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"x\":1}"))
+                // Then: 认证通过并按代理语义透传
+                .andExpect(status().isOk())
+                .andExpect(content().json("{\"ok\":true}"));
+
+        // Then: 下游收到的转发请求凭据不外泄、体原样
+        org.mockito.ArgumentCaptor<RequestEntity> captor =
+                org.mockito.ArgumentCaptor.forClass(RequestEntity.class);
+        verify(restTemplate).exchange(captor.capture(), eq(byte[].class));
+        RequestEntity<?> forwarded = captor.getValue();
+        assertFalse(forwarded.getHeaders().containsKey("Authorization"), "Authorization 不得外泄给外部服务");
+        assertFalse(forwarded.getHeaders().containsKey("Cookie"), "认证 Cookie 不得外泄给外部服务");
+        assertEquals("{\"x\":1}",
+                new String((byte[]) forwarded.getBody(), StandardCharsets.UTF_8), "请求体应原样转发");
+    }
+
+    /**
+     * AC3 (web/038a): 无效 Cookie 且无 Bearer → 401 code=1401 且不发起下游调用。
+     * 如实登记：实现前无凭证同样命中 401（守护断言），与 AC2 有效 Cookie 放行构成对照，RED 证据由 AC1/AC2 承担。
+     */
+    @Test
+    @DisplayName("无效 Cookie 返回 401 code=1401 且不发起下游调用")
+    void invalidCookieRejectedWith401AndNoDownstreamCall() throws Exception {
+        mockMvc.perform(get(GATEWAY + "user_mgmt/data")
+                        .cookie(new jakarta.servlet.http.Cookie(
+                                "AUTH_TOKEN",
+                                "invalid.token.value")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(1401));
+        verify(restTemplate, never()).exchange(any(RequestEntity.class), eq(byte[].class));
+    }
+
+    /**
+     * AC4-① (web/038a): 下游内嵌限制头不透传，且响应不得携带阻断同源内嵌的 X-Frame-Options: DENY。
+     * RED 实测事实（字节码实证）：SecurityConfig 未定制 headers 时，Spring Security 6.5 的
+     * XFrameOptionsHeaderWriter 无参构造默认 DENY 且对所有响应写入（已存在同名头则跳过）——
+     * DENY 会阻断一切 iframe 内嵌；网关侧须以 SAMEORIGIN 预置覆盖（同源可内嵌、外源仍拒）。
+     * CSP 框架默认不写；下游的 DENY/frame-ancestors 不得透传。
+     */
+    @Test
+    @DisplayName("下游 X-Frame-Options 与 Content-Security-Policy 不透传进网关响应")
+    void stripsFrameBlockingHeadersFromDownstream() throws Exception {
+        // Given: 种子模块 + 下游返回两个内嵌限制头（DISTINCTIVE 值便于与框架默认头区分）
+        SysModule module = moduleByCode("user_mgmt");
+        module.setBaseUrl("http://service-a:8081/");
+        moduleMapper.updateById(module);
+
+        when(restTemplate.exchange(any(RequestEntity.class), eq(byte[].class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.OK)
+                        .header("X-Frame-Options", "DENY")
+                        .header("Content-Security-Policy", "frame-ancestors 'none'")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body("{\"v\":1}".getBytes(StandardCharsets.UTF_8)));
+
+        String token = getAdminToken();
+
+        // When/Then: 下游限制头不透传（框架自身 XFO: SAMEORIGIN 保留不阻断同源内嵌），状态与体原样
+        mockMvc.perform(get(GATEWAY + "user_mgmt/page")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Frame-Options",
+                        org.hamcrest.Matchers.not(org.hamcrest.Matchers.equalTo("DENY"))))
+                .andExpect(header().doesNotExist("Content-Security-Policy"))
+                .andExpect(content().json("{\"v\":1}"));
     }
 }

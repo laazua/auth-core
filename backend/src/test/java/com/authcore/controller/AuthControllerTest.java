@@ -2,6 +2,7 @@ package com.authcore.controller;
 
 import com.authcore.config.security.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +15,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -502,5 +505,73 @@ class AuthControllerTest {
         assertTrue(summary.contains("无状态 JWT v1"), "summary 应包含'无状态 JWT v1'，实际: " + summary);
         assertTrue(summary.contains("服务端不撤销 token"), "summary 应包含'服务端不撤销 token'，实际: " + summary);
         assertTrue(summary.contains("客户端自行清除"), "summary 应包含'客户端自行清除'，实际: " + summary);
+    }
+
+    /**
+     * AC1 (web/038a): 登录成功下发 HttpOnly 会话 Cookie。
+     * Given 合法凭证 admin/admin123456
+     * When POST /api/v1/auth/login
+     * Then Set-Cookie 含 AUTH_TOKEN、HttpOnly、SameSite=Lax、Max-Age=7200、Path=/，响应体契约不变
+     */
+    @Test
+    @DisplayName("登录成功下发 HttpOnly SameSite=Lax Max-Age=7200 会话 Cookie")
+    void loginSetsHttpOnlyCookie() throws Exception {
+        // Given: 合法登录请求体
+        String requestBody = """
+                {
+                    "username": "admin",
+                    "password": "admin123456"
+                }
+                """;
+
+        // When/Then: 登录响应携带完整属性的会话 Cookie，且响应体契约不变
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.data.token").exists())
+                .andExpect(header().string("Set-Cookie",
+                        containsString("AUTH_TOKEN=")))
+                .andExpect(header().string("Set-Cookie", containsString("HttpOnly")))
+                .andExpect(header().string("Set-Cookie", containsString("SameSite=Lax")))
+                .andExpect(header().string("Set-Cookie", containsString("Max-Age=7200")))
+                .andExpect(header().string("Set-Cookie", containsString("Path=/")));
+    }
+
+    /**
+     * AC1 (web/038a): 登出响应清除会话 Cookie。
+     * Given 先登录取得 JWT 并携带 AUTH_TOKEN Cookie
+     * When POST /api/v1/auth/logout
+     * Then status=200、code=0，Set-Cookie 同名且 Max-Age=0
+     */
+    @Test
+    @DisplayName("登出响应清除会话 Cookie（Max-Age=0）")
+    void logoutClearsCookie() throws Exception {
+        // Given: 登录取得 token
+        String loginBody = """
+                {
+                    "username": "admin",
+                    "password": "admin123456"
+                }
+                """;
+        String loginResponse = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginBody))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        String token = mapper.readTree(loginResponse).path("data").path("token").asText();
+
+        // When/Then: 携带 Cookie 登出，响应带同名 Cookie 清除指令
+        mockMvc.perform(post("/api/v1/auth/logout")
+                        .cookie(new Cookie("AUTH_TOKEN", token)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(header().string("Set-Cookie",
+                        containsString("AUTH_TOKEN=")))
+                .andExpect(header().string("Set-Cookie", containsString("Max-Age=0")));
     }
 }

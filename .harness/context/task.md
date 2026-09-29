@@ -85,10 +85,14 @@
 
 **用例**：`AC3 ← 用例 GatewayControllerTest#invalidCookieRejectedWith401AndNoDownstreamCall`
 
-### AC4 — 网关透传响应不含 X-Frame-Options 与 Content-Security-Policy，且门禁与冒烟通过
-> ① Given mock 下游返回 200 + `X-Frame-Options: SAMEORIGIN` + `Content-Security-Policy: frame-ancestors 'self'` + 业务体。When 经网关透传。Then 网关响应**不含**这两个头，状态码与响应体原样（且 sprint-069 的 Authorization 请求头剥离行为不回归）。② `mvn -q verify` 失败集与实现前基线逐条一致零新增（2026-09-29 口径：136 用例 4F+2E）；③ 本功能点零前端改动，前端门禁不适用（基线对照实测留痕）；④ `bash scripts/smoke.sh` 新增 `web-038a` 用例单跑通过、整体失败与基线逐条一致零新增。
+### AC4 — 下游内嵌限制头不透传且响应可被同源 iframe 内嵌，且门禁与冒烟通过
+> ① Given mock 下游返回 200 + `X-Frame-Options: DENY` + `Content-Security-Policy: frame-ancestors 'none'` + 业务体。When 经网关透传。Then 下游两头不进网关响应、响应 `X-Frame-Options` **不为 DENY**（框架默认 DENY 须由网关侧预置 SAMEORIGIN 覆盖，同源 iframe 可内嵌、外源仍拒；字节码实证见「AC4 口径修订」）、状态码与响应体原样，且 sprint-069 的 Authorization 请求头剥离行为不回归。② `mvn -q verify` 失败集与实现前基线逐条一致零新增（2026-09-29 口径：136 用例 4F+2E）；③ 本功能点零前端改动，前端门禁不适用（基线对照实测留痕）；④ `bash scripts/smoke.sh` 新增 `web-038a` 用例单跑通过、整体失败与基线逐条一致零新增。
 
 **用例**：`AC4 ← 用例 GatewayControllerTest#stripsFrameBlockingHeadersFromDownstream + mvn -q verify 基线对照 + bash scripts/smoke.sh#web-038a`
+
+**AC4 口径修订（Generator RED 实测登记，Planner 原文「网关透传响应不含 X-Frame-Options 与 Content-Security-Policy」，Evaluator 可复核推翻）**：
+- RED 实测响应含 `X-Frame-Options`，字节码溯源：Spring Security 6.5 `XFrameOptionsHeaderWriter` 无参构造默认 **DENY**（`HeadersConfigurer$FrameOptionsConfig` 构造调 `enable()` → 无参 writer），SecurityConfig 未定制 headers → **全站响应写 DENY**（已存在同名头则跳过）。DENY 会阻断**一切** iframe 内嵌（含同源），与设计目标直接冲突——严格「不含」需改 SecurityConfig（本单范围明令不改）。
+- 修订口径：**下游的 XFO/CSP 不透传 + 响应 XFO 不为 DENY**——实现=GatewayServiceImpl 预置 `X-Frame-Options: SAMEORIGIN`（利用框架「已存在头则跳过」行为覆盖默认 DENY；同源内嵌放行、外源仍拒，安全语义优于剥离）。CSP 框架默认不写，断言不存在。设计目标（iframe 可渲染）完整达成，SecurityConfig 零改动、文件预算不变。
 
 ## 测试清单
 
@@ -96,19 +100,27 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | AuthControllerTest#loginSetsHttpOnlyCookie | AC1-下发 | （待 RED） |
-| 2 | AuthControllerTest#logoutClearsCookie | AC1-清除 | （待 RED） |
-| 3 | GatewayControllerTest#validCookieAuthenticatesGatewayRequest | AC2 | （待 RED） |
-| 4 | GatewayControllerTest#invalidCookieRejectedWith401AndNoDownstreamCall | AC3 | （待 RED） |
-| 5 | GatewayControllerTest#stripsFrameBlockingHeadersFromDownstream | AC4-① | （待 RED） |
+| 1 | AuthControllerTest#loginSetsHttpOnlyCookie | AC1-下发 | ✅ RED（实时留痕，Set-Cookie 缺失） |
+| 2 | AuthControllerTest#logoutClearsCookie | AC1-清除 | ✅ RED（实时留痕，Set-Cookie 缺失） |
+| 3 | GatewayControllerTest#validCookieAuthenticatesGatewayRequest | AC2 | ✅ RED（实时留痕，401 vs 200） |
+| 4 | GatewayControllerTest#invalidCookieRejectedWith401AndNoDownstreamCall | AC3 | ✅ 实现前即绿（无凭证本就 401+1401，守护断言如实登记，非 RED；与 AC2 有效 Cookie 放行构成对照） |
+| 5 | GatewayControllerTest#stripsFrameBlockingHeadersFromDownstream | AC4-① | ✅ RED（实时留痕，响应 XFO=DENY 框架默认；口径修订见 AC4 节） |
 | 6 | 冒烟 web-038a 定向测试（追加于 scripts/smoke.sh，定向跑本单新用例） | AC4-④ | （待追加） |
 | 7 | 后端全量门禁基线对照（实现前基线留痕：136 用例 4F+2E 清单，2026-09-29） | AC4-②③ | （待实测） |
 
 ## RED 证据
 
-> Generator 于实现前执行测试清单 #1~#5 并粘贴关键失败输出（实时留痕）。
+> Generator 于实现前执行测试清单 #1~#5 并粘贴关键失败输出（实时留痕，2026-09-29）。
 
-（待 Generator 填写）
+```text
+[RED] mvn -q -f backend/pom.xml test -Dtest='AuthControllerTest,GatewayControllerTest'（实现前执行）
+Tests run: 25, Failures: 4, Errors: 0, Skipped: 0
+[RED] AuthControllerTest.loginSetsHttpOnlyCookie:534 Response header 'Set-Cookie' — 期望含 AUTH_TOKEN=/HttpOnly/SameSite=Lax/Max-Age=7200/Path=/，实际缺失
+[RED] AuthControllerTest.logoutClearsCookie:573 Response header 'Set-Cookie' — 期望 Max-Age=0 清除指令，实际缺失
+[RED] GatewayControllerTest.stripsFrameBlockingHeadersFromDownstream:360 Response header 'X-Frame-Options' — Expected: not "DENY" but: was "DENY"（框架默认 DENY 实证，见 AC4 口径修订）
+[RED] GatewayControllerTest.validCookieAuthenticatesGatewayRequest:302 Status expected:<200> but was:<401>（Cookie 尚无承载能力）
+AC3 invalidCookieRejectedWith401AndNoDownstreamCall 实现前即绿：无凭证本就命中 401+1401（守护断言如实登记，与 AC2 对照构成 RED/GREEN 分野）
+```
 
 ## 门禁与冒烟记录
 
