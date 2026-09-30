@@ -68,10 +68,10 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | ModuleControllerTest#accessiblesReturnsEnabledModulesWithPermissionOverlap | AC1 | （待 RED） |
-| 2 | ModuleControllerTest#accessiblesExcludesDisabledModule | AC2 | （待 RED） |
-| 3 | ModuleControllerTest#accessiblesExcludesModuleWithoutPermissionOverlap | AC3 | （待 RED） |
-| 4 | ModuleControllerTest#accessiblesUnauthenticatedReturns401 | AC4-① | （待 RED） |
+| 1 | ModuleControllerTest#accessiblesReturnsEnabledModulesWithPermissionOverlap | AC1 | ✅ RED（200 期望实得 500，端点缺失） |
+| 2 | ModuleControllerTest#accessiblesExcludesDisabledModule | AC2 | ✅ RED（200 期望实得 500） |
+| 3 | ModuleControllerTest#accessiblesExcludesModuleWithoutPermissionOverlap | AC3 | ✅ RED（200 期望实得 500） |
+| 4 | ModuleControllerTest#accessiblesUnauthenticatedReturns401 | AC4-① | ✅ 实现前即绿（无凭证在 Security 链即 401，与端点存在无关，守护断言如实登记，非 RED） |
 | 5 | 冒烟 web-038b 定向测试（追加于 scripts/smoke.sh，定向跑本测试类） | AC4-④ | （待追加） |
 | 6 | 后端全量门禁基线对照（实现前基线：141 用例 4F+2E，2026-09-29 sprint-070 实测） | AC4-②③ | （待实测） |
 
@@ -79,9 +79,16 @@
 
 ## RED 证据
 
-> Generator 于实现前执行测试清单 #1~#4 并粘贴关键失败输出（实时留痕）。
+> Generator 于实现前执行测试清单 #1~#4 并粘贴关键失败输出（实时留痕，2026-09-29）。
 
-（待 Generator 填写）
+```text
+[RED] mvn -f backend/pom.xml test -Dtest='ModuleControllerTest'（实现前执行）
+Tests run: 11, Failures: 3, Errors: 0, Skipped: 0
+[RED] accessiblesReturnsEnabledModulesWithPermissionOverlap:453->callAccessibles:431 Status expected:<200> but was:<500>（GET /modules/accessibles 端点不存在，/{id} 模板吞路径致转换失败）
+[RED] accessiblesExcludesDisabledModule:475->callAccessibles:431 Status expected:<200> but was:<500>
+[RED] accessiblesExcludesModuleWithoutPermissionOverlap:488->callAccessibles:431 Status expected:<200> but was:<500>
+AC4 accessiblesUnauthenticatedReturns401 实现前即绿：无凭证请求在 Security 过滤链即由 entryPoint 判 401+1401，与端点存在性无关（守护断言如实登记，非 RED；与 AC1-3 构成对照）
+```
 
 ## 门禁与冒烟记录
 

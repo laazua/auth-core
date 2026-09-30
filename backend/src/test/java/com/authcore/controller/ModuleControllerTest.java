@@ -5,6 +5,7 @@ import com.authcore.entity.SysModule;
 import com.authcore.entity.SysPermission;
 import com.authcore.mapper.SysModuleMapper;
 import com.authcore.mapper.SysPermissionMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -418,5 +420,80 @@ class ModuleControllerTest {
             // 不应包含其他字段
             assertEquals(3, item.size(), "每项应仅含 id/code/name 三字段");
         }
+    }
+
+    private static final com.fasterxml.jackson.databind.ObjectMapper JSON =
+            new com.fasterxml.jackson.databind.ObjectMapper();
+
+    private String callAccessibles(String token) throws Exception {
+        return mockMvc.perform(get("/api/v1/modules/accessibles")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0)).andExpect(jsonPath("$.data").isArray())
+                .andReturn().getResponse().getContentAsString();
+    }
+
+    private boolean accessiblesContain(String response, String code) throws Exception {
+        for (var item : JSON.readTree(response).path("data")) {
+            if (code.equals(item.path("code").asText())) { return true; }
+        }
+        return false;
+    }
+
+    @Test
+    @DisplayName("GET /modules/accessibles 返回交集启用模块且精简六字段")
+    void accessiblesReturnsEnabledModulesWithPermissionOverlap() throws Exception {
+        // Given
+        SysModule module = moduleMapper.selectOne(
+                new LambdaQueryWrapper<SysModule>().eq(SysModule::getCode, "user_mgmt"));
+        module.setBaseUrl("http://service-a:8081/");
+        moduleMapper.updateById(module);
+        String token = getAdminToken();
+
+        String response = callAccessibles(token);
+        com.fasterxml.jackson.databind.JsonNode target = null;
+        for (var item : JSON.readTree(response).path("data")) {
+            if ("user_mgmt".equals(item.path("code").asText())) { target = item; }
+        }
+        assertNotNull(target, "有权限且启用的 user_mgmt 应出现");
+        assertEquals(6, target.size(), "记录应仅含 id/name/code/baseUrl/description/status");
+        assertEquals(1, target.path("status").asInt(), "状态应为启用");
+        assertEquals("http://service-a:8081/", target.path("baseUrl").asText(), "baseUrl 应回传");
+        assertFalse(response.contains("createdAt"), "不应含 createdAt 管理字段");
+    }
+
+    @Test
+    @DisplayName("停用模块不出现在 accessibles 列表")
+    void accessiblesExcludesDisabledModule() throws Exception {
+        // Given
+        SysModule module = moduleMapper.selectOne(
+                new LambdaQueryWrapper<SysModule>().eq(SysModule::getCode, "user_mgmt"));
+        module.setStatus(0);
+        moduleMapper.updateById(module);
+        String token = getAdminToken();
+        // Then: 调用并断言
+        String response = callAccessibles(token);
+        assertFalse(accessiblesContain(response, "user_mgmt"), "停用模块不应出现");
+    }
+
+    @Test
+    @DisplayName("无权限交集的启用模块不出现在 accessibles 列表")
+    void accessiblesExcludesModuleWithoutPermissionOverlap() throws Exception {
+        // Given
+        String code = unique("no_perm");
+        Long moduleId = createModuleDirectly(unique("无权模块"), code);
+        createPermissionDirectly(unique("无权权限"), unique("perm_none"), moduleId);
+        String token = getAdminToken();
+        // Then: 调用并断言
+        String response = callAccessibles(token);
+        assertFalse(accessiblesContain(response, code), "交集为空的启用模块不应出现");
+    }
+
+    @Test
+    @DisplayName("未登录访问 accessibles 返回 401")
+    void accessiblesUnauthenticatedReturns401() throws Exception {
+        mockMvc.perform(get("/api/v1/modules/accessibles"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(1401));
     }
 }
