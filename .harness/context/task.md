@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/038a |
 | 功能点名称 | 模块服务统一入口（a 段）——JWT Cookie 双承载与网关内嵌响应头剥离（后端支撑） |
-| 状态 | AWAITING_REVIEW |
+| 状态 | DONE |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -204,4 +204,4 @@ Tests run: 25, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS
 
 ## 评审记录
 
-- （待 Evaluator）
+- 2026-09-29: Evaluator 首轮评审 **✅ 通过（均分 9.0/10）**（sprint-070）。五维：功能正确性 9 / 代码质量 9 / 规范遵守 9 / TDD 执行度 9 / 安全性 9。4 条 AC 全满足（亲跑：mvn 141 用例 4F+2E 与基线逐条一致零新增；前端 lint124/test 20 failed/build ✓ 基线对照；冒烟 52 用例 9 失败为基线子集、web-038a ✅、smoke.sh 增量 +2 行核证）。六项一票否决均未命中（否决项 6 按 2026-09-28 用户「基线对照推进」裁决与 sprint-069 先例豁免）。AC4 两阶段口径修订（预置 SAMEORIGIN 被 `XFrameOptionsHeaderWriter` 无条件覆盖字节码证伪 → 用户裁定 SecurityConfig +1 行 sameOrigin、预算 6→7）经复核认可。改进建议（不计分）：① `AUTH_COOKIE_NAME` 可上移至独立常量类避免 controller→filter 反向引用；② 过期 Cookie 分支建议在 038b/038e 期间补单测；③ `secure` 属性随生产 HTTPS 部署切换登记至设计文档第 7 节部署前提。
