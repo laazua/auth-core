@@ -1,6 +1,5 @@
 package com.authcore.dto.module;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -10,8 +9,7 @@ public record ModuleUpdateDTO(
         @Size(max = 64, message = "name 长度不得超过 64")
         String name,
 
-        @Size(max = 255, message = "base_url 长度不得超过 255")
-        @JsonProperty("base_url")
+        @Size(max = 255, message = "baseUrl 长度不得超过 255")
         String baseUrl,
 
         @Size(max = 255, message = "description 长度不得超过 255")

@@ -1,6 +1,5 @@
 package com.authcore.dto.module;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -18,8 +17,7 @@ public record ModuleCreateDTO(
         @Pattern(regexp = "^[A-Z][A-Z0-9_]*$", message = "code 必须为大写字母开头，仅含大写字母、数字、下划线")
         String code,
 
-        @Size(max = 255, message = "base_url 长度不得超过 255")
-        @JsonProperty("base_url")
+        @Size(max = 255, message = "baseUrl 长度不得超过 255")
         String baseUrl,
 
         @Size(max = 255, message = "description 长度不得超过 255")

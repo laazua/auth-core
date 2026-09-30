@@ -44,7 +44,7 @@ public interface ModuleService {
     ModuleVO createModule(ModuleCreateDTO dto);
 
     /**
-     * 更新模块（仅 name、base_url、description、status，不改 code）。
+     * 更新模块（仅 name、baseUrl、description、status，不改 code）。
      *
      * @param id  模块 ID
      * @param dto 更新参数

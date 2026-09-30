@@ -1,5 +1,7 @@
 package com.authcore.dto.module;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDateTime;
 
 /**
@@ -12,6 +14,7 @@ public record ModuleVO(
         String baseUrl,
         String description,
         Integer status,
+        @JsonProperty("createTime")
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {

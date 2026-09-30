@@ -407,6 +407,8 @@ smoke_case "modules-002 模块统一访问入口网关定向测试" mvn -q -f "$
 smoke_case "web-038a Cookie双承载与内嵌头定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='AuthControllerTest,GatewayControllerTest'
 # web/038b：可访问模块列表（交集启用模块出现/停用不出现/无交集不出现/未登录 401）定向测试
 smoke_case "web-038b 可访问模块列表定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='ModuleControllerTest'
+# web/038c：模块字段契约（camel 入参 baseUrl 创建/更新回读、响应 createTime 输出无 createdAt）定向测试
+smoke_case "web-038c 模块字段契约定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='ModuleFieldContractTest,ModuleControllerTest'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

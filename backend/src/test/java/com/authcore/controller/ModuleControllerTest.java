@@ -102,7 +102,7 @@ class ModuleControllerTest {
      * AC1: 分页查询支持多条件。
      * Given 种子数据 4 个模块
      * When GET /api/v1/modules?name=用户&status=1
-     * Then status=200、total≥1、list 非空、每项含 id/name/code/base_url/description/status
+     * Then status=200、total≥1、list 非空、每项含 id/name/code/baseUrl/description/status
      */
     @Test
     @DisplayName("分页查询支持多条件 name/status")
@@ -142,7 +142,7 @@ class ModuleControllerTest {
             assertNotNull(item.path("baseUrl").asText(), "baseUrl 不应为空");
             assertNotNull(item.path("description").asText(), "description 不应为空");
             assertNotNull(item.path("status").asText(), "status 不应为空");
-            assertNotNull(item.path("createdAt").asText(), "createdAt 不应为空");
+            assertNotNull(item.path("createTime").asText(), "createTime 不应为空");
             assertNotNull(item.path("updatedAt").asText(), "updatedAt 不应为空");
         }
     }
@@ -173,7 +173,7 @@ class ModuleControllerTest {
         assertNotNull(root.path("data").path("baseUrl").asText());
         assertNotNull(root.path("data").path("description").asText());
         assertNotNull(root.path("data").path("status").asText());
-        assertNotNull(root.path("data").path("createdAt").asText());
+        assertNotNull(root.path("data").path("createTime").asText());
         assertNotNull(root.path("data").path("updatedAt").asText());
 
         // 不存在的模块
@@ -222,7 +222,7 @@ class ModuleControllerTest {
 
     /**
      * AC3: 创建模块唯一校验。
-     * POST /api/v1/modules {name, code, base_url, description, status} 返回 200，
+     * POST /api/v1/modules {name, code, baseUrl, description, status} 返回 200，
      * data.id 非空，重复 name 返回 409 code=1301、同 code 返回 409 code=1302。
      */
     @Test
@@ -239,7 +239,7 @@ class ModuleControllerTest {
                 {
                     "name": "%s",
                     "code": "%s",
-                    "base_url": "http://new",
+                    "baseUrl": "http://new",
                     "description": "测试模块",
                     "status": 1
                 }
@@ -274,7 +274,7 @@ class ModuleControllerTest {
                 {
                     "name": "%s",
                     "code": "%s",
-                    "base_url": "http://new2",
+                    "baseUrl": "http://new2",
                     "description": "测试模块2",
                     "status": 1
                 }
@@ -291,8 +291,8 @@ class ModuleControllerTest {
 
     /**
      * AC4: 更新模块 code 不可改。
-     * PUT /api/v1/modules/{id} {name, base_url, description, status} 返回 200，
-     * name/base_url/description/status 更新，code 不变。
+     * PUT /api/v1/modules/{id} {name, baseUrl, description, status} 返回 200，
+     * name/baseUrl/description/status 更新，code 不变。
      */
     @Test
     @DisplayName("更新模块 code 不可改")
@@ -320,7 +320,7 @@ class ModuleControllerTest {
         String updateBody = """
                 {
                     "name": "%s",
-                    "base_url": "http://updated",
+                    "baseUrl": "http://updated",
                     "description": "更新后的描述",
                     "status": 0
                 }
@@ -342,7 +342,7 @@ class ModuleControllerTest {
         var updateRoot = mapper.readTree(updateResponse);
         // 验证 code 未变
         assertEquals(originalCode, updateRoot.path("data").path("code").asText(), "code 不应改变");
-        assertEquals("http://updated", updateRoot.path("data").path("baseUrl").asText(), "base_url 应更新");
+        assertEquals("http://updated", updateRoot.path("data").path("baseUrl").asText(), "baseUrl 应更新");
         assertEquals("更新后的描述", updateRoot.path("data").path("description").asText(), "description 应更新");
     }
 

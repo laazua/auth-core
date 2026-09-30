@@ -105,7 +105,7 @@ public class ModuleController {
     /**
      * 创建模块。
      *
-     * @param dto 创建参数（name、code、base_url、description、status）
+     * @param dto 创建参数（name、code、baseUrl、description、status）
      * @return 创建后的模块视图对象（含 id）
      */
     @Operation(summary = "创建模块，name/code 唯一校验")
@@ -119,7 +119,7 @@ public class ModuleController {
      * 更新模块（不含 code）。
      *
      * @param id  模块 ID
-     * @param dto 更新参数（name、base_url、description、status）
+     * @param dto 更新参数（name、baseUrl、description、status）
      * @return 更新后的模块视图对象
      */
     @Operation(summary = "更新模块（不含 code）")
