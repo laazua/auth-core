@@ -2,12 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟡 sprint-071 实现完成待评审（web/038b AWAITING_REVIEW，RED 0de6f8f → GREEN 4ea5195）；sprint-070 评审通过（web/038a ✅，9.0/10）；sprint-069 评审通过（modules/002 ✅，9.0/10）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
+- 状态: 🟢 sprint-071 评审通过（子功能点 **web/038b ✅**，均分 9.0/10，首轮通过；web/038 行仍 🔄 待 038c~e）；sprint-070 评审通过（web/038a ✅，9.0/10）；sprint-069 评审通过（modules/002 ✅，9.0/10）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
 - 当前模块: web
-- 当前功能点: web/038b（AWAITING_REVIEW，可访问模块列表 GET /modules/accessibles，sprint-071 工作单 `.harness/context/task.md`）
+- 当前功能点: web/038（拆分进行中：038a ✅、038b ✅，038c/038d/038e 预留 ⬜）
 
 ## 下一步动作
-  Evaluator：读 `.harness/evaluator.md` 并严格执行（先读 `.harness/rules/review-criteria.md`），评审工作单 `.harness/context/task.md`（sprint-071，web/038b）。关键对照点：① 亲跑门禁（后端 mvn -q verify 期望 145 用例 4F+2E 零新增、前端 lint124/test20/build✓ 基线对照）、冒烟期望 53 用例 9 失败与基线逐条一致且 web-038b ✅、smoke.sh 增量核证 +2 行；② 核 RED/GREEN 证据链（0de6f8f 3 failed 留痕 → 4ea5195 11/11）与 AC4 预绿如实登记；③ 复核测试类 499 行守 500 红线、AC4 未登录 401 系 Security 链天然覆盖（工作单口径）；④ 关注 {id} 字面路径优先实证（AC1-3 200 即为实证）。E 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
+  Planner：读 `.harness/planner.md` 并严格执行，取下一功能点。建议 **web/038c**（baseUrl/createdAt 字段错位修复——ModuleCreateDTO/ModuleUpdateDTO `@JsonProperty("base_url")` 与前端提交 `baseUrl` 错位致静默丢弃、ModuleVO 输出 `createdAt` 与前端读 `createTime` 错位；registry 登记为 038d/038e 硬前置，前置 modules/001 ✅）；或用户新指令优先。附 038b 评审遗留改进建议（不阻塞，task.md 评审记录）：accessibles 与 getCurrentUserInfo 语义联调观察、checkAllowed 与 hasPermissionOverlap 同语义双实现待 038e 后评估合并。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
 
 ## 挂起
 - 2026-09-29: Planner(sprint-070) — 设计转工作单与两处口径登记（设计文档 `docs/superpowers/specs/2026-09-29-module-iframe-access-design.md` 用户逐节确认并评审通过，commit 83b19fb）：① **Cookie 双承载口径**——架构 §安全「JWT(HS256)」与登录契约（payload/2h 有效期）未限定 HTTP 承载头，本单仅新增 Set-Cookie 传输位置，签发/payload/过期/校验零改动、响应体契约不变 → 无冲突；安全权衡登记=过滤器接受 Cookie 后所有受保护端点技术上可被 Cookie 调用，依赖 SameSite=Lax 阻断跨站写、写操作仍走 Bearer。② **网关剥 XFO/CSP 口径**——属 sprint-069 §4 代理语义登记（转发成功响应原样透传）的头维度明确化：所剥两头为浏览器内嵌限制控制头、非业务契约；权衡=授权用户可将外部系统内嵌（取得响应仍需 JWT+模块权限，等同内容转发权），登记接受。③ **web/038 总需求拆分（一次只注册第一个）**：web/038a Cookie 双承载+网关头剥离（本次 sprint-070，6 文件顶格）/ 038b accessibles 可访问列表 / 038c baseUrl·createdAt 字段错位修复（硬前置）/ 038d 我的模块菜单页 / 038e iframe 视图+管理页「进入」；modules/003 服务凭证与本组无关仍待 §3 仲裁。附：设计文档第 4 节菜单机制 ID 笔误 web/005→web/003 已就地修正。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。

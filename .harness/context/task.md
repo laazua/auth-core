@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/038b |
 | 功能点名称 | 模块服务统一入口（b 段）——可访问模块列表 `GET /modules/accessibles`（后端） |
-| 状态 | AWAITING_REVIEW |
+| 状态 | DONE |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -165,4 +165,4 @@ Tests run: 11, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS（既有 7 �
 
 ## 评审记录
 
-- （待 Evaluator）
+- 2026-09-29: Evaluator 首轮评审 **✅ 通过（均分 9.0/10）**（sprint-071）。五维：功能正确性 9 / 代码质量 9 / 规范遵守 9 / TDD 执行度 9 / 安全性 9。4 条 AC 全满足（亲跑：mvn 145 用例 4F+2E 与基线逐条一致零新增；前端 lint124/test 20 failed/build ✓ 基线对照；冒烟 53 用例 9 失败为基线子集、web-038b ✅、smoke.sh 增量 +2 行核证）。六项一票否决均未命中（否决项 6 按 2026-09-28 用户「基线对照推进」裁决与 sprint-069/070 先例豁免）。复核认可：AC4 预绿系 Security 链天然 401（与端点无关，第三次同模式如实登记）；`{id}` 字面路径优先由 AC1-3 200 实证；测试类 499 行守 500 红线（为守红线省去方法级 Javadoc，`@DisplayName`+AAA 分节满足 §9 硬规则，包级可见方法不触发 §2 Javadoc 强制，不计分）。改进建议（不计分）：① accessibles 查询与 `getCurrentUserInfo` 可在 038d 联调时观察是否存在同款语义偏差；② 网关 `checkAllowed` 与 `hasPermissionOverlap` 同语义两实现，待 038e 后评估是否合并（DRY 三处原则未达，暂不动）。
