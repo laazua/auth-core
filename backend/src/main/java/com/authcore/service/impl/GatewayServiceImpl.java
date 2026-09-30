@@ -45,9 +45,9 @@ public class GatewayServiceImpl implements GatewayService {
 
     private static final Integer MODULE_ENABLED = 1;
 
-    /** 转发时剥离的请求头（认证凭据与逐跳头不外泄），全小写比较。 */
+    /** 转发时剥离的请求头（认证凭据 Authorization/Cookie 与逐跳头不外泄），全小写比较。 */
     private static final Set<String> STRIPPED_HEADERS = Set.of(
-            "authorization", "host", "content-length", "connection", "keep-alive", "transfer-encoding", "expect");
+            "authorization", "cookie", "host", "content-length", "connection", "keep-alive", "transfer-encoding", "expect");
 
     private final SysModuleMapper moduleMapper;
     private final SysPermissionMapper permissionMapper;
@@ -124,6 +124,9 @@ public class GatewayServiceImpl implements GatewayService {
         if (downstream.getHeaders().getContentType() != null) {
             responseHeaders.setContentType(downstream.getHeaders().getContentType());
         }
+        // web/038a AC4：预置 SAMEORIGIN 覆盖 Spring Security 默认 DENY（框架对已存在同名头跳过），
+        // 使同源 iframe 可内嵌、外源仍被拒；下游的 XFO/CSP 因仅复制 Content-Type 而自然不透传
+        responseHeaders.set("X-Frame-Options", "SAMEORIGIN");
         log.debug("网关转发完成, target={}, status={}", target, downstream.getStatusCode().value());
         return ResponseEntity.status(downstream.getStatusCode())
                 .headers(responseHeaders)

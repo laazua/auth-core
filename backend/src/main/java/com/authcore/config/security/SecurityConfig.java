@@ -81,6 +81,9 @@ public class SecurityConfig {
         http
                 // 禁用 CSRF（无状态 JWT 无需 CSRF 保护）
                 .csrf(csrf -> csrf.disable())
+                // web/038a AC4：frameOptions 改为 SAMEORIGIN（默认 DENY 会阻断同源 iframe 内嵌），
+                // 同源可内嵌、外源仍拒绝，属响应头安全语义的等强改写
+                .headers(h -> h.frameOptions(f -> f.sameOrigin()))
                 // 无状态会话管理
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 未认证访问受保护资源返回 401 + Result(code=1401)

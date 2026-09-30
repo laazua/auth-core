@@ -497,7 +497,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("登出端点有 @Operation 注解且 summary 包含无状态 JWT v1")
     void logoutEndpointHasDocumentation() throws Exception {
-        Method method = AuthController.class.getMethod("logout");
+        Method method = AuthController.class.getMethod("logout", jakarta.servlet.http.HttpServletResponse.class);
         Operation operation = method.getAnnotation(Operation.class);
         assertNotNull(operation, "logout 方法应有 @Operation 注解");
         String summary = operation.summary();

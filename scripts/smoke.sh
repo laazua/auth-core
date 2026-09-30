@@ -403,6 +403,8 @@ smoke_case "web-037 面包屑间距与图标横排验证" bash -c "
 
 # modules/002：模块（外部服务）统一访问入口（认证+模块级准入+按 base_url 转发，Authorization 不外泄、拒绝面不触达下游）定向测试
 smoke_case "modules-002 模块统一访问入口网关定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='GatewayControllerTest'
+# web/038a：Cookie 双承载（登录 Set-Cookie/登出清除/网关 Cookie 认证/无效 Cookie 401 不触达下游/内嵌限制头不透传）定向测试
+smoke_case "web-038a Cookie双承载与内嵌头定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='AuthControllerTest,GatewayControllerTest'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
