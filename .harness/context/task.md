@@ -59,7 +59,7 @@
 **用例**：`AC3 ← 用例 ModuleFieldContractTest#listAndDetailSerializeCreateTimeNotCreatedAt`
 
 ### AC4 — 门禁与冒烟通过
-> ① `mvn -q verify` 失败集与实现前基线逐条一致零新增（2026-09-29 口径：145 用例 4F+2E，sprint-071 实测；本单 +3 用例 → 预期 148 4F+2E）。② 本功能点零前端改动，前端门禁不适用（基线对照实测留痕：lint 124 挂起 / test 20 failed|279 passed / build ✓）。③ `bash scripts/smoke.sh` 新增 `web-038c` 单跑通过、整体失败与基线逐条一致零新增（基线：53 用例 9 失败）。④ 既有 `ModuleControllerTest` 就地同步后（2 处载荷 `base_url`→`baseUrl`、3 处断言 `createdAt`→`createTime`）仍全绿（11/11），净行数不变。
+> ① `mvn -q verify` 失败集与实现前基线逐条一致零新增（2026-09-29 口径：145 用例 4F+2E，sprint-071 实测；本单 +3 用例 → 预期 148 4F+2E）。② 本功能点零前端改动，前端门禁不适用（基线对照实测留痕：lint 124 挂起 / test 20 failed|279 passed / build ✓）。③ `bash scripts/smoke.sh` 新增 `web-038c` 单跑通过、整体失败与基线逐条一致零新增（基线：53 用例 9 失败）。④ 既有 `ModuleControllerTest` 就地同步后仍全绿（11/11），净行数不变。**枚举复核修订（2026-09-29 Generator 实现前核对，覆盖原「2 载荷+3 断言」预估）**：载荷实为 3 处（`:242/:277/:323`）、ModuleVO 断言实为 2 处（`:145/:176`）；`:218` 系 PermissionVO（web/039 域）**不动**——改之必挂既有用例。
 
 **用例**：`AC4 ← mvn -q verify 基线对照 + bash scripts/smoke.sh#web-038c + ModuleControllerTest 回归`
 
@@ -83,12 +83,16 @@
 > Generator 于实现前执行测试清单 #1~#3 并粘贴关键失败输出（实时留痕）。
 
 ```text
-（待 Generator 填写）
+[RED] mvn -f backend/pom.xml test -Dtest='ModuleFieldContractTest'（实现前执行，2026-09-29 实时留痕）
+Tests run: 3, Failures: 3, Errors: 0, Skipped: 0
+[RED] createAcceptsCamelBaseUrlAndReadsBack:118 JSON path "$.data.baseUrl" expected:<http://camel-input> but was:<null>（载荷 camel baseUrl 被 @JsonProperty("base_url") 错位静默丢弃 → 未入库）
+[RED] updateAcceptsCamelBaseUrlAndReadsBack:148 JSON path "$.data.baseUrl" expected:<http://camel-updated> but was:<null>（同上，更新侧）
+[RED] listAndDetailSerializeCreateTimeNotCreatedAt:175 No value at JSON path "$.data.records[0].createTime"（响应输出 createdAt 而非 createTime）
 ```
 
 ## GREEN 证据
 
-> 实现后复跑（实时留痕）。REFACTOR 复查：行宽 ≤120、record 组件名与 JSON 名一致、DTO 注解删净（含未用 import）、既有测试 11/11、方法/文件行数达标（ModuleFieldContractTest ≤500、ModuleControllerTest 499 不变）。
+> 实现后复跑（实时留痕）。REFACTOR 复查：行宽 ≤120、`@JsonProperty` 映射口径（组件名 `createdAt` 与 JSON 键 `createTime` 分域——注解即映射边界，方案 B 用户裁定）、DTO 冗余 `@JsonProperty("base_url")` 删净（含未用 import）、既有测试 11/11、方法/文件行数达标（ModuleFieldContractTest ≤500、ModuleControllerTest 499 不变）。
 
 ```text
 （待 Generator 填写）
@@ -106,8 +110,8 @@
 
 1. `backend/src/main/java/com/authcore/dto/module/ModuleCreateDTO.java` — 删除 `@JsonProperty("base_url")`（组件名 `baseUrl` 即为默认 JSON 名）+ 同步 `@Size` message 文案 + 删未用 import（AC1）
 2. `backend/src/main/java/com/authcore/dto/module/ModuleUpdateDTO.java` — 同上（AC2）
-3. `backend/src/main/java/com/authcore/dto/module/ModuleVO.java` — record 组件 `createdAt`→`createTime`（位置参数构造不变，`ModuleServiceImpl:182` 零改动；JSON 输出键随组件名变）（AC3）
-4. `backend/src/test/java/com/authcore/controller/ModuleControllerTest.java` — **就地替换 5 处**（载荷 `base_url`→`baseUrl` ×2、断言 `createdAt`→`createTime` ×3）+ 注释文案，净行数不增（499 保持）
+3. `backend/src/main/java/com/authcore/dto/module/ModuleVO.java` — 组件上加 `@JsonProperty("createTime")` 映射输出键（**方案 B，2026-09-29 用户裁定**：组件名保持 `createdAt`——反例回报 `ModuleServiceTest:95,149` 调用 `.createdAt()`，组件改名破编译致第 7 文件超熔断；Java/DB 域同构 `created_at↔createdAt`，注解为传输域映射边界）（AC3）
+4. `backend/src/test/java/com/authcore/controller/ModuleControllerTest.java` — **就地替换 5 处**（载荷 `base_url`→`baseUrl` ×3：`:242/:277/:323`；ModuleVO 断言 `createdAt`→`createTime` ×2：`:145/:176`；`:218` PermissionVO 属 web/039 不动）+ 注释文案，净行数不增（499 保持）
 5. `backend/src/test/java/com/authcore/controller/ModuleFieldContractTest.java` — **新增**测试类（AC1-AC3 三方法 + 助手，方法级 Javadoc + `@DisplayName` + AAA，文件惯例恢复）
 6. `scripts/smoke.sh` — 追加 `web-038c` 用例（+2 行，不删除、不改动既有用例，先例 web/038b）
 
@@ -117,7 +121,7 @@
 
 1. `backend/src/main/java/com/authcore/dto/module/ModuleCreateDTO.java` — 入参 camel 化
 2. `backend/src/main/java/com/authcore/dto/module/ModuleUpdateDTO.java` — 入参 camel 化
-3. `backend/src/main/java/com/authcore/dto/module/ModuleVO.java` — 出参 `createTime`
+3. `backend/src/main/java/com/authcore/dto/module/ModuleVO.java` — 出参 `createTime`（`@JsonProperty` 映射，方案 B）
 4. `backend/src/test/java/com/authcore/controller/ModuleControllerTest.java` — 就地同步（不增行）
 5. `backend/src/test/java/com/authcore/controller/ModuleFieldContractTest.java` — AC1-AC3 新用例（新增）
 6. `scripts/smoke.sh` — web-038c 冒烟用例
@@ -130,8 +134,8 @@
 ### 修改
 - `backend/src/main/java/com/authcore/dto/module/ModuleCreateDTO.java`:21-23 — 删 `@JsonProperty("base_url")`、message 文案 `base_url`→`baseUrl`、清 import
 - `backend/src/main/java/com/authcore/dto/module/ModuleUpdateDTO.java`:13-15 — 同上
-- `backend/src/main/java/com/authcore/dto/module/ModuleVO.java`:15 — 组件 `createdAt`→`createTime`
-- `backend/src/test/java/com/authcore/controller/ModuleControllerTest.java`:105,145,176,218,225,242,277,294 — 载荷/断言/注释就地 camel 化（净行数 499 不变）
+- `backend/src/main/java/com/authcore/dto/module/ModuleVO.java`:15 — 组件 `createdAt` 加 `@JsonProperty("createTime")`（方案 B）+ 顶部 import
+- `backend/src/test/java/com/authcore/controller/ModuleControllerTest.java`:105,145,176,225,242,277,294,323 — 载荷 ×3（`:242/:277/:323`）与 ModuleVO 断言 ×2（`:145/:176`）就地 camel 化 + 注释文案（`:218` PermissionVO 不动；净行数 499 不变）
 - `scripts/smoke.sh` — 追加 `web-038c` 冒烟用例（+2 行，未动既有用例）
 
 合计 6 文件 = 预算顶格，未超熔断。
