@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/038c |
 | 功能点名称 | 模块服务统一入口（c 段）——`baseUrl`/`createTime` 字段错位修复（模块域，038d/038e 硬前置） |
-| 状态 | PLANNED |
+| 状态 | AWAITING_REVIEW |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -38,10 +38,10 @@
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — `POST /api/v1/modules` 请求体以 `baseUrl`（camel，同 `ModuleFormDrawer` 提交形状）提交 → 200，随后 `GET /api/v1/modules/{id}` 回读 `baseUrl` 等于提交值（修复静默丢弃）
-- [ ] AC2 — `PUT /api/v1/modules/{id}` 请求体以 `baseUrl` 提交 → 200，回读 `baseUrl` 等于更新值
-- [ ] AC3 — `GET /api/v1/modules` 列表项与 `GET /api/v1/modules/{id}` 详情输出 `createTime` 字段、**不再输出** `createdAt`（前端 `IndexView.vue:133` 直读可用）
-- [ ] AC4 — 后端门禁零新增失败（基线对照）；前端门禁不适用（零前端改动，基线对照留痕）；冒烟 `web-038c` 单跑通过、整体失败与基线逐条一致
+- [x] AC1 — `POST /api/v1/modules` 请求体以 `baseUrl`（camel，同 `ModuleFormDrawer` 提交形状）提交 → 200，随后 `GET /api/v1/modules/{id}` 回读 `baseUrl` 等于提交值（修复静默丢弃）
+- [x] AC2 — `PUT /api/v1/modules/{id}` 请求体以 `baseUrl` 提交 → 200，回读 `baseUrl` 等于更新值
+- [x] AC3 — `GET /api/v1/modules` 列表项与 `GET /api/v1/modules/{id}` 详情输出 `createTime` 字段、**不再输出** `createdAt`（前端 `IndexView.vue:133` 直读可用）
+- [x] AC4 — 后端门禁零新增失败（基线对照）；前端门禁不适用（零前端改动，基线对照留痕）；冒烟 `web-038c` 单跑通过、整体失败与基线逐条一致
 
 ### AC1 — 创建入参 camel `baseUrl` 正确入库回读
 > Given 管理员登录。When `POST /api/v1/modules` 载荷 `{name, code, "baseUrl": "http://camel-input", description, status}`（camel，同前端提交形状）。Then 200、`$.code=0`，且 `GET /api/v1/modules/{新 id}` 的 `$.data.baseUrl` 等于 `http://camel-input`（不再被静默丢弃）。
@@ -69,12 +69,12 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | ModuleFieldContractTest#createAcceptsCamelBaseUrlAndReadsBack | AC1 | 待填（预期 RED：载荷 `baseUrl` 被忽略 → 回读为空） |
-| 2 | ModuleFieldContractTest#updateAcceptsCamelBaseUrlAndReadsBack | AC2 | 待填（预期 RED：同上） |
-| 3 | ModuleFieldContractTest#listAndDetailSerializeCreateTimeNotCreatedAt | AC3 | 待填（预期 RED：响应有 `createdAt` 无 `createTime`） |
-| 4 | ModuleControllerTest 就地同步（载荷/断言改 camel 后回归 11/11） | AC4-④ | 待填（与实现同步进行，须全绿） |
-| 5 | 冒烟 web-038c 定向测试（追加于 scripts/smoke.sh，定向跑 ModuleFieldContractTest+ModuleControllerTest） | AC4-③ | 待填 |
-| 6 | 后端全量门禁基线对照（实现前基线：145 用例 4F+2E，2026-09-29 sprint-071 实测） | AC4-①② | 待填（预期 148 4F+2E 逐条一致） |
+| 1 | ModuleFieldContractTest#createAcceptsCamelBaseUrlAndReadsBack | AC1 | ✅ RED（`expected:<http://camel-input> but was:<null>` 静默丢弃实证）→ GREEN 3/3 过 |
+| 2 | ModuleFieldContractTest#updateAcceptsCamelBaseUrlAndReadsBack | AC2 | ✅ RED（`expected:<http://camel-updated> but was:<null>`）→ GREEN 过 |
+| 3 | ModuleFieldContractTest#listAndDetailSerializeCreateTimeNotCreatedAt | AC3 | ✅ RED（`No value at JSON path "$.data.records[0].createTime"`）→ GREEN 过 |
+| 4 | ModuleControllerTest 就地同步（载荷 ×3 + 断言 ×2 + 文案 ×5，零增行） | AC4-④ | ✅ 11/11 全绿（与新类、ModuleServiceTest 合跑 21/21，`.createdAt()` 访问面零破坏） |
+| 5 | 冒烟 web-038c 定向测试（追加于 scripts/smoke.sh:410-411，定向跑 ModuleFieldContractTest+ModuleControllerTest） | AC4-③ | ✅ 已追加，54 用例中 ✅ 通过 |
+| 6 | 后端全量门禁基线对照（实现前基线：145 用例 4F+2E，2026-09-29 sprint-071 实测） | AC4-①② | ✅ 148 用例 4F+2E 逐条一致零新增（145+3=148） |
 
 **行数红线**：`ModuleControllerTest` 现 **499 行**——本单**只许就地替换、禁止增行**（新增方法一律入新测试类 `ModuleFieldContractTest`，预估 ≤140 行，红线 ≤500）；若逼近红线立即回报 Planner，禁止删改既有用例。
 
@@ -95,18 +95,29 @@ Tests run: 3, Failures: 3, Errors: 0, Skipped: 0
 > 实现后复跑（实时留痕）。REFACTOR 复查：行宽 ≤120、`@JsonProperty` 映射口径（组件名 `createdAt` 与 JSON 键 `createTime` 分域——注解即映射边界，方案 B 用户裁定）、DTO 冗余 `@JsonProperty("base_url")` 删净（含未用 import）、既有测试 11/11、方法/文件行数达标（ModuleFieldContractTest ≤500、ModuleControllerTest 499 不变）。
 
 ```text
-（待 Generator 填写）
+[GREEN] mvn -f backend/pom.xml test -Dtest='ModuleFieldContractTest,ModuleControllerTest,ModuleServiceTest'
+Tests run: 21, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS（新 3 + ModuleControllerTest 11 + ModuleServiceTest 7）
+中间态：RED 3 failed → GREEN 21/21；REFACTOR 复查：新类未用 import ×2 清除、行宽 ≤120（ModuleControllerTest:363 123 列为既有遗留未触碰）、ModuleControllerTest 499 行零增行、新类 183 行 ≤500
 ```
 
 ## 门禁与冒烟记录
 
 > Generator 亲测填写（后端 mvn -q verify / 前端门禁基线对照 / scripts/smoke.sh），Evaluator 不采信自述须亲跑。
 
-（待 Generator 填写）
+**后端 `mvn -q verify`（2026-09-29）**：`Tests run: 148, Failures: 4, Errors: 2`（基线 145+3 本单新用例=148；失败集与基线逐条一致零新增）：
+- F: DataSourceConfigBindingTest×2、RoleControllerTest#assignPermissionsInvalidPermissionReturns400、SeedDataIntegrationTest#test_核心实体数据存在且字段正确
+- E: TestLayersSpec、TestUtilsSpec
+
+**前端门禁（零前端改动，基线对照实测）**：`npm run lint` EXIT=124（既有挂起）；`npm run test` EXIT=1，Tests **20 failed | 279 passed**（与基线一致）；`npm run build` EXIT=0 `✓ built in 17.30s`。
+
+**`bash scripts/smoke.sh`（2026-09-29）**：**54 用例**（53+新增 web-038c，`git diff` 核证仅 +2 行未动既有用例），结果 **43 ✅ + 9 ❌ + 2 ⏭️**：
+- 9 失败与基线逐条一致零新增：model-008、model-010、roles-001、roles-002、web-013、web-020、web-021、web-022、web-026
+- 2 跳过为环境条件基线（infra-004、model-006 条件不满足，与 TestLayers/TestUtils 两 E 同源，无 Docker 环境）
+- 新增 `web-038c 模块字段契约定向测试` → ✅ 通过；web-038a/b ✅ 通过（回归未破坏前序）
 
 ## 拆分说明
 
-预估验收标准 4 条（未超 4 条）；预估文件变更 **6 个（顶格）**：
+预估验收标准 4 条（未超 4 条）；预估文件变更 6 个（顶格）→ **实际 8 个（6 + 用户特批 2 个纯 Javadoc，2026-09-29 两次用户裁定见下）**：
 
 1. `backend/src/main/java/com/authcore/dto/module/ModuleCreateDTO.java` — 删除 `@JsonProperty("base_url")`（组件名 `baseUrl` 即为默认 JSON 名）+ 同步 `@Size` message 文案 + 删未用 import（AC1）
 2. `backend/src/main/java/com/authcore/dto/module/ModuleUpdateDTO.java` — 同上（AC2）
@@ -115,9 +126,12 @@ Tests run: 3, Failures: 3, Errors: 0, Skipped: 0
 5. `backend/src/test/java/com/authcore/controller/ModuleFieldContractTest.java` — **新增**测试类（AC1-AC3 三方法 + 助手，方法级 Javadoc + `@DisplayName` + AAA，文件惯例恢复）
 6. `scripts/smoke.sh` — 追加 `web-038c` 用例（+2 行，不删除、不改动既有用例，先例 web/038b）
 
-**超限熔断**：实现中若实际变更文件超过 6 个，Generator 必须停止实现并回报 Planner 重新拆分，不得自行扩范围。`UserVO/RoleVO/PermissionVO` 及任何前端文件（038d/038e 范围）、表列名（架构 §3）、`ModuleAccessibleVO`、SecurityConfig 一律不动。
+7. `backend/src/main/java/com/authcore/controller/ModuleController.java` — Javadoc `@param` 按新 JSON 键名同步（`:108,:122`，**用户特批 +1**：修复后旧注释失准且诱导回发 `base_url`）
+8. `backend/src/main/java/com/authcore/service/ModuleService.java` — Javadoc 同步（`:47`，**用户特批 +1**）
 
-## 交付物（预估 6 文件）
+**超限熔断执行记录**：实现中两次触发反例/超限风险，Generator 均停手上报并获用户裁定——① `.createdAt()` 访问面反例（`ModuleServiceTest:95,149`）→ 方案 B（`@JsonProperty` 映射，组件改名改为注解，守住 6 文件）；② 两处主代码 Javadoc 失准 → 特批 +2 纯注释文件（先例：sprint-070 SecurityConfig +1 行）。熔断本体条款不变：`UserVO/RoleVO/PermissionVO` 及任何前端文件（038d/038e 范围）、表列名（架构 §3）、`ModuleAccessibleVO`、SecurityConfig 一律不动。
+
+## 交付物（实际 8 文件 = 6 预算 + 2 用户特批）
 
 1. `backend/src/main/java/com/authcore/dto/module/ModuleCreateDTO.java` — 入参 camel 化
 2. `backend/src/main/java/com/authcore/dto/module/ModuleUpdateDTO.java` — 入参 camel 化
@@ -125,33 +139,37 @@ Tests run: 3, Failures: 3, Errors: 0, Skipped: 0
 4. `backend/src/test/java/com/authcore/controller/ModuleControllerTest.java` — 就地同步（不增行）
 5. `backend/src/test/java/com/authcore/controller/ModuleFieldContractTest.java` — AC1-AC3 新用例（新增）
 6. `scripts/smoke.sh` — web-038c 冒烟用例
+7. `backend/src/main/java/com/authcore/controller/ModuleController.java` — Javadoc 同步（特批）
+8. `backend/src/main/java/com/authcore/service/ModuleService.java` — Javadoc 同步（特批）
 
 ## 变更清单
 
 ### 新增
-- `backend/src/test/java/com/authcore/controller/ModuleFieldContractTest.java` — 模块字段契约测试类（预估 ~130 行）
+- `backend/src/test/java/com/authcore/controller/ModuleFieldContractTest.java` — 模块字段契约测试类（最终 183 行 ≤500；AC1-AC3 三用例 + getAdminToken/unique/createModuleDirectly 助手，RED 提交于 6bcc335）
 
 ### 修改
-- `backend/src/main/java/com/authcore/dto/module/ModuleCreateDTO.java`:21-23 — 删 `@JsonProperty("base_url")`、message 文案 `base_url`→`baseUrl`、清 import
-- `backend/src/main/java/com/authcore/dto/module/ModuleUpdateDTO.java`:13-15 — 同上
-- `backend/src/main/java/com/authcore/dto/module/ModuleVO.java`:15 — 组件 `createdAt` 加 `@JsonProperty("createTime")`（方案 B）+ 顶部 import
-- `backend/src/test/java/com/authcore/controller/ModuleControllerTest.java`:105,145,176,225,242,277,294,323 — 载荷 ×3（`:242/:277/:323`）与 ModuleVO 断言 ×2（`:145/:176`）就地 camel 化 + 注释文案（`:218` PermissionVO 不动；净行数 499 不变）
-- `scripts/smoke.sh` — 追加 `web-038c` 冒烟用例（+2 行，未动既有用例）
+- `backend/src/main/java/com/authcore/dto/module/ModuleCreateDTO.java`:2-3,20-21 — 删 `import JsonProperty` 与 `@JsonProperty("base_url")`（record 组件名即默认 JSON 名）、message 文案 `base_url`→`baseUrl`
+- `backend/src/main/java/com/authcore/dto/module/ModuleUpdateDTO.java`:2-3,12-13 — 同上
+- `backend/src/main/java/com/authcore/dto/module/ModuleVO.java`:3-4,17-18 — 加 `import JsonProperty` 与组件 `@JsonProperty("createTime")` 输出键映射（方案 B 用户裁定，组件名保持 `createdAt`）
+- `backend/src/main/java/com/authcore/controller/ModuleController.java`:108,122 — Javadoc `@param` JSON 键名同步（用户特批）
+- `backend/src/main/java/com/authcore/service/ModuleService.java`:47 — Javadoc JSON 键名同步（用户特批）
+- `backend/src/test/java/com/authcore/controller/ModuleControllerTest.java`:105,145,176,225,242,277,294-295,323,345 — 载荷 ×3（`:242/:277/:323`）与 ModuleVO 断言 ×2（`:145/:176`）就地 camel 化 + 注释/消息文案 ×5（`:218` PermissionVO 留 web/039 不动；净行数 499 不变）
+- `scripts/smoke.sh`:410-411 — 追加 `web-038c` 冒烟用例（+2 行，未动既有用例）
 
-合计 6 文件 = 预算顶格，未超熔断。
+合计 8 文件 = 6 预算顶格 + 2 用户特批（:108,122/:47 纯注释，熔断执行记录见「拆分说明」）。
 
 ### 删除
 - （无）
 
 ## 规范检查清单
 
-- [ ] `mvn -q verify` 后端门禁零新增失败（预期 148 用例 4F+2E 与基线逐条一致）
-- [ ] 前端门禁不适用（零前端改动；lint 124/test 20 failed/build ✓ 基线对照留痕）
-- [ ] `bash scripts/smoke.sh` web-038c ✅；54 用例 9 失败与基线逐条一致
-- [ ] 符合 Java 21 / Spring Boot 3 编码规范与既有分层约定（record 组件名 = JSON 名，无冗余注解与未用 import）
-- [ ] 符合 TDD 工作流（RED 3 failed 实时留痕 → GREEN → REFACTOR 复查）
-- [ ] 变更文件 6 个 = 预算顶格，未超熔断
-- [ ] `ModuleFieldContractTest` ≤500 行；`ModuleControllerTest` 499 行**零增行**
+- [x] `mvn -q verify` 后端门禁零新增失败（148 用例 4F+2E 与基线逐条一致，145+3）
+- [x] 前端门禁不适用（零前端改动；lint 124/test 20 failed|279/build ✓ 基线对照留痕）
+- [x] `bash scripts/smoke.sh` web-038c ✅；54 用例 43✅+9❌（基线逐条一致）+2⏭️（环境条件基线）
+- [x] 符合 Java 21 / Spring Boot 3 编码规范与既有分层约定（无冗余注解与未用 import；`@JsonProperty` 映射口径 = 方案 B 用户裁定）
+- [x] 符合 TDD 工作流（RED 3 failed 实时留痕 → GREEN 21/21 → REFACTOR 复查，两段式提交 6bcc335→GREEN）
+- [x] 变更文件 8 个 = 6 预算 + 2 用户特批（熔断两次触发均停手上报获裁定，记录见「拆分说明」）
+- [x] `ModuleFieldContractTest` 183 行 ≤500；`ModuleControllerTest` 499 行**零增行**
 
 ## 评审记录
 

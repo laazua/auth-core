@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-29: Generator — done sprint-072（web/038c，门禁+冒烟通过）
+
 - 2026-09-29: Planner — plan sprint-072（web/038c 字段错位修复，4 AC / 6 文件顶格，新测试类破 499 增行约束，web/039 占位登记）
 
 - 2026-09-29: Evaluator — pass sprint-071（web/038b，平均分 9.0/10）
