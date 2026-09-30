@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-29: Generator — done sprint-071（web/038b 可访问模块列表 GET /modules/accessibles：测试先行 3 failed RED→11/11 GREEN，六字段精简列表启用∧权限交集静默过滤禁 N+1，mvn 145 用例 4F+2E 与基线逐条一致零新增，冒烟 53 用例 web-038b 通过且 9 失败为基线子集零新增，测试类 499 行守 500 红线）
+
 - 2026-09-29: Planner — kickoff sprint-071（web/038b，4 条验收标准）
 
 - 2026-09-29: Evaluator — pass sprint-070（web/038a，平均分 9.0/10）

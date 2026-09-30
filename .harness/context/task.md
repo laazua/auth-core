@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/038b |
 | 功能点名称 | 模块服务统一入口（b 段）——可访问模块列表 `GET /modules/accessibles`（后端） |
-| 状态 | PLANNED |
+| 状态 | AWAITING_REVIEW |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -37,10 +37,10 @@
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — 登录用户调用 `GET /api/v1/modules/accessibles` 返回 200、`code=0`，列表含「启用 ∧ 权限交集≥1」的模块（至少种子模块 `user_mgmt` 出现），每条记录字段为 `id/name/code/baseUrl/description/status` 六项（不含 `createdAt/updatedAt` 等管理字段）
-- [ ] AC2 — 当前用户有权限交集但 `status=0` 的模块不出现在列表（架构 §6.5）
-- [ ] AC3 — `status=1` 但与当前用户权限交集为空的模块不出现在列表（架构 §6.1，与网关 checkAllowed 同款）
-- [ ] AC4 — 未登录请求返回 401、`code=1401`；后端门禁零新增失败（基线对照）；冒烟 `web-038b` 单跑通过
+- [x] AC1 — 登录用户调用 `GET /api/v1/modules/accessibles` 返回 200、`code=0`，列表含「启用 ∧ 权限交集≥1」的模块（至少种子模块 `user_mgmt` 出现），每条记录字段为 `id/name/code/baseUrl/description/status` 六项（不含 `createdAt/updatedAt` 等管理字段）
+- [x] AC2 — 当前用户有权限交集但 `status=0` 的模块不出现在列表（架构 §6.5）
+- [x] AC3 — `status=1` 但与当前用户权限交集为空的模块不出现在列表（架构 §6.1，与网关 checkAllowed 同款）
+- [x] AC4 — 未登录请求返回 401、`code=1401`；后端门禁零新增失败（基线对照）；冒烟 `web-038b` 单跑通过
 
 ### AC1 — 登录用户可访问列表含交集启用模块且字段精简
 > Given 已登录（admin，持 `user:view` 等种子权限）。When `GET /api/v1/modules/accessibles`。Then 200、`$.code=0`、`$.data` 为数组且含 `code=user_mgmt` 的记录（该记录 `status=1`、`baseUrl/description` 字段存在），记录字段集为 `id/name/code/baseUrl/description/status`（`createdAt` 不出现）。
@@ -72,8 +72,8 @@
 | 2 | ModuleControllerTest#accessiblesExcludesDisabledModule | AC2 | ✅ RED（200 期望实得 500） |
 | 3 | ModuleControllerTest#accessiblesExcludesModuleWithoutPermissionOverlap | AC3 | ✅ RED（200 期望实得 500） |
 | 4 | ModuleControllerTest#accessiblesUnauthenticatedReturns401 | AC4-① | ✅ 实现前即绿（无凭证在 Security 链即 401，与端点存在无关，守护断言如实登记，非 RED） |
-| 5 | 冒烟 web-038b 定向测试（追加于 scripts/smoke.sh，定向跑本测试类） | AC4-④ | （待追加） |
-| 6 | 后端全量门禁基线对照（实现前基线：141 用例 4F+2E，2026-09-29 sprint-070 实测） | AC4-②③ | （待实测） |
+| 5 | 冒烟 web-038b 定向测试（追加于 scripts/smoke.sh，定向跑本测试类） | AC4-④ | ✅ 已追加（smoke.sh:407-409），53 用例中单跑 ✅ 通过 |
+| 6 | 后端全量门禁基线对照（实现前基线：141 用例 4F+2E，2026-09-29 sprint-070 实测） | AC4-②③ | ✅ 145 用例 4F+2E 逐条一致零新增（141+4=145） |
 
 **行数红线**：ModuleControllerTest 现 421 行，`coding-standards` §1 文件 ≤500 行——4 用例须紧凑（预估 +75 行内）；若逼近红线立即回报 Planner，禁止为腾行数删改既有用例。
 
@@ -90,11 +90,29 @@ Tests run: 11, Failures: 3, Errors: 0, Skipped: 0
 AC4 accessiblesUnauthenticatedReturns401 实现前即绿：无凭证请求在 Security 过滤链即由 entryPoint 判 401+1401，与端点存在性无关（守护断言如实登记，非 RED；与 AC1-3 构成对照）
 ```
 
+## GREEN 证据
+
+> 实现后复跑（实时留痕，2026-09-29）。REFACTOR 复查：行宽 ≤120、分层 controller→service 接口→impl、构造器注入 final、Javadoc 完整、方法/文件行数达标（ModuleControllerTest 499 行、ModuleServiceImpl 244 行、ModuleController 155 行），与既有风格一致。
+
+```text
+[GREEN] mvn -f backend/pom.xml test -Dtest='ModuleControllerTest'
+Tests run: 11, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS（既有 7 例 + 新增 4 例）
+中间态：RED 后 11 用例 3 failed（AC1-AC3 200 期望实得 500），AC4 预绿如实登记
+```
+
 ## 门禁与冒烟记录
 
 > Generator 亲测填写（后端 mvn -q verify / 前端门禁基线对照 / scripts/smoke.sh），Evaluator 不采信自述须亲跑。
 
-（待 Generator 填写）
+**后端 `mvn -q verify`（2026-09-29）**：`Tests run: 145, Failures: 4, Errors: 2`（基线 141+4 本单新用例=145；失败集与基线逐条一致零新增）：
+- F: DataSourceConfigBindingTest×2、RoleControllerTest#assignPermissionsInvalidPermissionReturns400、SeedDataIntegrationTest#test_核心实体数据存在且字段正确
+- E: TestLayersSpec、TestUtilsSpec
+
+**前端门禁（零前端改动，基线对照实测）**：`npm run lint` EXIT=124（既有挂起）；`npm run test` EXIT=1，Tests **20 failed | 279 passed**（与基线一致）；`npm run build` EXIT=0 `✓ built in 17.60s`。
+
+**`bash scripts/smoke.sh`（2026-09-29）**：**53 用例**（52+新增 web-038b），9 失败与基线逐条一致零新增：
+- model-008、model-010、roles-001、roles-002、web-013、web-020、web-021、web-022、web-026（全部为基线失败）
+- 新增 `web-038b 可访问模块列表定向测试` → ✅ 通过（定向跑 ModuleControllerTest 11 用例）；web-038a ✅ 通过（回归未破坏前序）
 
 ## 拆分说明
 
@@ -121,23 +139,29 @@ AC4 accessiblesUnauthenticatedReturns401 实现前即绿：无凭证请求在 Se
 ## 变更清单
 
 ### 新增
-- （待 Generator 填写）
+- `backend/src/main/java/com/authcore/dto/module/ModuleAccessibleVO.java` — accessibles 精简记录 record（六字段，1-16 行）
 
 ### 修改
-- （待 Generator 填写）
+- `backend/src/main/java/com/authcore/controller/ModuleController.java`:62-78 — 新增 `GET /accessibles` 端点（SecurityContext 取当前用户复用网关模式；字面路径优先于 `/{id}` 已由 AC1-3 用例实证）
+- `backend/src/main/java/com/authcore/service/ModuleService.java`:80-86 — 接口新增 `listAccessibles(Long userId)` 声明
+- `backend/src/main/java/com/authcore/service/impl/ModuleServiceImpl.java`:38-44,208-242 — 注入 AuthService（构造器扩展）+ 实现列表准入（启用模块单查 + 权限 module_id IN 单批 + 内存交集，禁 N+1，字典全量注释规模）+ `hasPermissionOverlap` 私有助手
+- `backend/src/test/java/com/authcore/controller/ModuleControllerTest.java`:424-499 — 新增 JSON 常量、`callAccessibles`/`accessiblesContain` 助手与 AC1-AC4 四用例（RED 提交于 0de6f8f，文件 499 行守 500 红线）
+- `scripts/smoke.sh`:407-409 — 追加 `web-038b` 冒烟用例（+2 行，未动既有用例）
+
+合计 6 文件 = 预算顶格，未超熔断。
 
 ### 删除
 - （无）
 
 ## 规范检查清单
 
-- [ ] `mvn -q verify` 后端门禁零新增失败（基线对照：141 用例 4F+2E）
-- [ ] 前端门禁不适用（本功能点零前端改动；test/build/lint 基线对照实测留痕于「门禁与冒烟记录」）
-- [ ] `bash scripts/smoke.sh` 新增 web-038b 单跑通过且整体与基线逐条一致（52 用例 9 失败口径）
-- [ ] 符合 Java 21 / Spring Boot 3 / Spring Security 6 编码规范与既有分层约定（controller → service 接口 → impl，构造器注入 final 字段，无字段注入；禁 N+1）
-- [ ] 符合 TDD 工作流（测试先行、RED 证据实时留痕、GREEN 复跑、REFACTOR 复查）
-- [ ] 变更文件不超过 6 个（顶格熔断，超出即回报 Planner）
-- [ ] 测试类文件 ≤500 行红线（ModuleControllerTest 421 起步）
+- [x] `mvn -q verify` 后端门禁零新增失败（145 用例 4F+2E 与基线逐条一致）
+- [x] 前端门禁不适用（零前端改动；lint 124/test 20 failed/build ✓ 基线对照留痕）
+- [x] `bash scripts/smoke.sh` web-038b ✅；53 用例 9 失败与基线逐条一致
+- [x] 符合 Java 21 / Spring Boot 3 / Spring Security 6 编码规范与既有分层约定（构造器注入 final、无字段注入、批量单查禁 N+1、字典全量注释规模）
+- [x] 符合 TDD 工作流（RED 3 failed 实时留痕 → GREEN 11/11 → REFACTOR 复查一致）
+- [x] 变更文件 6 个 = 预算顶格，未超熔断
+- [x] 测试类 499 行 ≤500 红线（421+78，未动既有用例）
 
 ## 评审记录
 
