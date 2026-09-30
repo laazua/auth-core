@@ -2,7 +2,7 @@
 
 本表是全系统的唯一功能点台账：每个功能点拥有全局唯一 ID（如 `infra/001`），被三个 prompt 与 context 文件引用。状态图例：⬜ 未开始 / 🔄 进行中 / ✅ 完成 / ❌ 阻塞 / ⚠️ 有缺口
 
-> 最后更新：2026-09-29（sprint-070 评审通过，子功能点 web/038a ✅ 均分 9.0/10，web/038 行仍 🔄 待 038b~e；前序 sprint-069 评审通过 modules/002 ✅；拆分预留 modules/003 待规划）
+> 最后更新：2026-09-29（sprint-071 规划，注册 web/038b GET /modules/accessibles（🔄）；前序 sprint-070 评审通过 web/038a ✅ 9.0/10、sprint-069 评审通过 modules/002 ✅；038c~e 与 modules/003 预留待规划）
 
 ## 阶段总览
 
@@ -123,7 +123,7 @@
 | web/035 | 修复登录后首次导航受保护路由落 404（动态路由首载 next({ ...to }) 携带 NotFound name 陷阱） | web/001, web/029, web/034 | ✅ | sprint-066 评审通过（2026-09-28，平均分 9.1/10，4 条 AC 全满足，测试先行 2 failed RED→14/14 GREEN，冒烟 web-035 通过；基线对照豁免否决项 6） |
 | web/036 | 暗色模式全站 UI 协调治理（根因：自研 `--color-*` data-theme 与 Element Plus `--el-*` 两套变量体系只切一套，EP 暗色 css-vars 未接入、html.dark 未挂）。**拆分**：web/036a 接入 EP 暗色变量体系 ✅ / web/036b 局部白底缺陷修复（BaseTable 遮罩失效选择器、settings 非法 variant prop、组件级覆盖补漏、暗色系协调映射）/ web/036c 打磨与口径治理（冗余覆盖与死代码清理、smoke 过期 grep 同步） | web/001, web/003, web/008, web/016 | 🔄 | sprint-067 评审通过（2026-09-29，**子功能点 web/036a ✅**，均分 9.3/10，4 条 AC 全满足，2 failed RED→27/27 GREEN，冒烟 web-036a 通过；036b/036c 待后续 Sprint；与 web/017 同源可一并对照） |
 | web/037 | 面包屑导航间距优化（与顶栏/内容卡片留白）+ 面包屑图标改横排（图标置于文字左侧；根因：`.el-breadcrumb__inner` 块化后非 flex 容器叠加全局 `svg{display:block}` 致图标独占一行；`.layout__content` 顶距 0、`.breadcrumb` 底距 16px 致与 head/main 紧凑） | web/003, web/025 | ✅ | sprint-068 评审通过（2026-09-29，平均分 9.5/10，4 条 AC 全满足，测试先行 3 failed RED→3/3 GREEN，冒烟 web-037 通过、50 用例 9 失败为基线子集零新增；单 `:deep()` 规避串联失效预存缺陷） |
-| web/038 | 模块服务统一入口与内嵌访问（设计文档 docs/superpowers/specs/2026-09-29-module-iframe-access-design.md，用户逐节确认）。**拆分**：web/038a 后端内嵌支撑——JWT Cookie 双承载（登录下发/登出清除/过滤器读取）+ 网关内嵌响应头处理（sprint-070 本次，✅）/ web/038b GET /modules/accessibles 可访问模块列表（预留 ⬜）/ web/038c baseUrl/createdAt 字段错位修复·硬前置（预留 ⬜）/ web/038d 「我的模块」菜单页（预留 ⬜，前置 038b）/ web/038e iframe 内嵌视图+管理页「进入」点击闭环（预留 ⬜，前置 038a/038d）。外部服务相对路径资源部署为使用前提；modules/003 服务凭证与本组无关另议 | auth/002, auth/003, auth/006, modules/002, web/002, web/003, web/006 | 🔄 | sprint-070 评审通过（2026-09-29，**子功能点 web/038a ✅**，均分 9.0/10，4 条 AC 全满足，4 failed RED→25/25 GREEN，冒烟 52 用例 web-038a 通过、9 失败为基线子集零新增；AC4 两阶段口径修订与 SecurityConfig +1 行用户裁定见 task.md，Cookie/XFO 两处口径登记见 session-state 挂起区；基线对照豁免否决项 6；038b~e 待后续 Sprint，038c 为 038d/038e 硬前置） |
+| web/038 | 模块服务统一入口与内嵌访问（设计文档 docs/superpowers/specs/2026-09-29-module-iframe-access-design.md，用户逐节确认）。**拆分**：web/038a 后端内嵌支撑——JWT Cookie 双承载（登录下发/登出清除/过滤器读取）+ 网关内嵌响应头处理（sprint-070 本次，✅）/ web/038b GET /modules/accessibles 可访问模块列表（sprint-071 本次，🔄）/ web/038c baseUrl/createdAt 字段错位修复·硬前置（预留 ⬜）/ web/038d 「我的模块」菜单页（预留 ⬜，前置 038b）/ web/038e iframe 内嵌视图+管理页「进入」点击闭环（预留 ⬜，前置 038a/038d）。外部服务相对路径资源部署为使用前提；modules/003 服务凭证与本组无关另议 | auth/002, auth/003, auth/006, modules/002, web/002, web/003, web/006 | 🔄 | sprint-071 规划（2026-09-29，注册第二段 web/038b，4 条 AC 6 文件顶格）；sprint-070 评审通过（2026-09-29，**子功能点 web/038a ✅**，均分 9.0/10，4 条 AC 全满足，4 failed RED→25/25 GREEN，冒烟 52 用例 web-038a 通过、9 失败为基线子集零新增；AC4 两阶段口径修订与 SecurityConfig +1 行用户裁定见 task.md，Cookie/XFO 两处口径登记见 session-state 挂起区；基线对照豁免否决项 6；038b~e 待后续 Sprint，038c 为 038d/038e 硬前置） |
 
 ## integration — 集成与验收
 
