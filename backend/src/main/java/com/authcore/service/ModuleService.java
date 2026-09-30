@@ -1,6 +1,7 @@
 package com.authcore.service;
 
 import com.authcore.common.BusinessException;
+import com.authcore.dto.module.ModuleAccessibleVO;
 import com.authcore.dto.module.ModuleCreateDTO;
 import com.authcore.dto.module.ModuleQueryDTO;
 import com.authcore.dto.module.ModuleUpdateDTO;
@@ -74,4 +75,13 @@ public interface ModuleService {
      * @return 权限精简对象列表，供前端下拉选项使用
      */
     List<PermissionSimpleVO> listAllPermissions();
+
+    /**
+     * 当前用户可访问模块列表（web/038b）：模块启用 ∧ 用户权限交集≥1，
+     * 与网关 checkAllowed 同款准入语义的列表化，不满足条件的模块静默过滤。
+     *
+     * @param userId 用户 ID
+     * @return 精简模块记录列表
+     */
+    List<ModuleAccessibleVO> listAccessibles(Long userId);
 }

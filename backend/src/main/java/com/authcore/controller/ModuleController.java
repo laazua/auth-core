@@ -1,6 +1,9 @@
 package com.authcore.controller;
 
+import com.authcore.common.BusinessException;
 import com.authcore.common.Result;
+import com.authcore.config.security.CustomUserDetails;
+import com.authcore.dto.module.ModuleAccessibleVO;
 import com.authcore.dto.module.ModuleCreateDTO;
 import com.authcore.dto.module.ModuleQueryDTO;
 import com.authcore.dto.module.ModuleUpdateDTO;
@@ -12,6 +15,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -52,6 +57,23 @@ public class ModuleController {
         ModuleQueryDTO dto = new ModuleQueryDTO(page, size, name, code, status);
         IPage<ModuleVO> pageResult = moduleService.queryModules(dto);
         return Result.ok(pageResult);
+    }
+
+    /**
+     * 当前用户可访问模块列表（web/038b）：启用 ∧ 权限交集≥1 静默过滤。
+     * 任何登录用户可调，不绑定 module:view（anyRequest().authenticated() 覆盖）。
+     *
+     * @return 精简模块记录列表（id/name/code/baseUrl/description/status）
+     */
+    @Operation(summary = "当前用户可访问模块列表（按权限过滤，登录即可调用）")
+    @GetMapping("/accessibles")
+    public Result<List<ModuleAccessibleVO>> listAccessibles() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
+            throw new BusinessException(1401, "未认证");
+        }
+        return Result.ok(moduleService.listAccessibles(userDetails.getUser().getId()));
     }
 
     /**
