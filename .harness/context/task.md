@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/038d |
 | 功能点名称 | 模块服务统一入口（d 段）——「我的模块」菜单页（前端） |
-| 状态 | IN_PROGRESS（GREEN 完成，门禁冒烟实测齐） |
+| 状态 | AWAITING_REVIEW |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -164,15 +164,15 @@ Generator 亲测（2026-09-29）：
 
 ## 变更清单
 
-### 新增
-- `frontend/src/views/MyModulesView.vue` — 我的模块页（预估 ~130 行）
-- `frontend/src/views/MyModulesView.spec.ts` — 新 spec 4 用例（预估 ~200 行）
+### 新增（实测）
+- `frontend/src/views/MyModulesView.vue` — 我的模块页（128 行）
+- `frontend/src/views/MyModulesView.spec.ts` — 新 spec 4 用例（144 行）
 
-### 修改
-- `frontend/src/router/routes.ts` — `asyncRoutes` 追加 `/mymodules` 条目（预估 +8 行）
-- `frontend/src/composables/useMenu.ts` — `menuConfig` 追加条目（预估 +8 行）
-- `frontend/src/api/module.ts` — `getAccessibles` + `ModuleAccessible` 接口（预估 +12 行）
-- `scripts/smoke.sh` — `web-038d` 冒烟用例（+2 行，未动既有用例）
+### 修改（实测 git diff）
+- `frontend/src/router/routes.ts` — `asyncRoutes` 追加 `/mymodules` 条目（+6）
+- `frontend/src/composables/useMenu.ts` — `menuConfig` 追加条目（+6）
+- `frontend/src/api/module.ts` — `getAccessibles` + `ModuleAccessible` 接口（+13）
+- `scripts/smoke.sh` — `web-038d` 冒烟用例（+4：注释+smoke_case 三行，未动既有用例）
 
 合计 6 文件 = 预算顶格，未超熔断。
 
