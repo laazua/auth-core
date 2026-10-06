@@ -111,4 +111,62 @@ class TimestampFieldContractTest {
                     .andExpect(jsonPath("$.data.createdAt").doesNotExist());
         }
     }
+
+    /**
+     * AC1(web/040a): 三域列表输出 updateTime 且不输出 updatedAt。
+     * Given 管理员登录（分页第一页由种子数据保证非空）。
+     * When GET /users、/roles、/permissions 列表。
+     * Then 各域首项含 updateTime 键且不含 updatedAt 键（与 createTime 键并存）。
+     */
+    @Test
+    @DisplayName("三域列表输出 updateTime 不输出 updatedAt")
+    void listsOutputUpdateTimeForUserRolePermissionDomain() throws Exception {
+        // Given
+        String token = getAdminToken();
+
+        // When & Then
+        for (String path : new String[]{"/api/v1/users", "/api/v1/roles", "/api/v1/permissions"}) {
+            String json = getListJson(path, token);
+            var records = JSON.readTree(json).path("data").path("records");
+            org.junit.jupiter.api.Assertions.assertTrue(records.size() > 0,
+                    path + " 分页第一页应非空");
+            org.junit.jupiter.api.Assertions.assertTrue(records.get(0).has("createTime"),
+                    path + " 列表项应含 createTime 键（web/039 既有契约保持）");
+            org.junit.jupiter.api.Assertions.assertTrue(records.get(0).has("updateTime"),
+                    path + " 列表项应含 updateTime 键");
+            org.junit.jupiter.api.Assertions.assertFalse(records.get(0).has("updatedAt"),
+                    path + " 列表项不应含 updatedAt 键");
+        }
+    }
+
+    /**
+     * AC2(web/040a): 三域详情与 /auth/me 的 user 输出 updateTime 且不输出 updatedAt。
+     * Given 管理员登录且列表可取首项 id。
+     * When GET 三域 /{id} 详情、GET /auth/me。
+     * Then 详情 data 与 me.data.user 含 updateTime 键且不含 updatedAt 键（个人中心更新时间修复面）。
+     */
+    @Test
+    @DisplayName("三域详情与 me 输出 updateTime 不输出 updatedAt")
+    void detailAndMeOutputUpdateTimeForUserRolePermissionDomain() throws Exception {
+        // Given
+        String token = getAdminToken();
+
+        // When & Then: 三域详情
+        for (String path : new String[]{"/api/v1/users", "/api/v1/roles", "/api/v1/permissions"}) {
+            long id = JSON.readTree(getListJson(path, token))
+                    .path("data").path("records").get(0).path("id").asLong();
+            mockMvc.perform(get(path + "/" + id)
+                            .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.updateTime").exists())
+                    .andExpect(jsonPath("$.data.updatedAt").doesNotExist());
+        }
+
+        // When & Then: /auth/me（profile 页数据源，MeResponse.user 内嵌 UserVO）
+        mockMvc.perform(get("/api/v1/auth/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.user.updateTime").exists())
+                .andExpect(jsonPath("$.data.user.updatedAt").doesNotExist());
+    }
 }

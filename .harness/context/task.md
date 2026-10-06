@@ -71,8 +71,8 @@ sprint-075（web/039）评审时 Evaluator 改进建议②新发现的同族缺�
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | TimestampFieldContractTest#listsOutputCreateTimeAndUpdateTimeForThreeDomains | AC1 | 待填（预期 RED：现输出 `updatedAt`） |
-| 2 | TimestampFieldContractTest#detailAndMeOutputUpdateTimeForThreeDomains | AC2 | 待填（预期 RED：同上） |
+| 1 | TimestampFieldContractTest#listsOutputUpdateTimeForUserRolePermissionDomain | AC1 | RED ✓→GREEN 待填 |
+| 2 | TimestampFieldContractTest#detailAndMeOutputUpdateTimeForUserRolePermissionDomain | AC2 | RED ✓→GREEN 待填 |
 | 3 | 门禁基线对照（mvn 150+2=152 预期 4F+2E；075/038c 契约类全绿；前端零改动） | AC3/AC4 | 待填 |
 | 4 | 冒烟 web/040 定向测试（追加 scripts/smoke.sh） | AC4-③ | 待填 |
 
@@ -83,7 +83,12 @@ sprint-075（web/039）评审时 Evaluator 改进建议②新发现的同族缺�
 > Generator 于实现前执行测试清单 #1~#2 并粘贴关键失败输出（实时留痕，不得事后补记）。
 
 ```text
-（待 Generator 填写）
+[RED] Tests run: 4, Failures: 2, Errors: 0 — com.authcore.controller.TimestampFieldContractTest
+  listsOutputUpdateTimeForUserRolePermissionDomain:135 /api/v1/users 列表项应含 updateTime 键 ==> expected: <true> but was: <false>
+  detailAndMeOutputUpdateTimeForUserRolePermissionDomain:161 No value at JSON path "$.data.updateTime"
+  （既有 createTime 两用例保持绿：listsOutputCreateTime/detailOutputsCreateTime 未失败；API 日志实证现输出键 updatedAt：
+   response=Result{... data=UserVO[... createdAt=..., updatedAt=...]}）
+[RED] 执行时点：2026-09-29 实现前（TDD 第 1 拍），mvn -q -f backend/pom.xml test -Dtest='TimestampFieldContractTest' EXIT=1
 ```
 
 > 实现后复跑与 REFACTOR 复查（实时留痕）。
