@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-29: Planner — kickoff sprint-074（web/038e，4 条验收标准）
+
 - 2026-09-29: Evaluator — pass sprint-073 REWORK-1（web/038d ✅ 9.0/10，首审否决项3 修复实证：三路径 depth=2+父===DefaultLayout，门禁冒烟亲测全对齐，55=44✅9❌2⏭️）
 
 - 2026-09-29: Generator — done sprint-073 REWORK-1（RED `aa1accf` + GREEN `35a48e7`，问题 1-3 全闭合，5/5 用例，web/038d AWAITING_REVIEW 待复审）
