@@ -216,7 +216,7 @@ class ModuleControllerTest {
             assertNotNull(item.path("code").asText(), "code 不应为空");
             assertNotNull(item.path("description").asText(), "description 不应为空");
             assertNotNull(item.path("createTime").asText(), "createTime 不应为空");
-            assertNotNull(item.path("updatedAt").asText(), "updatedAt 不应为空");
+            assertNotNull(item.path("updateTime").asText(), "updateTime 不应为空");
         }
     }
 

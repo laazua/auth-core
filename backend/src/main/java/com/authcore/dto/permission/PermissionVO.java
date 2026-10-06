@@ -16,6 +16,7 @@ public record PermissionVO(
         String description,
         @JsonProperty("createTime")
         LocalDateTime createdAt,
+        @JsonProperty("updateTime")
         LocalDateTime updatedAt
 ) {
 }

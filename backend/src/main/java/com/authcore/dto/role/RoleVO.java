@@ -14,6 +14,7 @@ public record RoleVO(
         Integer status,
         @JsonProperty("createTime")
         LocalDateTime createdAt,
+        @JsonProperty("updateTime")
         LocalDateTime updatedAt
 ) {
 }
