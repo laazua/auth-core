@@ -409,6 +409,11 @@ smoke_case "web-038a Cookie双承载与内嵌头定向测试" mvn -q -f "$APP_DI
 smoke_case "web-038b 可访问模块列表定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='ModuleControllerTest'
 # web/038c：模块字段契约（camel 入参 baseUrl 创建/更新回读、响应 createTime 输出无 createdAt）定向测试
 smoke_case "web-038c 模块字段契约定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='ModuleFieldContractTest,ModuleControllerTest'
+# web/038d：我的模块菜单页（零权限菜单路由/卡片渲染/空态/点卡导航）定向测试
+smoke_case "web-038d 我的模块菜单页定向测试" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  npm run test -- --run src/views/MyModulesView.spec.ts 2>&1 | grep -q '4 passed'
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

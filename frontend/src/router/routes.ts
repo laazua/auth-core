@@ -71,6 +71,12 @@ export const layoutRoutes: RouteRecordRaw[] = [
 
 export const asyncRoutes: AppRouteRecordRaw[] = [
   {
+    path: '/mymodules',
+    name: 'MyModules',
+    component: () => import('@/views/MyModulesView.vue'),
+    meta: { requiresAuth: true, title: '我的模块', icon: 'Files' },
+  },
+  {
     path: '/system',
     name: 'System',
     component: () => import('@/layouts/DefaultLayout.vue'),

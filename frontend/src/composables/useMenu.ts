@@ -28,6 +28,12 @@ const menuConfig: MenuConfig[] = [
     affix: true,
   },
   {
+    path: '/mymodules',
+    title: '我的模块',
+    icon: 'Files',
+    order: 1.5,
+  },
+  {
     path: '/system',
     title: '系统管理',
     icon: 'Setting',

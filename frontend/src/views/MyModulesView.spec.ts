@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils';
-import { createRouter, createWebHistory, type Router } from 'vue-router';
 import { setActivePinia, createPinia } from 'pinia';
 import type { Mock } from 'vitest';
 import MyModulesView from '@/views/MyModulesView.vue';
@@ -13,6 +12,24 @@ vi.mock('@/api/module');
 vi.mock('@/stores/auth', () => ({
   useAuthStore: vi.fn(),
 }));
+
+const mockRouter = {
+  push: vi.fn(),
+  replace: vi.fn(),
+  go: vi.fn(),
+  back: vi.fn(),
+  forward: vi.fn(),
+  addRoute: vi.fn(),
+};
+
+vi.mock('vue-router', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('vue-router')>();
+  return {
+    ...actual,
+    useRouter: () => mockRouter,
+    useRoute: () => ({ path: '/mymodules', params: {}, query: {}, meta: {} }),
+  };
+});
 
 const zeroPermissionStore = {
   roles: [] as string[],
@@ -28,20 +45,8 @@ const sampleModules = [
   { id: 2, name: '报表服务', code: 'report', baseUrl: 'http://report', description: '报表分析平台', status: 1 },
 ];
 
-const createViewRouter = (): Router =>
-  createRouter({
-    history: createWebHistory(),
-    routes: [
-      { path: '/', name: 'MyModules', component: MyModulesView },
-      { path: '/workspace/module/:code', name: 'ModuleWorkspace', component: { template: '<div />' } },
-    ],
-  });
-
 const mountView = async (): Promise<VueWrapper> => {
-  const router = createViewRouter();
-  router.push('/');
-  await router.isReady();
-  const wrapper = mount(MyModulesView, { global: { plugins: [router] } });
+  const wrapper = mount(MyModulesView);
   await flushPromises();
   return wrapper;
 };
@@ -128,13 +133,12 @@ describe('MyModulesView — 我的模块菜单页（web/038d）', () => {
         data: [sampleModules[0]],
       });
       const wrapper = await mountView();
-      const pushSpy = vi.spyOn(wrapper.vm.$.appContext.config.globalProperties.$router as Router, 'push');
 
       // When: 点击卡片
       await wrapper.find('.module-card').trigger('click');
 
       // Then: 导航至工作区路由目标（目标路由由 038e 注册）
-      expect(pushSpy).toHaveBeenCalledWith('/workspace/module/news');
+      expect(mockRouter.push).toHaveBeenCalledWith('/workspace/module/news');
     });
   });
 });

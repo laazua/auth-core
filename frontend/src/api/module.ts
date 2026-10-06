@@ -35,4 +35,17 @@ export const moduleApi = {
   getAllPermissions(): Promise<Result<{ id: number; code: string; name: string }[]>> {
     return http.get('/modules/permissions/all');
   },
+
+  getAccessibles(): Promise<Result<ModuleAccessible[]>> {
+    return http.get('/modules/accessibles');
+  },
 };
+
+export interface ModuleAccessible {
+  id: number;
+  name: string;
+  code: string;
+  baseUrl: string | null;
+  description: string | null;
+  status: number;
+}
