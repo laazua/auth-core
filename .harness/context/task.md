@@ -71,8 +71,8 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | TimestampFieldContractTest#listsOutputCreateTimeForUserRolePermissionDomain | AC1 | 待填（预期 RED：现输出 `createdAt` 键） |
-| 2 | TimestampFieldContractTest#detailOutputsCreateTimeForUserRolePermissionDomain | AC2 | 待填（预期 RED：同上） |
+| 1 | TimestampFieldContractTest#listsOutputCreateTimeForUserRolePermissionDomain | AC1 | **RED ✅** → 待 GREEN |
+| 2 | TimestampFieldContractTest#detailOutputsCreateTimeForUserRolePermissionDomain | AC2 | **RED ✅** → 待 GREEN |
 | 3 | 门禁基线对照（mvn 148 4F+2E；ModuleFieldContractTest 保持全绿；前端零改动基线不动） | AC3/AC4 | 待填 |
 | 4 | 冒烟 web-039 定向测试（追加 scripts/smoke.sh） | AC4-③ | 待填 |
 
@@ -83,7 +83,22 @@
 > Generator 于实现前执行测试清单 #1~#2 并粘贴关键失败输出（实时留痕，不得事后补记）。
 
 ```text
-（待 Generator 填写）
+$ mvn -q -f backend/pom.xml test -Dtest=TimestampFieldContractTest   （2026-09-29 实时留痕，实现前）
+
+[ERROR] Tests run: 2, Failures: 2, Errors: 0, Skipped: 0 -- in com.authcore.controller.TimestampFieldContractTest
+[ERROR] TimestampFieldContractTest.listsOutputCreateTimeForUserRolePermissionDomain
+  AssertionFailedError: /api/v1/users 列表项应含 createTime 键 ==> expected: <true> but was: <false>
+[ERROR] TimestampFieldContractTest.detailOutputsCreateTimeForUserRolePermissionDomain
+  AssertionError: No value at JSON path "$.data.createTime"（PathNotFoundException）
+
+错位实证（响应体原样）：data.records[0] = {"id":9880,...,"createdAt":"2026-10-06T14:46:12","updatedAt":...}
+（真实输出 createdAt 键、无 createTime —— 与工作单业务背景实证一致）
+
+研究项结论（实时）：
+- R1 分页真实键名 = records/total/size/current/pages（MyBatis-Plus IPage 序列化；架构 §4 写 {list,total,page,size} 与实现不一致，属预存 → 挂起区登记，断言按实测 records 写）
+- R2 ModuleControllerTest:218 归属 GET /api/v1/modules/{id}/permissions 返回 List<PermissionVO>，断言 createdAt 将因本单转红 → GREEN 就地同步为 createTime（占第 6 文件）
+- R3 三详情端点 GET /{id} 均存在（users:72/roles:65/permissions:76），AC2 可测 ✓
+- R4 冒烟形态照抄 roles-001：mvn -q test -Dtest='TimestampFieldContractTest' 退出码判成败
 ```
 
 > 实现后复跑（实时留痕）。REFACTOR 复查：行宽 ≤120、分层、新测试类行数达标、既有测试零改动（R2 同步点除外，就地改断言键）。
