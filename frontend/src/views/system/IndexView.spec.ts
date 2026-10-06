@@ -1401,4 +1401,68 @@ describe('IndexView - 权限/模块管理页', () => {
       expect(wrapper.find('.permission-table-container').exists()).toBe(true);
     });
   });
+
+  describe('web/038e 模块操作列「进入」按钮（AC2）', () => {
+    const modulePermissions = [
+      'module:view',
+      'module:create',
+      'module:update',
+      'module:delete',
+      'module:toggle-status',
+    ];
+
+    const buildRow = (overrides: Record<string, unknown> = {}) => ({
+      id: 1,
+      code: 'news',
+      name: '新闻服务',
+      baseUrl: 'http://news',
+      description: null,
+      status: 1,
+      createTime: '2024-01-01T00:00:00Z',
+      ...overrides,
+    });
+
+    const getEnterNode = (vm: Record<string, any>, row: Record<string, unknown>) => {
+      const columns = vm.moduleColumns as Array<{ prop: string; render?: (r: unknown) => { children?: Array<Record<string, any>> } }>;
+      const actions = columns.find((c) => c.prop === 'actions');
+      expect(actions, '应存在操作列定义').toBeDefined();
+      const vnode = actions!.render!(row);
+      return vnode.children?.find((c) => String(c.props?.class ?? '').includes('module-table__action-enter'));
+    };
+
+    it('moduleEnterButtonNavigatesWhenReady', async () => {
+      // Arrange: baseUrl 非空且 status=1 的模块行
+      const wrapper = createWrapper(modulePermissions, '/system/modules');
+      await wrapper.vm.$nextTick();
+      const vm = wrapper.vm as any;
+
+      // Act: 直调操作列 render（BaseTable 为 stub，render 走直调路径）
+      const enterNode = getEnterNode(vm, buildRow());
+
+      // Assert: 按钮存在、可点、点击导航至 iframe 路由
+      expect(enterNode, '操作列应渲染「进入」按钮').toBeDefined();
+      expect(enterNode!.props.disabled).toBeFalsy();
+      enterNode!.props.onClick();
+      expect(vm.router.push).toHaveBeenCalledWith('/workspace/module/news');
+    });
+
+    it('moduleEnterButtonDisabledWhenBaseUrlMissing', async () => {
+      // Arrange: baseUrl 缺失 / 停用 两种不可点情形
+      const wrapper = createWrapper(modulePermissions, '/system/modules');
+      await wrapper.vm.$nextTick();
+      const vm = wrapper.vm as any;
+
+      // Act & Assert: baseUrl 为空 → disabled + 提示
+      const noBase = getEnterNode(vm, buildRow({ baseUrl: null }));
+      expect(noBase, 'baseUrl 为空也应渲染「进入」按钮').toBeDefined();
+      expect(noBase!.props.disabled, 'baseUrl 为空应 disabled').toBe(true);
+      expect(noBase!.props.title).toBe('未配置服务地址');
+
+      // Act & Assert: status≠1 → disabled + 提示
+      const stopped = getEnterNode(vm, buildRow({ code: 'off', status: 0 }));
+      expect(stopped, '停用模块也应渲染「进入」按钮').toBeDefined();
+      expect(stopped!.props.disabled, '停用模块应 disabled').toBe(true);
+      expect(stopped!.props.title).toBe('未配置服务地址');
+    });
+  });
 });

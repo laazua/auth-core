@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/038e |
 | 功能点名称 | 模块服务统一入口（e 段）——iframe 内嵌视图 + 管理页「进入」点击闭环 |
-| 状态 | PLANNED |
+| 状态 | IN_PROGRESS（RED 已留痕） |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -72,10 +72,10 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | ModuleIframeView.spec#rendersIframeWithGatewaySrcAndLoadingState | AC1 | 待填（预期 RED：组件/路由缺失） |
-| 2 | IndexView.spec#moduleEnterButtonNavigatesWhenReady | AC2 | 待填（预期 RED：按钮不存在） |
-| 3 | IndexView.spec#moduleEnterButtonDisabledWhenBaseUrlMissing | AC2 | 待填（预期 RED：同上） |
-| 4 | ModuleIframeView.spec#workspaceRouteResolvesInsideLayoutNot404 | AC3 | 待填（预期 RED：resolve 命中 catch-all depth=1） |
+| 1 | ModuleIframeView.spec#rendersIframeWithGatewaySrcAndLoadingState | AC1 | RED 已留痕（import 解析失败整套红）；待 GREEN 复测 |
+| 2 | IndexView.spec#moduleEnterButtonNavigatesWhenReady | AC2 | RED 已留痕（进入按钮 undefined）；待 GREEN 复测 |
+| 3 | IndexView.spec#moduleEnterButtonDisabledWhenBaseUrlMissing | AC2 | RED 已留痕（同上）；待 GREEN 复测 |
+| 4 | ModuleIframeView.spec#workspaceRouteResolvesInsideLayoutNot404 | AC3 | RED 已留痕（整套红含本例）；待 GREEN 复测 |
 | 5 | 冒烟 web-038e 定向测试（追加 scripts/smoke.sh，定向跑 ModuleIframeView.spec 全例，`grep -q 'N passed'` 口径沿先例） | AC4-③ | 待填 |
 | 6 | 门禁基线对照（后端 148 4F+2E / 前端 20 failed\|284 passed→实测；MyModulesView.spec 5/5 回归） | AC4-①②④ | 待填 |
 
@@ -86,10 +86,17 @@
 > Generator 于实现前执行测试清单 #1~#4 并粘贴关键失败输出（实时留痕，不得事后补记）。
 
 ```text
-（待 Generator 填写）
-```
+$ npm run test -- --run src/views/ModuleIframeView.spec.ts src/views/system/IndexView.spec.ts   （2026-09-29 实时留痕，实现前）
 
-## GREEN 证据
+ FAIL src/views/ModuleIframeView.spec.ts [ ModuleIframeView.spec.ts ]
+   Error: Failed to resolve import "@/views/ModuleIframeView.vue" — Does the file exist?
+   （AC1/AC3 整套红：组件与路由均缺失）
+
+ src/views/system/IndexView.spec.ts (40 tests | 13 failed)
+   → 操作列应渲染「进入」按钮: expected undefined not to be undefined
+   （AC2 新 2 例红：moduleEnterButtonNavigatesWhenReady + moduleEnterButtonDisabledWhenBaseUrlMissing；
+     13 failed = 基线 11 + 新 2，与 2026-09-28 登记的 system/IndexView 基线 11 精确对齐，零额外破坏）
+```
 
 > 实现后复跑（实时留痕）。REFACTOR 复查：行宽 ≤120、分层（views/api/router 各归其位）、新 spec 4/4、既有 spec 既有用例零改动（IndexView.spec 仅允许新增 describe）、文件行数达标、历史债文件增量最小。
 
