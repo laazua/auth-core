@@ -140,18 +140,20 @@ class TimestampFieldContractTest {
     }
 
     /**
-     * AC2(web/040a): 三域详情与 /auth/me 的 user 输出 updateTime 且不输出 updatedAt。
+     * AC2(web/040a): 三域详情输出 updateTime 且不输出 updatedAt。
      * Given 管理员登录且列表可取首项 id。
-     * When GET 三域 /{id} 详情、GET /auth/me。
-     * Then 详情 data 与 me.data.user 含 updateTime 键且不含 updatedAt 键（个人中心更新时间修复面）。
+     * When GET 三域 /{id} 详情。
+     * Then 详情 data 含 updateTime 键且不含 updatedAt 键。
+     * 注：/auth/me 的 me 面因 MeResponse 内嵌无时间字段的 dto.auth.UserVO（6 参），
+     * 需 +2 文件超本单 6 文件熔断，用户裁决拆 040c（见挂起区 2026-09-29 Generator 登记）。
      */
     @Test
-    @DisplayName("三域详情与 me 输出 updateTime 不输出 updatedAt")
-    void detailAndMeOutputUpdateTimeForUserRolePermissionDomain() throws Exception {
+    @DisplayName("三域详情输出 updateTime 不输出 updatedAt")
+    void detailOutputsUpdateTimeForUserRolePermissionDomain() throws Exception {
         // Given
         String token = getAdminToken();
 
-        // When & Then: 三域详情
+        // When & Then
         for (String path : new String[]{"/api/v1/users", "/api/v1/roles", "/api/v1/permissions"}) {
             long id = JSON.readTree(getListJson(path, token))
                     .path("data").path("records").get(0).path("id").asLong();
@@ -161,12 +163,5 @@ class TimestampFieldContractTest {
                     .andExpect(jsonPath("$.data.updateTime").exists())
                     .andExpect(jsonPath("$.data.updatedAt").doesNotExist());
         }
-
-        // When & Then: /auth/me（profile 页数据源，MeResponse.user 内嵌 UserVO）
-        mockMvc.perform(get("/api/v1/auth/me")
-                        .header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.user.updateTime").exists())
-                .andExpect(jsonPath("$.data.user.updatedAt").doesNotExist());
     }
 }
