@@ -1,5 +1,7 @@
 package com.authcore.dto.role;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDateTime;
 
 /**
@@ -10,6 +12,7 @@ public record RoleVO(
         String name,
         String code,
         Integer status,
+        @JsonProperty("createTime")
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {

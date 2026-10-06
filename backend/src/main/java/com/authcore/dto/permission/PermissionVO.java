@@ -1,5 +1,7 @@
 package com.authcore.dto.permission;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDateTime;
 
 /**
@@ -12,6 +14,7 @@ public record PermissionVO(
         String name,
         String code,
         String description,
+        @JsonProperty("createTime")
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {

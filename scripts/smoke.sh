@@ -419,6 +419,8 @@ smoke_case "web-038e 模块进入闭环定向测试" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1
   npm run test -- --run src/views/ModuleIframeView.spec.ts 2>&1 | grep -q '2 passed'
 "
+# web/039：创建时间字段全站对齐（user/role/permission 三域 createTime JSON 契约）定向测试
+smoke_case "web/039 创建时间字段对齐定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='TimestampFieldContractTest'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
