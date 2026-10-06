@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/039 |
 | 功能点名称 | 创建时间字段全站对齐（user/role/permission 域）——JSON 输出 `createTime` 与前端读法收敛 |
-| 状态 | AWAITING_REVIEW（Generator done，RED `2ee891b` + GREEN `39d9af6`，门禁冒烟实测齐，待 Evaluator 评审） |
+| 状态 | DONE（Evaluator 通过 2026-09-29，平均分 9.4/10，零否决项） |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -182,4 +182,4 @@ Generator 亲测（2026-09-29）：
 
 ## 评审记录
 
-- （待 Evaluator）
+- **2026-09-29：✅ 通过（REWORK 0 次，平均分 9.4/10）** — Evaluator 亲测：定向 2/2+3/3（surefire）、mvn `150 4F+2E`=基线失败集、前端 `20 failed|288 passed`（前端 diff=0）、冒烟 `57=46✅9❌2⏭️` web/039 ✅（行7092）、提交链 test→feat 两段式物证；评分=功能 9.5 / 质量 9 / 规范 9.5 / TDD 9.5 / 安全 9.5；六否决项零命中（否决6 沿基线对照裁决）。改进建议 4 条不计分：①断言风格统一 ②**同族新发现 updateTime→updatedAt 错位**（profile:92/types/auth:10/types/user:12，建议立 web/040）③R1 架构 §4 分页键名待 Planner 裁决 ④profile/me 连带修复补契约断言。R2 同步（ModuleControllerTest:218）核可为范围必要同步非夹带。
