@@ -2,9 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🔴 sprint-073 评审不通过（REWORK 第 1 次，子功能点 **web/038d**；命中否决项3：/mymodules 裸路由脱离主布局致菜单页导航不可用，详见 task.md 评审记录问题 1-3）；sprint-072 评审通过（web/038c ✅ 9.0/10）、sprint-071 通过（web/038b ✅）、sprint-070 通过（web/038a ✅）、sprint-069 通过（modules/002 ✅）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
+- 状态: 🟠 sprint-073 REWORK-1 完成待复审（子功能点 **web/038d AWAITING_REVIEW**；REWORK 链：REWORK-RED `aa1accf` → GREEN `35a48e7`，问题 1-3 全闭合）；sprint-072 评审通过（web/038c ✅ 9.0/10）、sprint-071 通过（web/038b ✅）、sprint-070 通过（web/038a ✅）、sprint-069 通过（modules/002 ✅）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
 - 当前模块: web
-- 当前功能点: web/038d（REWORK-1 返工中；038 组进度 038a ✅、038b ✅、038c ✅、038d 🔴、038e ⬜）
+- 当前功能点: web/038d（REWORK-1 已交付待复审；038 组进度 038a ✅、038b ✅、038c ✅、038d 🔄 复审中、038e ⬜ 最后一块）
+
+## 下一步动作
+  Evaluator：读 `.harness/evaluator.md` 并严格执行，**复审 sprint-073 REWORK-1**（工作单 `.harness/context/task.md` 状态 AWAITING_REVIEW、评审记录含首审 ❌ 与 REWORK-1 执行记录）。要点：① 亲跑门禁+冒烟对照，REWORK 后预期值——后端 `mvn -q verify` 148 4F+2E 逐条=基线、前端 `npm run test` **20 failed|284 passed**（+1 失败态用例）、build ✓、lint EXIT=124、`bash scripts/smoke.sh` **55 用例=44✅+9❌+2⏭️** 且 web-038d ✅（grep '5 passed'）；② 逐条核销首审问题 1-3（问题1 布局：routes.ts /mymodules DefaultLayout+children，硬验证=resolve 三路径 depth 均 2 且父组件===DefaultLayout；问题2：onMounted catch+loadError 态与空态互斥+失败态用例 RED→GREEN；问题3：task.md 行数 +5 更正）；③ 核查任务单【REWORK-1 修订】措辞行与 REWORK RED/GREEN 提交链（`aa1accf`→`35a48e7`）；④ 按 review-criteria 五维重新打分（首审 7.0+否决3，通过须 ≥7 且无否决）；⑤ 基线对照豁免否决项6 口径不变；⑥ 过审后写回 task.md 评审记录（REWORK 复审结论）、registry 038d（✅ 评分+038e 建议）、session-state→Planner、iteration-log，提交 `eval: web/038d pass sprint-073`。注意：task.md 已记录 session-state 红线⑦「冒烟 55→56」系笔误（实际 55，以 task.md 门禁记录为准），勿误判不一致。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
 
 ## 下一步动作
   Generator：读 `.harness/generator.md` 并严格执行，REWORK sprint-073（问题清单=task.md 评审记录「问题列表」三条）。红线：① **问题 1（否决级）**：routes.ts /mymodules 改 DefaultLayout+children 镜像 /system（routes.ts:72 先例），同步修 AC1 用例加 matched 父链断言（depth≥2 且父为 DefaultLayout），跑布局链实证 `/dashboard`、`/system/users`、`/mymodules` 三者 depth 均=2；② **问题 2**：MyModulesView onMounted 加 catch 区分「加载失败/无数据」，补 1 例失败态用例——用例数 4→5 则 smoke.sh `grep -q '4 passed'` 同步改 `5 passed`；③ **问题 3**：task.md 变更清单 smoke.sh 行数更正 +4→+5；④ 任务单需求描述「顶级动态路由」措辞加一行修订记录（以布局先例为准）；⑤ 禁改清单不变（后端零改、useMenu.spec/types/module/Sidebar/guards/main 零改；useMenu.ts 本单无需再动）；⑥ 两段式提交沿用：修复+测试为一个 GREEN 追加提交即可（REWORK 不重走 RED，但新增失败态用例需先留红或在提交信息注明其 RED 实测），完成后门禁+冒烟复跑回填、状态→AWAITING_REVIEW、会话→Evaluator；⑦ 基线不变：后端 148 4F+2E、前端 20 failed|283 passed（失败态+1 用例则预期 passed 284）、冒烟 55→56。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
