@@ -412,7 +412,7 @@ smoke_case "web-038c 模块字段契约定向测试" mvn -q -f "$APP_DIR/pom.xml
 # web/038d：我的模块菜单页（零权限菜单路由/卡片渲染/空态/点卡导航）定向测试
 smoke_case "web-038d 我的模块菜单页定向测试" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1
-  npm run test -- --run src/views/MyModulesView.spec.ts 2>&1 | grep -q '4 passed'
+  npm run test -- --run src/views/MyModulesView.spec.ts 2>&1 | grep -q '5 passed'
 "
 # ====================================================================================
 

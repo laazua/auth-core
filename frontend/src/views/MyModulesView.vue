@@ -6,12 +6,17 @@ import { moduleApi, type ModuleAccessible } from '@/api/module';
 const router = useRouter();
 const modules = ref<ModuleAccessible[]>([]);
 const loading = ref(true);
+const loadError = ref(false);
 
 onMounted(async () => {
   loading.value = true;
+  loadError.value = false;
   try {
     const res = await moduleApi.getAccessibles();
     modules.value = res.data ?? [];
+  } catch (error) {
+    console.error('[MyModules] 加载可访问模块失败:', error);
+    loadError.value = true;
   } finally {
     loading.value = false;
   }
@@ -30,6 +35,8 @@ const enterModule = (code: string) => {
     </div>
 
     <div v-if="loading" class="my-modules__loading">加载中…</div>
+
+    <div v-else-if="loadError" class="my-modules__error">加载失败，请稍后重试</div>
 
     <div v-else-if="modules.length === 0" class="my-modules__empty">暂无可访问模块</div>
 
@@ -73,6 +80,7 @@ const enterModule = (code: string) => {
 }
 
 .my-modules__loading,
+.my-modules__error,
 .my-modules__empty {
   padding: 60px 0;
   text-align: center;

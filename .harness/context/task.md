@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/038d |
 | 功能点名称 | 模块服务统一入口（d 段）——「我的模块」菜单页（前端） |
-| 状态 | REWORK（第 1 次·进行中，RED 已留痕） |
+| 状态 | AWAITING_REVIEW（REWORK-1 完成） |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -36,7 +36,7 @@
 
 ## 需求描述
 
-新增「我的模块」功能页：顶级动态路由 `/mymodules`（`meta.requiresAuth=true`、**无** `permissions`/`roles` 键）+ `menuConfig` 同路径菜单条目（**无** `permissions` 键 → 零权限用户亦可见）+ `MyModulesView` 页面（`moduleApi.getAccessibles()` 拉取 → 卡片网格渲染 name/code/description；空数组渲染「暂无可访问模块」空态；点卡 `router.push('/workspace/module/' + code)`）。`api/module.ts` 新增 `getAccessibles()`（`GET /modules/accessibles`），`ModuleAccessible` 类型**就近内联声明于 api 文件**（先例：同文件 `getAllPermissions` 内联返回类型，省 `types/module.ts` 第 7 文件，守 6 文件预算）。纯前端单，零后端改动。
+新增「我的模块」功能页：顶级动态路由 `/mymodules`（`meta.requiresAuth=true`、**无** `permissions`/`roles` 键）**【REWORK-1 修订】原「顶级动态路由」措辞误导向裸顶层注册（eval 否决项3）：实际实现改为 `/mymodules` 顶层记录包 `DefaultLayout` + `children:[{path:''}]` 子记录，镜像 `/system` 先例——「顶级」指菜单顶级入口，路由必须经布局父记录**+ `menuConfig` 同路径菜单条目（**无** `permissions` 键 → 零权限用户亦可见）+ `MyModulesView` 页面（`moduleApi.getAccessibles()` 拉取 → 卡片网格渲染 name/code/description；空数组渲染「暂无可访问模块」空态；点卡 `router.push('/workspace/module/' + code)`）。`api/module.ts` 新增 `getAccessibles()`（`GET /modules/accessibles`），`ModuleAccessible` 类型**就近内联声明于 api 文件**（先例：同文件 `getAllPermissions` 内联返回类型，省 `types/module.ts` 第 7 文件，守 6 文件预算）。纯前端单，零后端改动。
 
 ## 验收标准（TDD 驱动）
 
@@ -71,11 +71,12 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | MyModulesView.spec#myModulesMenuAndRouteVisibleWithoutPermission | AC1 | RED 留痕 → **GREEN ✅** |
+| 1 | MyModulesView.spec#myModulesMenuAndRouteVisibleWithoutPermission | AC1 | RED→GREEN ✅；REWORK-1 追加父链断言（depth=2+父=DefaultLayout）先红后绿 ✅ |
 | 2 | MyModulesView.spec#rendersAccessibleModuleCards | AC2 | RED 留痕 → **GREEN ✅** |
-| 3 | MyModulesView.spec#rendersEmptyStateWhenNoModules | AC2 | RED 留痕 → **GREEN ✅** |
+| 3 | MyModulesView.spec#rendersEmptyStateWhenNoModules | AC2 | RED→GREEN ✅ |
+| 3b | MyModulesView.spec#rendersLoadFailureStateWhenApiRejects（REWORK-1 问题2 新增） | AC2-异常路径 | RED 留痕（无 catch 误渲染空态+unhandled rejection）→ **GREEN ✅** |
 | 4 | MyModulesView.spec#navigatesToModuleWorkspaceOnCardClick | AC3 | RED 留痕 → **GREEN ✅**（AC3 断言基建按 Header.spec 先例修正，见 GREEN 证据） |
-| 5 | 冒烟 web-038d 定向测试（追加于 scripts/smoke.sh，定向跑 MyModulesView.spec 全 4 例，`grep -q '4 passed'`） | AC4-③ | **✅ 通过**（smoke 全量实测） |
+| 5 | 冒烟 web-038d 定向测试（scripts/smoke.sh，REWORK-1 起 `grep -q '5 passed'`） | AC4-③ | **✅ 通过**（REWORK 复跑全量实测） |
 | 6 | 门禁基线对照（后端 148 4F+2E / 前端 20 failed|279 passed→283） | AC4-①② | **✅ 逐条一致**（实测后端 148 4F+2E、前端 20 failed\|283 passed） |
 
 **行数红线**：新 spec ≤500 行（预估 ~200）；`MyModulesView.vue` ≤500 行（预估 ~130）；**既有文件零增行压力点**——`useMenu.spec.ts`（206 行）与 `types/module.ts` 一律不动。
@@ -172,7 +173,7 @@ Generator 亲测（2026-09-29）：
 - `frontend/src/router/routes.ts` — `asyncRoutes` 追加 `/mymodules` 条目（+6）
 - `frontend/src/composables/useMenu.ts` — `menuConfig` 追加条目（+6）
 - `frontend/src/api/module.ts` — `getAccessibles` + `ModuleAccessible` 接口（+13）
-- `scripts/smoke.sh` — `web-038d` 冒烟用例（+4：注释+smoke_case 三行，未动既有用例）
+- `scripts/smoke.sh` — `web-038d` 冒烟用例（**实测 +5 行**：注释 1 + smoke_case 块 4；原记录 +4 有误已更正，未动既有用例；REWORK-1 将 grep 口径 4→5 passed，行数不变）
 
 合计 6 文件 = 预算顶格，未超熔断。
 
@@ -230,6 +231,14 @@ Evaluator 2026-09-29 亲自运行（不采信 Generator 自述）：
 
 ## REWORK-1 执行记录（Generator）
 
+### 问题修复对照
+| 问题 | 修复 | 验证 |
+|------|------|------|
+| 1 [否决级] /mymodules 裸路由 | routes.ts 改 DefaultLayout+children（镜像 /system）；AC1 补父链断言 | 布局链实证：`/dashboard`、`/system/users`、`/mymodules` 三者 depth 均=2（/mymodules chain: /mymodules > /mymodules），父组件断言=DefaultLayout |
+| 2 [中] onMounted 无 catch | 加 catch→`loadError` 态，模板「加载失败，请稍后重试」与空态互斥；新增失败态用例（RED 先行） | 5/5 绿；失败态用例断言「加载失败」且不含「暂无可访问模块」 |
+| 3 [轻] 行数记录不实 | 变更清单 +4 更正为实测 +5（见上「修改（实测）」节） | git diff 复核 5 insertions |
+| 措辞修订 | 任务单需求描述加【REWORK-1 修订】行 | 见需求描述节 |
+
 ### RED 留痕（2026-09-29 实测，实现前）
 
 ```text
@@ -244,4 +253,19 @@ $ npm run test -- --run src/views/MyModulesView.spec.ts
  FAIL AC2 > rendersLoadFailureStateWhenApiRejects
    AssertionError: expected '我的模块点击卡片进入对应模块工作区暂无可访问模块' to contain '加载失败'
    + Unhandled Rejection: Error: network down（问题2实证：onMounted 无 catch，失败误渲染空态且未捕获）
+```
+
+### GREEN 复测与门禁（REWORK-1，2026-09-29 实测）
+
+```text
+$ npm run test -- --run src/views/MyModulesView.spec.ts   → Tests 5 passed (5)
+布局链实证：/dashboard depth 2 | /system/users depth 2 | /mymodules depth 2（父=DefaultLayout，AC1 断言）
+
+门禁复跑（Evaluator 基线口径对照）：
+- mvn -q verify: Tests run: 148, Failures: 4, Errors: 2 —— 失败集逐条=基线六条，零新增（零后端改动）
+- npm run test: 20 failed | 284 passed (304) —— failed=基线 20，passed 283→284（+1 失败态用例）精确命中
+- npm run build: ✓ built in 19.94s；npm run lint: EXIT=124 基线
+- bash scripts/smoke.sh: 55 用例 = 44✅+9❌+2⏭️；web-038d ✅（grep '5 passed'）；9 失败逐条=基线
+  （注：冒烟用例数仍 55——REWORK 仅改既有 web-038d 案例的 grep 口径，未新增冒烟用例；
+   session-state 红线⑦「冒烟 55→56」系笔误，实际预期=55，本记录为准）
 ```
