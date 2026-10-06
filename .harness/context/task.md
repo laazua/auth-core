@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/038d |
 | 功能点名称 | 模块服务统一入口（d 段）——「我的模块」菜单页（前端） |
-| 状态 | PLANNED |
+| 状态 | IN_PROGRESS（RED 已留痕） |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -71,10 +71,10 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | MyModulesView.spec#myModulesMenuAndRouteVisibleWithoutPermission | AC1 | 待填（预期 RED：路由/菜单条目不存在） |
-| 2 | MyModulesView.spec#rendersAccessibleModuleCards | AC2 | 待填（预期 RED：组件/`getAccessibles` 缺失，import 或函数断言失败） |
-| 3 | MyModulesView.spec#rendersEmptyStateWhenNoModules | AC2 | 待填（预期 RED：同上） |
-| 4 | MyModulesView.spec#navigatesToModuleWorkspaceOnCardClick | AC3 | 待填（预期 RED：同上） |
+| 1 | MyModulesView.spec#myModulesMenuAndRouteVisibleWithoutPermission | AC1 | RED 已留痕（2026-09-29：组件 import 缺失致整套失败）；待 GREEN 复测 |
+| 2 | MyModulesView.spec#rendersAccessibleModuleCards | AC2 | RED 已留痕（同上）；待 GREEN 复测 |
+| 3 | MyModulesView.spec#rendersEmptyStateWhenNoModules | AC2 | RED 已留痕（同上）；待 GREEN 复测 |
+| 4 | MyModulesView.spec#navigatesToModuleWorkspaceOnCardClick | AC3 | RED 已留痕（同上）；待 GREEN 复测 |
 | 5 | 冒烟 web-038d 定向测试（追加于 scripts/smoke.sh，定向跑 MyModulesView.spec 全 4 例，`grep -q 'N passed'` 口径沿先例 web-013/014） | AC4-③ | 待填 |
 | 6 | 门禁基线对照（后端 148 4F+2E / 前端 20 failed|279 passed→283） | AC4-①② | 待填 |
 
@@ -85,7 +85,17 @@
 > Generator 于实现前执行测试清单 #1~#4 并粘贴关键失败输出（实时留痕，不得事后补记）。
 
 ```text
-（待 Generator 填写）
+$ npm run test -- --run src/views/MyModulesView.spec.ts   （2026-09-29 实时留痕，实现前执行）
+
+ RUN  v1.6.1 /opt/codes/auth-core/frontend
+ ❯ src/views/MyModulesView.spec.ts  (0 test)
+ FAIL  src/views/MyModulesView.spec.ts [ src/views/MyModulesView.spec.ts ]
+ Error: Failed to resolve import "@/views/MyModulesView.vue" from "src/views/MyModulesView.spec.ts". Does the file exist?
+ Test Files  1 failed (1)
+      Tests  no tests
+
+说明：组件尚未存在 → 整套 spec 解析失败（4 用例全红），同时覆盖 #1~#4 预期失败口径
+（AC1 路由/菜单条目、AC2 `getAccessibles` 函数断言、AC3 组件+导航均因实现缺失而未达）。
 ```
 
 ## GREEN 证据
