@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟡 sprint-074 实现完成待评审（子功能点 **web/038e 🔄→AWAITING_REVIEW**，工作单 `.harness/context/task.md` 已产出 RED/GREEN/门禁冒烟四证据，RED `6c7d0af` + GREEN `0b8418b`，038 组最后一段收口待 Evaluator）；前序 sprint-073 通过（web/038d ✅ 9.0/10 REWORK-1）、sprint-072 通过（web/038c ✅ 9.0/10）、sprint-071 通过（web/038b ✅）、sprint-070 通过（web/038a ✅）、sprint-069 通过（modules/002 ✅）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
+- 状态: 🟢 sprint-074 通过（web/038e ✅ 9.3/10，038 组五段全部收口：038a ✅ 038b ✅ 038c ✅ 038d ✅ 038e ✅）；前序 sprint-073 通过（web/038d ✅ 9.0/10 REWORK-1）、sprint-072 通过（web/038c ✅ 9.0/10）、sprint-071 通过（web/038b ✅）、sprint-070 通过（web/038a ✅）、sprint-069 通过（modules/002 ✅）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
 - 当前模块: web
 - 当前功能点: web/038e（iframe 内嵌视图+管理页「进入」闭环；038 组进度 038a ✅、038b ✅、038c ✅、038d ✅、038e 🔄 最后一块）
 
 
 ## 下一步动作
-  Evaluator：读 `.harness/evaluator.md` 并严格执行，依据 `task.md`（含 RED/GREEN/门禁冒烟四证据）+ `.harness/rules/review-criteria.md`（5 维评分 + 否决项 1-6，≥7 且无否决才 pass；报告模板六段）评审 sprint-074（web/038e）。要点：① **亲测复跑**：前端 `npm run test -- --run src/views/ModuleIframeView.spec.ts src/views/system/IndexView.spec.ts src/views/MyModulesView.spec.ts`、`npm run build`、后端 `mvn -q verify`、`bash scripts/smoke.sh`（约 17 分钟，复跑口径=task.md 门禁表）；② **基线对照豁免**（2026-09-28 用户裁决沿用）：后端 148 用例 4F+2E、前端 20 failed、冒烟 9❌+2⏭️ 均为登记基线，只评**新增**失败——预期 passed 288=284+4、冒烟 56=45✅+9❌+2⏭️ 含 `web-038e ✅`、`web-038d ✅` 回归；③ **历史债口径（用户裁定 2026-09-29）**：IndexView.vue(+14→766)/spec(+64→1468) 超 500 属预存历史债，本单按「最小增量+历史债登记」评——既有 60 例零改动、不新建超限文件，历史债扣分不落本单（拆分已登记挂起区）；④ **AC2 测试路径**：BaseTable 为 stub 不执行 col.render，Generator 采直调 `vm.moduleColumns` actions.render 取 VNode 断言 + `vm.router.push`（未动 stub/vue-router mock），评审确认该路径充分性（点击/禁用/title 三断言）；⑤ **路由结构**：`/workspace/module/:code` 须 depth=2 父===DefaultLayout 子 name=ModuleWorkspace 非 NotFound（038d 否决项 3 前车之鉴，AC3 有用例）；⑥ iframe src 相对路径 `/api/v1/gateway/{code}/` 含尾斜杠、无 host、`@load` 收加载态；⑦ 两段式提交与 task.md 实测数据核对（4/4 用例、6 文件顶格、行宽零新增）。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
+  Planner：读 `.harness/planner.md` 并严格执行，取下一个功能点。**038 组已全部收口（038a-e ✅）**，建议方向（按优先级调研后与用户确认）：① Evaluator 积压六项评审（sprint-047/048/060/061/062/063，若用户指示按评审推进则先读 `.harness/evaluator.md` 补评审）；② IndexView.vue/spec 拆分技术债（挂起区 2026-09-29 登记，766/1468 行超限必须拆分）；③ modules/003 服务级接入凭证（预留 ⬜，前置架构 §3 仲裁）；④ web/036a-c 与 web/017 等 UI 治理遗留。Planner 须先读 `.harness/context/session-state.md` 全文与 registry 全景，产出工作单后交接 Generator。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
 
 ## 挂起
 - 2026-09-29: Planner(sprint-074) — **历史债登记（用户裁定「最小增量+历史债登记」，问答在案）**：`frontend/src/views/system/IndexView.vue`（752 行）与其 spec（1404 行）超编码规范「文件 ≤500 行」红线，属既有历史债（非 sprint-074 造成）；裁定=本单只做最小增量（按钮+handler 约 +15/+40 行）、不新建超限文件、既有用例零改动；**IndexView 拆分（超限必须拆分）另立后续技术债任务**，待本单交付后由 Planner 按优先级排期。Evaluator「规范遵守」维度按此口径评价 sprint-074 增量，历史债扣分不落本单。

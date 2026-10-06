@@ -2,7 +2,7 @@
 
 本表是全系统的唯一功能点台账：每个功能点拥有全局唯一 ID（如 `infra/001`），被三个 prompt 与 context 文件引用。状态图例：⬜ 未开始 / 🔄 进行中 / ✅ 完成 / ❌ 阻塞 / ⚠️ 有缺口
 
-> 最后更新：2026-09-29（sprint-074 规划，注册子功能点 web/038e iframe 视图+「进入」闭环（🔄，038 组最后一段，4 AC 6 文件顶格纯前端；IndexView 历史债最小增量口径用户裁定在案）；前序 sprint-073 web/038d ✅ 9.0/10、sprint-072 web/038c ✅、sprint-071 web/038b ✅、sprint-070 web/038a ✅；modules/003、web/039 预留）
+> 最后更新：2026-09-29（sprint-074 规划，注册子功能点 web/038e iframe 视图+「进入」闭环（✅，038 组最后一段，4 AC 6 文件顶格纯前端；IndexView 历史债最小增量口径用户裁定在案）；前序 sprint-073 web/038d ✅ 9.0/10、sprint-072 web/038c ✅、sprint-071 web/038b ✅、sprint-070 web/038a ✅；modules/003、web/039 预留）
 
 ## 阶段总览
 

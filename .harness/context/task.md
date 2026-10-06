@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/038e |
 | 功能点名称 | 模块服务统一入口（e 段）——iframe 内嵌视图 + 管理页「进入」点击闭环 |
-| 状态 | AWAITING_REVIEW（Generator done，RED `6c7d0af` + GREEN `0b8418b`，门禁冒烟实测齐，待 Evaluator 评审） |
+| 状态 | DONE（Evaluator 通过 2026-09-29，平均分 9.3/10，零否决项） |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -183,4 +183,4 @@ Generator 亲测（2026-09-29）：
 
 ## 评审记录
 
-- （待 Evaluator）
+- **2026-09-29：✅ 通过（REWORK 0 次，平均分 9.3/10）** — Evaluator 亲测：4/4 新用例 verbose 级通过、mvn `148 4F+2E`=基线、test `20 failed|288 passed`、smoke `56=45✅9❌2⏭️` web-038e ✅、038d 回归 5/5；评分=功能 9.5 / 质量 9 / 规范 9 / TDD 9.5 / 安全 9.5；六否决项逐项未命中（否决6 沿基线对照裁决）。改进建议 4 条（AC1 类名勘误、props: true 全仓治理、测试 any、IndexView 拆分）不计分。
