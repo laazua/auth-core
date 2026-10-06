@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-29: Evaluator — REWORK sprint-073（web/038d 否决项3：/mymodules 裸路由脱离主布局，均分 7.0，问题 3 条退回 Generator）
+
 - 2026-09-29: Generator — done sprint-073（RED `0e98cfa` + GREEN `b4f8d6b`，4 AC 全勾，门禁冒烟实测齐，web-038d AWAITING_REVIEW）
 
 - 2026-09-29: Planner — kickoff sprint-073（web/038d，4 条验收标准）

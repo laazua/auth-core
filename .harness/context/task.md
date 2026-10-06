@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/038d |
 | 功能点名称 | 模块服务统一入口（d 段）——「我的模块」菜单页（前端） |
-| 状态 | AWAITING_REVIEW |
+| 状态 | REWORK（第 1 次） |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -191,4 +191,39 @@ Generator 亲测（2026-09-29）：
 
 ## 评审记录
 
-- （待 Evaluator）
+### 验收标准核对
+- [x] AC1 — 路由与菜单全员可见：路由表含 /mymodules、requiresAuth、无 permissions/roles 键；零权限菜单含「我的模块」（用例 1/1 过）——**但路由为裸顶层注册，缺布局父链，见问题 1**
+- [x] AC2 — 列表渲染与空态：getAccessibles 函数断言 +2 卡 + 空态，2/2 用例过
+- [x] AC3 — 点卡导航：mockRouter.push 收到 `/workspace/module/news`，1/1 过
+- [x] AC4 — 门禁与冒烟：亲测四项+冒烟全部对齐基线（见下）
+- [ ] **功能点核心语义「菜单页」**：点菜单进入后脱离 DefaultLayout，侧栏/顶栏整体消失——页面渲染与 AC 字面通过，但作为菜单页**功能不可用**（唯一回退=浏览器后退）→ 命中否决项 3，见问题 1
+
+### 门禁与冒烟实测
+Evaluator 2026-09-29 亲自运行（不采信 Generator 自述）：
+- `mvn -q verify`：Tests run: 148, Failures: 4, Errors: 2 —— 失败集逐条=基线（DataSourceConfigBindingTest×2、RoleControllerTest:466、SeedDataIntegrationTest:99、TestLayersSpec、TestUtilsSpec），零后端改动，零新增 ✅
+- `npm run test`：**20 failed | 283 passed (303)** —— failed=基线 20、passed +4 命中 ✅；`npm run build`：✓ built in 17.43s ✅；`npm run lint`：EXIT=124（基线挂起）✅
+- `bash scripts/smoke.sh`：**55 用例 = 44✅+9❌+2⏭️**；9 失败逐条=基线（model-008/010、roles-001/002、web-013/020/021/022/026）、2 跳过=infra-004/model-006；`web-038d 我的模块菜单页定向测试 ✅`；追加用例符合冒烟节要求（否决项 6 经基线对照豁免口径不中）✅
+- 布局链实证（临时 spec，已删）：`/dashboard => depth 2 | parents: / > /dashboard`；`/system/users => depth 2 | parents: /system > /system/users`；**`/mymodules => depth 1 | parents: /mymodules`**
+
+### 评分
+| 维度 | 分数 | 证据 |
+|------|------|------|
+| 功能正确性 | 6 | AC1-4 字面全过（4/4 用例），但功能点核心语义破损：routes.ts:74-76 裸注册致 `resolve('/mymodules')` depth=1（对照 /system depth=2），点菜单即失主导航；异常路径缺失：MyModulesView.vue:10-17 onMounted 无 catch，getAccessibles 失败→unhandled rejection 且误导性空态 |
+| 代码质量 | 6 | 违背既有布局模式（routes.ts:72-79 /system 包 DefaultLayout，/mymodules 未包）；onMounted 无错误处理且异常路径零测试 |
+| 规范遵守 | 8 | 行数 spec 144/组件 128 ≤500、行宽零超、分层正确、禁改清单零触碰（git diff 确认 useMenu.spec/types/module/Sidebar/guards/main/后端零改）；扣分：task.md 变更清单记 smoke.sh "+4 行"，git diff 实为 +5 行（记录不实） |
+| TDD 执行度 | 7 | RED `0e98cfa`→GREEN `b4f8d6b` 两段式证据链完整、AC3 断言基建修正有记录、断言非凑数；扣分：AC1 仅断言 route.path/meta 字段、无 matched 父链断言，布局缺陷从测试网逃逸 |
+| 安全性 | 9 | 五查无命中：无越权（requiresAuth ✓，数据源 accessibles 本身按交集过滤）、无注入面（无 SQL 拼接）、无明文密钥、日志无敏感信息；扣分项：无 |
+
+**均分 = 35/5 = 7.0**，但命中否决项 → 不通过。
+
+### 决策
+❌ **不通过（REWORK 第 1 次）**——命中一票否决项 **3（明确 Bug：核心逻辑错误导致功能不可用）**：`/mymodules` 路由以裸顶层注册脱离主布局，「我的模块」菜单页进入后侧栏/顶栏整体消失、系统导航不可用（实证 depth 1 vs 先例 depth 2），功能点核心交付不可用。
+
+### 问题列表
+1. **[严重·否决级]** `frontend/src/router/routes.ts:74-76`：/mymodules 裸注册（无 DefaultLayout 父记录）→ 点菜单渲染裸页面、失去全部主导航。修复：镜像 /system 模式改为 `{ path: '/mymodules', component: DefaultLayout, children: [{ path: '', name: 'MyModules', component: MyModulesView, meta: {...} }] }`；**并同步修 AC1 用例**（`MyModulesView.spec.ts:66` 起）追加 matched 父链断言（depth≥2 且父记录 component 解析为 DefaultLayout，或等价断言），防回归。注意：task.md 需求描述「顶级动态路由」措辞与布局一致性冲突，按 AGENTS.md 以架构/先例为准修正实现，并在任务单留一行修订记录。
+2. **[中]** `frontend/src/views/MyModulesView.vue:10-17`：onMounted 无 catch——接口失败时 unhandled rejection 且渲染误导性「暂无可访问模块」。修复：捕获失败态（区分「加载失败」与「无数据」），至少日志+状态区分；建议补 1 例失败态用例（用例数变化须同步更新 smoke.sh 的 `grep -q 'N passed'` 口径）。
+3. **[轻]** `task.md` 变更清单：smoke.sh 记 "+4 行"，实测 +5（git diff 5 insertions）——更正记录。
+
+### 改进建议（不计分）
+- 菜单 `order: 1.5`（useMenu.ts:34）小数序合法但可读性一般，若后续调整建议整数重排（本单禁改既有条目，维持现状可接受）。
+- AC1 用例声明 `async` 但体内无 await（MyModulesView.spec.ts:61），可去冗余 async。

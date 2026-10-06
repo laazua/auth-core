@@ -2,9 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟠 sprint-073 实现完成待评审（子功能点 **web/038d AWAITING_REVIEW**，RED `0e98cfa` → GREEN `b4f8d6b`，4 AC 全勾、门禁冒烟实测齐）；sprint-072 评审通过（web/038c ✅ 9.0/10）、sprint-071 评审通过（web/038b ✅ 9.0/10）、sprint-070 评审通过（web/038a ✅ 9.0/10）、sprint-069 评审通过（modules/002 ✅ 9.0/10）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
+- 状态: 🔴 sprint-073 评审不通过（REWORK 第 1 次，子功能点 **web/038d**；命中否决项3：/mymodules 裸路由脱离主布局致菜单页导航不可用，详见 task.md 评审记录问题 1-3）；sprint-072 评审通过（web/038c ✅ 9.0/10）、sprint-071 通过（web/038b ✅）、sprint-070 通过（web/038a ✅）、sprint-069 通过（modules/002 ✅）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
 - 当前模块: web
-- 当前功能点: web/038d（「我的模块」菜单页；038 组进度 038a ✅、038b ✅、038c ✅、038d 🔄 评审中、038e ⬜ 最后一块）
+- 当前功能点: web/038d（REWORK-1 返工中；038 组进度 038a ✅、038b ✅、038c ✅、038d 🔴、038e ⬜）
+
+## 下一步动作
+  Generator：读 `.harness/generator.md` 并严格执行，REWORK sprint-073（问题清单=task.md 评审记录「问题列表」三条）。红线：① **问题 1（否决级）**：routes.ts /mymodules 改 DefaultLayout+children 镜像 /system（routes.ts:72 先例），同步修 AC1 用例加 matched 父链断言（depth≥2 且父为 DefaultLayout），跑布局链实证 `/dashboard`、`/system/users`、`/mymodules` 三者 depth 均=2；② **问题 2**：MyModulesView onMounted 加 catch 区分「加载失败/无数据」，补 1 例失败态用例——用例数 4→5 则 smoke.sh `grep -q '4 passed'` 同步改 `5 passed`；③ **问题 3**：task.md 变更清单 smoke.sh 行数更正 +4→+5；④ 任务单需求描述「顶级动态路由」措辞加一行修订记录（以布局先例为准）；⑤ 禁改清单不变（后端零改、useMenu.spec/types/module/Sidebar/guards/main 零改；useMenu.ts 本单无需再动）；⑥ 两段式提交沿用：修复+测试为一个 GREEN 追加提交即可（REWORK 不重走 RED，但新增失败态用例需先留红或在提交信息注明其 RED 实测），完成后门禁+冒烟复跑回填、状态→AWAITING_REVIEW、会话→Evaluator；⑦ 基线不变：后端 148 4F+2E、前端 20 failed|283 passed（失败态+1 用例则预期 passed 284）、冒烟 55→56。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
 
 ## 下一步动作
   Evaluator：读 `.harness/evaluator.md` 并严格执行，评审 sprint-073（web/038d，工作单 `.harness/context/task.md` 状态 AWAITING_REVIEW）。要点：① 必须亲跑四门禁+冒烟对照（Generator 自述实测值：后端 mvn 148 4F+2E 逐条=基线、lint EXIT=124 基线、前端 test **20 failed|283 passed**（+4 精确）、build ✓、smoke **55=44✅+9❌+2⏭️** 且 web-038d ✅、9 失败逐条=基线）；② 按 `.harness/rules/review-criteria.md` 五维打分（≥7 且无否决），问题优先、证据绑定每维；③ 基线对照豁免否决项6 沿 2026-09-28 用户裁定与 069-072 先例（仅新增失败计）；④ 重点核查：AC3 断言基建修正（setup.ts:31 全局 useRouter mock → 本 spec 局部 mockRouter，镜像 Header.spec.ts:25 先例，组件实现零改）是否合理、6 文件顶格禁改清单零触碰、smoke +4 行未动既有用例；⑤ 过审后写回 task.md 评审记录（报告模板六节）、registry（038d ✅ 评分+038e 建议）、session-state→Planner、iteration-log 追加，提交 `eval: web/038d pass sprint-073`。038c 遗留改进建议（不阻塞）：ISO 格式断言、测试助手 DRY 第三处抽基类、ModuleVO 分域映射 Javadoc。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
