@@ -1,176 +1,156 @@
-# Sprint 工作单：sprint-072
+# Sprint 工作单：sprint-073
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-072 |
+| Sprint ID | sprint-073 |
 | 所属模块 | web |
-| 功能点 ID | web/038c |
-| 功能点名称 | 模块服务统一入口（c 段）——`baseUrl`/`createTime` 字段错位修复（模块域，038d/038e 硬前置） |
-| 状态 | DONE |
+| 功能点 ID | web/038d |
+| 功能点名称 | 模块服务统一入口（d 段）——「我的模块」菜单页（前端） |
+| 状态 | PLANNED |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| modules/001 | 模块 CRUD 基建（ModuleCreateDTO/ModuleUpdateDTO/ModuleVO 与既有测试载荷/断言所在，本单就地修复其字段契约） | ✅ |
-| model/004 | sys_module 表模型（base_url/created_at 为**表列**契约，本单不改列只改 JSON 映射） | ✅ |
-| web/002 | 前端模块管理页 ModuleFormDrawer（提交形状 `baseUrl` 来源，`ModuleFormDrawer.vue:33,183`） | ✅ |
-| web/003 | 模块列表页字段列（读取形状 `createTime` 来源，`IndexView.vue:133`、`types/module.ts:10,22`） | ✅ |
-| web/038b | GET /modules/accessibles（精简 VO 已按设计第 3 节用 camel `baseUrl` 输出，sprint-071 评审通过 9.0/10——本单向其对齐） | ✅ |
+| web/001 | Vite+Vue3+TS+Axios+Vitest 基线（http 封装、vitest 跑法） | ✅ |
+| web/002 | 登录页+路由守卫（requiresAuth 守卫链，新路由免额外守卫代码） | ✅ |
+| web/003 | 主布局（侧边菜单/顶栏）+动态菜单渲染（`useMenu` menuConfig 过滤机制本体，注册入口） | ✅ |
+| web/029 | 动态路由加载机制（`router/index.ts:72-73` 登录后 `generateRoutes`+`addRoute`） | ✅ |
+| web/034 | `/system` URL 体系（本单新顶级路径 `/mymodules` 与其无冲突先例） | ✅ |
+| web/038b | `GET /modules/accessibles` 可访问模块列表（本页唯一数据源，sprint-071 评审通过 9.0/10） | ✅ |
+| web/038c | baseUrl/createTime 字段契约收敛（accessibles 响应六字段契约稳定，sprint-072 评审通过 9.0/10，硬前置已解除） | ✅ |
 
 ## 业务背景
 
-用户原始需求（sprint-069/071 一组）：模块管理中的「模块」是外部运行服务，管理员授权后登录用户应看到并访问自己的模块。038d「我的模块」页与 038e iframe 视图依赖模块管理页维护 `baseUrl`（内嵌跳转地址来源）与列表页展示创建时间。只读调研（2026-09-29，Planner 亲核两侧源码）确认两处静默错位：
+用户原始需求（sprint-069/072 一组，设计文档 `docs/superpowers/specs/2026-09-29-module-iframe-access-design.md` 用户逐节确认，commit 83b19fb）：模块配置完成后，**登录用户应在当前系统中看到自己可以访问的模块列表**（入口 = 新菜单页「我的模块」+ 管理页「进入」，见设计 §1 澄清 4）。本单实现其中「我的模块」菜单页，即设计 §4.1：
 
-1. **输入侧**：前端提交 `baseUrl`（`ModuleFormDrawer.vue:33` 表单模型、`:183` 表单项），后端 `ModuleCreateDTO.java:22` / `ModuleUpdateDTO.java:14` 标注 `@JsonProperty("base_url")` —— Jackson 默认忽略未知字段，UI 新建/编辑提交的 `baseUrl` 被静默丢弃，永 never 入库；后端既有测试载荷恰用 `base_url`（`ModuleControllerTest:242,277`）故测试恒绿、缺陷只在真实 UI 路径暴露。
-2. **输出侧**：后端 `ModuleVO.java:15` 输出 `createdAt`，前端全站类型层与列表列读 `createTime`（`types/module.ts:10,22`、`IndexView.vue:133` formatter 读 `row.createTime`）—— 模块表「创建时间」列恒显 `—`。
+- 「我的模块」菜单：**全员登录可见**（按 web/003 动态菜单渲染机制注册，**不绑具体权限码**，内容自过滤——`useMenu.ts:75-87` 对无 `permissions`/`roles` 键的条目恒放行，先例：`/dashboard`）；
+- 页面 `MyModulesView`：调 `GET /modules/accessibles`，卡片网格（**名称/编码/描述**，设计仅此三字段），空态「暂无可访问模块」，点卡片跳 `/workspace/module/:code`。
 
-**方向裁决**（架构 §3 冲突判定：§3 的 `base_url`/`created_at` 是**数据库表列**契约，本单不改任何表列；JSON 契约架构未规定，全站前端 6 个类型文件与 2 处列表列均用 camel `baseUrl`/`createTime`，新 `ModuleAccessibleVO`（038b）与全部后端响应（`ModuleVO.baseUrl`、Login/Me 等）已是 camel —— JSON 侧收敛 camel 是最小改动且与设计第 3 节 `baseUrl` 输出先例一致）。
+设计 §4.4 中「types/module.ts 读 createdAt」为设计期草案，**已被 sprint-072 用户裁定的方案 B 覆盖**（后端 ModuleVO 输出 `createTime`、前端零改动、038c 实际交付口径见 registry/web/038 行），本单不改 `types/module.ts`。
 
-**范围裁定**：同源系统性错位影响 user/role/permission 域（`UserVO/RoleVO/PermissionVO` 均输出 `createdAt` 而前端对应类型均读 `createTime`，三张列表页创建时间同显 `—`）—— 修复这三个 VO + 三份测试类将超 6 文件预算，且非 038d/038e 硬前置，**登记独立占位 web/039（⬜ 待规划）**，本单只修模块域。
+**范围边界**（设计 §4 拆分 + registry 038d/038e 分工）：iframe 视图页 `ModuleIframeView` 与管理页操作列「进入」按钮属 **web/038e**（前置 038a/038d）；点卡目标路由 `/workspace/module/:code` 由 038e 注册——**本单断言导航目标（意图级），038e 未就绪期点卡落 404 为组内已知中间态**，非本单缺陷。
 
 ## 需求描述
 
-模块域 JSON 契约收敛 camel：`POST /api/v1/modules` 与 `PUT /api/v1/modules/{id}` 请求体接受 `baseUrl`（与前端提交形状一致，修复静默丢弃）；`GET /api/v1/modules` 与 `GET /api/v1/modules/{id}` 响应输出 `createTime`（不再输出 `createdAt`，与前端列表列/类型直读一致）。后端 Java 侧 `ModuleVO` 记录组件随输出改名（构造位置参数不变，唯一构造点 `ModuleServiceImpl:182` 零改动；`.createdAt()` 访问器无调用面，调研 grep 实证）。旧 `base_url` 输入载荷不再保留兼容（Jackson 默认忽略未知字段 → 与今日前端遭遇同构，登记为接受的契约收敛；其唯二消费者是本就要改的既有测试载荷）。前端零改动。
+新增「我的模块」功能页：顶级动态路由 `/mymodules`（`meta.requiresAuth=true`、**无** `permissions`/`roles` 键）+ `menuConfig` 同路径菜单条目（**无** `permissions` 键 → 零权限用户亦可见）+ `MyModulesView` 页面（`moduleApi.getAccessibles()` 拉取 → 卡片网格渲染 name/code/description；空数组渲染「暂无可访问模块」空态；点卡 `router.push('/workspace/module/' + code)`）。`api/module.ts` 新增 `getAccessibles()`（`GET /modules/accessibles`），`ModuleAccessible` 类型**就近内联声明于 api 文件**（先例：同文件 `getAllPermissions` 内联返回类型，省 `types/module.ts` 第 7 文件，守 6 文件预算）。纯前端单，零后端改动。
 
 ## 验收标准（TDD 驱动）
 
-- [x] AC1 — `POST /api/v1/modules` 请求体以 `baseUrl`（camel，同 `ModuleFormDrawer` 提交形状）提交 → 200，随后 `GET /api/v1/modules/{id}` 回读 `baseUrl` 等于提交值（修复静默丢弃）
-- [x] AC2 — `PUT /api/v1/modules/{id}` 请求体以 `baseUrl` 提交 → 200，回读 `baseUrl` 等于更新值
-- [x] AC3 — `GET /api/v1/modules` 列表项与 `GET /api/v1/modules/{id}` 详情输出 `createTime` 字段、**不再输出** `createdAt`（前端 `IndexView.vue:133` 直读可用）
-- [x] AC4 — 后端门禁零新增失败（基线对照）；前端门禁不适用（零前端改动，基线对照留痕）；冒烟 `web-038c` 单跑通过、整体失败与基线逐条一致
+- [ ] AC1 — 路由与菜单全员可见：路由表含 `/mymodules`（`requiresAuth=true`、无 `permissions`/`roles`），**零权限**用户（`hasAnyPermission`/`hasAnyRole` 恒 false）`getSortedMenuTree()` 仍含路径 `/mymodules`、标题「我的模块」的菜单条目
+- [ ] AC2 — 列表渲染与空态：`moduleApi.getAccessibles` 存在（函数类型断言）；mock 返回 2 项 → 渲染 2 张卡片且各含 name/code/description 文本；mock 返回 `[]` → 显示「暂无可访问模块」且无卡片
+- [ ] AC3 — 点卡导航：点击 `code=news` 的卡片 → `router.push('/workspace/module/news')`（目标路由由 038e 注册，本单断言导航目标）
+- [ ] AC4 — 后端门禁零新增失败（零后端改动，基线对照）；前端三件套通过（新增 4 用例全绿、失败数保持基线）；冒烟 `web-038d` 单跑通过、整体与基线一致
 
-### AC1 — 创建入参 camel `baseUrl` 正确入库回读
-> Given 管理员登录。When `POST /api/v1/modules` 载荷 `{name, code, "baseUrl": "http://camel-input", description, status}`（camel，同前端提交形状）。Then 200、`$.code=0`，且 `GET /api/v1/modules/{新 id}` 的 `$.data.baseUrl` 等于 `http://camel-input`（不再被静默丢弃）。
+### AC1 — 路由与菜单全员可见
+> Given 模拟零权限已登录用户（`hasAnyPermission`/`hasAnyRole` 恒 false）。When 读取 `staticRoutes+generateRoutes` 合并后路由与 `getSortedMenuTree()`。Then 路由含 `path=/mymodules`、`meta.requiresAuth=true` 且 `meta` 无 `permissions`/`roles` 键；菜单树含 `/mymodules` 条目且 `title=我的模块`（系统管理子项因零权限被过滤亦可并存断言）。
 
-**用例**：`AC1 ← 用例 ModuleFieldContractTest#createAcceptsCamelBaseUrlAndReadsBack`
+**用例**：`AC1 ← 用例 MyModulesView.spec#myModulesMenuAndRouteVisibleWithoutPermission`
 
-### AC2 — 更新入参 camel `baseUrl` 正确入库回读
-> Given 管理员登录且存在模块。When `PUT /api/v1/modules/{id}` 载荷含 `"baseUrl": "http://camel-updated"`。Then 200、`$.code=0`，详情 `$.data.baseUrl=http://camel-updated`。
+### AC2 — 列表渲染与空态
+> Given `moduleApi.getAccessibles` 存在且被 mock。When mock 返回 2 项（各含 name/code/description）挂载 `MyModulesView`。Then 渲染 2 张卡片、三字段文本均出现。When mock 返回 `[]` 重新挂载。Then 显示「暂无可访问模块」且卡片数为 0。
 
-**用例**：`AC2 ← 用例 ModuleFieldContractTest#updateAcceptsCamelBaseUrlAndReadsBack`
+**用例**：`AC2 ← 用例 MyModulesView.spec#rendersAccessibleModuleCards + MyModulesView.spec#rendersEmptyStateWhenNoModules`（首例含 `expect(typeof moduleApi.getAccessibles).toBe('function')` 前置断言，保证 api 缺失时 RED）
 
-### AC3 — 响应输出 `createTime` 且不再输出 `createdAt`
-> Given 管理员登录。When `GET /api/v1/modules` 与 `GET /api/v1/modules/{id}`。Then 列表项与详情均含 `createTime`（ISO-8601 字符串）且 **不含** `createdAt` 键。
+### AC3 — 点卡导航至工作区路由
+> Given mock 返回 1 项 `{code: 'news', …}`。When 挂载页面并点击该卡片。Then `router.push` 被调用且参数为 `/workspace/module/news`。
 
-**用例**：`AC3 ← 用例 ModuleFieldContractTest#listAndDetailSerializeCreateTimeNotCreatedAt`
+**用例**：`AC3 ← 用例 MyModulesView.spec#navigatesToModuleWorkspaceOnCardClick`
 
 ### AC4 — 门禁与冒烟通过
-> ① `mvn -q verify` 失败集与实现前基线逐条一致零新增（2026-09-29 口径：145 用例 4F+2E，sprint-071 实测；本单 +3 用例 → 预期 148 4F+2E）。② 本功能点零前端改动，前端门禁不适用（基线对照实测留痕：lint 124 挂起 / test 20 failed|279 passed / build ✓）。③ `bash scripts/smoke.sh` 新增 `web-038c` 单跑通过、整体失败与基线逐条一致零新增（基线：53 用例 9 失败）。④ 既有 `ModuleControllerTest` 就地同步后仍全绿（11/11），净行数不变。**枚举复核修订（2026-09-29 Generator 实现前核对，覆盖原「2 载荷+3 断言」预估）**：载荷实为 3 处（`:242/:277/:323`）、ModuleVO 断言实为 2 处（`:145/:176`）；`:218` 系 PermissionVO（web/039 域）**不动**——改之必挂既有用例。
+> ① `mvn -q verify` 失败集与基线逐条一致零新增（2026-09-29 口径：148 用例 4F+2E，sprint-072 实测；本单零后端文件改动）。② `npm run lint` EXIT=124 基线、`npm run test` 失败数保持基线 20（passed 由 279 增至 283 = +4 新用例）、`npm run build` 通过。③ `bash scripts/smoke.sh` 新增 `web-038d` 单跑通过、整体失败/跳过与基线逐条一致（基线：54 用例 43✅+9❌+2⏭️）。
 
-**用例**：`AC4 ← mvn -q verify 基线对照 + bash scripts/smoke.sh#web-038c + ModuleControllerTest 回归`
+**用例**：`AC4 ← mvn -q verify 基线对照 + npm 三件套 + bash scripts/smoke.sh#web-038d`
 
 ## 测试清单
 
-> Generator 按 `.harness/rules/tdd-workflow.md` 先于实现写出并运行留 RED 证据；每条验收标准至少一例。
+> Generator 按 `.harness/rules/tdd-workflow.md` 先于实现写出并运行留 RED 证据；每条验收标准至少一例。新 spec 全部用例集中于 `MyModulesView.spec.ts`（AC1 菜单/路由用例同文件独立 describe，**不改既有 `useMenu.spec.ts`** 守文件预算）。
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | ModuleFieldContractTest#createAcceptsCamelBaseUrlAndReadsBack | AC1 | ✅ RED（`expected:<http://camel-input> but was:<null>` 静默丢弃实证）→ GREEN 3/3 过 |
-| 2 | ModuleFieldContractTest#updateAcceptsCamelBaseUrlAndReadsBack | AC2 | ✅ RED（`expected:<http://camel-updated> but was:<null>`）→ GREEN 过 |
-| 3 | ModuleFieldContractTest#listAndDetailSerializeCreateTimeNotCreatedAt | AC3 | ✅ RED（`No value at JSON path "$.data.records[0].createTime"`）→ GREEN 过 |
-| 4 | ModuleControllerTest 就地同步（载荷 ×3 + 断言 ×2 + 文案 ×5，零增行） | AC4-④ | ✅ 11/11 全绿（与新类、ModuleServiceTest 合跑 21/21，`.createdAt()` 访问面零破坏） |
-| 5 | 冒烟 web-038c 定向测试（追加于 scripts/smoke.sh:410-411，定向跑 ModuleFieldContractTest+ModuleControllerTest） | AC4-③ | ✅ 已追加，54 用例中 ✅ 通过 |
-| 6 | 后端全量门禁基线对照（实现前基线：145 用例 4F+2E，2026-09-29 sprint-071 实测） | AC4-①② | ✅ 148 用例 4F+2E 逐条一致零新增（145+3=148） |
+| 1 | MyModulesView.spec#myModulesMenuAndRouteVisibleWithoutPermission | AC1 | 待填（预期 RED：路由/菜单条目不存在） |
+| 2 | MyModulesView.spec#rendersAccessibleModuleCards | AC2 | 待填（预期 RED：组件/`getAccessibles` 缺失，import 或函数断言失败） |
+| 3 | MyModulesView.spec#rendersEmptyStateWhenNoModules | AC2 | 待填（预期 RED：同上） |
+| 4 | MyModulesView.spec#navigatesToModuleWorkspaceOnCardClick | AC3 | 待填（预期 RED：同上） |
+| 5 | 冒烟 web-038d 定向测试（追加于 scripts/smoke.sh，定向跑 MyModulesView.spec 全 4 例，`grep -q 'N passed'` 口径沿先例 web-013/014） | AC4-③ | 待填 |
+| 6 | 门禁基线对照（后端 148 4F+2E / 前端 20 failed|279 passed→283） | AC4-①② | 待填 |
 
-**行数红线**：`ModuleControllerTest` 现 **499 行**——本单**只许就地替换、禁止增行**（新增方法一律入新测试类 `ModuleFieldContractTest`，预估 ≤140 行，红线 ≤500）；若逼近红线立即回报 Planner，禁止删改既有用例。
+**行数红线**：新 spec ≤500 行（预估 ~200）；`MyModulesView.vue` ≤500 行（预估 ~130）；**既有文件零增行压力点**——`useMenu.spec.ts`（206 行）与 `types/module.ts` 一律不动。
 
 ## RED 证据
 
-> Generator 于实现前执行测试清单 #1~#3 并粘贴关键失败输出（实时留痕）。
+> Generator 于实现前执行测试清单 #1~#4 并粘贴关键失败输出（实时留痕，不得事后补记）。
 
 ```text
-[RED] mvn -f backend/pom.xml test -Dtest='ModuleFieldContractTest'（实现前执行，2026-09-29 实时留痕）
-Tests run: 3, Failures: 3, Errors: 0, Skipped: 0
-[RED] createAcceptsCamelBaseUrlAndReadsBack:118 JSON path "$.data.baseUrl" expected:<http://camel-input> but was:<null>（载荷 camel baseUrl 被 @JsonProperty("base_url") 错位静默丢弃 → 未入库）
-[RED] updateAcceptsCamelBaseUrlAndReadsBack:148 JSON path "$.data.baseUrl" expected:<http://camel-updated> but was:<null>（同上，更新侧）
-[RED] listAndDetailSerializeCreateTimeNotCreatedAt:175 No value at JSON path "$.data.records[0].createTime"（响应输出 createdAt 而非 createTime）
+（待 Generator 填写）
 ```
 
 ## GREEN 证据
 
-> 实现后复跑（实时留痕）。REFACTOR 复查：行宽 ≤120、`@JsonProperty` 映射口径（组件名 `createdAt` 与 JSON 键 `createTime` 分域——注解即映射边界，方案 B 用户裁定）、DTO 冗余 `@JsonProperty("base_url")` 删净（含未用 import）、既有测试 11/11、方法/文件行数达标（ModuleFieldContractTest ≤500、ModuleControllerTest 499 不变）。
+> 实现后复跑（实时留痕）。REFACTOR 复查：行宽 ≤120、分层（views/api/composables/router 各归其位、API 调用集中 src/api/）、新 spec 4/4、既有 spec 零改动、文件行数达标。
 
 ```text
-[GREEN] mvn -f backend/pom.xml test -Dtest='ModuleFieldContractTest,ModuleControllerTest,ModuleServiceTest'
-Tests run: 21, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS（新 3 + ModuleControllerTest 11 + ModuleServiceTest 7）
-中间态：RED 3 failed → GREEN 21/21；REFACTOR 复查：新类未用 import ×2 清除、行宽 ≤120（ModuleControllerTest:363 123 列为既有遗留未触碰）、ModuleControllerTest 499 行零增行、新类 183 行 ≤500
+（待 Generator 填写）
 ```
 
 ## 门禁与冒烟记录
 
-> Generator 亲测填写（后端 mvn -q verify / 前端门禁基线对照 / scripts/smoke.sh），Evaluator 不采信自述须亲跑。
+> Generator 亲测填写（后端 mvn -q verify / 前端三件套 / scripts/smoke.sh），Evaluator 不采信自述须亲跑。
 
-**后端 `mvn -q verify`（2026-09-29）**：`Tests run: 148, Failures: 4, Errors: 2`（基线 145+3 本单新用例=148；失败集与基线逐条一致零新增）：
-- F: DataSourceConfigBindingTest×2、RoleControllerTest#assignPermissionsInvalidPermissionReturns400、SeedDataIntegrationTest#test_核心实体数据存在且字段正确
-- E: TestLayersSpec、TestUtilsSpec
-
-**前端门禁（零前端改动，基线对照实测）**：`npm run lint` EXIT=124（既有挂起）；`npm run test` EXIT=1，Tests **20 failed | 279 passed**（与基线一致）；`npm run build` EXIT=0 `✓ built in 17.30s`。
-
-**`bash scripts/smoke.sh`（2026-09-29）**：**54 用例**（53+新增 web-038c，`git diff` 核证仅 +2 行未动既有用例），结果 **43 ✅ + 9 ❌ + 2 ⏭️**：
-- 9 失败与基线逐条一致零新增：model-008、model-010、roles-001、roles-002、web-013、web-020、web-021、web-022、web-026
-- 2 跳过为环境条件基线（infra-004、model-006 条件不满足，与 TestLayers/TestUtils 两 E 同源，无 Docker 环境）
-- 新增 `web-038c 模块字段契约定向测试` → ✅ 通过；web-038a/b ✅ 通过（回归未破坏前序）
+（待 Generator 填写）
 
 ## 拆分说明
 
-预估验收标准 4 条（未超 4 条）；预估文件变更 6 个（顶格）→ **实际 8 个（6 + 用户特批 2 个纯 Javadoc，2026-09-29 两次用户裁定见下）**：
+预估验收标准 4 条（未超 4 条）；预估文件变更 **6 个（顶格）**：
 
-1. `backend/src/main/java/com/authcore/dto/module/ModuleCreateDTO.java` — 删除 `@JsonProperty("base_url")`（组件名 `baseUrl` 即为默认 JSON 名）+ 同步 `@Size` message 文案 + 删未用 import（AC1）
-2. `backend/src/main/java/com/authcore/dto/module/ModuleUpdateDTO.java` — 同上（AC2）
-3. `backend/src/main/java/com/authcore/dto/module/ModuleVO.java` — 组件上加 `@JsonProperty("createTime")` 映射输出键（**方案 B，2026-09-29 用户裁定**：组件名保持 `createdAt`——反例回报 `ModuleServiceTest:95,149` 调用 `.createdAt()`，组件改名破编译致第 7 文件超熔断；Java/DB 域同构 `created_at↔createdAt`，注解为传输域映射边界）（AC3）
-4. `backend/src/test/java/com/authcore/controller/ModuleControllerTest.java` — **就地替换 5 处**（载荷 `base_url`→`baseUrl` ×3：`:242/:277/:323`；ModuleVO 断言 `createdAt`→`createTime` ×2：`:145/:176`；`:218` PermissionVO 属 web/039 不动）+ 注释文案，净行数不增（499 保持）
-5. `backend/src/test/java/com/authcore/controller/ModuleFieldContractTest.java` — **新增**测试类（AC1-AC3 三方法 + 助手，方法级 Javadoc + `@DisplayName` + AAA，文件惯例恢复）
-6. `scripts/smoke.sh` — 追加 `web-038c` 用例（+2 行，不删除、不改动既有用例，先例 web/038b）
+1. `frontend/src/views/MyModulesView.vue` — **新增**：卡片网格（name/code/description）+ 空态 + 点卡导航（AC2-AC3）
+2. `frontend/src/views/MyModulesView.spec.ts` — **新增**：4 用例（AC1 菜单/路由、AC2 ×2、AC3）+ `vi.mock('@/stores/auth')`、`vi.mock('@/api/module')`、router mock 基建沿 `useMenu.spec.ts`/`LoginView.spec.ts` 先例（测试先行）
+3. `frontend/src/router/routes.ts` — `asyncRoutes` 追加 `/mymodules` 条目（无 permissions/roles 键；`generateRoutes` 仅按 roles 过滤故全员进路由表）（AC1）
+4. `frontend/src/composables/useMenu.ts` — `menuConfig` 追加同路径条目（无 permissions 键、`order` 置仪表盘与系统管理之间、**不改既有条目**）（AC1）
+5. `frontend/src/api/module.ts` — `getAccessibles()` 方法 + `ModuleAccessible` 接口就近内联（先例：同文件 `getAllPermissions` 内联类型；省 types/module.ts）（AC2）
+6. `scripts/smoke.sh` — 追加 `web-038d` 用例（+2 行，不删除、不改动既有用例，先例 web-038c）
 
-7. `backend/src/main/java/com/authcore/controller/ModuleController.java` — Javadoc `@param` 按新 JSON 键名同步（`:108,:122`，**用户特批 +1**：修复后旧注释失准且诱导回发 `base_url`）
-8. `backend/src/main/java/com/authcore/service/ModuleService.java` — Javadoc 同步（`:47`，**用户特批 +1**）
+**超限熔断**：实现中若实际变更文件超过 6 个，Generator 必须停止实现并回报 Planner/用户重新裁定，不得自行扩范围。**禁改清单**：任何后端文件、`useMenu.spec.ts`、`types/module.ts`、`Sidebar.vue`（读 menuConfig 即渲染，零改动）、`guards.ts`（requiresAuth/无 permissions 恒放行）、`main.ts`（Element 图标已全量注册，复用既有图标名即可）。
 
-**超限熔断执行记录**：实现中两次触发反例/超限风险，Generator 均停手上报并获用户裁定——① `.createdAt()` 访问面反例（`ModuleServiceTest:95,149`）→ 方案 B（`@JsonProperty` 映射，组件改名改为注解，守住 6 文件）；② 两处主代码 Javadoc 失准 → 特批 +2 纯注释文件（先例：sprint-070 SecurityConfig +1 行）。熔断本体条款不变：`UserVO/RoleVO/PermissionVO` 及任何前端文件（038d/038e 范围）、表列名（架构 §3）、`ModuleAccessibleVO`、SecurityConfig 一律不动。
+## 交付物（预估 6 文件）
 
-## 交付物（实际 8 文件 = 6 预算 + 2 用户特批）
-
-1. `backend/src/main/java/com/authcore/dto/module/ModuleCreateDTO.java` — 入参 camel 化
-2. `backend/src/main/java/com/authcore/dto/module/ModuleUpdateDTO.java` — 入参 camel 化
-3. `backend/src/main/java/com/authcore/dto/module/ModuleVO.java` — 出参 `createTime`（`@JsonProperty` 映射，方案 B）
-4. `backend/src/test/java/com/authcore/controller/ModuleControllerTest.java` — 就地同步（不增行）
-5. `backend/src/test/java/com/authcore/controller/ModuleFieldContractTest.java` — AC1-AC3 新用例（新增）
-6. `scripts/smoke.sh` — web-038c 冒烟用例
-7. `backend/src/main/java/com/authcore/controller/ModuleController.java` — Javadoc 同步（特批）
-8. `backend/src/main/java/com/authcore/service/ModuleService.java` — Javadoc 同步（特批）
+1. `frontend/src/views/MyModulesView.vue` — 我的模块页（新增）
+2. `frontend/src/views/MyModulesView.spec.ts` — 四用例（新增，测试先行）
+3. `frontend/src/router/routes.ts` — /mymodules 路由
+4. `frontend/src/composables/useMenu.ts` — 菜单条目
+5. `frontend/src/api/module.ts` — getAccessibles + 内联类型
+6. `scripts/smoke.sh` — web-038d 冒烟用例
 
 ## 变更清单
 
 ### 新增
-- `backend/src/test/java/com/authcore/controller/ModuleFieldContractTest.java` — 模块字段契约测试类（最终 183 行 ≤500；AC1-AC3 三用例 + getAdminToken/unique/createModuleDirectly 助手，RED 提交于 6bcc335）
+- `frontend/src/views/MyModulesView.vue` — 我的模块页（预估 ~130 行）
+- `frontend/src/views/MyModulesView.spec.ts` — 新 spec 4 用例（预估 ~200 行）
 
 ### 修改
-- `backend/src/main/java/com/authcore/dto/module/ModuleCreateDTO.java`:2-3,20-21 — 删 `import JsonProperty` 与 `@JsonProperty("base_url")`（record 组件名即默认 JSON 名）、message 文案 `base_url`→`baseUrl`
-- `backend/src/main/java/com/authcore/dto/module/ModuleUpdateDTO.java`:2-3,12-13 — 同上
-- `backend/src/main/java/com/authcore/dto/module/ModuleVO.java`:3-4,17-18 — 加 `import JsonProperty` 与组件 `@JsonProperty("createTime")` 输出键映射（方案 B 用户裁定，组件名保持 `createdAt`）
-- `backend/src/main/java/com/authcore/controller/ModuleController.java`:108,122 — Javadoc `@param` JSON 键名同步（用户特批）
-- `backend/src/main/java/com/authcore/service/ModuleService.java`:47 — Javadoc JSON 键名同步（用户特批）
-- `backend/src/test/java/com/authcore/controller/ModuleControllerTest.java`:105,145,176,225,242,277,294-295,323,345 — 载荷 ×3（`:242/:277/:323`）与 ModuleVO 断言 ×2（`:145/:176`）就地 camel 化 + 注释/消息文案 ×5（`:218` PermissionVO 留 web/039 不动；净行数 499 不变）
-- `scripts/smoke.sh`:410-411 — 追加 `web-038c` 冒烟用例（+2 行，未动既有用例）
+- `frontend/src/router/routes.ts` — `asyncRoutes` 追加 `/mymodules` 条目（预估 +8 行）
+- `frontend/src/composables/useMenu.ts` — `menuConfig` 追加条目（预估 +8 行）
+- `frontend/src/api/module.ts` — `getAccessibles` + `ModuleAccessible` 接口（预估 +12 行）
+- `scripts/smoke.sh` — `web-038d` 冒烟用例（+2 行，未动既有用例）
 
-合计 8 文件 = 6 预算顶格 + 2 用户特批（:108,122/:47 纯注释，熔断执行记录见「拆分说明」）。
+合计 6 文件 = 预算顶格，未超熔断。
 
 ### 删除
 - （无）
 
 ## 规范检查清单
 
-- [x] `mvn -q verify` 后端门禁零新增失败（148 用例 4F+2E 与基线逐条一致，145+3）
-- [x] 前端门禁不适用（零前端改动；lint 124/test 20 failed|279/build ✓ 基线对照留痕）
-- [x] `bash scripts/smoke.sh` web-038c ✅；54 用例 43✅+9❌（基线逐条一致）+2⏭️（环境条件基线）
-- [x] 符合 Java 21 / Spring Boot 3 编码规范与既有分层约定（无冗余注解与未用 import；`@JsonProperty` 映射口径 = 方案 B 用户裁定）
-- [x] 符合 TDD 工作流（RED 3 failed 实时留痕 → GREEN 21/21 → REFACTOR 复查，两段式提交 6bcc335→GREEN）
-- [x] 变更文件 8 个 = 6 预算 + 2 用户特批（熔断两次触发均停手上报获裁定，记录见「拆分说明」）
-- [x] `ModuleFieldContractTest` 183 行 ≤500；`ModuleControllerTest` 499 行**零增行**
+- [ ] `mvn -q verify` 后端门禁零新增失败（148 用例 4F+2E 与基线逐条一致，零后端改动）
+- [ ] 前端 `npm run lint && npm run test && npm run build` 通过（lint 124 基线挂起豁免口径沿用；test 失败保持 20、passed 279→283；build ✓）
+- [ ] `bash scripts/smoke.sh` web-038d ✅；55 用例 9 失败+2 跳过与基线逐条一致
+- [ ] 符合前端分层约定（API 调用集中 `src/api/`、视图在 views/、菜单/路由各归其位；`<script setup lang="ts">`、TS 严格）
+- [ ] 符合 TDD 工作流（RED 4 例实时留痕 → GREEN → REFACTOR 复查）
+- [ ] 变更文件 6 个 = 预算顶格，未超熔断；禁改清单零触碰
+- [ ] 新 spec 与 `MyModulesView.vue` 均 ≤500 行；既有 `useMenu.spec.ts`/`types/module.ts` 零改动
 
 ## 评审记录
 
-- 2026-09-29: Evaluator 首轮评审 **✅ 通过（均分 9.0/10）**（sprint-072）。五维：功能正确性 9 / 代码质量 9 / 规范遵守 9 / TDD 执行度 9 / 安全性 9。4 条 AC 全满足（亲跑：mvn 148 用例 4F+2E 与基线逐条一致零新增；前端 lint124/test 20 failed|279/build ✓ 基线对照、零前端改动核证；冒烟 54 用例 43✅+9❌基线子集零新增+2⏭️环境条件、web-038c ✅、smoke.sh 增量 +1 用例行核证；ISO-8601 由 surefire 打印件 `"createTime":"2026-10-06T09:40:36"` 实证）。六项一票否决均未命中（否决项 6 按 2026-09-28 用户「基线对照推进」裁决与 sprint-069/071 先例豁免）。复核认可：test-first 物证（6bcc335 提交时 DTO 仍为 base_url 旧契约）；方案 B 与 +2 Javadoc 两项用户裁定均在案；ModuleControllerTest 499 行零增行、:218 PermissionVO 断言未触碰、端到端消费链（api/module.ts 透传 form.baseUrl）闭合。改进建议（不计分）：① AC3 可加 `matches("\d{4}-\d{2}-\d{2}T...")` 锁 ISO 格式断言；② getAdminToken/createModuleDirectly 助手两类重复，第三处出现时按 DRY 三处原则抽公共基类；③ ModuleVO Java 名 createdAt 与 JSON 键 createTime 分域，建议补一行 Javadoc 注明映射边界（方案 B 裁定背景），防后续误判。
+- （待 Evaluator）

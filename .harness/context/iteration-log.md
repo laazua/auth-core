@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-29: Planner — kickoff sprint-073（web/038d，4 条验收标准）
+
 - 2026-09-29: Evaluator — pass sprint-072（web/038c，平均分 9.0/10）
 
 - 2026-09-29: Generator — done sprint-072（web/038c，门禁+冒烟通过）
