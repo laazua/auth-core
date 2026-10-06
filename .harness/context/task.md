@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/039 |
 | 功能点名称 | 创建时间字段全站对齐（user/role/permission 域）——JSON 输出 `createTime` 与前端读法收敛 |
-| 状态 | IN_PROGRESS（RED `2ee891b` + GREEN 完成，门禁冒烟实测齐） |
+| 状态 | AWAITING_REVIEW（Generator done，RED `2ee891b` + GREEN `39d9af6`，门禁冒烟实测齐，待 Evaluator 评审） |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖

@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-29: Generator — done sprint-075（web/039，RED `2ee891b` 2 failed→GREEN `39d9af6` 契约 2/2+模块域 3/3 全绿，mvn 150 用例 4F+2E=基线失败集，前端零改动 20 failed|288 passed，冒烟 57=46✅9❌2⏭️ web/039 ✅，6 文件顶格，R1 架构分页键名不一致已登记挂起区，AWAITING_REVIEW 待 Evaluator）
+
 - 2026-09-29: Planner — kickoff sprint-075（web/039，4 条验收标准；038c 方案 B 同构延伸定案：三 VO 加 @JsonProperty(createTime) 前端零改动、5~6 文件不拆分、R1-R4 研究项列工作单）
 
 - 2026-09-29: Evaluator — pass sprint-074（web/038e ✅ 9.3/10，4/4 用例 verbose 亲测、mvn 148 4F+2E=基线、20 failed|288 passed、冒烟 56=45✅9❌2⏭️ web-038e ✅、038d 回归 5/5，六否决项零命中，038 组五段全部收口）
