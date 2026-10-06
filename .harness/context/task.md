@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/038e |
 | 功能点名称 | 模块服务统一入口（e 段）——iframe 内嵌视图 + 管理页「进入」点击闭环 |
-| 状态 | IN_PROGRESS（RED 已留痕） |
+| 状态 | IN_PROGRESS（GREEN 完成，门禁冒烟实测齐） |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -41,10 +41,10 @@
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — iframe 路由与视图：路由表含 `/workspace/module/:code` 且匹配链为「DefaultLayout 父 + 子记录（name=ModuleWorkspace）」两层；ModuleIframeView 按路由参数渲染 iframe，`src` 精确等于 `/api/v1/gateway/{code}/`（相对路径+尾斜杠，不含 host），初始显示加载态、iframe `@load` 后加载态消失
-- [ ] AC2 — 管理页「进入」条件：`baseUrl` 非空且 `status===1` 的行，「进入」按钮可点且点击导航至 `/workspace/module/{code}`；`baseUrl` 为空或 `status!==1` 的行，按钮 disabled 且提示「未配置服务地址」
-- [ ] AC3 — 038d 点卡导航闭环：`resolve('/workspace/module/news')` 命中两层布局链（非 catch-all 404），即 038d 遗留「404 已知中间态」正式闭环
-- [ ] AC4 — 后端门禁零新增失败（零后端改动，基线对照）；前端三件套通过（新增用例全绿、failed 保持基线 20、passed 由 284 增至预估 289 = +5，以实测为准）；冒烟新增 `web-038e` 单跑通过、整体与基线一致
+- [x] AC1 — iframe 路由与视图：路由表含 `/workspace/module/:code` 且匹配链为「DefaultLayout 父 + 子记录（name=ModuleWorkspace）」两层；ModuleIframeView 按路由参数渲染 iframe，`src` 精确等于 `/api/v1/gateway/{code}/`（相对路径+尾斜杠，不含 host），初始显示加载态、iframe `@load` 后加载态消失
+- [x] AC2 — 管理页「进入」条件：`baseUrl` 非空且 `status===1` 的行，「进入」按钮可点且点击导航至 `/workspace/module/{code}`；`baseUrl` 为空或 `status!==1` 的行，按钮 disabled 且提示「未配置服务地址」
+- [x] AC3 — 038d 点卡导航闭环：`resolve('/workspace/module/news')` 命中两层布局链（非 catch-all 404），即 038d 遗留「404 已知中间态」正式闭环
+- [x] AC4 — 后端门禁零新增失败（零后端改动，基线对照）；前端三件套通过（新增用例全绿、failed 保持基线 20、passed 由 284 增至预估 289 = +5，以实测为准）；冒烟新增 `web-038e` 单跑通过、整体与基线一致
 
 ### AC1 — iframe 路由与视图
 > Given 未注册前的路由表（RED）。When 注册 `/workspace/module/:code` 顶层包 DefaultLayout 的两层记录并挂载 ModuleIframeView（route params `code=news`）。Then `resolve('/workspace/module/news').matched` depth=2 且父组件===DefaultLayout、子 name=ModuleWorkspace；iframe `src` 属性 === `/api/v1/gateway/news/`（无 host 前缀）；初始 `.iframe-loading` 可见，触发 iframe `load` 事件后消失。
@@ -72,12 +72,12 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | ModuleIframeView.spec#rendersIframeWithGatewaySrcAndLoadingState | AC1 | RED 已留痕（import 解析失败整套红）；待 GREEN 复测 |
-| 2 | IndexView.spec#moduleEnterButtonNavigatesWhenReady | AC2 | RED 已留痕（进入按钮 undefined）；待 GREEN 复测 |
-| 3 | IndexView.spec#moduleEnterButtonDisabledWhenBaseUrlMissing | AC2 | RED 已留痕（同上）；待 GREEN 复测 |
-| 4 | ModuleIframeView.spec#workspaceRouteResolvesInsideLayoutNot404 | AC3 | RED 已留痕（整套红含本例）；待 GREEN 复测 |
-| 5 | 冒烟 web-038e 定向测试（追加 scripts/smoke.sh，定向跑 ModuleIframeView.spec 全例，`grep -q 'N passed'` 口径沿先例） | AC4-③ | 待填 |
-| 6 | 门禁基线对照（后端 148 4F+2E / 前端 20 failed\|284 passed→实测；MyModulesView.spec 5/5 回归） | AC4-①②④ | 待填 |
+| 1 | ModuleIframeView.spec#rendersIframeWithGatewaySrcAndLoadingState | AC1 | RED 留痕 → **GREEN ✅** |
+| 2 | IndexView.spec#moduleEnterButtonNavigatesWhenReady | AC2 | RED 留痕 → **GREEN ✅** |
+| 3 | IndexView.spec#moduleEnterButtonDisabledWhenBaseUrlMissing | AC2 | RED 留痕 → **GREEN ✅** |
+| 4 | ModuleIframeView.spec#workspaceRouteResolvesInsideLayoutNot404 | AC3 | RED 留痕 → **GREEN ✅** |
+| 5 | 冒烟 web-038e 定向测试（`grep -q '2 passed'`） | AC4-③ | **✅ 通过**（smoke 全量实测） |
+| 6 | 门禁基线对照（后端 148 4F+2E / 前端 20 failed\|288 passed；MyModulesView.spec 5/5 回归） | AC4-①②④ | **✅ 逐条一致**（实测全对齐，passed 284→288=+4，预估 289 之差=AC1 路由断言并入渲染用例共 4 例） |
 
 **行数红线**：新 spec ≤500 行（预估 ~180）；`ModuleIframeView.vue` ≤300 行组件红线（预估 ~120）；**历史债增量口径（用户裁定 2026-09-29「最小增量+历史债登记」）**——`IndexView.vue`（752 行）与 `IndexView.spec.ts`（1404 行）超 500 属既有历史债，本单对其**只做最小增量**（vue 预估 +15、spec 预估 +40），**不新建任何超限文件**；IndexView 拆分另立技术债任务（登记 session-state 挂起区），本单不夹带。
 
@@ -101,14 +101,33 @@ $ npm run test -- --run src/views/ModuleIframeView.spec.ts src/views/system/Inde
 > 实现后复跑（实时留痕）。REFACTOR 复查：行宽 ≤120、分层（views/api/router 各归其位）、新 spec 4/4、既有 spec 既有用例零改动（IndexView.spec 仅允许新增 describe）、文件行数达标、历史债文件增量最小。
 
 ```text
-（待 Generator 填写）
+$ npm run test -- --run src/views/ModuleIframeView.spec.ts   → Tests 2 passed (2)
+$ npm run test -- --run src/views/system/IndexView.spec.ts   → Tests 11 failed | 29 passed (40)
+   （11 failed=基线 11 精确回归；RED 时 13=基线11+新2，新 2 例已转绿、既有零回退）
+$ npm run test -- --run src/views/MyModulesView.spec.ts      → Tests 5 passed (5)（038d 回归）
+
+REFACTOR 复查（实时）：
+- 行数：ModuleIframeView.vue 49（≤300 组件红线）/ spec 73（≤500）；历史债文件增量 = IndexView.vue +14（752→766）、IndexView.spec +64（1404→1468，预估 +40 实测 +64，含 2 例+helper），既有 60 例零改动
+- 行宽：新文件/新改动 awk>120 零新增（routes.ts:150 与 IndexView.vue:8 两处超宽均 HEAD 预存，git show HEAD 对照确认）
+- 分层：视图 views/、路由 router/、按钮逻辑收进 IndexView handler；禁改清单零触碰（后端/MyModulesView/useMenu/types/Sidebar/guards/main/vite.config/setup.ts 均未改，git diff 确认）
+- AC2 研究项落地：BaseTable 为 stub 不执行 render → 测试直调 `vm.moduleColumns` actions.render 取 VNode 断言（props.disabled/title/onClick），点击断言经 `vm.router`（script setup setupState 先例 vm.rules），**未改 vue-router mock、未动 stub、既有 60 例零影响**
 ```
 
 ## 门禁与冒烟记录
 
 > Generator 亲测填写（后端 mvn -q verify / 前端三件套 / scripts/smoke.sh），Evaluator 不采信自述须亲跑。
 
-（待 Generator 填写）
+Generator 亲测（2026-09-29）：
+
+| 门禁项 | 基线口径 | 实测 | 结论 |
+|--------|---------|------|------|
+| 后端 `mvn -q verify` | 148 用例 4F+2E（零后端改动） | Tests run: 148, Failures: 4, Errors: 2；失败集逐条=基线六条 | ✅ 零新增 |
+| `npm run lint` | EXIT=124 挂起基线 | EXIT=124 | ✅ 一致 |
+| `npm run test` | 20 failed\|284 passed → 新用例 +4 预估 289 | **20 failed \| 288 passed (308)**，Test Files 6 failed\|30 passed (36) | ✅ 失败=基线、passed 288=284+4（预估 289 差 1 = AC1 路由断言并入渲染用例，实际 4 新例） |
+| `npm run build` | ✓ | EXIT=0 ✓ built in 18.68s | ✅ |
+| `bash scripts/smoke.sh` | 55=44✅+9❌+2⏭️ → 预期 56 | **56 用例 = 45✅+9❌+2⏭️**；9 失败逐条=基线、2 跳过=infra-004/model-006；**`web-038e ✅` 且 `web-038d ✅`（回归）** | ✅ |
+
+（smoke 整体退出 1 源于基线 9 失败，沿 069-073 基线对照豁免口径判定通过。）
 
 ## 拆分说明
 
@@ -136,31 +155,31 @@ $ npm run test -- --run src/views/ModuleIframeView.spec.ts src/views/system/Inde
 
 ## 变更清单
 
-### 新增
-- `frontend/src/views/ModuleIframeView.vue` — 预估 ~120 行
-- `frontend/src/views/ModuleIframeView.spec.ts` — 预估 ~180 行
+### 新增（实测）
+- `frontend/src/views/ModuleIframeView.vue` — 49 行
+- `frontend/src/views/ModuleIframeView.spec.ts` — 73 行
 
-### 修改
-- `frontend/src/router/routes.ts` — workspace 布局链路由（预估 +14 行）
-- `frontend/src/views/system/IndexView.vue` — 「进入」按钮+handler（预估 +15 行，历史债文件）
-- `frontend/src/views/system/IndexView.spec.ts` — 新 describe 2 例（预估 +40 行，历史债文件）
-- `scripts/smoke.sh` — `web-038e` 冒烟用例（预估 +5 行，未动既有用例）
+### 修改（实测 git diff）
+- `frontend/src/router/routes.ts` — +13（/workspace 布局链）
+- `frontend/src/views/system/IndexView.vue` — +14（「进入」按钮+handler，历史债 752→766）
+- `frontend/src/views/system/IndexView.spec.ts` — +64（新 describe 2 例+helper，历史债 1404→1468，既有 60 例零改动）
+- `scripts/smoke.sh` — +5（web-038e 案例，未动既有用例）
 
-合计 6 文件 = 预算顶格，未超熔断。
+合计 6 文件 = 预算顶格，未超熔断；历史债文件仅最小增量。
 
 ### 删除
 - （无）
 
 ## 规范检查清单
 
-- [ ] `mvn -q verify` 后端门禁零新增失败（148 用例 4F+2E 与基线逐条一致，零后端改动）
-- [ ] 前端 `npm run lint && npm run test && npm run build` 通过（lint 124 基线挂起豁免口径沿用；test failed 保持 20、passed 284→实测；build ✓）
-- [ ] `bash scripts/smoke.sh` web-038e ✅；56 用例 9 失败+2 跳过与基线逐条一致
-- [ ] 038d 回归：`MyModulesView.spec` 5/5 不回退
-- [ ] 符合前端分层约定（API/视图/路由各归其位、`<script setup lang="ts">`、TS 严格、单行 ≤120）
-- [ ] 符合 TDD 工作流（RED 4 例实时留痕 → GREEN → REFACTOR 复查）
-- [ ] 变更文件 6 个 = 预算顶格，未超熔断；禁改清单零触碰
-- [ ] 历史债口径执行：IndexView.vue/spec 仅最小增量、无新建超限文件；新 spec/组件行数达标
+- [x] `mvn -q verify` 后端门禁零新增失败（148 用例 4F+2E 与基线逐条一致，零后端改动）
+- [x] 前端 `npm run lint && npm run test && npm run build` 通过（lint 124 基线挂起豁免口径沿用；test failed 保持 20、passed 284→实测；build ✓）
+- [x] `bash scripts/smoke.sh` web-038e ✅；56 用例 9 失败+2 跳过与基线逐条一致
+- [x] 038d 回归：`MyModulesView.spec` 5/5 不回退
+- [x] 符合前端分层约定（API/视图/路由各归其位、`<script setup lang="ts">`、TS 严格、单行 ≤120）
+- [x] 符合 TDD 工作流（RED 4 例实时留痕 → GREEN → REFACTOR 复查）
+- [x] 变更文件 6 个 = 预算顶格，未超熔断；禁改清单零触碰
+- [x] 历史债口径执行：IndexView.vue/spec 仅最小增量、无新建超限文件；新 spec/组件行数达标
 
 ## 评审记录
 

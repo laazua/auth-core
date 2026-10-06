@@ -148,6 +148,14 @@ const moduleColumns: any[] = [
           class: 'module-table__action-edit',
           onClick: () => handleModuleEdit(row),
         }, { default: () => '编辑' }),
+        h(BaseButton, {
+          size: 'small',
+          variant: 'success',
+          class: 'module-table__action-enter',
+          disabled: !(row.baseUrl && row.status === 1),
+          title: row.baseUrl && row.status === 1 ? '进入模块' : '未配置服务地址',
+          onClick: () => handleModuleEnter(row),
+        }, { default: () => '进入' }),
         canToggleModuleStatus.value && h(BaseButton, {
           size: 'small',
           variant: row.status === 1 ? 'warning' : 'success',
@@ -365,6 +373,12 @@ const handleModuleStatusToggle = async (row: ModuleVO) => {
 // 模块查看权限（跳转到权限标签页并筛选）
 const handleModuleViewPermissions = (row: ModuleVO) => {
   router.push({ path: '/system/permissions', query: { moduleId: String(row.id) } });
+};
+
+// 进入模块工作区（iframe 内嵌视图，web/038e）
+const handleModuleEnter = (row: ModuleVO) => {
+  if (!row.baseUrl || row.status !== 1) return;
+  router.push(`/workspace/module/${row.code}`);
 };
 
 // 模块删除

@@ -414,6 +414,11 @@ smoke_case "web-038d 我的模块菜单页定向测试" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1
   npm run test -- --run src/views/MyModulesView.spec.ts 2>&1 | grep -q '5 passed'
 "
+# web/038e：模块 iframe 内嵌视图（布局链路由+src 相对路径拼接+加载态+管理页进入按钮条件）定向测试
+smoke_case "web-038e 模块进入闭环定向测试" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  npm run test -- --run src/views/ModuleIframeView.spec.ts 2>&1 | grep -q '2 passed'
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

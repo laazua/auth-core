@@ -84,6 +84,19 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
     ],
   },
   {
+    path: '/workspace/module/:code',
+    component: () => import('@/layouts/DefaultLayout.vue'),
+    meta: { requiresAuth: true, title: '模块工作区', hidden: true },
+    children: [
+      {
+        path: '',
+        name: 'ModuleWorkspace',
+        component: () => import('@/views/ModuleIframeView.vue'),
+        meta: { requiresAuth: true, title: '模块工作区', hidden: true },
+      },
+    ],
+  },
+  {
     path: '/system',
     name: 'System',
     component: () => import('@/layouts/DefaultLayout.vue'),
