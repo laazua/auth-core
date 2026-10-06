@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-29: Generator — done sprint-074（web/038e，RED `6c7d0af` + GREEN `0b8418b`，4/4 用例过 IndexView 13→11 恰回基线，门禁 mvn 148 4F+2E 零新增 + 前端 20 failed|**288 passed**=284+4 + 冒烟 **56=45✅9❌2⏭️** `web-038e ✅`、038d 回归 ✅，6 文件顶格历史债最小增量 +14/+64，AWAITING_REVIEW 待 Evaluator）
+
 - 2026-09-29: Planner — kickoff sprint-074（web/038e，4 条验收标准）
 
 - 2026-09-29: Evaluator — pass sprint-073 REWORK-1（web/038d ✅ 9.0/10，首审否决项3 修复实证：三路径 depth=2+父===DefaultLayout，门禁冒烟亲测全对齐，55=44✅9❌2⏭️）

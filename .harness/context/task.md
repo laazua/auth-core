@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/038e |
 | 功能点名称 | 模块服务统一入口（e 段）——iframe 内嵌视图 + 管理页「进入」点击闭环 |
-| 状态 | IN_PROGRESS（GREEN 完成，门禁冒烟实测齐） |
+| 状态 | AWAITING_REVIEW（Generator done，RED `6c7d0af` + GREEN `0b8418b`，门禁冒烟实测齐，待 Evaluator 评审） |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
