@@ -2,9 +2,12 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟠 sprint-073 REWORK-1 完成待复审（子功能点 **web/038d AWAITING_REVIEW**；REWORK 链：REWORK-RED `aa1accf` → GREEN `35a48e7`，问题 1-3 全闭合）；sprint-072 评审通过（web/038c ✅ 9.0/10）、sprint-071 通过（web/038b ✅）、sprint-070 通过（web/038a ✅）、sprint-069 通过（modules/002 ✅）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
+- 状态: 🟢 sprint-073 评审通过（REWORK-1 复审，子功能点 **web/038d ✅ 均分 9.0/10**，首审否决级布局缺陷已修复实证）；前序 sprint-072 通过（web/038c ✅ 9.0/10）、sprint-071 通过（web/038b ✅ 9.0/10）、sprint-070 通过（web/038a ✅ 9.0/10）、sprint-069 通过（modules/002 ✅ 9.0/10）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
 - 当前模块: web
-- 当前功能点: web/038d（REWORK-1 已交付待复审；038 组进度 038a ✅、038b ✅、038c ✅、038d 🔄 复审中、038e ⬜ 最后一块）
+- 当前功能点: web/038d ✅（038 组进度 038a ✅、038b ✅、038c ✅、038d ✅、038e ⬜ 最后一块——硬前置已全齐）
+
+## 下一步动作
+  Planner：读 `.harness/planner.md` 并严格执行，取下一功能点。建议 **web/038e**「模块进入闭环」（038 组最后一块：`ModuleIframeView` iframe 视图 + `/workspace/module/:code` 路由注册（须包 DefaultLayout，前车之鉴=038d 首审否决项3）+ 管理页操作列「进入」按钮；前置 038a+038d 已全齐；设计文档 §4.2/§4.3 待读）；或用户新指令优先（如 web/039 创建时间全站对齐占位——user/role/permission VO 的 createTime 三域，或 modules/003 预留评估）。038d 评审遗留改进建议（不计分）：菜单 order 1.5 整数化（需动既有条目，待用户点头）。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
 
 ## 下一步动作
   Evaluator：读 `.harness/evaluator.md` 并严格执行，**复审 sprint-073 REWORK-1**（工作单 `.harness/context/task.md` 状态 AWAITING_REVIEW、评审记录含首审 ❌ 与 REWORK-1 执行记录）。要点：① 亲跑门禁+冒烟对照，REWORK 后预期值——后端 `mvn -q verify` 148 4F+2E 逐条=基线、前端 `npm run test` **20 failed|284 passed**（+1 失败态用例）、build ✓、lint EXIT=124、`bash scripts/smoke.sh` **55 用例=44✅+9❌+2⏭️** 且 web-038d ✅（grep '5 passed'）；② 逐条核销首审问题 1-3（问题1 布局：routes.ts /mymodules DefaultLayout+children，硬验证=resolve 三路径 depth 均 2 且父组件===DefaultLayout；问题2：onMounted catch+loadError 态与空态互斥+失败态用例 RED→GREEN；问题3：task.md 行数 +5 更正）；③ 核查任务单【REWORK-1 修订】措辞行与 REWORK RED/GREEN 提交链（`aa1accf`→`35a48e7`）；④ 按 review-criteria 五维重新打分（首审 7.0+否决3，通过须 ≥7 且无否决）；⑤ 基线对照豁免否决项6 口径不变；⑥ 过审后写回 task.md 评审记录（REWORK 复审结论）、registry 038d（✅ 评分+038e 建议）、session-state→Planner、iteration-log，提交 `eval: web/038d pass sprint-073`。注意：task.md 已记录 session-state 红线⑦「冒烟 55→56」系笔误（实际 55，以 task.md 门禁记录为准），勿误判不一致。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。

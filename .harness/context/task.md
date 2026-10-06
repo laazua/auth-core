@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/038d |
 | 功能点名称 | 模块服务统一入口（d 段）——「我的模块」菜单页（前端） |
-| 状态 | AWAITING_REVIEW（REWORK-1 完成） |
+| 状态 | DONE（评审通过，REWORK-1 复审 ✅） |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -225,9 +225,39 @@ Evaluator 2026-09-29 亲自运行（不采信 Generator 自述）：
 2. **[中]** `frontend/src/views/MyModulesView.vue:10-17`：onMounted 无 catch——接口失败时 unhandled rejection 且渲染误导性「暂无可访问模块」。修复：捕获失败态（区分「加载失败」与「无数据」），至少日志+状态区分；建议补 1 例失败态用例（用例数变化须同步更新 smoke.sh 的 `grep -q 'N passed'` 口径）。
 3. **[轻]** `task.md` 变更清单：smoke.sh 记 "+4 行"，实测 +5（git diff 5 insertions）——更正记录。
 
-### 改进建议（不计分）
+### REWORK-1 复审（Evaluator 2026-09-29 亲测）
+
+**验收标准核对**
+- [x] AC1 — 含 REWORK 追加父链断言：独立临时 spec 实测 `/dashboard`、`/system/users`、`/mymodules` 三路径 depth 均=2，父组件 `===DefaultLayout`、子组件 `===MyModulesView`（验证后临时文件已删）
+- [x] AC2 — 含新增失败态用例：`加载失败` 与 `暂无可访问模块` 互斥断言过（5/5）
+- [x] AC3 — `mockRouter.push('/workspace/module/news')` 过
+- [x] AC4 — 门禁与冒烟亲测（见下）
+- [x] 首审问题 1-3 全部闭合（对照表见 REWORK-1 执行记录）
+
+**门禁与冒烟实测（Evaluator 亲自运行）**
+- `mvn -q verify`：Tests run: 148, Failures: 4, Errors: 2 —— 失败集逐条=基线六条，零后端改动零新增 ✅
+- `npm run test`：**20 failed | 284 passed (304)** —— failed=基线 20、passed 284（283+1 失败态用例）✅；`npm run build`：✓ 18.22s ✅；`npm run lint`：EXIT=124 基线 ✅
+- `bash scripts/smoke.sh`：**55 用例 = 44✅+9❌+2⏭️**；`web-038d ✅`（grep '5 passed'）；9 失败与 2 跳过逐条=基线；否决项6 按基线对照豁免口径不中 ✅
+- 提交链核验：REWORK-RED `aa1accf`（父链+失败态断言在位、实现未改）→ GREEN `35a48e7`（镜像结构+catch），test-first 成立 ✅
+
+**评分**
+| 维度 | 分数 | 证据 |
+|------|------|------|
+| 功能正确性 | 9 | AC1-4 全过；布局缺陷修复实证（三路径 depth=2、父===DefaultLayout）；异常路径闭环（catch→loadError，与空态互斥，失败态用例过） |
+| 代码质量 | 9 | routes.ts:73-84 镜像 /system 结构；MyModulesView.vue:10-21 三态（loading/loadError/empty）互斥清晰；console.error 沿 router/index.ts:80 先例 |
+| 规范遵守 | 9 | 行数 spec 199/组件 135 ≤500、行宽零超、分层正确、禁改清单零触碰；task.md 行数记录已更正 +5（问题3 闭合）、【REWORK-1 修订】措辞行在位 |
+| TDD 执行度 | 9 | 两轮完整证据链：首轮 RED `0e98cfa`→GREEN `b4f8d6b`；REWORK RED `aa1accf`（断言先行、2 failed 实证）→GREEN `35a48e7`（5/5）；首审逃逸缺陷已由父链断言补为回归网 |
+| 安全性 | 9 | 五查无命中：无越权（requiresAuth+accessibles 服务端交集过滤）、无注入面、无明文密钥、日志仅错误对象无敏感信息 |
+
+**均分 = 45/5 = 9.0**
+
+**决策**
+✅ **通过（REWORK-1 复审）**——总分 9.0 ≥7，六项一票否决逐条复核均不中（功能缺失✗、安全漏洞✗、明确 Bug✗ 已修复实证、RED 证据✗ 链完整、RBAC 偏差✗、门禁冒烟✗ 实测对齐+追加用例在位）。
+
+### 改进建议（不计分，REWORK 复审追加）
 - 菜单 `order: 1.5`（useMenu.ts:34）小数序合法但可读性一般，若后续调整建议整数重排（本单禁改既有条目，维持现状可接受）。
-- AC1 用例声明 `async` 但体内无 await（MyModulesView.spec.ts:61），可去冗余 async。
+- AC1 用例声明 `async` 但体内无 await（MyModulesView.spec.ts:61），可去冗余 async。（REWORK 复审注：REWORK 后 AC1 已含 await，此项自然消除，留档备查。）
+- `useMenu.ts:34` 菜单 `order: 1.5` 小数序合法，后续若重排建议整数化。
 
 ## REWORK-1 执行记录（Generator）
 

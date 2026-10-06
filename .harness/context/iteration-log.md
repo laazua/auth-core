@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-29: Evaluator — pass sprint-073 REWORK-1（web/038d ✅ 9.0/10，首审否决项3 修复实证：三路径 depth=2+父===DefaultLayout，门禁冒烟亲测全对齐，55=44✅9❌2⏭️）
+
 - 2026-09-29: Generator — done sprint-073 REWORK-1（RED `aa1accf` + GREEN `35a48e7`，问题 1-3 全闭合，5/5 用例，web/038d AWAITING_REVIEW 待复审）
 
 - 2026-09-29: Evaluator — REWORK sprint-073（web/038d 否决项3：/mymodules 裸路由脱离主布局，均分 7.0，问题 3 条退回 Generator）
