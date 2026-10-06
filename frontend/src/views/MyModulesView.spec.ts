@@ -7,6 +7,7 @@ import { moduleApi } from '@/api/module';
 import { useMenu } from '@/composables/useMenu';
 import { useAuthStore } from '@/stores/auth';
 import { staticRoutes, generateRoutes } from '@/router/routes';
+import { createRouter, createMemoryHistory } from 'vue-router';
 
 vi.mock('@/api/module');
 vi.mock('@/stores/auth', () => ({
@@ -77,6 +78,18 @@ describe('MyModulesView — 我的模块菜单页（web/038d）', () => {
       const item = getSortedMenuTree().find((i) => i.path === '/mymodules');
       expect(item, '零权限用户菜单应含 /mymodules').toBeDefined();
       expect(item?.title).toBe('我的模块');
+
+      // Then: 路由须经 DefaultLayout 布局父记录（REWORK-1 否决级问题回归断言）
+      const router = createRouter({
+        history: createMemoryHistory(),
+        routes: [...staticRoutes, ...generateRoutes([])] as never[],
+      });
+      const matched = router.resolve('/mymodules').matched;
+      expect(matched.length, '/mymodules 应为「布局父 + 页面子」两层').toBe(2);
+      expect(matched[1].name).toBe('MyModules');
+      const parent = (await (matched[0].components!.default as () => Promise<{ default: unknown }>)()).default;
+      const expectedLayout = (await import('@/layouts/DefaultLayout.vue')).default;
+      expect(parent, '父记录组件必须是 DefaultLayout').toBe(expectedLayout);
     });
   });
 
@@ -119,6 +132,19 @@ describe('MyModulesView — 我的模块菜单页（web/038d）', () => {
 
       // Then: 显示空态文案且无卡片
       expect(wrapper.text()).toContain('暂无可访问模块');
+      expect(wrapper.findAll('.module-card')).toHaveLength(0);
+    });
+
+    it('rendersLoadFailureStateWhenApiRejects', async () => {
+      // Given: 接口异常（网络/服务错误）
+      vi.mocked(moduleApi.getAccessibles).mockRejectedValue(new Error('network down'));
+
+      // When: 挂载页面并等待失败
+      const wrapper = await mountView();
+
+      // Then: 显示加载失败，且不误报「暂无可访问模块」
+      expect(wrapper.text()).toContain('加载失败');
+      expect(wrapper.text()).not.toContain('暂无可访问模块');
       expect(wrapper.findAll('.module-card')).toHaveLength(0);
     });
   });

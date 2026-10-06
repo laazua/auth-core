@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/038d |
 | 功能点名称 | 模块服务统一入口（d 段）——「我的模块」菜单页（前端） |
-| 状态 | REWORK（第 1 次） |
+| 状态 | REWORK（第 1 次·进行中，RED 已留痕） |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -227,3 +227,21 @@ Evaluator 2026-09-29 亲自运行（不采信 Generator 自述）：
 ### 改进建议（不计分）
 - 菜单 `order: 1.5`（useMenu.ts:34）小数序合法但可读性一般，若后续调整建议整数重排（本单禁改既有条目，维持现状可接受）。
 - AC1 用例声明 `async` 但体内无 await（MyModulesView.spec.ts:61），可去冗余 async。
+
+## REWORK-1 执行记录（Generator）
+
+### RED 留痕（2026-09-29 实测，实现前）
+
+```text
+$ npm run test -- --run src/views/MyModulesView.spec.ts
+ Tests  2 failed | 3 passed (5)
+ Errors  1 error
+
+ FAIL AC1 > myModulesMenuAndRouteVisibleWithoutPermission
+   AssertionError: /mymodules 应为「布局父 + 页面子」两层: expected 1 to be 2
+   （问题1实证：路由表中 /mymodules 为裸注册，matched depth=1）
+
+ FAIL AC2 > rendersLoadFailureStateWhenApiRejects
+   AssertionError: expected '我的模块点击卡片进入对应模块工作区暂无可访问模块' to contain '加载失败'
+   + Unhandled Rejection: Error: network down（问题2实证：onMounted 无 catch，失败误渲染空态且未捕获）
+```
