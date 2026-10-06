@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟢 sprint-074 通过（web/038e ✅ 9.3/10，038 组五段全部收口：038a ✅ 038b ✅ 038c ✅ 038d ✅ 038e ✅）；前序 sprint-073 通过（web/038d ✅ 9.0/10 REWORK-1）、sprint-072 通过（web/038c ✅ 9.0/10）、sprint-071 通过（web/038b ✅）、sprint-070 通过（web/038a ✅）、sprint-069 通过（modules/002 ✅）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
+- 状态: 🟡 sprint-075 规划完成待实现（子功能点 **web/039 🔄**，工作单 `.harness/context/task.md` 已产出，PLANNED，创建时间字段全站对齐，038c 方案 B 同构延伸，5~6 文件不拆分纯后端）；前序 sprint-074 通过（web/038e ✅ 9.3/10，038 组五段全部收口）、sprint-073 通过（web/038d ✅ 9.0/10 REWORK-1）、sprint-072 通过（web/038c ✅ 9.0/10）、sprint-069 通过（modules/002 ✅）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
 - 当前模块: web
-- 当前功能点: web/038e 已收口（iframe 内嵌视图+管理页「进入」闭环 ✅ 9.3/10；038 组进度 038a ✅、038b ✅、038c ✅、038d ✅、038e ✅ **五段全部完成**；下一个功能点待 Planner 取）
+- 当前功能点: web/039（创建时间字段全站对齐 user/role/permission 三域，三列表页创建时间恒显 `—` 缺陷修复；方案=038c 方案 B 同构三 VO 加 `@JsonProperty("createTime")`，前端零改动）
 
 
 ## 下一步动作
-  Planner：读 `.harness/planner.md` 并严格执行，取下一个功能点。**038 组已全部收口（038a-e ✅）**，建议方向（按优先级调研后与用户确认）：① Evaluator 积压六项评审（sprint-047/048/060/061/062/063，若用户指示按评审推进则先读 `.harness/evaluator.md` 补评审）；② IndexView.vue/spec 拆分技术债（挂起区 2026-09-29 登记，766/1468 行超限必须拆分）；③ modules/003 服务级接入凭证（预留 ⬜，前置架构 §3 仲裁）；④ web/036a-c 与 web/017 等 UI 治理遗留。Planner 须先读 `.harness/context/session-state.md` 全文与 registry 全景，产出工作单后交接 Generator。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
+  Generator：读 `.harness/generator.md` 并严格执行工作单 `.harness/context/task.md`（sprint-075，web/039）。关键红线：① TDD 先行——新建 `TimestampFieldContractTest`（对齐 038c `ModuleFieldContractTest` 先例）两用例先行 RED 留痕（现输出 `createdAt` 键必红）；② 文件 5~6 顶格熔断（UserVO/RoleVO/PermissionVO/新测试类/smoke.sh/条件同步 ModuleControllerTest），超限停止回报；③ **先做研究项 R1-R4**：R1 分页 data 真实键名实测（架构 §4 写 `list` 而 038c 测试用 `records`，不一致属预存——实测后写断言、若确不一致登记挂起区）、R2 `ModuleControllerTest:218` `path("createdAt")` 归属端点核实（模块域序列化断言则就地同步为 `createTime`，038c 同步先例）、R3 三详情端点存在性（AC2 可测性）、R4 冒烟照抄后端定向用例既有形态；④ **方案铁律**：后端三 VO 加 `@JsonProperty("createTime")`、**前端零改动**（禁改清单含前端全部——038c 方案 B 同构延伸，用户裁定先例在案）；⑤ 禁改清单：迁移/entity/MetaObjectHandler/ModuleVO/ModuleFieldContractTest（仅 AC3 回归对象）/ModuleAccessibleVO/前端全部；⑥ 基线：后端 mvn **148 用例 4F+2E**、前端 lint124/test **20 failed|288 passed**（074 后基线）/build ✓、冒烟 **56=45✅+9❌+2⏭️**→新增 web-039 后 57；两段式提交（RED/GREEN 分开）。Evaluator 积压六项不变：sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）均待评审。
 
 ## 挂起
 - 2026-09-29: Planner(sprint-074) — **历史债登记（用户裁定「最小增量+历史债登记」，问答在案）**：`frontend/src/views/system/IndexView.vue`（752 行）与其 spec（1404 行）超编码规范「文件 ≤500 行」红线，属既有历史债（非 sprint-074 造成）；裁定=本单只做最小增量（按钮+handler 约 +15/+40 行）、不新建超限文件、既有用例零改动；**IndexView 拆分（超限必须拆分）另立后续技术债任务**，待本单交付后由 Planner 按优先级排期。Evaluator「规范遵守」维度按此口径评价 sprint-074 增量，历史债扣分不落本单。

@@ -1,186 +1,139 @@
-# Sprint 工作单：sprint-074
+# Sprint 工作单：sprint-075
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-074 |
+| Sprint ID | sprint-075 |
 | 所属模块 | web |
-| 功能点 ID | web/038e |
-| 功能点名称 | 模块服务统一入口（e 段）——iframe 内嵌视图 + 管理页「进入」点击闭环 |
-| 状态 | DONE（Evaluator 通过 2026-09-29，平均分 9.3/10，零否决项） |
+| 功能点 ID | web/039 |
+| 功能点名称 | 创建时间字段全站对齐（user/role/permission 域）——JSON 输出 `createTime` 与前端读法收敛 |
+| 状态 | PLANNED |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| web/001 | Vite+Vue3+TS+Axios+Vitest 基线（vitest 跑法、vite `/api` proxy 已配） | ✅ |
-| web/002 | 登录页+路由守卫（requiresAuth 守卫链） | ✅ |
-| web/003 | 主布局+动态菜单（DefaultLayout 布局链机制） | ✅ |
-| web/029 | 动态路由加载机制（generateRoutes+addRoute） | ✅ |
-| modules/002 | 网关准入+转发本体（`/api/v1/gateway/{code}/…` 转发与 XFO/CSP 剥离，sprint-069） | ✅ |
-| web/038a | JWT Cookie 双承载（iframe 同源导航带 HttpOnly Cookie 的认证前提，sprint-070） | ✅ |
-| web/038c | baseUrl 字段契约（「进入」按钮 `baseUrl 非空` 判定的数据前提，sprint-072） | ✅ |
-| web/038d | 「我的模块」点卡导航目标（本单注册 `/workspace/module/:code` 后其 AC3 闭环；布局链前车之鉴，sprint-073 REWORK-1 通过） | ✅ |
+| web/004 | 用户管理列表页（创建时间列读 `row.createTime`） | ✅ |
+| web/005 | 角色管理列表页（创建时间列读 `row.createTime`） | ✅ |
+| web/006 | 权限管理列表页（创建时间列读 `row.createTime`） | ✅ |
+| web/038c | 模块域字段错位修复·同方案先例（ModuleVO `@JsonProperty("createTime")` 方案 B 用户裁定在案，sprint-072 通过） | ✅ |
 
 ## 业务背景
 
-用户原始需求（设计文档 `docs/superpowers/specs/2026-09-29-module-iframe-access-design.md` 用户逐节确认，commit 83b19fb）：模块配置完成后，用户点击模块 URL **仍在当前系统内**打开外部服务 UI。038 组四段拆分的最后一段（038a ✅ / 038b ✅ / 038c ✅ / 038d ✅），本单实现设计 §4.2 与 §4.3：
+2026-09-29 web/038c 规划调研发现的同源遗留，registry 127 行已注册占位（防遗漏）。现状实证（2026-09-29 本单规划只读核对）：
 
-- **§4.2 iframe 视图页** `ModuleIframeView`：`src="/api/v1/gateway/${code}/"`（相对路径同源——dev 走 Vite `/api` proxy、生产同域，**不写死 host**），高度撑满内容区，带加载态；
-- **§4.3 模块管理页操作列加「进入」**：`baseUrl 非空 && status===1` 才可点，否则 disabled 且提示「未配置服务地址」，跳同一 iframe 路由。
+- **后端**：`UserVO`/`RoleVO`/`PermissionVO` 三 record 的 `LocalDateTime createdAt` **均无 Jackson 注解** → JSON 输出键 `createdAt`；模块域 `ModuleVO` 已由 038c 加 `@JsonProperty("createTime")` → 输出 `createTime` ✓。
+- **前端**：`types/user.ts`、`types/role.ts`、`types/permission.ts` 及五处页面列（`users/IndexView`、`roles/IndexView`、`system/IndexView` 权限列、`profile/IndexView` 等）全部读 `row.createTime`。
+- **缺陷**：user/role/permission 三域列表与详情响应给 `createdAt`、前端读 `createTime` → `undefined` → 三张列表页创建时间列与个人中心创建时间**恒显 `—`/空**。
 
-安全口径（设计 §5，038a/069 已在后端兑现，本单前端仅遵行）：iframe 内 401/403 显示网关 JSON、不做 HTML 错误页协商；外部页面绝对路径资源破图为已知固限（登记不解决）；相对路径 iframe src 是防逃逸与同源 Cookie 生效的前提。
+**方案（Planner 定案，038c 方案 B 同构延伸，登记如下）**：三 VO 各加 `@JsonProperty("createTime")`，**后端对齐前端既有读法，前端零改动**。与 038c 模块域修复完全同构（sprint-072 方案 B 用户裁定在案），全局 JSON 时间字段名收敛为 `createTime` 单一形态。备选的「前端改读 createdAt」被否：需改 3 types + 5 处页面引用 + 前端多 spec，且与模块域已定的 `createTime` 输出分叉为两种形态。
 
-**范围边界**（设计 §7 YAGNI 登记）：不做 modules/003 服务凭证、不做 iframe 父页状态探测与 SSO 传播、不做路径级准入、不改后端任何文件。
+**架构对照（无冲突）**：§3「字段名与约束为契约」指数据库字段（`created_at`），JSON 输出键名不在其列；§4 只规定时间值为 ISO-8601（UTC+8），本单不改值格式仅改键名；§4 Result/分页结构零改动。**方案 B 先例已由用户裁定过（038c），本单同构延伸不再新增裁量**；如用户对方案有异议可在评审前推翻。
+
+**范围边界（YAGNI）**：不改数据库/实体/MetaObjectHandler（Java 层 `createdAt()` 访问器零改动）；不改前端任何文件；不动 `ModuleAccessibleVO`（本就不含时间管理字段）；不做创建时间筛选参数（`types/user.ts` 的 `createTimeStart/End` 是查询入参，属另域）。
 
 ## 需求描述
 
-新增系统内路由页 `/workspace/module/:code`：**顶层记录包 `DefaultLayout` + `children` 空路径子记录**（镜像 `/mymodules` 先例——038d 首审否决项3 的直接教训，禁止裸顶层注册），子记录 `name=ModuleWorkspace`、`meta.requiresAuth=true`、**无** `permissions`/`roles` 键、`hidden` 不进菜单（入口仅「我的模块」点卡与管理页「进入」）。`ModuleIframeView` 从路由参数取 `code` 渲染 `<iframe :src="/api/v1/gateway/{code}/">`（尾斜杠保留），初始 loading，iframe `@load` 后消失，高度撑满内容区。模块管理页（`views/system/IndexView.vue`）模块 tab 操作列追加「进入」按钮：`baseUrl 非空 && status===1` 时可点并 `router.push('/workspace/module/{code}')`，否则 disabled + 提示「未配置服务地址」（设计字面口径：两种不可点情形统一该提示）。零后端改动。
+后端 `UserVO`、`RoleVO`、`PermissionVO` 三个 record 的 `createdAt` 组件加 `@JsonProperty("createTime")`，使 user/role/permission 三域**列表与详情**接口的 JSON 输出键由 `createdAt` 变为 `createTime`，与前端既有读法对齐，消除三张列表页创建时间恒显 `—` 缺陷。新增契约测试类锁定「`createTime` 存在且 `createdAt` 不存在」。既有测试中断言模块域 `createdAt` 键的遗留点（研究项 R2）就地同步（038c 先例：既有测试就地改零增行）。
 
 ## 验收标准（TDD 驱动）
 
-- [x] AC1 — iframe 路由与视图：路由表含 `/workspace/module/:code` 且匹配链为「DefaultLayout 父 + 子记录（name=ModuleWorkspace）」两层；ModuleIframeView 按路由参数渲染 iframe，`src` 精确等于 `/api/v1/gateway/{code}/`（相对路径+尾斜杠，不含 host），初始显示加载态、iframe `@load` 后加载态消失
-- [x] AC2 — 管理页「进入」条件：`baseUrl` 非空且 `status===1` 的行，「进入」按钮可点且点击导航至 `/workspace/module/{code}`；`baseUrl` 为空或 `status!==1` 的行，按钮 disabled 且提示「未配置服务地址」
-- [x] AC3 — 038d 点卡导航闭环：`resolve('/workspace/module/news')` 命中两层布局链（非 catch-all 404），即 038d 遗留「404 已知中间态」正式闭环
-- [x] AC4 — 后端门禁零新增失败（零后端改动，基线对照）；前端三件套通过（新增用例全绿、failed 保持基线 20、passed 由 284 增至预估 289 = +5，以实测为准）；冒烟新增 `web-038e` 单跑通过、整体与基线一致
+- [ ] AC1 — 三域列表 JSON 契约：`GET /api/v1/users`、`GET /api/v1/roles`、`GET /api/v1/permissions` 分页响应 data 内列表项含 `createTime`（非空 ISO-8601 字符串）且**不含** `createdAt` 键
+- [ ] AC2 — 三域详情 JSON 契约：`GET /api/v1/users/{id}`、`GET /api/v1/roles/{id}`、`GET /api/v1/permissions/{id}` 详情响应 data 含 `createTime` 且不含 `createdAt` 键
+- [ ] AC3 — 模块域零回退：038c 已修的模块域契约测试 `ModuleFieldContractTest`（列表+详情 `createTime` 存在/`createdAt` 不存在 3 断言组）保持全绿；`mvn -q verify` 失败集与基线逐条一致零新增（研究项 R2 命中点就地同步后仍为基线口径）
+- [ ] AC4 — 门禁与冒烟：后端 `mvn -q verify` 基线对照零新增；前端零改动、三件套与基线一致（20 failed 基线不动）；`bash scripts/smoke.sh` 新增 `web-039` 单跑通过、整体失败/跳过与基线逐条一致（当前基线 56 用例 45✅+9❌+2⏭️，新增后 57）
 
-### AC1 — iframe 路由与视图
-> Given 未注册前的路由表（RED）。When 注册 `/workspace/module/:code` 顶层包 DefaultLayout 的两层记录并挂载 ModuleIframeView（route params `code=news`）。Then `resolve('/workspace/module/news').matched` depth=2 且父组件===DefaultLayout、子 name=ModuleWorkspace；iframe `src` 属性 === `/api/v1/gateway/news/`（无 host 前缀）；初始 `.iframe-loading` 可见，触发 iframe `load` 事件后消失。
+### AC1 — 三域列表契约
+> Given 三域均有已建数据（种子/测试数据）。When 请求三域分页列表接口。Then 列表项 `createTime` 存在且非空、`createdAt` 不存在。
 
-**用例**：`AC1 ← 用例 ModuleIframeView.spec#rendersIframeWithGatewaySrcAndLoadingState`（同用例内含路由两层断言；`useRoute` 需按 Header.spec.ts:25 局部 `vi.mock('vue-router')` 覆盖全局 setup.ts:31 的假实现，自定义 `params.code`）
+**用例**：`AC1 ← 用例 TimestampFieldContractTest#listsOutputCreateTimeForUserRolePermissionDomain`
 
-### AC2 — 管理页「进入」条件渲染与导航
-> Given 模块行 A `{code:'news', baseUrl:'http://n', status:1}`、行 B `{code:'old', baseUrl:null, status:1}`、行 C `{code:'off', baseUrl:'http://o', status:0}`。When 渲染模块 tab 操作列。Then 行 A「进入」按钮存在且非 disabled，点击后导航 `/workspace/module/news`；行 B、行 C 按钮 disabled 且提示文案「未配置服务地址」。
+### AC2 — 三域详情契约
+> Given 三域各一条已知记录。When 请求详情接口。Then data `createTime` 存在且 `createdAt` 不存在。
 
-**用例**：`AC2 ← 用例 IndexView.spec#moduleEnterButtonNavigatesWhenReady + IndexView.spec#moduleEnterButtonDisabledWhenBaseUrlMissing`（**研究项**：该 spec 的 table 为 stub 基建（:74-75），操作列 `render` 函数可能不被 stub 执行——Generator 须先研究既有真渲染/直调 `moduleColumns` render 的可行路径再写用例，禁止为测试改造 stub 影响既有 60 例）
+**用例**：`AC2 ← 用例 TimestampFieldContractTest#detailOutputsCreateTimeForUserRolePermissionDomain`
 
-### AC3 — 038d 点卡导航目标闭环
-> Given 路由表（含本单新注册）。When `resolve('/workspace/module/news')`。Then matched depth=2、父===DefaultLayout、子 name=ModuleWorkspace，且**不是** catch-all NotFound。
+### AC3 — 模块域与既有测试零回退
+> Given 038c 已修模块域契约。When 全量跑后端测试。Then `ModuleFieldContractTest` 保持全绿、`mvn -q verify` 失败集=基线六条（4F+2E）零新增。
 
-**用例**：`AC3 ← 用例 ModuleIframeView.spec#workspaceRouteResolvesInsideLayoutNot404`
+**用例**：`AC3 ← 既有 ModuleFieldContractTest 保持通过 + mvn -q verify 基线对照`（R2 同步点若需改则就地改断言键，属同步非新功能）
 
-### AC4 — 门禁与冒烟通过
-> ① `mvn -q verify` 失败集与基线逐条一致零新增（2026-09-29 口径：148 用例 4F+2E；本单零后端文件改动）。② `npm run lint` EXIT=124 基线、`npm run test` failed 保持 20、passed 284→实测（预估 289）、`npm run build` 通过。③ `bash scripts/smoke.sh` 新增 `web-038e` 单跑通过、整体失败/跳过与基线逐条一致（基线：55 用例 44✅+9❌+2⏭️）。④ 038d 全量回归：`MyModulesView.spec` 5/5 不回退（其 AC3 用局部 mockRouter，真实路由注册不应影响）。
+### AC4 — 门禁与冒烟
+> ① `mvn -q verify` 失败集=基线 148 用例 4F+2E 零新增。② 前端零文件改动，`npm run test` failed 保持基线 20、build 通过、lint EXIT=124 基线。③ `bash scripts/smoke.sh` 新增 `web-039` 用例单跑通过，整体失败/跳过=基线逐条。
 
-**用例**：`AC4 ← mvn -q verify 基线对照 + npm 三件套 + bash scripts/smoke.sh#web-038e + MyModulesView.spec 回归`
+**用例**：`AC4 ← mvn -q verify 基线对照 + npm 三件套 + bash scripts/smoke.sh#web-039`
 
 ## 测试清单
 
-> Generator 按 `.harness/rules/tdd-workflow.md` 先于实现写出并运行留 RED 证据；每条验收标准至少一例。新 spec 集中于 `ModuleIframeView.spec.ts`；IndexView 侧 2 例追加进既有 `IndexView.spec.ts`（新 describe，不动既有 60 例）。
+> Generator 按 `.harness/rules/tdd-workflow.md` 先于实现写出并运行留 RED 证据；每条验收标准至少一例。新 spec 集中于新建契约测试类 `TimestampFieldContractTest`（对齐 038c 的 `ModuleFieldContractTest` 先例）。
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | ModuleIframeView.spec#rendersIframeWithGatewaySrcAndLoadingState | AC1 | RED 留痕 → **GREEN ✅** |
-| 2 | IndexView.spec#moduleEnterButtonNavigatesWhenReady | AC2 | RED 留痕 → **GREEN ✅** |
-| 3 | IndexView.spec#moduleEnterButtonDisabledWhenBaseUrlMissing | AC2 | RED 留痕 → **GREEN ✅** |
-| 4 | ModuleIframeView.spec#workspaceRouteResolvesInsideLayoutNot404 | AC3 | RED 留痕 → **GREEN ✅** |
-| 5 | 冒烟 web-038e 定向测试（`grep -q '2 passed'`） | AC4-③ | **✅ 通过**（smoke 全量实测） |
-| 6 | 门禁基线对照（后端 148 4F+2E / 前端 20 failed\|288 passed；MyModulesView.spec 5/5 回归） | AC4-①②④ | **✅ 逐条一致**（实测全对齐，passed 284→288=+4，预估 289 之差=AC1 路由断言并入渲染用例共 4 例） |
+| 1 | TimestampFieldContractTest#listsOutputCreateTimeForUserRolePermissionDomain | AC1 | 待填（预期 RED：现输出 `createdAt` 键） |
+| 2 | TimestampFieldContractTest#detailOutputsCreateTimeForUserRolePermissionDomain | AC2 | 待填（预期 RED：同上） |
+| 3 | 门禁基线对照（mvn 148 4F+2E；ModuleFieldContractTest 保持全绿；前端零改动基线不动） | AC3/AC4 | 待填 |
+| 4 | 冒烟 web-039 定向测试（追加 scripts/smoke.sh） | AC4-③ | 待填 |
 
-**行数红线**：新 spec ≤500 行（预估 ~180）；`ModuleIframeView.vue` ≤300 行组件红线（预估 ~120）；**历史债增量口径（用户裁定 2026-09-29「最小增量+历史债登记」）**——`IndexView.vue`（752 行）与 `IndexView.spec.ts`（1404 行）超 500 属既有历史债，本单对其**只做最小增量**（vue 预估 +15、spec 预估 +40），**不新建任何超限文件**；IndexView 拆分另立技术债任务（登记 session-state 挂起区），本单不夹带。
+**行数红线**：新测试类 ≤500 行（038c 的 ModuleFieldContractTest 181 行先例，预估 ~150）；三 VO 各 +2 行（import + 注解），`UserVO`/`RoleVO`/`PermissionVO` 增量后均 ≪500。
 
 ## RED 证据
 
-> Generator 于实现前执行测试清单 #1~#4 并粘贴关键失败输出（实时留痕，不得事后补记）。
+> Generator 于实现前执行测试清单 #1~#2 并粘贴关键失败输出（实时留痕，不得事后补记）。
 
 ```text
-$ npm run test -- --run src/views/ModuleIframeView.spec.ts src/views/system/IndexView.spec.ts   （2026-09-29 实时留痕，实现前）
-
- FAIL src/views/ModuleIframeView.spec.ts [ ModuleIframeView.spec.ts ]
-   Error: Failed to resolve import "@/views/ModuleIframeView.vue" — Does the file exist?
-   （AC1/AC3 整套红：组件与路由均缺失）
-
- src/views/system/IndexView.spec.ts (40 tests | 13 failed)
-   → 操作列应渲染「进入」按钮: expected undefined not to be undefined
-   （AC2 新 2 例红：moduleEnterButtonNavigatesWhenReady + moduleEnterButtonDisabledWhenBaseUrlMissing；
-     13 failed = 基线 11 + 新 2，与 2026-09-28 登记的 system/IndexView 基线 11 精确对齐，零额外破坏）
+（待 Generator 填写）
 ```
 
-> 实现后复跑（实时留痕）。REFACTOR 复查：行宽 ≤120、分层（views/api/router 各归其位）、新 spec 4/4、既有 spec 既有用例零改动（IndexView.spec 仅允许新增 describe）、文件行数达标、历史债文件增量最小。
+> 实现后复跑（实时留痕）。REFACTOR 复查：行宽 ≤120、分层、新测试类行数达标、既有测试零改动（R2 同步点除外，就地改断言键）。
 
 ```text
-$ npm run test -- --run src/views/ModuleIframeView.spec.ts   → Tests 2 passed (2)
-$ npm run test -- --run src/views/system/IndexView.spec.ts   → Tests 11 failed | 29 passed (40)
-   （11 failed=基线 11 精确回归；RED 时 13=基线11+新2，新 2 例已转绿、既有零回退）
-$ npm run test -- --run src/views/MyModulesView.spec.ts      → Tests 5 passed (5)（038d 回归）
-
-REFACTOR 复查（实时）：
-- 行数：ModuleIframeView.vue 49（≤300 组件红线）/ spec 73（≤500）；历史债文件增量 = IndexView.vue +14（752→766）、IndexView.spec +64（1404→1468，预估 +40 实测 +64，含 2 例+helper），既有 60 例零改动
-- 行宽：新文件/新改动 awk>120 零新增（routes.ts:150 与 IndexView.vue:8 两处超宽均 HEAD 预存，git show HEAD 对照确认）
-- 分层：视图 views/、路由 router/、按钮逻辑收进 IndexView handler；禁改清单零触碰（后端/MyModulesView/useMenu/types/Sidebar/guards/main/vite.config/setup.ts 均未改，git diff 确认）
-- AC2 研究项落地：BaseTable 为 stub 不执行 render → 测试直调 `vm.moduleColumns` actions.render 取 VNode 断言（props.disabled/title/onClick），点击断言经 `vm.router`（script setup setupState 先例 vm.rules），**未改 vue-router mock、未动 stub、既有 60 例零影响**
+（待 Generator 填写）
 ```
 
 ## 门禁与冒烟记录
 
 > Generator 亲测填写（后端 mvn -q verify / 前端三件套 / scripts/smoke.sh），Evaluator 不采信自述须亲跑。
 
-Generator 亲测（2026-09-29）：
-
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 148 用例 4F+2E（零后端改动） | Tests run: 148, Failures: 4, Errors: 2；失败集逐条=基线六条 | ✅ 零新增 |
-| `npm run lint` | EXIT=124 挂起基线 | EXIT=124 | ✅ 一致 |
-| `npm run test` | 20 failed\|284 passed → 新用例 +4 预估 289 | **20 failed \| 288 passed (308)**，Test Files 6 failed\|30 passed (36) | ✅ 失败=基线、passed 288=284+4（预估 289 差 1 = AC1 路由断言并入渲染用例，实际 4 新例） |
-| `npm run build` | ✓ | EXIT=0 ✓ built in 18.68s | ✅ |
-| `bash scripts/smoke.sh` | 55=44✅+9❌+2⏭️ → 预期 56 | **56 用例 = 45✅+9❌+2⏭️**；9 失败逐条=基线、2 跳过=infra-004/model-006；**`web-038e ✅` 且 `web-038d ✅`（回归）** | ✅ |
-
-（smoke 整体退出 1 源于基线 9 失败，沿 069-073 基线对照豁免口径判定通过。）
+| 后端 `mvn -q verify` | 148 用例 4F+2E（零新增） | 待填 | 待填 |
+| `npm run lint` | EXIT=124 挂起基线 | 待填 | 待填 |
+| `npm run test` | 20 failed\|288 passed（074 后基线） | 待填 | 待填 |
+| `npm run build` | ✓ | 待填 | 待填 |
+| `bash scripts/smoke.sh` | 56=45✅+9❌+2⏭️ → 预期 57 | 待填 | 待填 |
 
 ## 拆分说明
 
-预估验收标准 4 条（未超 4 条）；预估文件变更 **6 个（顶格）**：
+预估验收标准 4 条（未超 4 条）；预估文件变更 **5~6 个（≤6 不拆分）**：
 
-1. `frontend/src/views/ModuleIframeView.vue` — **新增**：iframe src 拼接 + 加载态 + 撑满布局（AC1）
-2. `frontend/src/views/ModuleIframeView.spec.ts` — **新增**：AC1 渲染+路由两层断言、AC3 闭环断言（测试先行；`useRoute` 局部 mock 沿 Header.spec 先例）
-3. `frontend/src/router/routes.ts` — `asyncRoutes` 追加 `/workspace` 顶层记录（包 DefaultLayout + `children:[{path:'module/:code'}]`，镜像 /mymodules；无 permissions/roles）（AC1/AC3）
-4. `frontend/src/views/system/IndexView.vue` — 模块操作列 render 追加「进入」按钮 + handler + 条件（**历史债文件，最小增量 +~15 行**）（AC2）
-5. `frontend/src/views/system/IndexView.spec.ts` — 新增 describe + 2 例（**历史债文件，最小增量 +~40 行，既有 60 例零改动**）（AC2）
-6. `scripts/smoke.sh` — 追加 `web-038e` 用例（+5 行左右，不删除、不改动既有用例）
+1. `backend/src/main/java/com/authcore/dto/user/UserVO.java` — `createdAt` 加 `@JsonProperty("createTime")`（AC1/AC2）
+2. `backend/src/main/java/com/authcore/dto/role/RoleVO.java` — 同上（AC1/AC2）
+3. `backend/src/main/java/com/authcore/dto/permission/PermissionVO.java` — 同上（AC1/AC2）
+4. `backend/src/test/java/com/authcore/controller/TimestampFieldContractTest.java` — **新增**：列表+详情两用例（测试先行）（AC1/AC2）
+5. `scripts/smoke.sh` — 追加 `web-039` 用例（+5 行左右，不删不改既有用例）（AC4-③）
+6. （条件）`ModuleControllerTest.java` — 研究项 R2 命中时就地同步断言键（038c 既有测试同步先例，占第 6 顶格）
 
-**超限熔断**：实现中若实际变更文件超过 6 个，Generator 必须停止实现并回报 Planner/用户重新裁定，不得自行扩范围。**禁改清单**：任何后端文件、`MyModulesView.vue/.spec`（038d 交付物，仅作回归对象）、`useMenu.ts`、`types/module.ts`（ModuleVO 已含 baseUrl/status/code，无需改）、`Sidebar.vue`、`guards.ts`、`main.ts`、`vite.config.ts`（`/api` proxy 已就绪）、`setup.ts`（全局 mock 不动，spec 局部覆盖）。
+**超限熔断**：实际变更超过 6 文件即停止回报 Planner/用户。**禁改清单**：数据库迁移、entity、`MybatisPlusMetaObjectHandler`、`ModuleVO`/`ModuleFieldContractTest`（038c 交付物，仅 AC3 回归对象）、**前端全部文件**（本单前端零改动是方案二的核心收益）、`ModuleAccessibleVO`。
 
-**历史债口径（用户裁定在案）**：IndexView.vue/spec 超 500 行为既有历史债，本单按「最小增量+历史债登记」执行——不因本单新建超限文件、增量最小化、拆分另立任务；Evaluator「规范遵守」维度按此口径评价本单增量。
+**研究项（Generator 先于写 AC 用例核实）**：
+- **R1 分页响应键名**：架构 §4 写 `data{list,total,page,size}`，而 038c 的 `ModuleFieldContractTest:173` 断言 `$.data.records[0]`——两者不一致属预存。Generator 实测三域分页真实键名后写断言；若确认架构与实现不一致，登记 session-state 挂起区（不属本单修复范围）。
+- **R2 `ModuleControllerTest:218`**：`item.path("createdAt")` 断言的归属端点核实——若为模块域序列化输出断言则 038c 遗漏点、就地同步为 `createTime`（占第 6 文件）；若为 Java 属性/其他语义则不动并登记说明。
+- **R3 详情端点存在性**：核实 `GET /users/{id}`、`/roles/{id}`、`/permissions/{id}` 三详情端点路径与鉴权前置（AC2 可测性）。
+- **R4 冒烟形态**：照抄 `scripts/smoke.sh` 后端定向用例既有形态（如 model-008 的 mvn 定向跑 + grep 计数口径）。
 
-## 交付物（预估 6 文件）
+**历史债口径（沿 074 用户裁定）**：本单不触碰 IndexView.vue/spec（前端零改动），历史债拆分仍挂起区待排期。
 
-1. `frontend/src/views/ModuleIframeView.vue` — iframe 内嵌视图（新增）
-2. `frontend/src/views/ModuleIframeView.spec.ts` — AC1/AC3 用例（新增，测试先行）
-3. `frontend/src/router/routes.ts` — `/workspace/module/:code` 布局链路由
-4. `frontend/src/views/system/IndexView.vue` — 操作列「进入」按钮
-5. `frontend/src/views/system/IndexView.spec.ts` — AC2 两例（新增 describe）
-6. `scripts/smoke.sh` — web-038e 冒烟用例
+## 交付物（预估 5~6 文件）
 
-## 变更清单
-
-### 新增（实测）
-- `frontend/src/views/ModuleIframeView.vue` — 49 行
-- `frontend/src/views/ModuleIframeView.spec.ts` — 73 行
-
-### 修改（实测 git diff）
-- `frontend/src/router/routes.ts` — +13（/workspace 布局链）
-- `frontend/src/views/system/IndexView.vue` — +14（「进入」按钮+handler，历史债 752→766）
-- `frontend/src/views/system/IndexView.spec.ts` — +64（新 describe 2 例+helper，历史债 1404→1468，既有 60 例零改动）
-- `scripts/smoke.sh` — +5（web-038e 案例，未动既有用例）
-
-合计 6 文件 = 预算顶格，未超熔断；历史债文件仅最小增量。
-
-### 删除
-- （无）
-
-## 规范检查清单
-
-- [x] `mvn -q verify` 后端门禁零新增失败（148 用例 4F+2E 与基线逐条一致，零后端改动）
-- [x] 前端 `npm run lint && npm run test && npm run build` 通过（lint 124 基线挂起豁免口径沿用；test failed 保持 20、passed 284→实测；build ✓）
-- [x] `bash scripts/smoke.sh` web-038e ✅；56 用例 9 失败+2 跳过与基线逐条一致
-- [x] 038d 回归：`MyModulesView.spec` 5/5 不回退
-- [x] 符合前端分层约定（API/视图/路由各归其位、`<script setup lang="ts">`、TS 严格、单行 ≤120）
-- [x] 符合 TDD 工作流（RED 4 例实时留痕 → GREEN → REFACTOR 复查）
-- [x] 变更文件 6 个 = 预算顶格，未超熔断；禁改清单零触碰
-- [x] 历史债口径执行：IndexView.vue/spec 仅最小增量、无新建超限文件；新 spec/组件行数达标
+1. `UserVO.java` — 输出键 `createTime`
+2. `RoleVO.java` — 输出键 `createTime`
+3. `PermissionVO.java` — 输出键 `createTime`
+4. `TimestampFieldContractTest.java` — 两用例（新增，测试先行）
+5. `scripts/smoke.sh` — web-039 冒烟用例
+6. （条件）`ModuleControllerTest.java` — R2 断言同步
 
 ## 评审记录
 
-- **2026-09-29：✅ 通过（REWORK 0 次，平均分 9.3/10）** — Evaluator 亲测：4/4 新用例 verbose 级通过、mvn `148 4F+2E`=基线、test `20 failed|288 passed`、smoke `56=45✅9❌2⏭️` web-038e ✅、038d 回归 5/5；评分=功能 9.5 / 质量 9 / 规范 9 / TDD 9.5 / 安全 9.5；六否决项逐项未命中（否决6 沿基线对照裁决）。改进建议 4 条（AC1 类名勘误、props: true 全仓治理、测试 any、IndexView 拆分）不计分。
+- （待 Evaluator）
