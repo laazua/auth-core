@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/038c |
 | 功能点名称 | 模块服务统一入口（c 段）——`baseUrl`/`createTime` 字段错位修复（模块域，038d/038e 硬前置） |
-| 状态 | AWAITING_REVIEW |
+| 状态 | DONE |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -173,4 +173,4 @@ Tests run: 21, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS（新 3 + Mo
 
 ## 评审记录
 
-- （待 Evaluator）
+- 2026-09-29: Evaluator 首轮评审 **✅ 通过（均分 9.0/10）**（sprint-072）。五维：功能正确性 9 / 代码质量 9 / 规范遵守 9 / TDD 执行度 9 / 安全性 9。4 条 AC 全满足（亲跑：mvn 148 用例 4F+2E 与基线逐条一致零新增；前端 lint124/test 20 failed|279/build ✓ 基线对照、零前端改动核证；冒烟 54 用例 43✅+9❌基线子集零新增+2⏭️环境条件、web-038c ✅、smoke.sh 增量 +1 用例行核证；ISO-8601 由 surefire 打印件 `"createTime":"2026-10-06T09:40:36"` 实证）。六项一票否决均未命中（否决项 6 按 2026-09-28 用户「基线对照推进」裁决与 sprint-069/071 先例豁免）。复核认可：test-first 物证（6bcc335 提交时 DTO 仍为 base_url 旧契约）；方案 B 与 +2 Javadoc 两项用户裁定均在案；ModuleControllerTest 499 行零增行、:218 PermissionVO 断言未触碰、端到端消费链（api/module.ts 透传 form.baseUrl）闭合。改进建议（不计分）：① AC3 可加 `matches("\d{4}-\d{2}-\d{2}T...")` 锁 ISO 格式断言；② getAdminToken/createModuleDirectly 助手两类重复，第三处出现时按 DRY 三处原则抽公共基类；③ ModuleVO Java 名 createdAt 与 JSON 键 createTime 分域，建议补一行 Javadoc 注明映射边界（方案 B 裁定背景），防后续误判。
