@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-29: Generator — done sprint-076（web/040a updateTime 三域对齐，门禁+冒烟通过：RED `061817b` 2 failed→AC收窄 `835de93`（用户裁决拆 040c）→GREEN `59bf5cf` 18/18，mvn 152 用例 4F+2E=基线+2，前端零改动三件套=基线，冒烟 58=47✅+9❌+2⏭️ web/040 ✅ 行7221）
+
 - 2026-09-29: Planner — kickoff sprint-076（web/040a，4 条验收标准；新增注册 web/040 updateTime 族全站对齐并拆 040a/040b（7 文件超熔断），两项用户裁决在案：四 VO 对称 + R1 案A 文档对齐实现，同步点 3 处与 R1 文档 5 处清单已盘点）
 
 - 2026-09-29: Evaluator — pass sprint-075（web/039 ✅ 9.4/10，4/4 AC 亲测、mvn 150 4F+2E=基线、前端零改动 20 failed|288 passed、冒烟 57=46✅9❌2⏭️ web/039 ✅，六否决项零命中；同族新发现 updateTime 错位与 R1 架构分页键名不一致移交 Planner）

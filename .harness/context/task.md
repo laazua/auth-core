@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/040a（web/040 拆分首段） |
 | 功能点名称 | 更新时间字段对齐·三域（user/role/permission）——JSON 输出 `updateTime` 与前端读法收敛 |
-| 状态 | PLANNED |
+| 状态 | AWAITING_REVIEW（Generator done，RED `061817b`+AC收窄 `835de93`+GREEN `59bf5cf`，门禁冒烟实测齐，待 Evaluator 评审） |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -40,10 +40,10 @@ sprint-075（web/039）评审时 Evaluator 改进建议②新发现的同族缺�
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — 三域列表 JSON 契约：`GET /api/v1/users`、`/roles`、`/permissions` 分页响应列表项含 `updateTime`（非空 ISO-8601）且**不含** `updatedAt` 键；`createTime` 既有契约保持（同项并存断言）
-- [ ] AC2 — 三域详情与 me JSON 契约：三域 `GET /{id}` 详情 data 含 `updateTime` 不含 `updatedAt`；`GET /auth/me` 响应 `data.user` 含 `updateTime` 不含 `updatedAt`（个人中心修复面锁定，落地 075 改进建议④）
-- [ ] AC3 — 既有零回退：075 的 `TimestampFieldContractTest` createTime 断言保持全绿；`ModuleFieldContractTest` 3 例保持全绿；`ModuleControllerTest` 仅 :219 一处同步（:146/:177 模块域禁改保持）；`mvn -q verify` 失败集=基线逐条一致
-- [ ] AC4 — 门禁与冒烟：后端 `mvn -q verify` 基线对照（150 用例 4F+2E → 本单 +2 = 152 预期）；前端零改动三件套=基线（20 failed|288 passed）；`bash scripts/smoke.sh` 新增 `web/040` 用例单跑通过、整体=基线逐条（57 → 58 预期）
+- [x] AC1 — 三域列表 JSON 契约：`GET /api/v1/users`、`/roles`、`/permissions` 分页响应列表项含 `updateTime`（非空 ISO-8601）且**不含** `updatedAt` 键；`createTime` 既有契约保持（同项并存断言）
+- [x] AC2 — 三域详情 JSON 契约（**2026-09-29 用户裁决收窄**：me 面拆 **web/040c**——实现期发现 `MeResponse.user` 实为 `dto.auth.UserVO`（6 参无时间字段，与 `dto.user.UserVO` 同名异类），修复需 +2 文件超 6 熔断，me RED 实证已留痕归 040c）：三域 `GET /{id}` 详情 data 含 `updateTime` 不含 `updatedAt`
+- [x] AC3 — 既有零回退：075 的 `TimestampFieldContractTest` createTime 断言保持全绿；`ModuleFieldContractTest` 3 例保持全绿；`ModuleControllerTest` 仅 :219 一处同步（:146/:177 模块域禁改保持）；`mvn -q verify` 失败集=基线逐条一致
+- [x] AC4 — 门禁与冒烟：后端 `mvn -q verify` 基线对照（150 用例 4F+2E → 本单 +2 = 152 预期）；前端零改动三件套=基线（20 failed|288 passed）；`bash scripts/smoke.sh` 新增 `web/040` 用例单跑通过、整体=基线逐条（57 → 58 预期）
 
 ### AC1 — 三域列表契约
 > Given 三域种子数据非空。When 请求三域分页列表。Then 首项同时含 `createTime` 与 `updateTime` 键、不含 `createdAt` 与 `updatedAt` 键。
@@ -71,10 +71,10 @@ sprint-075（web/039）评审时 Evaluator 改进建议②新发现的同族缺�
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | TimestampFieldContractTest#listsOutputUpdateTimeForUserRolePermissionDomain | AC1 | RED ✓→GREEN 待填 |
-| 2 | TimestampFieldContractTest#detailAndMeOutputUpdateTimeForUserRolePermissionDomain | AC2 | RED ✓→GREEN 待填 |
-| 3 | 门禁基线对照（mvn 150+2=152 预期 4F+2E；075/038c 契约类全绿；前端零改动） | AC3/AC4 | 待填 |
-| 4 | 冒烟 web/040 定向测试（追加 scripts/smoke.sh） | AC4-③ | 待填 |
+| 1 | TimestampFieldContractTest#listsOutputUpdateTimeForUserRolePermissionDomain | AC1 | GREEN ✓ 4/4 |
+| 2 | TimestampFieldContractTest#detailAndMeOutputUpdateTimeForUserRolePermissionDomain | AC2 | GREEN ✓ 4/4 |
+| 3 | 门禁基线对照（mvn 150+2=152 预期 4F+2E；075/038c 契约类全绿；前端零改动） | AC3/AC4 | 通过：mvn 152 4F+2E 失败六条=基线逐条；lint 124/test 20 failed\|288 passed/build ✓；ModuleFieldContractTest 3/3 |
+| 4 | 冒烟 web/040 定向测试（追加 scripts/smoke.sh） | AC4-③ | 通过：web/040 单跑 ✅（行7221），整体 58=47✅+9❌+2⏭️ 失败=基线逐条 |
 
 **行数红线**：`TimestampFieldContractTest` 扩展后 ≤500；三 VO 增量后 ≪500。
 
@@ -94,7 +94,16 @@ sprint-075（web/039）评审时 Evaluator 改进建议②新发现的同族缺�
 > 实现后复跑与 REFACTOR 复查（实时留痕）。
 
 ```text
-（待 Generator 填写）
+[GREEN] mvn -q -f backend/pom.xml test -Dtest='TimestampFieldContractTest,ModuleFieldContractTest,ModuleControllerTest' EXIT=0
+  TimestampFieldContractTest tests=4 failures=0 errors=0（RED 两用例转绿、既有 createTime 两用例保持绿）
+  ModuleFieldContractTest tests=3 failures=0 errors=0（038c 零回退）
+  ModuleControllerTest tests=11 failures=0 errors=0（:219 同步后、:146/:177 模块域保留 updatedAt）
+[GREEN] 修订版 RED 复验（stash 三 VO 后跑收窄版测试）：Tests run: 4, Failures: 2 —
+  listsOutputUpdateTimeForUserRolePermissionDomain:135 expected: <true> but was: <false>
+  detailOutputsUpdateTimeForUserRolePermissionDomain:161 No value at JSON path "$.data.updateTime"
+[GREEN] 实现要点：三 VO updatedAt 各 +1 行 @JsonProperty("updateTime")（dto/user、dto/role、dto/permission）；
+  ModuleControllerTest:219 权限域断言键 updatedAt→updateTime（:146/:177 模块域实证保留 2 处）；
+  执行时点 2026-09-29 实现后实时留痕。
 ```
 
 ## 门禁与冒烟记录
@@ -103,11 +112,11 @@ sprint-075（web/039）评审时 Evaluator 改进建议②新发现的同族缺�
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 150 用例 4F+2E → 本单 +2 | 待填 | 待填 |
-| `npm run lint` | EXIT=124 挂起基线 | 待填 | 待填 |
-| `npm run test` | 20 failed\|288 passed（前端零改动） | 待填 | 待填 |
-| `npm run build` | ✓ | 待填 | 待填 |
-| `bash scripts/smoke.sh` | 57=46✅+9❌+2⏭️ → 预期 58 | 待填 | 待填 |
+| 后端 `mvn -q verify` | 150 用例 4F+2E → 本单 +2 | **152 用例 4F+2E**（失败六条=基线逐条：DataSourceConfig×2、RoleController:466、SeedData、TestLayers/TestUtils 无 Docker） | 零新增 ✓ |
+| `npm run lint` | EXIT=124 挂起基线 | EXIT=124 | =基线 ✓ |
+| `npm run test` | 20 failed\|288 passed（前端零改动） | Test Files 6 failed\|30 passed、Tests **20 failed\|288 passed (308)** | =基线 ✓ |
+| `npm run build` | ✓ | ✓ built in 18.24s | 通过 ✓ |
+| `bash scripts/smoke.sh` | 57=46✅+9❌+2⏭️ → 预期 58 | **58=47✅+9❌+2⏭️**，web/040 单跑 ✅（行7221），9❌+2⏭️=基线逐条 | 追加 1 用例 ✓ |
 
 ## 拆分说明
 
@@ -136,6 +145,22 @@ sprint-075（web/039）评审时 Evaluator 改进建议②新发现的同族缺�
 4. `TimestampFieldContractTest.java` — 扩展 2 用例（测试先行）
 5. `ModuleControllerTest.java` — :219 单点同步
 6. `scripts/smoke.sh` — web/040 冒烟用例
+
+## 变更清单（Generator 产出）
+
+### 新增
+- （无）
+
+### 修改
+- `backend/src/main/java/com/authcore/dto/user/UserVO.java`:19-20 — `updatedAt` 组件加 `@JsonProperty("updateTime")`，输出键对齐前端读法（AC1/AC2）
+- `backend/src/main/java/com/authcore/dto/role/RoleVO.java`:17-18 — 同上（AC1/AC2）
+- `backend/src/main/java/com/authcore/dto/permission/PermissionVO.java`:19-20 — 同上（AC1/AC2）
+- `backend/src/test/java/com/authcore/controller/TimestampFieldContractTest.java`:115-171 — 扩展 2 用例（列表 updateTime 契约、三域详情 updateTime 契约）并按用户裁决 AC2 收窄去 me 段（RED `061817b` + 修订 `835de93`）
+- `backend/src/test/java/com/authcore/controller/ModuleControllerTest.java`:219 — 权限列表断言键 `updatedAt`→`updateTime` 单点同步（:146/:177 模块域禁改保留）
+- `scripts/smoke.sh`:425-426 — 追加 `web/040 更新时间字段对齐定向测试` 用例（+2 行，既有用例零改动）
+
+### 删除
+- （无）
 
 ## 评审记录
 
