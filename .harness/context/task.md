@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/040c（web/040 拆分第三段，me 面） |
 | 功能点名称 | 个人中心创建/更新时间修复——`/auth/me` 的 user 输出 createTime/updateTime |
-| 状态 | AWAITING_REVIEW（Generator done，RED `cb54af0` + GREEN `f37f988`，门禁冒烟实测齐，待 Evaluator 评审） |
+| 状态 | DONE（Evaluator 通过 2026-09-29，平均分 9.5/10，零否决项） |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -147,5 +147,7 @@
 - （无）
 
 ## 评审记录
+
+- **2026-09-29：✅ 通过（REWORK 0 次，平均分 9.5/10）** — Evaluator 亲测：定向 5+16+3+11 全绿、mvn `153 4F+2E`=基线六条逐条、前端 `20 failed|288 passed`+lint124+build19.84s（前端 diff=0）、冒烟 `59=48✅9❌2⏭️` web/040c ✅（行7322）+smoke 增量 +2 行取证、禁改面 diff=0、4 文件=清单一致零夹带、me 值非空日志实证（createdAt/updatedAt=2026-08-27T11:00:26）、提交链 `cb54af0 test:`→`f37f988 feat:` 物证、AuthServiceImpl:82 超宽行为预存行（diff 零超宽）历史债不计。评分=功能 9.5 / 质量 9.5 / 规范 9.5 / TDD 9.5 / 安全 9.5；六否决项零命中（否决6 沿基线对照裁决）。改进建议 4 条不计分：①me 用例补值断言 ②断言风格统一（连续三轮）③:82 预存超宽行治理 ④**web/040b 建议下轮排期**。
 
 - （待 Evaluator）
