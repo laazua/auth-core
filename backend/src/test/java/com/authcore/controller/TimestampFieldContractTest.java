@@ -17,10 +17,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * 创建时间字段 JSON 契约测试（web/039）。
- * 前端全站列表列与类型读 createTime（users/roles/profile IndexView 与 types/*），
- * 而 UserVO/RoleVO/PermissionVO 输出 createdAt 致三域创建时间恒显空；
- * 本类以 HTTP 层断言三域列表与详情的输出键名，驱动三 VO 加 @JsonProperty("createTime")。
+ * 时间字段 JSON 契约测试（web/039 createTime 三域 / web/040a updateTime 三域 / web/040c me 面）。
+ * 前端全站读 createTime/updateTime（users/roles/profile IndexView 与 types/*），
+ * 而 VO 输出 createdAt/updatedAt 致对应列/字段恒显空；
+ * 本类以 HTTP 层断言三域列表、详情与 /auth/me 的输出键名，驱动各 VO 加方案 B 注解。
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -163,5 +163,28 @@ class TimestampFieldContractTest {
                     .andExpect(jsonPath("$.data.updateTime").exists())
                     .andExpect(jsonPath("$.data.updatedAt").doesNotExist());
         }
+    }
+
+    /**
+     * AC1(web/040c): /auth/me 的 user 输出 createTime 与 updateTime 且不输出 createdAt/updatedAt。
+     * Given 管理员登录。
+     * When GET /api/v1/auth/me。
+     * Then data.user 含 createTime 与 updateTime（非空 ISO-8601）且不含 createdAt 与 updatedAt
+     * —— 修复个人中心创建/更新时间恒空（dto.auth.UserVO 同名异类根因，web/040c）。
+     */
+    @Test
+    @DisplayName("me 的 user 输出 createTime 与 updateTime 不输出 createdAt/updatedAt")
+    void meOutputsCreateTimeAndUpdateTime() throws Exception {
+        // Given
+        String token = getAdminToken();
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/auth/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.user.createTime").exists())
+                .andExpect(jsonPath("$.data.user.updateTime").exists())
+                .andExpect(jsonPath("$.data.user.createdAt").doesNotExist())
+                .andExpect(jsonPath("$.data.user.updatedAt").doesNotExist());
     }
 }

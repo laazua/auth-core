@@ -64,7 +64,7 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | TimestampFieldContractTest#meOutputsCreateTimeAndUpdateTime | AC1 | 待填（预期 RED：me.user 现无两键） |
+| 1 | TimestampFieldContractTest#meOutputsCreateTimeAndUpdateTime | AC1 | RED ✓→GREEN 待填 |
 | 2 | 门禁基线对照（mvn 152+1=153 预期 4F+2E；040a/038c 契约类全绿；前端零改动） | AC2/AC3 | 待填 |
 | 3 | 冒烟 web/040c 定向测试（追加 scripts/smoke.sh） | AC3-③ | 待填 |
 
@@ -75,7 +75,10 @@
 > Generator 于实现前执行测试清单 #1 并粘贴关键失败输出（实时留痕，不得事后补记）。
 
 ```text
-（待 Generator 填写）
+[RED] Tests run: 5, Failures: 1, Errors: 0 — com.authcore.controller.TimestampFieldContractTest
+  meOutputsCreateTimeAndUpdateTime:185 No value at JSON path "$.data.user.createTime"
+  （040a 四用例 createTime/updateTime 列表与详情保持绿；me.user 现无时间键与 076 061817b 留痕一致）
+[RED] 执行时点：2026-09-29 实现前（TDD 第 1 拍），mvn -q -f backend/pom.xml test -Dtest='TimestampFieldContractTest' EXIT=1
 ```
 
 > 实现后复跑与 REFACTOR 复查（实时留痕）。
