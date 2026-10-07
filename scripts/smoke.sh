@@ -423,6 +423,8 @@ smoke_case "web-038e 模块进入闭环定向测试" bash -c "
 smoke_case "web/039 创建时间字段对齐定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='TimestampFieldContractTest'
 # web/040：更新时间字段三域对齐（user/role/permission 三域 updateTime JSON 契约）定向测试
 smoke_case "web/040 更新时间字段对齐定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='TimestampFieldContractTest'
+# web/040c：me 面个人中心 createTime/updateTime 修复（dto.auth.UserVO 时间字段）定向测试
+smoke_case "web/040c me 面时间字段修复定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='TimestampFieldContractTest'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
