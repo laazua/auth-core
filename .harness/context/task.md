@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/040c（web/040 拆分第三段，me 面） |
 | 功能点名称 | 个人中心创建/更新时间修复——`/auth/me` 的 user 输出 createTime/updateTime |
-| 状态 | PLANNED |
+| 状态 | AWAITING_REVIEW（Generator done，RED `cb54af0` + GREEN `f37f988`，门禁冒烟实测齐，待 Evaluator 评审） |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -39,9 +39,9 @@
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — me 时间字段契约：管理员登录后 `GET /api/v1/auth/me` 响应 `data.user` 同时含 `createTime` 与 `updateTime` 键（值非空 ISO-8601 字符串），且不含 `createdAt`/`updatedAt` 键
-- [ ] AC2 — 既有零回退：040a 的 `TimestampFieldContractTest` 四用例（createTime 列表/详情、updateTime 列表/详情）保持全绿；`ModuleFieldContractTest` 3 例、`ModuleControllerTest` 11 例保持全绿；`mvn -q verify` 失败集=基线逐条一致
-- [ ] AC3 — 门禁与冒烟：后端 `mvn -q verify` 基线对照（152 用例 4F+2E → 本单 +1 = 153 预期）；前端零改动三件套=基线（lint 124 / 20 failed|288 passed / build ✓）；`bash scripts/smoke.sh` 新增 `web/040c` 用例单跑通过、整体=基线逐条（58 → 59 预期）
+- [x] AC1 — me 时间字段契约：管理员登录后 `GET /api/v1/auth/me` 响应 `data.user` 同时含 `createTime` 与 `updateTime` 键（值非空 ISO-8601 字符串），且不含 `createdAt`/`updatedAt` 键
+- [x] AC2 — 既有零回退：040a 的 `TimestampFieldContractTest` 四用例（createTime 列表/详情、updateTime 列表/详情）保持全绿；`ModuleFieldContractTest` 3 例、`ModuleControllerTest` 11 例保持全绿；`mvn -q verify` 失败集=基线逐条一致
+- [x] AC3 — 门禁与冒烟：后端 `mvn -q verify` 基线对照（152 用例 4F+2E → 本单 +1 = 153 预期）；前端零改动三件套=基线（lint 124 / 20 failed|288 passed / build ✓）；`bash scripts/smoke.sh` 新增 `web/040c` 用例单跑通过、整体=基线逐条（58 → 59 预期）
 
 ### AC1 — me 时间字段契约
 > Given 管理员登录持有有效 token。When `GET /api/v1/auth/me`。Then `data.user` 含 `createTime` 与 `updateTime`（非空 ISO-8601）且不含 `createdAt` 与 `updatedAt`。
@@ -64,9 +64,9 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | TimestampFieldContractTest#meOutputsCreateTimeAndUpdateTime | AC1 | RED ✓→GREEN 待填 |
-| 2 | 门禁基线对照（mvn 152+1=153 预期 4F+2E；040a/038c 契约类全绿；前端零改动） | AC2/AC3 | 待填 |
-| 3 | 冒烟 web/040c 定向测试（追加 scripts/smoke.sh） | AC3-③ | 待填 |
+| 1 | TimestampFieldContractTest#meOutputsCreateTimeAndUpdateTime | AC1 | GREEN ✓ 5/5 |
+| 2 | 门禁基线对照（mvn 152+1=153 预期 4F+2E；040a/038c 契约类全绿；前端零改动） | AC2/AC3 | 通过：mvn 153 4F+2E 失败六条=基线逐条；35 用例定向全绿（Timestamp 5+Auth 16+ModuleField 3+ModuleController 11）；lint 124/test 20 failed\|288/build ✓ |
+| 3 | 冒烟 web/040c 定向测试（追加 scripts/smoke.sh） | AC3-③ | 通过：web/040c 单跑 ✅（行7322），整体 59=48✅+9❌+2⏭️ 失败=基线逐条 |
 
 **行数红线**：`TimestampFieldContractTest` 扩展后 ≤500；`dto.auth.UserVO` 增量后 ≪500；`AuthServiceImpl` 现 <500 行、增量 +2 行。
 
@@ -84,7 +84,13 @@
 > 实现后复跑与 REFACTOR 复查（实时留痕）。
 
 ```text
-（待 Generator 填写）
+[GREEN] mvn -q -f backend/pom.xml test -Dtest='TimestampFieldContractTest,AuthControllerTest,ModuleFieldContractTest,ModuleControllerTest' EXIT=0
+  TimestampFieldContractTest tests=5 failures=0（me 用例转绿、040a 四用例保持绿）
+  AuthControllerTest tests=16 failures=0（R3 预判验证：字段级断言加时间键零回退）
+  ModuleFieldContractTest tests=3 failures=0 / ModuleControllerTest tests=11 failures=0（零回退）
+[GREEN] 实现要点：① dto.auth.UserVO +2 参（createdAt/updatedAt）+ @JsonProperty("createTime")/("updateTime")；
+  ② AuthServiceImpl.toUserVO 补 user.getCreatedAt()/getUpdatedAt() 两实参；③ smoke +2 行 web/040c。
+  执行时点 2026-09-29 实现后实时留痕。
 ```
 
 ## 门禁与冒烟记录
@@ -93,11 +99,11 @@
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 152 用例 4F+2E → 本单 +1 | 待填 | 待填 |
-| `npm run lint` | EXIT=124 挂起基线 | 待填 | 待填 |
-| `npm run test` | 20 failed\|288 passed（前端零改动） | 待填 | 待填 |
-| `npm run build` | ✓ | 待填 | 待填 |
-| `bash scripts/smoke.sh` | 58=47✅+9❌+2⏭️ → 预期 59 | 待填 | 待填 |
+| 后端 `mvn -q verify` | 152 用例 4F+2E → 本单 +1 | **153 用例 4F+2E**（失败六条=基线逐条：DataSourceConfig×2、RoleController:466、SeedData、TestLayers/TestUtils 无 Docker） | 零新增 ✓ |
+| `npm run lint` | EXIT=124 挂起基线 | EXIT=124 | =基线 ✓ |
+| `npm run test` | 20 failed\|288 passed（前端零改动） | Test Files 6 failed\|30 passed、Tests **20 failed\|288 passed (308)** | =基线 ✓ |
+| `npm run build` | ✓ | ✓ built in 19.61s | 通过 ✓ |
+| `bash scripts/smoke.sh` | 58=47✅+9❌+2⏭️ → 预期 59 | **59=48✅+9❌+2⏭️**，web/040c 单跑 ✅（行7322），9❌+2⏭️=基线逐条 | 追加 1 用例 ✓ |
 
 ## 拆分说明
 
@@ -125,6 +131,20 @@
 2. `service/impl/AuthServiceImpl.java` — `toUserVO` 填值
 3. `TimestampFieldContractTest.java` — 新增 me 用例（测试先行）
 4. `scripts/smoke.sh` — web/040c 冒烟用例
+
+## 变更清单（Generator 产出）
+
+### 新增
+- （无）
+
+### 修改
+- `backend/src/main/java/com/authcore/dto/auth/UserVO.java`:12-20 — record 加 `createdAt`/`updatedAt` 两参 + `@JsonProperty("createTime")`/`@JsonProperty("updateTime")`（方案 B 四连），import `JsonProperty`/`LocalDateTime`（AC1）
+- `backend/src/main/java/com/authcore/service/impl/AuthServiceImpl.java`:133-134 — `toUserVO` 补 `user.getCreatedAt()`/`user.getUpdatedAt()` 两实参填值（AC1）
+- `backend/src/test/java/com/authcore/controller/TimestampFieldContractTest.java`:158-189 + 类 Javadoc — 新增 `meOutputsCreateTimeAndUpdateTime` 用例（测试先行，RED `cb54af0`）、类 Javadoc 扩展至 039/040a/040c 三段覆盖面（AC1/AC2）
+- `scripts/smoke.sh`:427-428 — 追加 `web/040c me 面时间字段修复定向测试` 用例（+2 行，既有用例零改动）（AC3-③）
+
+### 删除
+- （无）
 
 ## 评审记录
 
