@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/040a（web/040 拆分首段） |
 | 功能点名称 | 更新时间字段对齐·三域（user/role/permission）——JSON 输出 `updateTime` 与前端读法收敛 |
-| 状态 | AWAITING_REVIEW（Generator done，RED `061817b`+AC收窄 `835de93`+GREEN `59bf5cf`，门禁冒烟实测齐，待 Evaluator 评审） |
+| 状态 | DONE（Evaluator 通过 2026-09-29，平均分 9.4/10，零否决项） |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -163,5 +163,7 @@ sprint-075（web/039）评审时 Evaluator 改进建议②新发现的同族缺�
 - （无）
 
 ## 评审记录
+
+- **2026-09-29：✅ 通过（REWORK 0 次，平均分 9.4/10）** — Evaluator 亲测：定向 4+3+11 全绿（surefire）、mvn `152 4F+2E`=基线六条逐条、前端 `20 failed|288 passed`+lint124+build19.58s（前端 diff=0）、冒烟 `58=47✅9❌2⏭️` web/040 ✅（行7221）+smoke 增量 +2 行 git diff 取证、禁改面 diff=0（ModuleVO/architecture/frontend）、提交链 `061817b test:`→`835de93 test:AC收窄`→`59bf5cf feat:` 物证；AC2 收窄合法性三证核可（用户答卷+两 UserVO 实证+me RED 留痕）。评分=功能 9.5 / 质量 9 / 规范 9.5 / TDD 9.5 / 安全 9.5；六否决项零命中（否决6 沿基线对照裁决）。改进建议 3 条不计分：①static import 风格统一 ②详情用例同构合并 ③**web/040c 优先排期**（dto.auth.UserVO 时间字段，兑现个人中心修复）。
 
 - （待 Evaluator）
