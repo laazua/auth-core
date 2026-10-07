@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * 时间字段 JSON 契约测试（web/039 createTime 三域 / web/040a updateTime 三域 / web/040c me 面）。
+ * 时间字段 JSON 契约测试（web/039 createTime 三域 / web/040a updateTime 三域 / web/040c me 面 / web/040b1 模块域 updateTime）。
  * 前端全站读 createTime/updateTime（users/roles/profile IndexView 与 types/*），
  * 而 VO 输出 createdAt/updatedAt 致对应列/字段恒显空；
  * 本类以 HTTP 层断言三域列表、详情与 /auth/me 的输出键名，驱动各 VO 加方案 B 注解。
@@ -186,5 +186,39 @@ class TimestampFieldContractTest {
                 .andExpect(jsonPath("$.data.user.updateTime").exists())
                 .andExpect(jsonPath("$.data.user.createdAt").doesNotExist())
                 .andExpect(jsonPath("$.data.user.updatedAt").doesNotExist());
+    }
+
+    /**
+     * AC1/AC2(web/040b1): 模块域列表与详情输出 updateTime 且不输出 updatedAt/createdAt。
+     * Given 管理员登录（模块种子数据保证列表非空）。
+     * When GET /modules 列表、GET /modules/{id} 详情。
+     * Then 列表项与详情 data 含 updateTime 键且不含 updatedAt 与 createdAt 键
+     * —— 四 VO 对称收口（dto.module.ModuleVO，web/040b1）。
+     */
+    @Test
+    @DisplayName("模块域列表与详情输出 updateTime 不输出 updatedAt/createdAt")
+    void moduleListsAndDetailOutputUpdateTime() throws Exception {
+        // Given
+        String token = getAdminToken();
+
+        // When & Then: 列表
+        String json = getListJson("/api/v1/modules", token);
+        var records = JSON.readTree(json).path("data").path("records");
+        org.junit.jupiter.api.Assertions.assertTrue(records.size() > 0,
+                "/api/v1/modules 分页第一页应非空");
+        org.junit.jupiter.api.Assertions.assertTrue(records.get(0).has("updateTime"),
+                "/api/v1/modules 列表项应含 updateTime 键");
+        org.junit.jupiter.api.Assertions.assertFalse(records.get(0).has("updatedAt"),
+                "/api/v1/modules 列表项不应含 updatedAt 键");
+        org.junit.jupiter.api.Assertions.assertFalse(records.get(0).has("createdAt"),
+                "/api/v1/modules 列表项不应含 createdAt 键");
+
+        // When & Then: 详情
+        long id = records.get(0).path("id").asLong();
+        mockMvc.perform(get("/api/v1/modules/" + id)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.updateTime").exists())
+                .andExpect(jsonPath("$.data.updatedAt").doesNotExist());
     }
 }

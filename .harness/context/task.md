@@ -66,7 +66,7 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | TimestampFieldContractTest#moduleListsAndDetailOutputUpdateTime | AC1/AC2 | 待填（预期 RED：模块现输出 `updatedAt`） |
+| 1 | TimestampFieldContractTest#moduleListsAndDetailOutputUpdateTime | AC1/AC2 | RED ✓→GREEN 待填 |
 | 2 | 门禁基线对照（mvn 153+1=154 预期 4F+2E；038c/039/040a/040c 契约类全绿；前端零改动） | AC3/AC4 | 待填 |
 | 3 | 冒烟 web/040b1 定向测试（追加 scripts/smoke.sh） | AC4-③ | 待填 |
 
@@ -77,7 +77,10 @@
 > Generator 于实现前执行测试清单 #1 并粘贴关键失败输出（实时留痕，不得事后补记）。
 
 ```text
-（待 Generator 填写）
+[RED] Tests run: 6, Failures: 1, Errors: 0 — com.authcore.controller.TimestampFieldContractTest
+  moduleListsAndDetailOutputUpdateTime:209 /api/v1/modules 列表项应含 updateTime 键 ==> expected: <true> but was: <false>
+  （既有 5 用例 createTime/updateTime 三域与 me 面保持绿；模块列表现无 updateTime 键）
+[RED] 执行时点：2026-09-29 实现前（TDD 第 1 拍），mvn -q -f backend/pom.xml test -Dtest='TimestampFieldContractTest' EXIT=1
 ```
 
 > 实现后复跑与 REFACTOR 复查（实时留痕）。
