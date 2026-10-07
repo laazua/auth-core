@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-29: Evaluator — pass sprint-077（web/040c ✅ 9.5/10，AC 3/3 亲测、mvn 153 4F+2E=基线+1、前端零改动 20 failed|288 passed、冒烟 59=48✅9❌2⏭️ web/040c ✅、六否决项零命中；个人中心两时间恒空收口，040b 建议下轮）
+
 - 2026-09-29: Generator — done sprint-077（web/040c me 面个人中心 createTime/updateTime 修复，门禁+冒烟通过：RED `cb54af0` 1 failed→GREEN `f37f988` 35/35 定向全绿，mvn 153 用例 4F+2E=基线+1，前端零改动三件套=基线，冒烟 59=48✅+9❌+2⏭️ web/040c ✅ 行7322）
 
 - 2026-09-29: Planner — kickoff sprint-077（web/040c，3 条验收标准，me 面个人中心 createTime/updateTime 修复：dto.auth.UserVO 同名异类根因、4 文件不拆，用户裁决拆出+Evaluator 建议优先在案）
