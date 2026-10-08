@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/023（sprint-047 遗留收口，源码层移除） |
 | 功能点名称 | 移除整个标签页栏 TagsView——源码层删除与测试同步收口 |
-| 状态 | PLANNED |
+| 状态 | AWAITING_REVIEW |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -36,10 +36,10 @@
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — 源码层移除：`frontend/src/components/Layout/TagsView.vue` 文件不存在；全仓源码（`frontend/src/`，排除 `__tests__`/spec 内删除态断言自身）零 `TagsView` 引用；`components.d.ts` 无 TagsView 声明
-- [ ] AC2 — 测试同步收口：`tags-view-actions-removed.spec` 与 `tags-view-dropdown-removed.spec` 改写为「组件文件不存在」删除态断言（RED=改写时组件尚在）；`DefaultLayout.spec` AC4 段同步（renders→不存在，布局已移除）；处置后前端 `npm run test` **20 failed→15 failed（预期精确值，失败清单=原 20 减 TagsView 5 条，逐条核对无新增）**
-- [ ] AC3 — 冒烟同步：`web-021/022` 断言语义更新（移除「保留 `tags-view__context-menu`」过时断言，改为产物无相关样式/与 web-023 整体移除一致）；`web-023` 既有用例保持 ✅；`bash scripts/smoke.sh` 变化=原 9❌ 中 web-021/022 **预期转绿**（9→7❌），其余逐条=基线，整体用例数=61 不变
-- [ ] AC4 — 门禁：`mvn -q verify` 154 4F+2E=基线（零后端改动）；前端 lint=124 基线、build ✓；test 与冒烟变化**仅允许上述预期改善**（改善=基线变好，登记实测值，无新增失败）
+- [x] AC1 — 源码层移除：`frontend/src/components/Layout/TagsView.vue` 文件不存在；全仓源码（`frontend/src/`，排除 `__tests__`/spec 内删除态断言自身）零 `TagsView` 引用；`components.d.ts` 无 TagsView 声明
+- [x] AC2 — 测试同步收口：`tags-view-actions-removed.spec` 与 `tags-view-dropdown-removed.spec` 改写为「组件文件不存在」删除态断言（RED=改写时组件尚在）；`DefaultLayout.spec` AC4 段同步（renders→不存在，布局已移除）；处置后前端 `npm run test` **20 failed→15 failed（预期精确值，失败清单=原 20 减 TagsView 5 条，逐条核对无新增）**
+- [x] AC3 — 冒烟同步（**口径修订：用例数 61→62**，见挂起区登记）：`web-021/022` 断言语义更新（移除「保留 `tags-view__context-menu`」过时断言，改为产物无相关样式/与 web-023 整体移除一致）；`web-023` 既有用例保持 ✅；`bash scripts/smoke.sh` 变化=原 9❌ 中 web-021/022 **预期转绿**（9→7❌），其余逐条=基线，整体用例数原写 61 不变——**Generator 口径修订为 62**（tdd-workflow 强制追加 web-023-src，已登记挂起区）
+- [x] AC4 — 门禁：`mvn -q verify` 154 4F+2E=基线（零后端改动）；前端 lint=124 基线、build ✓；test 与冒烟变化**仅允许上述预期改善**（改善=基线变好，登记实测值，无新增失败）
 
 ### AC1 — 源码移除
 > When 删除组件与声明。Then 文件不存在、源码零引用。
@@ -54,7 +54,7 @@
 ### AC3 — 冒烟同步
 > When web-021/022 断言语义同步。Then 转绿、web-023 保持、其余=基线。
 
-**用例**：`AC3 ← bash scripts/smoke.sh 61 用例逐条`
+**用例**：`AC3 ← bash scripts/smoke.sh 62 用例逐条（61+web-023-src）`
 
 ### AC4 — 门禁
 > mvn/前端三线与冒烟=基线或预期改善。
@@ -67,10 +67,10 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | tags-view-actions-removed / tags-view-dropdown-removed 改写为删除态断言（先行 RED：existsSync=true 断言失败） | AC1/AC2 | 待填 |
-| 2 | DefaultLayout.spec AC4 段同步（renders→not exists） | AC2 | 待填 |
-| 3 | 门禁：mvn 154 + 前端 lint124/**15 failed 预期**/build ✓ | AC4 | 待填 |
-| 4 | 冒烟 61 用例（web-021/022 预期转绿、web-023 保持 ✅、9→7❌ 预期） | AC3/AC4 | 待填 |
+| 1 | tags-view-actions-removed / tags-view-dropdown-removed 改写为删除态断言（先行 RED：existsSync=true 断言失败） | AC1/AC2 | ✅ RED 7 failed\|11 passed → GREEN 定向 21/21 |
+| 2 | DefaultLayout.spec AC4 段同步（renders→not exists） | AC2 | ✅ not-exists 绿（组件已无） |
+| 3 | 门禁：mvn 154 + 前端 lint124/**15 failed 预期**/build ✓ | AC4 | ✅ mvn 154 4F+2E=基线、**15 failed\|293 passed (308) 精确**、build ✓、lint 定向 0 问题/全量 124=基线 |
+| 4 | 冒烟 62 用例（61+web-023-src；web-021/022 转绿、web-023 保持 ✅、9→7❌ 预期） | AC3/AC4 | ✅ **62=53✅+7❌+2⏭️** 精确（❌=基线 9 减 021/022，四条本单用例全绿） |
 
 ## RED 证据
 
@@ -95,7 +95,11 @@ FAIL DefaultLayout.spec > AC4 renders TagsView component — expected false to b
 > 实现后复跑与 REFACTOR 复查。
 
 ```text
-（待 Generator 填写）
+[GREEN-定向] npx vitest run（3 改写 spec + default-layout-tagsview-removed）：Test Files 4 passed (4)，Tests 21 passed (21)
+[GREEN-全量] npx vitest run：Tests 15 failed | 293 passed (308)——失败清单恰=基线 20 减 TagsView 5（auth-token 2 + LoginView 2 + system/IndexView 11），零新增（R1 精确命中）；Test Files 3 failed | 33 passed（基线 6 failed 减 3）
+[lint] npx eslint 本单 2 新 spec --fix 后复跑=0 问题；DefaultLayout.spec :72 any / :183 缺 EOF 换行经 git show HEAD: 对照=HEAD 即有（预存，不动、登记挂起区）
+[build] vue-tsc --noEmit && vite build ✓ EXIT=0（17.19s）；components.d.ts 由 unplugin 自动重生成减 1 行（R2 结论=build 自动清，免手动）
+[smoke] bash scripts/smoke.sh：62 用例=53✅+7❌+2⏭️——❌恰=基线 9 减 web-021/022；web-021/022/023/023-src 四条全✅；⏭=infra-004/model-006
 ```
 
 ## 门禁与冒烟记录
@@ -104,11 +108,11 @@ FAIL DefaultLayout.spec > AC4 renders TagsView component — expected false to b
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 154 用例 4F+2E | 待填 | 待填 |
-| `npm run lint` | EXIT=124 | 待填 | 待填 |
-| `npm run test` | 20 failed\|288 passed → **预期 15 failed\|293 passed（308 不变）** | 待填 | 待填 |
-| `npm run build` | ✓ | 待填 | 待填 |
-| `bash scripts/smoke.sh` | 61=50✅+9❌+2⏭️ → **预期 61=52✅+7❌+2⏭️**（web-021/022 转绿） | 待填 | 待填 |
+| 后端 `mvn -q verify` | 154 用例 4F+2E | 154 用例 Failures:4 Errors:2（DataSourceConfigBinding×2/RoleController:466/SeedData:99/TestLayers/TestUtils） | ✅ 逐条=基线（veto-6 豁免） |
+| `npm run lint` | EXIT=124 | 全量 timeout 300s=124（=基线）；定向 eslint 本单 3 文件=2 新 spec 0 问题、DefaultLayout.spec 2 处 HEAD 预存 | ✅ 零新增 |
+| `npm run test` | 20 failed\|288 passed → **预期 15 failed\|293 passed（308 不变）** | **15 failed\|293 passed (308)**，清单=原 20 减 TagsView 5 零新增 | ✅ 精确命中 |
+| `npm run build` | ✓ | ✓ EXIT=0（17.19s）+ d.ts 自动重生成 | ✅ |
+| `bash scripts/smoke.sh` | 61=50✅+9❌+2⏭️ → **口径修订 62=53✅+7❌+2⏭️**（021/022 转绿 + web-023-src 新增） | **62=53✅+7❌+2⏭️**；❌=model-008/010+roles-001/002+web-013/020/026（基线 9 减 021/022） | ✅ 精确命中 |
 
 ## 拆分说明
 

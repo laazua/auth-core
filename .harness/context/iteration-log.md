@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-10-08: Generator — done sprint-081（web/023 源码层收口，门禁+冒烟通过：RED `8afdb93` 7 failed|11 passed（6 删除面红+AC4 基线红+1 保留面守卫绿，证据实时入 task 随 RED 提交）→ GREEN `c5a1213` 定向 21/21、全量 **15 failed|293 passed (308)**=原 20 减 TagsView 5 零新增；mvn 154 4F+2E=基线、lint 我的 2 spec 0 问题（DefaultLayout.spec 2 处 HEAD 预存已登记）、build ✓ 且 d.ts 自动重生成（R2 结论）；冒烟 **62=53✅+7❌+2⏭️**（web-021/022 转绿、web-023-src 新增 ✅、❌=基线 9 减 2 精确）；AC3 口径修订 61→62 登记挂起区；文件 6=上限）→ 移交 Evaluator 评审
+
 - 2026-09-29: Planner — kickoff sprint-081（web/023 源码层收口，4 条验收标准/6 文件=上限；半完成态考古：布局层已移除（1d934de、removed spec 3/3、smoke web-023 ✅）+源码四件遗留（孤儿组件、5 条基线红 spec、d.ts 声明、smoke 021/022「保留右键菜单」语义过时=❌根因）；047 期 4 AC 快照丢失本单重建登记；预期 test 20→15/冒烟 9→7❌ 改善）
 
 - 2026-09-29: Evaluator — pass sprint-080 积压评审轮·第一轮（五项全 PASS：web/017 9.3/web/024 8.4 考古风险不判退（当前态+依赖链证据）/web/030 9.2/web/031 9.1/web/032 9.1；共享门禁 mvn154+冒烟61+前端三件套逐条=基线；五项功能探针全存活（031 :loading=submitting、030 双端接口、032 vite/nginx、024 audit 1/1、017 spec 绿）；**积压清单清零**；P1 024 证据链断裂/P2 task 快照覆盖/P3 大杂烩提交登记）
