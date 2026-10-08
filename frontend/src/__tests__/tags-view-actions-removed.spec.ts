@@ -2,57 +2,51 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const tagsViewPath = path.resolve(__dirname, '../../src/components/Layout/TagsView.vue');
-const tagsViewSource = fs.readFileSync(tagsViewPath, 'utf-8');
+const srcRoot = path.resolve(__dirname, '../..');
+const tagsViewPath = path.join(srcRoot, 'src/components/Layout/TagsView.vue');
 
-const templateStart = tagsViewSource.indexOf('<template>');
-const templateEnd = tagsViewSource.lastIndexOf('</template>');
-const template = templateStart !== -1 && templateEnd !== -1 && templateEnd > templateStart
-  ? tagsViewSource.slice(templateStart + 10, templateEnd)
-  : '';
-const scriptMatch = tagsViewSource.match(/<script setup lang="ts">([\s\S]*?)<\/script>/);
+// 源码扫描面：src/ 下 .vue/.ts/.scss，排除测试文件（AC1 口径=非测试源码，含 components.d.ts）
+function collectSourceFiles(): string[] {
+  const entries = fs.readdirSync(path.join(srcRoot, 'src'), { recursive: true }) as string[];
+  return entries
+    .map((entry) => path.join(srcRoot, 'src', entry))
+    .filter((full) => fs.statSync(full).isFile())
+    .filter((full) => {
+      const rel = path.relative(srcRoot, full);
+      return /\.(vue|ts|scss)$/.test(rel) && !rel.includes('__tests__') && !rel.endsWith('.spec.ts');
+    });
+}
 
+function filesContaining(keyword: string): string[] {
+  return collectSourceFiles().filter((full) => fs.readFileSync(full, 'utf-8').includes(keyword));
+}
+
+// web/023 源码层收口：020 期「操作区移除」断言语义升级为「整体移除」删除态断言
 describe('TagsViewActionsRemovedSpec', () => {
-  it('actionsAreaRemoved — 模板中不存在 .tags-view__actions 与 .tags-view__refresh', () => {
-    expect(template).not.toBe('');
+  it('tagsViewComponentFileRemoved — TagsView.vue 组件文件已整体移除', () => {
+    // Arrange: 删除态断言目标=组件文件路径
+    // Act
+    const exists = fs.existsSync(tagsViewPath);
 
-    expect(template).not.toContain('class="tags-view__actions"');
-    expect(template).not.toContain('class="tags-view__refresh"');
+    // Assert: 组件文件不存在（回归面=重新加入组件）
+    expect(exists).toBe(false);
   });
 
-  it('actionCodeRemoved — 脚本中移除 refreshTag 方法，保留 RefreshRight 导入供右键菜单使用', () => {
-    expect(scriptMatch).not.toBeNull();
-    const script = scriptMatch![1];
+  it('sourceNoTagsViewIdentifierReference — 源码零 TagsView 标识引用（含 components.d.ts，排除测试）', () => {
+    // Arrange: 扫描非测试源码中的标识引用
+    // Act
+    const hits = filesContaining('TagsView');
 
-    // refreshTag 方法已移除（操作区域按钮专用，右键菜单通过 handleContextCommand 调用）
-    expect(script).not.toContain('refreshTag');
-
-    // RefreshRight 图标导入保留（右键菜单仍需）
-    expect(script).toContain('RefreshRight');
+    // Assert: 命中清单为空（回归面=任意源文件重新引用组件标识）
+    expect(hits).toEqual([]);
   });
 
-  it('contextMenuIntact — 右键上下文菜单完整保留四项功能', () => {
-    expect(template).not.toBe('');
+  it('sourceNoTagsViewClassLeftover — 源码零 tags-view 类名残留（组件样式随移除清除）', () => {
+    // Arrange: 扫描非测试源码中的样式类名残留
+    // Act
+    const hits = filesContaining('tags-view');
 
-    // 上下文菜单容器存在
-    expect(template).toContain('class="tags-view__context-menu"');
-    // 四个菜单项：刷新、关闭当前、关闭其他、关闭所有
-    expect(template).toContain("handleContextCommand('refresh')");
-    expect(template).toContain("handleContextCommand('close')");
-    expect(template).toContain("handleContextCommand('closeOther')");
-    expect(template).toContain("handleContextCommand('closeAll')");
-
-    expect(scriptMatch).not.toBeNull();
-    const script = scriptMatch![1];
-
-    // 相关状态保留
-    expect(script).toContain('contextMenuVisible');
-    expect(script).toContain('contextMenuTarget');
-    expect(script).toContain('contextMenuStyle');
-    // handleContextCommand 保留四个 case
-    expect(script).toContain("case 'refresh':");
-    expect(script).toContain("case 'close':");
-    expect(script).toContain("case 'closeOther':");
-    expect(script).toContain("case 'closeAll':");
+    // Assert: 命中清单为空（回归面=标签栏样式残留在其他源文件）
+    expect(hits).toEqual([]);
   });
 });

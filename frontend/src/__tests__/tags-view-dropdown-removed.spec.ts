@@ -2,75 +2,59 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const tagsViewPath = path.resolve(__dirname, '../../src/components/Layout/TagsView.vue');
-const tagsViewSource = fs.readFileSync(tagsViewPath, 'utf-8');
+const srcRoot = path.resolve(__dirname, '../..');
+const dtsPath = path.join(srcRoot, 'src/components.d.ts');
+const layoutPath = path.join(srcRoot, 'src/layouts/DefaultLayout.vue');
 
-// 处理 Vue SFC 嵌套 template：找到第一个 <template> 和最后一个 </template> 之间的内容
-const templateStart = tagsViewSource.indexOf('<template>');
-const templateEnd = tagsViewSource.lastIndexOf('</template>');
-const template = templateStart !== -1 && templateEnd !== -1 && templateEnd > templateStart
-  ? tagsViewSource.slice(templateStart + 10, templateEnd)
-  : '';
-const scriptMatch = tagsViewSource.match(/<script setup lang="ts">([\s\S]*?)<\/script>/);
+// 源码扫描面：src/ 下全部文件（文件名与内容两级扫描，排除测试文件）
+function collectSourceFiles(): string[] {
+  const entries = fs.readdirSync(path.join(srcRoot, 'src'), { recursive: true }) as string[];
+  return entries
+    .map((entry) => path.join(srcRoot, 'src', entry))
+    .filter((full) => fs.statSync(full).isFile())
+    .filter((full) => {
+      const rel = path.relative(srcRoot, full);
+      return !rel.includes('__tests__') && !rel.endsWith('.spec.ts');
+    });
+}
 
+// web/023 源码层收口：022 期「下拉移除」断言语义升级为「整体移除」删除态断言 + 保留面守卫
 describe('TagsViewDropdownRemovedSpec', () => {
-  it('dropdownRemoved — 模板中不存在 el-dropdown/el-dropdown-menu/el-dropdown-item', () => {
-    expect(template).not.toBe('');
+  it('componentsDtsNoTagsViewDeclaration — components.d.ts 无 TagsView 自动声明（TRACKED 文件防残留）', () => {
+    // Arrange: 自动声明文件在库内，需随组件移除同步清零
+    // Act
+    const dts = fs.readFileSync(dtsPath, 'utf-8');
 
-    expect(template).not.toContain('<el-dropdown');
-    expect(template).not.toContain('<el-dropdown-menu');
-    expect(template).not.toContain('<el-dropdown-item');
+    // Assert: 声明文件不含 TagsView（回归面=unplugin 残留或重新生成）
+    expect(dts).not.toContain('TagsView');
   });
 
-  it('interactionCodeRemoved — 脚本中移除 showMore（下拉菜单专用），保留 closeOtherTags/closeAllTags（右键菜单仍需）', () => {
-    expect(scriptMatch).not.toBeNull();
-    const script = scriptMatch![1];
+  it('noTagsViewSfcFileAnywhere — src 目录树不存在任意 TagsView*.vue（防换路径复加）', () => {
+    // Arrange: 文件名级扫描不限定既知路径
+    // Act
+    const hits = collectSourceFiles().filter((full) => /^TagsView.*\.vue$/.test(path.basename(full)));
 
-    // showMore 状态已移除（仅下拉菜单使用）
-    expect(script).not.toContain('showMore');
-
-    // closeOtherTags 和 closeAllTags 方法保留（右键菜单通过 handleContextCommand 调用）
-    expect(script).toContain('closeOtherTags');
-    expect(script).toContain('closeAllTags');
+    // Assert: 命中清单为空（回归面=组件以其他路径重新加入）
+    expect(hits).toEqual([]);
   });
 
-  it('refreshButtonRetained — 保留刷新按钮及功能', () => {
-    expect(template).not.toBe('');
+  it('sourceNoRefreshTagSymbol — 源码零 refreshTag 符号（操作区刷新入口随组件移除）', () => {
+    // Arrange: 内容级扫描 020 期操作区入口符号
+    // Act
+    const hits = collectSourceFiles()
+      .filter((full) => /\.(vue|ts)$/.test(full))
+      .filter((full) => fs.readFileSync(full, 'utf-8').includes('refreshTag'));
 
-    // 存在刷新按钮
-    expect(template).toContain('class="tags-view__refresh"');
-    // 绑定点击事件
-    expect(template).toContain('@click="refreshTag(activeTab)"');
-
-    expect(scriptMatch).not.toBeNull();
-    const script = scriptMatch![1];
-
-    // refreshTag 方法保留
-    expect(script).toContain('refreshTag');
+    // Assert: 命中清单为空（回归面=孤立函数残留在其他源文件）
+    expect(hits).toEqual([]);
   });
 
-  it('contextMenuIntact — 右键上下文菜单完整保留四项功能', () => {
-    expect(template).not.toBe('');
+  it('layoutContentHeightCompensated — DefaultLayout contentStyle minHeight 为 calc(100vh - 60px)（标签栏移除后高度补偿守卫）', () => {
+    // Arrange: 保留面守卫——标签栏移除后内容区高度补偿不可回退（与 smoke web-023 同源断言）
+    // Act
+    const layout = fs.readFileSync(layoutPath, 'utf-8');
 
-    // 上下文菜单容器存在
-    expect(template).toContain('class="tags-view__context-menu"');
-    // 四个菜单项：刷新、关闭当前、关闭其他、关闭所有
-    expect(template).toContain("handleContextCommand('refresh')");
-    expect(template).toContain("handleContextCommand('close')");
-    expect(template).toContain("handleContextCommand('closeOther')");
-    expect(template).toContain("handleContextCommand('closeAll')");
-
-    expect(scriptMatch).not.toBeNull();
-    const script = scriptMatch![1];
-
-    // 相关状态保留
-    expect(script).toContain('contextMenuVisible');
-    expect(script).toContain('contextMenuTarget');
-    expect(script).toContain('contextMenuStyle');
-    // handleContextCommand 保留四个 case
-    expect(script).toContain("case 'refresh':");
-    expect(script).toContain("case 'close':");
-    expect(script).toContain("case 'closeOther':");
-    expect(script).toContain("case 'closeAll':");
+    // Assert: 布局保持 60px 顶栏高度补偿
+    expect(layout).toContain('calc(100vh - 60px)');
   });
 });

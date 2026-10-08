@@ -77,7 +77,19 @@
 > Generator 于删除组件前执行测试清单 #1 并粘贴关键输出（组件尚在，删除态断言失败=RED 实证）。
 
 ```text
-（待 Generator 填写）
+[RED] npx vitest run（tags-view-actions-removed + tags-view-dropdown-removed + DefaultLayout，组件尚在、未删任何文件）
+Test Files  3 failed (3)
+     Tests  7 failed | 11 passed (18)
+
+FAIL tags-view-actions-removed > tagsViewComponentFileRemoved — expected true to be false（组件文件存在=删除态断言不成立）
+FAIL tags-view-actions-removed > sourceNoTagsViewIdentifierReference — expected [Array(1)] to deeply equal []（命中 frontend/src/components.d.ts:26）
+FAIL tags-view-actions-removed > sourceNoTagsViewClassLeftover — expected [Array(1)] to deeply equal []（命中 frontend/src/components/Layout/TagsView.vue）
+FAIL tags-view-dropdown-removed > componentsDtsNoTagsViewDeclaration — expected '/* eslint-disable */…' not to contain 'TagsView'
+FAIL tags-view-dropdown-removed > noTagsViewSfcFileAnywhere — expected [Array(1)] to deeply equal []（命中 TagsView.vue）
+FAIL tags-view-dropdown-removed > sourceNoRefreshTagSymbol — expected [Array(1)] to deeply equal []（命中 TagsView.vue:45,53）
+FAIL DefaultLayout.spec > AC4 renders TagsView component — expected false to be true（基线红，AC4 段于 GREEN 同步）
+绿 1 条=保留面守卫 layoutContentHeightCompensated（calc(100vh - 60px) 现存，防过度删除）
+日志：/tmp/opencode/e081-red.log
 ```
 
 > 实现后复跑与 REFACTOR 复查。
