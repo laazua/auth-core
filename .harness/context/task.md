@@ -78,7 +78,10 @@ R1 口径错位（sprint-066 发现、070/072 复述、075/076/077/078 规划连
 > Generator 于改文档前执行测试清单 #1 并粘贴关键输出（grep 命中 5 处=RED 实证）。
 
 ```text
-（待 Generator 填写）
+[RED] smoke web/040b2 单跑 sh -c '! grep -rn "{list,total,page,size}" docs/01-architecture.md backend/.../controller/' → EXIT=1，命中 5 处（架构:46 + Module:46/Permission:41/Role:42/User:47），历史 198 在扫描面外
+[RED] 设计修正留痕：首版 pattern "data={...}" 漏架构行（data 固定为 … 非 data=），改裸串 {list,total,page,size} 后 5 处全命中
+[R1 实测] ObjectMapper 序列化 MyBatis-Plus Page{current=1,size=10,total=42,records=[rec]} → {"records":["rec"],"total":42,"size":10,"current":1,"pages":5} —— 实测五字段 {records,total,size,current,pages}，与案A 裁决措辞 {records,total,size,current,...} 一致（省略号=pages），文档按实测写全五字段
+[RED] 执行时点：2026-09-29 实现前（TDD 第 1 拍），smoke 用例先行 EXIT=1
 ```
 
 > 实现后复跑与 REFACTOR 复查。

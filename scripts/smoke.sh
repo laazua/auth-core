@@ -427,6 +427,8 @@ smoke_case "web/040 更新时间字段对齐定向测试" mvn -q -f "$APP_DIR/po
 smoke_case "web/040c me 面时间字段修复定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='TimestampFieldContractTest'
 # web/040b1：模块域 updateTime 对齐（四 VO 对称收口）定向测试
 smoke_case "web/040b1 模块域 updateTime 对齐定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='TimestampFieldContractTest'
+# web/040b2：R1 案A 分页键名勘误残留面终清（grep 零命中=通过；历史计划文档 198 不在扫描面）
+smoke_case "web/040b2 R1分页键名勘误残留面终清" sh -c '! grep -rn "{list,total,page,size}" docs/01-architecture.md backend/src/main/java/com/authcore/controller/'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
