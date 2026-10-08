@@ -138,4 +138,37 @@
 
 ## 评审记录
 
-- （待 Evaluator）
+**2026-09-29 Evaluator（sprint-078）：PASS — 平均 9.7/10（9.5+10+9.5+9.5+10，无否决项）**
+
+### 验收标准核对
+- AC1 ✓ 模块列表含 updateTime 且无 updatedAt/createdAt — 契约用例列表段，Evaluator 复跑 6/6 绿
+- AC2 ✓ 模块详情含 updateTime 且无 updatedAt — 契约用例详情段复跑实证
+- AC3 ✓ 零回退 — 038c ModuleFieldContractTest 3/3、既有契约 5、ModuleControllerTest 11（:146/:177 同步后）、mvn 154 六失败逐条=基线；三域四处数组 git diff 零改动；禁改清单（frontend/架构文档/三域+auth VO）零命中
+- AC4 ✓ 门禁 — mvn 154 4F+2E=基线+1；前端 lint124/20 failed|288/build ✓ diff=0；冒烟 60=49✅+9❌+2⏭️ 逐条=基线、web/040b1 ✅
+
+### 关键实证
+- RED 复跑：checkout 1bb949c 亲跑 `Tests run: 6, Failures: 1`（列表缺 updateTime 键），与留痕一致，回 7958211 干净态
+- 四段式：552d4fc plan → 1bb949c test(RED) → 131329c feat(GREEN) → 7958211 docs，无违规
+- 对称终核：五 VO（user/role/permission/module/auth）`@JsonProperty("updateTime")` 全命中；`path("updatedAt")` JSON 断言零残留（:137/:211 为契约类自带 assertFalse）；expire-hours=2
+- 漂移插曲：mtime 10:57:17 铁证=非本单回归，恢复 2 后复跑=基线逐条，处置规范
+
+### 评分表（review-criteria 5 维）
+| 维度 | 分 | 依据 |
+|------|----|------|
+| 需求完成度 | 9.5 | AC1-4 全过、四 VO 对称收口实证、拆分纪律（040b1/b2）；扣 0.5：拆分后 040b 整体待 b2 收尾 |
+| TDD/提交质量 | 10 | RED 复跑实证、四段式规范、GREEN 后全量回归、违规 0 |
+| 测试/冒烟 | 9.5 | 独立用例两段断言、零回退全绿、冒烟基线逐条；扣 0.5：`org.junit.jupiter.api.Assertions.assertTrue` 全限定名与类内静态 import 不一致（§9 测试同规范，连续第 4 单） |
+| 文档回写 | 9.5 | task 留痕/三处回写/唯一动作/040b2 预研登记；扣 0.5：门禁记录随 GREEN commit 而非独立 docs 段 |
+| 诚实规范 | 10 | 插曲主动登记+mtime 铁证+请示用户不擅改+恢复复跑；无自宣布 |
+
+### 结论
+**PASS**。Veto 1-6 均不命中（veto 6 基线对照：154=153+1、60=59+1、失败逐条=基线）。
+
+### 问题列表
+- P1（低）GREEN commit 131329c 含 task.md 门禁记录（26 行），feat/docs 边界轻微混同
+- P2（低）契约用例全限定名断言，第 4 单延续（历史债，不计分，建议 generator 后续统一为静态 import）
+- P3（信息）本地 application.yml 与 template 一致性无 setup 校验（漂移插曲根因，非代码）
+
+### 改进建议
+- 冒烟/verify 前增加 `expire-hours` 等关键配置与 template 的 diff 校验，防配置漂移污染基线
+- 下轮排期：**web/040b2**（R1 案A 五处文档勘误，清单已预研于拆分说明）
