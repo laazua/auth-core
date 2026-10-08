@@ -135,4 +135,37 @@ R1 口径错位（sprint-066 发现、070/072 复述、075/076/077/078 规划连
 
 ## 评审记录
 
-- （待 Evaluator）
+**2026-09-29 Evaluator（sprint-079）：PASS — 平均 9.8/10（10+10+9.5+9.5+10，无否决项）**
+
+### 验收标准核对
+- AC1 ✓ 架构 §4:46 → `{records,total,size,current,pages} 五个字段`，page/size 请求说明保留 — diff ±1 实证
+- AC2 ✓ 四 Javadoc `@return` 同步 — git diff 仅 ±4 注释行，方法体/@param/@Operation 零变动
+- AC3 ✓ 残留面终清 — 亲跑 `sh -c '! grep -rn "{list,total,page,size}" …'` EXIT=0；RED checkout 1c06c49 复跑 5 命中 EXIT=1；历史 198 零触碰；补扫 README/docs 其余 md 与前端零漏改面；R1 实测五字段与文档一致
+- AC4 ✓ 门禁 — mvn **154 4F+2E** 六条逐条=078 后基线（本单 +0）；前端 lint124/20f|288p/build ✓ diff=0；冒烟 **61=50✅+9❌+2⏭️** 逐条=基线、web/040b2 ✅
+
+### 关键实证
+- 三段式：028ef15 plan → 1c06c49 test(RED) → 6be3838 feat(GREEN) → 1ad408e docs，违规 0
+- RED 真实性：checkout 1c06c49 亲跑 5 命中 EXIT=1，回 1ad408e 干净态
+- **TDD 价值实证**：pattern 首版 `data={...}` 漏架构行（非 `data=` 语法），若无先行 RED 即漏改第 5 处——Generator 自查自纠并留痕
+- 案A 完整性：裁决措辞 `{records,total,size,current,...}` + ObjectMapper 实测补全 `pages`，以实测为准（工作单 R1 授权）；工作单 153 旧基线笔误 Generator 主动勘误为 154
+
+### 评分表（review-criteria 5 维）
+| 维度 | 分 | 依据 |
+|------|----|------|
+| 需求完成度 | 10 | 五处零漏（grep 终清+全库补扫）、实测五字段对齐、历史 198 精确保留、R1 四轮登记问题单关闭 |
+| TDD/提交质量 | 10 | grep 载体先行、RED 复跑实证、pattern 缺陷被 RED 揪出、三段式规范 |
+| 测试/冒烟 | 9.5 | smoke 断言设计可用、61 逐条基线；扣 0.5：断言扫描面=两路径，全库防漏依赖人工 R3（可扩为全库+排除表） |
+| 文档回写 | 9.5 | task RED/GREEN/门禁/AC/基线勘误齐全、三处回写、唯一动作；扣 0.5：feat 混入 task 更新（P1 连续第二单） |
+| 诚实规范 | 10 | pattern 缺陷与基线笔误均主动留痕/勘误，无自宣布、无弱化 |
+
+### 结论
+**PASS**。Veto 1-6 均不命中（veto 6：mvn/冒烟/前端三线逐条=基线）。**web/040 组全收口**（040a 9.4 / 040c 9.5 / 040b1 9.7 / 040b2 9.8）。
+
+### 问题列表
+- P1（低）feat commit 含 task.md 更新，feat/docs 边界混同（连续第二单，建议后续门禁记录独立 docs 段）
+- P2（低）smoke 残留断言仅扫 docs/01-architecture + controller 两路径
+- P3（信息）Planner 工作单基线沿用 078 前 153 旧口径（Generator 勘误，跨单基线同步机制缺）
+
+### 改进建议
+- Planner 写工作单时基线引用上一单 eval 登记口径（153→154 同步）
+- 下轮排期：Evaluator 积压六项评审（sprint-047/048/060/061/062/063），或 IndexView 拆分/036b/c+011/modules-003
