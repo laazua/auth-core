@@ -1,171 +1,128 @@
-# Sprint 工作单：sprint-081
+# Sprint 工作单：sprint-082
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-081 |
+| Sprint ID | sprint-082 |
 | 所属模块 | web |
-| 功能点 ID | web/023（sprint-047 遗留收口，源码层移除） |
-| 功能点名称 | 移除整个标签页栏 TagsView——源码层删除与测试同步收口 |
-| 状态 | DONE |
-| 创建时间 | 2026-09-29 |
+| 功能点 ID | web/011（子功能点 **web/011b 前端失败测试收敛**） |
+| 功能点名称 | 修复前端失败测试——全量 test 15 failed 收敛至 0 |
+| 状态 | PLANNED |
+| 创建时间 | 2026-10-08 |
 
 ## 前置依赖
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| web/003 | DefaultLayout 骨架 | ✅ |
-| web/020 | 标签页操作区移除（组件内 actions 层） | ✅ |
-| sprint-080 | 台账勘误：023 系未实现非待评审 | ✅ |
+| web/010 | 侧边栏菜单 404 修复（row 依赖） | ✅ sprint-035 |
+| web/011a | 修复 TS 编译错误（首子功能点）：build ✓ 实证，web/026/027 以其为前置均 ✅ | ✅ 已达成 |
+| sprint-081 | 基线实测入册（test 15 failed、冒烟 7❌、mvn 4F+2E） | ✅ PASS 9.4/10 |
 
 ## 业务背景
 
-**半完成态考古**（本单核心事实）：web/023「移除整个标签页栏，仅保留面包屑导航」经 1d934de 大杂烩**部分实现**——布局层已移除（`DefaultLayout.vue` 零引用、`default-layout-tagsview-removed.spec` 3/3 绿、smoke `web-023` 产物断言已 ✅：孤儿组件不进产物故 JS/CSS 均无 `tags-view`），但**源码层遗留四件**：
+web/011「修复前端构建错误与失败测试」行 🔄 自 sprint-056：**011a（TS 编译错误）已达成**（build ✓）。本单 **011b** 收敛剩余的「失败测试」面——2026-10-08 sprint-081 评审亲测全量 `npm run test` **15 failed | 293 passed (308)**，恰分三组：
 
-1. `components/Layout/TagsView.vue`（10307 字节）成孤儿文件（全仓唯一非测试引用=`components.d.ts` 自动声明）
-2. **5 条基线红 spec**（20 failed 中的 TagsView 5 条）：`DefaultLayout.spec AC4 renders TagsView`（布局已移除未同步，1 条）+ `tags-view-actions-removed`/`tags-view-dropdown-removed`（020/022 交付断言组件内 actions/dropdown 已移除，但组件本体经 1d934de 后仍含 `:159 actions`/`:160 el-dropdown`/`:45 refreshTag`/`:18 showMore` → 4 条红）
-3. `components.d.ts`（TRACKED 入库）残留 TagsView 组件声明
-4. smoke `web-021/022` 断言语义过时：仍要求「**保留**右键菜单 `tags-view__context-menu`」——组件整体移除后产物无任何 tags-view 样式 → 该 `grep` 不中系此二用例 ❌ 根因（**删源组件不改变产物**，本单必须同步用例断言）
+1. **auth-token 2 条**：`calls storage.set/remove` spy **零调用**（`expected "spy" to be called… Received: 空`）——需判定是产品侧持久化路径漂移（038a Cookie 双承载后是否合法改道）还是测试桩过期（R3）
+2. **LoginView 2 条**：`Cannot read properties of undefined (reading 'value')` + 登录后未跳转 Dashboard——spec:13 `vi.mock('element-plus',…)` 部分桩疑似破坏组件解析（R1/R4）
+3. **system/IndexView 11 条**：渲染出 `{"_":1}` Vue 块标记（**Element Plus 组件解析缺失**实证，sprint-040 已诊断同源）+ list spy 零调用；`vitest.config.ts` 仅 `vue()` 插件、无 EP 注册点（R4）
 
-原 047 期 4 条 AC 快照已被覆盖（task.md 单文件制式），本单 AC 依 registry 备注「移除整个标签页栏，仅保留面包屑导航」+考古语境**重建并登记**。
+**分治登记（本单不背）**：① 全量 `npm run lint` 卡死（EXIT=**124 超时**，非错误数，已 5+ 次复现）→ 预留 **011c**；② 冒烟 7❌（web-013/020/026 过期 grep 与 **web/036c**「smoke 过期 grep 同步」重叠、model-008/010+roles-001/002 后端漂移）→ 归 036c/后续；③ DefaultLayout.spec:72/:183 两处预存 lint 按挂起区登记**并入本单清理**（R5）。
 
 ## 需求描述
 
-源码层完成 web/023：删除孤儿 `TagsView.vue`、清 `components.d.ts` 声明、5 条红 spec 同步收口（改写为删除态断言或移除过时段）、smoke `web-021/022` 断言语义同步（「保留右键菜单」→ 整体移除语义），使源码/测试/冒烟三层与「仅保留面包屑」目标一致。`DefaultLayout.vue` 布局层已达成（本单零改动）。
+修复三组共 15 条失败测试至全绿：判定每组根因（测试侧口径同步 vs 产品侧缺陷），优先测试侧共享注册点一处修复（R4）；产品侧改动计入 6 文件限额；断言只允许语义同步、禁止删除式转绿（tdd-workflow 测试质量红线）。
 
 ## 验收标准（TDD 驱动）
 
-- [x] AC1 — 源码层移除：`frontend/src/components/Layout/TagsView.vue` 文件不存在；全仓源码（`frontend/src/`，排除 `__tests__`/spec 内删除态断言自身）零 `TagsView` 引用；`components.d.ts` 无 TagsView 声明
-- [x] AC2 — 测试同步收口：`tags-view-actions-removed.spec` 与 `tags-view-dropdown-removed.spec` 改写为「组件文件不存在」删除态断言（RED=改写时组件尚在）；`DefaultLayout.spec` AC4 段同步（renders→不存在，布局已移除）；处置后前端 `npm run test` **20 failed→15 failed（预期精确值，失败清单=原 20 减 TagsView 5 条，逐条核对无新增）**
-- [x] AC3 — 冒烟同步（**口径修订：用例数 61→62**，见挂起区登记）：`web-021/022` 断言语义更新（移除「保留 `tags-view__context-menu`」过时断言，改为产物无相关样式/与 web-023 整体移除一致）；`web-023` 既有用例保持 ✅；`bash scripts/smoke.sh` 变化=原 9❌ 中 web-021/022 **预期转绿**（9→7❌），其余逐条=基线，整体用例数原写 61 不变——**Generator 口径修订为 62**（tdd-workflow 强制追加 web-023-src，已登记挂起区）
-- [x] AC4 — 门禁：`mvn -q verify` 154 4F+2E=基线（零后端改动）；前端 lint=124 基线、build ✓；test 与冒烟变化**仅允许上述预期改善**（改善=基线变好，登记实测值，无新增失败）
+- [ ] AC1 — auth-token 持久化 2 条用例转绿：`calls storage.set when setToken called with token`（期望 `['token', '"test-jwt-token"']`）与 `calls storage.remove when setToken(null) called` 按 R3 判定的口径修复——若 038a 后持久化路径合法改道则同步断言至新口径（必须保留「写入/清除被实际调用」验证），若属产品缺陷则修产品；转绿后断言强度不低于原稿。← 用例 `auth-token-persistence.spec#calls storage.set…` / `#calls storage.remove…`
+- [ ] AC2 — LoginView 2 条用例转绿：`handles successful login response`（无 `undefined value` 抛错，错误消息位为空或成功态）与 `redirects to dashboard after successful login`（断言 `route.name === 'Dashboard'`）根因消除。← 用例 `LoginView.spec#handles successful login response` / `#redirects to dashboard after successful login`
+- [ ] AC3 — system/IndexView 11 条用例转绿：渲染含「权限管理/模块管理」tab（`_` 块标记消失=EP 解析恢复）、AC1/AC2/AC4/AC5/AC6/AC7 全部断言成立（list/getList spy 实调）。← 用例 `system/IndexView.spec` 全部 11 条 FAIL（Rendering 1+AC1 2+AC2 2+AC4 1+AC5 2+AC6 2+AC7 1）
+- [ ] AC4 — 门禁：`npm run test` 全量 **0 failed**（15→0；308 基数，修复中增/改断言致基数变化须逐条登记）、定向 lint（本单触碰文件 + `DefaultLayout.spec.ts:72/:183` 预存两处清理）**0 问题**、`npm run build` ✓、`mvn -q verify` 154 4F+2E=基线、冒烟用例数 62 不减不改（7❌ 属基线对照不背锅）。← 用例 门禁五线实测
 
-### AC1 — 源码移除
-> When 删除组件与声明。Then 文件不存在、源码零引用。
+### AC1 — auth-token 组
+> Given 2 条 spy 零调用 RED。When 按 R3 判定修复。Then 转绿且断言强度不降。
+**用例**：`AC1 ← 用例 auth-token-persistence.spec#calls storage.set/remove`
 
-**用例**：`AC1 ← 用例 smoke#web/023（产物层已有）+ 定向 grep 实测`
+### AC2 — LoginView 组
+> Given 2 条 undefined/跳转失败 RED。When 消除组件解析/桩根因。Then 转绿。
+**用例**：`AC2 ← 用例 LoginView.spec#handles successful login response / #redirects to dashboard`
 
-### AC2 — 测试收口
-> Given 3 spec 先行改写（RED=组件尚在/删除态断言不成立）。When 删组件。Then 15 failed 精确、零新增。
-
-**用例**：`AC2 ← npm run test 失败清单逐条对照`
-
-### AC3 — 冒烟同步
-> When web-021/022 断言语义同步。Then 转绿、web-023 保持、其余=基线。
-
-**用例**：`AC3 ← bash scripts/smoke.sh 62 用例逐条（61+web-023-src）`
+### AC3 — IndexView 组
+> Given 11 条 `_ 块标记/spy 零调用 RED。When EP 注册根因消除。Then 11 条转绿。
+**用例**：`AC3 ← 用例 system/IndexView.spec#11 条 FAIL`
 
 ### AC4 — 门禁
-> mvn/前端三线与冒烟=基线或预期改善。
-
-**用例**：`AC4 ← 门禁实测记录`
+> Given 基线 15 failed。When 三组修复完成。Then 全量 0 failed 且其余门禁=基线。
+**用例**：`AC4 ← 门禁五线实测`
 
 ## 测试清单
 
-> TDD 载体=3 个 spec 删除态断言先行（RED）→删组件（GREEN）。
+> TDD 载体：**bugfix 先行**——15 条现存失败即 RED 实证（先于任何修复把三组清单与报错栈实时入 RED 槽）；修复中新增/改写的断言必须先写后修。
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | tags-view-actions-removed / tags-view-dropdown-removed 改写为删除态断言（先行 RED：existsSync=true 断言失败） | AC1/AC2 | ✅ RED 7 failed\|11 passed → GREEN 定向 21/21 |
-| 2 | DefaultLayout.spec AC4 段同步（renders→not exists） | AC2 | ✅ not-exists 绿（组件已无） |
-| 3 | 门禁：mvn 154 + 前端 lint124/**15 failed 预期**/build ✓ | AC4 | ✅ mvn 154 4F+2E=基线、**15 failed\|293 passed (308) 精确**、build ✓、lint 定向 0 问题/全量 124=基线 |
-| 4 | 冒烟 62 用例（61+web-023-src；web-021/022 转绿、web-023 保持 ✅、9→7❌ 预期） | AC3/AC4 | ✅ **62=53✅+7❌+2⏭️** 精确（❌=基线 9 减 021/022，四条本单用例全绿） |
+| 1 | auth-token-persistence.spec 2 条（根因判定 R3 后修复/口径同步） | AC1 | 待 Generator |
+| 2 | LoginView.spec 2 条（element-plus 桩/解析根因） | AC2 | 待 Generator |
+| 3 | system/IndexView.spec 11 条（EP 注册共享点修复） | AC3 | 待 Generator |
+| 4 | 门禁五线：test 0 failed / 定向 lint 0 / build ✓ / mvn=基线 / 冒烟 62 不减 | AC4 | 待 Generator |
 
 ## RED 证据
 
-> Generator 于删除组件前执行测试清单 #1 并粘贴关键输出（组件尚在，删除态断言失败=RED 实证）。
+> Generator 于任何修复动作前执行测试清单并粘贴三组完整清单（现存失败=bugfix RED 实证）。
 
 ```text
-[RED] npx vitest run（tags-view-actions-removed + tags-view-dropdown-removed + DefaultLayout，组件尚在、未删任何文件）
-Test Files  3 failed (3)
-     Tests  7 failed | 11 passed (18)
-
-FAIL tags-view-actions-removed > tagsViewComponentFileRemoved — expected true to be false（组件文件存在=删除态断言不成立）
-FAIL tags-view-actions-removed > sourceNoTagsViewIdentifierReference — expected [Array(1)] to deeply equal []（命中 frontend/src/components.d.ts:26）
-FAIL tags-view-actions-removed > sourceNoTagsViewClassLeftover — expected [Array(1)] to deeply equal []（命中 frontend/src/components/Layout/TagsView.vue）
-FAIL tags-view-dropdown-removed > componentsDtsNoTagsViewDeclaration — expected '/* eslint-disable */…' not to contain 'TagsView'
-FAIL tags-view-dropdown-removed > noTagsViewSfcFileAnywhere — expected [Array(1)] to deeply equal []（命中 TagsView.vue）
-FAIL tags-view-dropdown-removed > sourceNoRefreshTagSymbol — expected [Array(1)] to deeply equal []（命中 TagsView.vue:45,53）
-FAIL DefaultLayout.spec > AC4 renders TagsView component — expected false to be true（基线红，AC4 段于 GREEN 同步）
-绿 1 条=保留面守卫 layoutContentHeightCompensated（calc(100vh - 60px) 现存，防过度删除）
-日志：/tmp/opencode/e081-red.log
+[RED] （待 Generator 于修复前执行 npm run test 并粘贴 15 failed 完整清单与三组报错栈帧）
 ```
 
-> 实现后复跑与 REFACTOR 复查。
+> 实现后复跑。
 
 ```text
-[GREEN-定向] npx vitest run（3 改写 spec + default-layout-tagsview-removed）：Test Files 4 passed (4)，Tests 21 passed (21)
-[GREEN-全量] npx vitest run：Tests 15 failed | 293 passed (308)——失败清单恰=基线 20 减 TagsView 5（auth-token 2 + LoginView 2 + system/IndexView 11），零新增（R1 精确命中）；Test Files 3 failed | 33 passed（基线 6 failed 减 3）
-[lint] npx eslint 本单 2 新 spec --fix 后复跑=0 问题；DefaultLayout.spec :72 any / :183 缺 EOF 换行经 git show HEAD: 对照=HEAD 即有（预存，不动、登记挂起区）
-[build] vue-tsc --noEmit && vite build ✓ EXIT=0（17.19s）；components.d.ts 由 unplugin 自动重生成减 1 行（R2 结论=build 自动清，免手动）
-[smoke] bash scripts/smoke.sh：62 用例=53✅+7❌+2⏭️——❌恰=基线 9 减 web-021/022；web-021/022/023/023-src 四条全✅；⏭=infra-004/model-006
+[GREEN] （待 Generator）
 ```
 
 ## 门禁与冒烟记录
 
-> Generator 亲测填写，Evaluator 不采信自述须亲跑。
+> Generator 亲测填写，Evaluator 不采信自述须亲跑。基线口径（2026-10-08 sprint-081 评审实测）。
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 154 用例 4F+2E | 154 用例 Failures:4 Errors:2（DataSourceConfigBinding×2/RoleController:466/SeedData:99/TestLayers/TestUtils） | ✅ 逐条=基线（veto-6 豁免） |
-| `npm run lint` | EXIT=124 | 全量 timeout 300s=124（=基线）；定向 eslint 本单 3 文件=2 新 spec 0 问题、DefaultLayout.spec 2 处 HEAD 预存 | ✅ 零新增 |
-| `npm run test` | 20 failed\|288 passed → **预期 15 failed\|293 passed（308 不变）** | **15 failed\|293 passed (308)**，清单=原 20 减 TagsView 5 零新增 | ✅ 精确命中 |
-| `npm run build` | ✓ | ✓ EXIT=0（17.19s）+ d.ts 自动重生成 | ✅ |
-| `bash scripts/smoke.sh` | 61=50✅+9❌+2⏭️ → **口径修订 62=53✅+7❌+2⏭️**（021/022 转绿 + web-023-src 新增） | **62=53✅+7❌+2⏭️**；❌=model-008/010+roles-001/002+web-013/020/026（基线 9 减 021/022） | ✅ 精确命中 |
+| 后端 `mvn -q verify` | 154 用例 4F+2E（五类，veto-6 豁免） | 待填 | 待填 |
+| `npm run lint` | 全量 EXIT=124（卡死超时，011c 预留）；定向=DefaultLayout.spec 2 处预存 | 待填（定向须 0） | 待填 |
+| `npm run test` | **15 failed\|293 passed (308)** → **预期 0 failed\|308+passed** | 待填 | 待填 |
+| `npm run build` | ✓ | 待填 | 待填 |
+| `bash scripts/smoke.sh` | 62=53✅+7❌+2⏭️（7❌ 基线不背锅） | 待填（62 不减、非本单用例不回归） | 待填 |
 
 ## 拆分说明
 
-预估验收标准 4 条（=上限）；预估文件变更 **6 个（=上限，超限即熔断回报）**：
+预估验收标准 **4 条（=上限）**；预估文件变更 **5 个，产品侧根因则 +1=6（=上限，超限即熔断回报）**：
 
-1. `frontend/src/components/Layout/TagsView.vue` — **删除**（AC1）
-2. `frontend/src/components.d.ts` — 清 TagsView 声明（AC1，TRACKED 入库须手动/重生成）
-3. `frontend/src/__tests__/tags-view-actions-removed.spec.ts` — 改写为删除态断言（AC2，测试先行）
-4. `frontend/src/__tests__/tags-view-dropdown-removed.spec.ts` — 同上（AC2）
-5. `frontend/src/layouts/DefaultLayout.spec.ts` — AC4 段同步（AC2）
-6. `scripts/smoke.sh` — web-021/022 断言语义同步（AC3；web-023 用例已存在不动）
+1. `frontend/src/__tests__/auth-token-persistence.spec.ts`（AC1，若产品侧 bug 则 + 产品文件）
+2. `frontend/src/views/LoginView.spec.ts`（AC2）
+3. `frontend/src/views/system/IndexView.spec.ts`（AC3）
+4. `frontend/src/layouts/DefaultLayout.spec.ts`（AC4 两处预存 lint 清理，挂起区登记归 web/011 在案）
+5. EP 测试注册共享点（`frontend/src/__tests__/setup.ts` 或 vitest 配置，R4 判定后取一，一处修复三处受益）
 
-**超限熔断**：>6 文件或 >4 AC 即停止回报。**不动清单**：`DefaultLayout.vue`（布局层已达成零改动）、`default-layout-tagsview-removed.spec`（3/3 绿保持）、`main-area-icon-size-audit.spec`（提及系注释级无断言）、`web-023` smoke 用例（已 ✅）、后端全部、`web-020` 相关（侧边栏折叠与本功能点无关，其 ❌ 属基线）。
+**超限熔断**：>6 文件或 >4 AC 即停止回报。**不动清单**：`scripts/smoke.sh`（7❌ 归 036c/后续）、全量 lint 卡死（011c）、后端全部、`IndexView.vue`(752 行)/`LoginView.vue` 等产品文件**仅当根因判定产品侧才允许最小增量修改**（sprint-074 用户裁定先例，改动须登记历史债行数变化）。
 
 **研究项（Generator 先于动手核实）**：
-- **R1 15 failed 精确性**：改写前跑 `npm run test` 记录 20 failed 完整清单基线，AC2 完成后逐条对照=**15 条且恰为原清单减 TagsView 5**（若出现非 TagsView 条目变化即熔断回报）。
-- **R2 components.d.ts 重生成**：unplugin-vue-components 于 dev/build 自动重生成——删组件后跑 `npm run build` 观察是否自动清除声明；不自动则手动删行并复跑 build 验证 TS 通过。
-- **R3 smoke web-021/022 改写形态**：现断言 `! grep tags-view__actions`（产物本已无 ✓）+ `grep tags-view__context-menu`（本 ❌ 根因）——改写=**删除「保留 context-menu」行**并把用例语义对齐 web-023（或在注释登记「右键菜单随组件整体移除」）；改后实跑转绿确认。
-- **R4 删除态断言实现**：`fs.existsSync(tagsViewPath)` 断言 false（顶层 readFileSync 须先移除，防组件删除后 spec 收集期抛错整批崩）。
+- **R1 根因三分判定**：每组先判测试侧（mock 桩不完整/注册缺失/断言过期）vs 产品侧（行为真 bug）；判定依据写入 task（复现栈帧+代码位置）。
+- **R2 熔断线**：产品侧修复预估 >6 文件或动到 IndexView.vue 大改 → 停止回报，回 Planner 重切分。
+- **R3 auth-token 与 038a 关系**：核查 Cookie 双承载后 token 是否仍写 storage——改道=合法演进（断言同步至新口径+登记），未改道而 spy 空=产品 bug（产品侧修）。
+- **R4 EP 注册共享点**：`vitest.config.ts` 仅 `vue()`；LoginView.spec:13 `vi.mock('element-plus')` 局部桩——验证「一处注册（setup/globalRegistration）」能否同时救活三组，避免逐 spec 重复灌满 6 文件。
+- **R5 断言强度红线**：任何转绿不得以删断言/放宽至恒真实现（tdd-workflow 测试质量节），Evaluator 按此核。
 
-**历史快照登记**：047 期 4 AC 原文已不可考（task 覆盖制式），本单 4 AC 系 Planner 依 registry 备注与考古语境重建——Evaluator 评审按重建口径。
+**历史口径登记**：web/011 行自 sprint-056 🔄，011a 已达成、本单 011b、011c（lint 卡死）预留——registry 行备注同步更新于本单。
 
-## 交付物（6 文件）
+## 交付物（5-6 文件）
 
-1-2. 删 TagsView.vue + 清 components.d.ts（AC1）
-3-5. 三 spec 同步（AC2）
-6. smoke web-021/022 同步（AC3）
+1. auth-token 2 条修复/口径同步（AC1）
+2. LoginView 2 条修复（AC2）
+3. IndexView 11 条修复（AC3）
+4. EP 注册共享点（R4 判定载体）
+5. DefaultLayout.spec 两处预存 lint 清理（AC4）
+6. （可选 +1）产品侧最小增量（仅当 R1 判定产品 bug 且 ≤6 线内）
 
 ## 评审记录
 
-- 2026-10-08: Evaluator — **pass sprint-081（9.4/10）**
-
-#### 验收标准核对
-- [x] AC1 — 满足：探针 `test ! -f TagsView.vue` ✓、`grep -rln TagsView --include=*.vue` 零命中、`components.d.ts` 计 0、scss/css `tags-view` 零残留；smoke web-023-src ✅
-- [x] AC2 — 满足：worktree@`8afdb93` RED 整树复跑 **7 failed|11 passed 逐条复现**；终态 test **15 failed|293 passed (308)**，失败清单恰=原 20 减 TagsView 5（auth-token 2+LoginView 2+IndexView 11），零新增
-- [x] AC3 — 满足：冒烟亲跑 **62=53✅+7❌+2⏭️ 精确**；❌=基线 9 减 web-021/022；web-021/022/023/023-src 四条全绿；smoke diff +1 用例零删除；口径 61→62 修订双登记在案
-- [x] AC4 — 满足：mvn `Tests run: 154, Failures: 4, Errors: 2`=基线五类；lint 全量 124=基线、定向本单 2 spec 0 问题；build ✓ 17.15s；test/冒烟变化仅预期改善
-
-#### 门禁与冒烟实测
-mvn -q verify：`Tests run: 154, Failures: 4, Errors: 2, Skipped: 0`（失败类=DataSourceConfigBindingTest/RoleControllerTest/SeedDataIntegrationTest/TestLayersSpec/TestUtilsSpec，基线五类，veto-6 基线对照豁免）。前端：test `15 failed | 293 passed (308)`、`Test Files 3 failed | 33 passed`（FAIL 逐条=基线 15，零新增）；lint 全量 EXIT=124（=基线）、定向 eslint 3 文件仅 DefaultLayout.spec 2 处 HEAD 预存（72 any/183 EOF），本单 2 新 spec 0 问题；build ✓ 17.15s。冒烟 `bash scripts/smoke.sh`（亲跑）：**62 用例=53✅+7❌+2⏭️**，❌=model-008/010+roles-001/002+web-013/020/026（基线 9 减 021/022），⏭=infra-004/model-006，本单四用例全绿；增量取证 `git diff 3636035..HEAD -- scripts/smoke.sh`：`+smoke_case "web-023-src…"` 1 条、`-smoke_case` 0 条。
-
-#### 评分
-| 维度 | 分数 | 证据 |
-|------|------|------|
-| 功能正确性 | 9.5 | 四条 AC 亲测逐条通过；AC3 口径 61→62 中途修订已双登记（流程瑕疵非功能缺口） |
-| 代码质量 | 9.5 | diff 144+/557- 零死残留（TagsView 全仓 grep 零命中）；断言含防复加与防过度删除守卫；smoke 改动带语义注释 |
-| 规范遵守 | 9 | 行数 54/62/182/446 全≤500；提交链 plan→test→feat→docs；§10 未混入无关格式化；扣分=所改 DefaultLayout.spec 自带 2 处预存 lint 未清（登记归 web/011） |
-| TDD 执行度 | 9.5 | RED 随 `8afdb93` 实时入册 + 独立 worktree 整树复跑逐条复现；GREEN 全量精确；删除态+守卫双向断言非凑数 |
-| 安全性 | 9.5 | diff 全量五查零命中；纯删除减攻击面；不涉 auth/RBAC 逻辑 |
-
-#### 决策
-✅ 通过（总分 9.4 ≥7；六项一票否决逐核：1-5 未命中，6=门禁冒烟全过且增量追加 ✓，预存红项沿 2026-09-28 基线对照裁决）
-
-#### 改进建议（不计分）
-1. task 创建时间 2026-09-29 与实际规划日 2026-10-08 不符，后续工作单宜取系统日期。
-2. 预存 lint 两处 + 全量 lint 124 卡死 → 建议 web/011 统一治理。
+- （待 Evaluator）

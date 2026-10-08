@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: ✅ **sprint-081 评审通过**（2026-10-08 Evaluator PASS 9.4/10，web/023 047 期遗留收口完成：test 15\|293 与冒烟 62=53✅+7❌+2⏭️ 双精确、门禁=基线、RED 整树复现；前序 080 积压清零 ✅、079/078/077/076/075/074/073/072/069 全通过；sprint-082 → Planner）
+- 状态: 🟡 **规划中 sprint-082**（web/011b 前端失败测试收敛：4 AC/5-6 文件顶格；门禁基线=test 15 failed|293 passed、mvn 154 4F+2E、冒烟 62=53✅7❌2⏭️、lint 全量 124 超时——2026-10-08 sprint-081 评审亲测；前序 sprint-081 PASS 9.4/10、080 积压清零 ✅）
 - 当前模块: web
-- 当前功能点: web/023 源码层收口 — **✅ PASS 9.4/10**（五维 9.5/9.5/9/9.5/9.5；四门禁亲跑=基线或预期改善，RED 整树复现；交付=删孤儿组件 420 行+2 spec 删除态+smoke 同步与追加）
+- 当前功能点: web/011b（web/011 子功能点「前端失败测试收敛」：auth-token 2+LoginView 2+IndexView 11 → 0 failed；011a 已达成、011c lint 卡死预留、冒烟 7❌ 归 036c/后续）
 
 
 ## 下一步动作
-  Planner：读 `.harness/planner.md` 并严格执行——取下一功能点（sprint-082）。评审后候选：**首选 web/011（前端预存红项统一治理：全量 lint 124 卡死、DefaultLayout.spec:72/:183 两处、test 基线 15 failed 收敛——直承本单登记的预存项）**；次选 web/036b/c（068 拆分遗留）、IndexView 拆分超限债、modules/003（预留，前置 §3 仲裁）。工作单须含研究项与门禁基线口径（test 15 failed、冒烟 7❌、mvn 4F+2E、lint 124，均 2026-10-08 sprint-081 评审实测）。
+  Generator：读 `.harness/generator.md` 并严格执行 sprint-082（工作单 `.harness/context/task.md`，功能点 web/011b）。首个实现要点：**先于任何修复**跑 `npm run test` 把 15 failed 三组完整清单与栈帧实时写入 RED 槽（bugfix 先行 RED）→ 按 R1 逐组判定测试侧/产品侧根因（线索：LoginView.spec:13 `vi.mock('element-plus')` 局部桩、IndexView 渲染 `{"_":1}` 块标记=EP 解析缺失、`vitest.config.ts` 无 EP 注册点）→ R4 优先共享注册点一处修复；产品侧改动计入 6 文件超限熔断回报；R3 auth-token 须先核查 038a Cookie 改道再定改断言还是修产品；R5 禁止删断言式转绿；DefaultLayout.spec:72/:183 两处预存 lint 并入清理。不动 smoke.sh/lint 全量（036c/011c 预留）。
 
 ## 挂起
 - 2026-10-08: Generator(sprint-081) — **AC3 口径修订登记（工作单勘误）+ lint 预存登记**：① 冒烟用例数 **61→62**——tdd-workflow 冒烟节「Generator 必须为本次交付能力追加至少一条冒烟用例」强制，本单新增 `web-023-src 移除标签页栏源码层`（组件文件不存在 + 源码 .vue 零 TagsView 引用 + components.d.ts 零声明）；工作单 AC3/门禁表原文「61 不变/52✅」勘误为「62=53✅+7❌+2⏭️」，用例本体零删除（web-021/022 仅删过时「保留右键菜单」断言行并注释登记语义）。② lint 预存两处：`DefaultLayout.spec.ts:72 VueWrapper<any>`（warning）与 `:183` EOF 缺换行（prettier error），`git show HEAD:` 对照实证=HEAD 即有、非本单产生，按 §10 不混入无关格式化原则不动，建议归 web/011 治理。
