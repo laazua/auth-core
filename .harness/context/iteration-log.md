@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-08: Evaluator — pass sprint-081（web/023，平均分 9.4/10：五维 9.5/9.5/9/9.5/9.5；四门禁亲跑 mvn 154 4F+2E/test 15 failed|293 精确/lint 124+定向 0 新/build ✓、冒烟亲跑 62=53✅+7❌+2⏭️ 精确且 +1 用例零删除、RED worktree 整树复现 7 failed|11 passed、AC1 四探针零残留；六否决项零命中，AC3 口径修订与预存 lint 双登记认可）
 - 2026-10-08: Generator — done sprint-081（web/023 源码层收口，门禁+冒烟通过：RED `8afdb93` 7 failed|11 passed（6 删除面红+AC4 基线红+1 保留面守卫绿，证据实时入 task 随 RED 提交）→ GREEN `c5a1213` 定向 21/21、全量 **15 failed|293 passed (308)**=原 20 减 TagsView 5 零新增；mvn 154 4F+2E=基线、lint 我的 2 spec 0 问题（DefaultLayout.spec 2 处 HEAD 预存已登记）、build ✓ 且 d.ts 自动重生成（R2 结论）；冒烟 **62=53✅+7❌+2⏭️**（web-021/022 转绿、web-023-src 新增 ✅、❌=基线 9 减 2 精确）；AC3 口径修订 61→62 登记挂起区；文件 6=上限）→ 移交 Evaluator 评审
 
 - 2026-09-29: Planner — kickoff sprint-081（web/023 源码层收口，4 条验收标准/6 文件=上限；半完成态考古：布局层已移除（1d934de、removed spec 3/3、smoke web-023 ✅）+源码四件遗留（孤儿组件、5 条基线红 spec、d.ts 声明、smoke 021/022「保留右键菜单」语义过时=❌根因）；047 期 4 AC 快照丢失本单重建登记；预期 test 20→15/冒烟 9→7❌ 改善）

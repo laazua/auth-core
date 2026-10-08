@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟡 **待评审 sprint-081**（web/023 源码层收口实现完成：RED `8afdb93` → GREEN `c5a1213`，6 文件=上限/4 AC 全达成；test **15 failed|293 passed (308) 精确**、冒烟 **62=53✅+7❌+2⏭️** 精确、mvn 154 4F+2E=基线、build ✓；AC3 口径修订 61→62 已登记挂起区；前序 sprint-080 积压清零五项 ✅、sprint-079 web/040b2 ✅ 9.8/10、sprint-078/077/076/075/074/073/072/069 全部通过，积压清单已清零）
+- 状态: ✅ **sprint-081 评审通过**（2026-10-08 Evaluator PASS 9.4/10，web/023 047 期遗留收口完成：test 15\|293 与冒烟 62=53✅+7❌+2⏭️ 双精确、门禁=基线、RED 整树复现；前序 080 积压清零 ✅、079/078/077/076/075/074/073/072/069 全通过；sprint-082 → Planner）
 - 当前模块: web
-- 当前功能点: web/023 源码层收口（实现完成待评审：交付=删 TagsView.vue 420 行、components.d.ts build 自动清行、2 spec 删除态断言 7 用例、DefaultLayout AC4 同步、smoke 021/022 语义同步+web-023-src 新增；实测 test 20→15 failed、冒烟 9→7❌ 均达预期）
+- 当前功能点: web/023 源码层收口 — **✅ PASS 9.4/10**（五维 9.5/9.5/9/9.5/9.5；四门禁亲跑=基线或预期改善，RED 整树复现；交付=删孤儿组件 420 行+2 spec 删除态+smoke 同步与追加）
 
 
 ## 下一步动作
-  Evaluator：读 `.harness/evaluator.md` 并严格执行评审 sprint-081（web/023 源码层收口，AWAITING_REVIEW）。复核要点：① **RED 链核验**——commit 链 `8afdb93`(test RED)→`c5a1213`(feat GREEN) 完整、RED 证据随 RED 提交实时入册（git show 8afdb93 -- .harness/context/task.md 可证），必要时 checkout 8afdb93 整树复跑 RED（7 failed）后归位；② 门禁亲跑不采信自述：mvn **154 4F+2E**=基线、前端 test **15 failed|293 passed (308)** 逐条=原 20 减 TagsView 5、lint 定向+全量 124、build ✓（d.ts 自动重生成实证）；③ 冒烟亲跑 **62=53✅+7❌+2⏭️**（❌=基线 9 减 web-021/022 逐条核、web-021/022/023/023-src 四条全绿）；④ AC1 源码 grep 实测（文件不存在/零引用/零声明）；⑤ **AC3 口径修订复核**（61→62 系 tdd-workflow 强制追加 web-023-src，挂起区与 task 勘误双登记在案）；⑥ 文件 6=上限与不动清单核对（DefaultLayout.vue/default-layout-tagsview-removed/audit spec/后端零改动）。评审按重建 4 AC 口径（047 期快照丢失已登记），veto-6 沿基线对照豁免。
+  Planner：读 `.harness/planner.md` 并严格执行——取下一功能点（sprint-082）。评审后候选：**首选 web/011（前端预存红项统一治理：全量 lint 124 卡死、DefaultLayout.spec:72/:183 两处、test 基线 15 failed 收敛——直承本单登记的预存项）**；次选 web/036b/c（068 拆分遗留）、IndexView 拆分超限债、modules/003（预留，前置 §3 仲裁）。工作单须含研究项与门禁基线口径（test 15 failed、冒烟 7❌、mvn 4F+2E、lint 124，均 2026-10-08 sprint-081 评审实测）。
 
 ## 挂起
 - 2026-10-08: Generator(sprint-081) — **AC3 口径修订登记（工作单勘误）+ lint 预存登记**：① 冒烟用例数 **61→62**——tdd-workflow 冒烟节「Generator 必须为本次交付能力追加至少一条冒烟用例」强制，本单新增 `web-023-src 移除标签页栏源码层`（组件文件不存在 + 源码 .vue 零 TagsView 引用 + components.d.ts 零声明）；工作单 AC3/门禁表原文「61 不变/52✅」勘误为「62=53✅+7❌+2⏭️」，用例本体零删除（web-021/022 仅删过时「保留右键菜单」断言行并注释登记语义）。② lint 预存两处：`DefaultLayout.spec.ts:72 VueWrapper<any>`（warning）与 `:183` EOF 缺换行（prettier error），`git show HEAD:` 对照实证=HEAD 即有、非本单产生，按 §10 不混入无关格式化原则不动，建议归 web/011 治理。

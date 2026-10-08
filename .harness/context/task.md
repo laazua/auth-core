@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/023（sprint-047 遗留收口，源码层移除） |
 | 功能点名称 | 移除整个标签页栏 TagsView——源码层删除与测试同步收口 |
-| 状态 | AWAITING_REVIEW |
+| 状态 | DONE |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -143,4 +143,29 @@ FAIL DefaultLayout.spec > AC4 renders TagsView component — expected false to b
 
 ## 评审记录
 
-- （待 Evaluator）
+- 2026-10-08: Evaluator — **pass sprint-081（9.4/10）**
+
+#### 验收标准核对
+- [x] AC1 — 满足：探针 `test ! -f TagsView.vue` ✓、`grep -rln TagsView --include=*.vue` 零命中、`components.d.ts` 计 0、scss/css `tags-view` 零残留；smoke web-023-src ✅
+- [x] AC2 — 满足：worktree@`8afdb93` RED 整树复跑 **7 failed|11 passed 逐条复现**；终态 test **15 failed|293 passed (308)**，失败清单恰=原 20 减 TagsView 5（auth-token 2+LoginView 2+IndexView 11），零新增
+- [x] AC3 — 满足：冒烟亲跑 **62=53✅+7❌+2⏭️ 精确**；❌=基线 9 减 web-021/022；web-021/022/023/023-src 四条全绿；smoke diff +1 用例零删除；口径 61→62 修订双登记在案
+- [x] AC4 — 满足：mvn `Tests run: 154, Failures: 4, Errors: 2`=基线五类；lint 全量 124=基线、定向本单 2 spec 0 问题；build ✓ 17.15s；test/冒烟变化仅预期改善
+
+#### 门禁与冒烟实测
+mvn -q verify：`Tests run: 154, Failures: 4, Errors: 2, Skipped: 0`（失败类=DataSourceConfigBindingTest/RoleControllerTest/SeedDataIntegrationTest/TestLayersSpec/TestUtilsSpec，基线五类，veto-6 基线对照豁免）。前端：test `15 failed | 293 passed (308)`、`Test Files 3 failed | 33 passed`（FAIL 逐条=基线 15，零新增）；lint 全量 EXIT=124（=基线）、定向 eslint 3 文件仅 DefaultLayout.spec 2 处 HEAD 预存（72 any/183 EOF），本单 2 新 spec 0 问题；build ✓ 17.15s。冒烟 `bash scripts/smoke.sh`（亲跑）：**62 用例=53✅+7❌+2⏭️**，❌=model-008/010+roles-001/002+web-013/020/026（基线 9 减 021/022），⏭=infra-004/model-006，本单四用例全绿；增量取证 `git diff 3636035..HEAD -- scripts/smoke.sh`：`+smoke_case "web-023-src…"` 1 条、`-smoke_case` 0 条。
+
+#### 评分
+| 维度 | 分数 | 证据 |
+|------|------|------|
+| 功能正确性 | 9.5 | 四条 AC 亲测逐条通过；AC3 口径 61→62 中途修订已双登记（流程瑕疵非功能缺口） |
+| 代码质量 | 9.5 | diff 144+/557- 零死残留（TagsView 全仓 grep 零命中）；断言含防复加与防过度删除守卫；smoke 改动带语义注释 |
+| 规范遵守 | 9 | 行数 54/62/182/446 全≤500；提交链 plan→test→feat→docs；§10 未混入无关格式化；扣分=所改 DefaultLayout.spec 自带 2 处预存 lint 未清（登记归 web/011） |
+| TDD 执行度 | 9.5 | RED 随 `8afdb93` 实时入册 + 独立 worktree 整树复跑逐条复现；GREEN 全量精确；删除态+守卫双向断言非凑数 |
+| 安全性 | 9.5 | diff 全量五查零命中；纯删除减攻击面；不涉 auth/RBAC 逻辑 |
+
+#### 决策
+✅ 通过（总分 9.4 ≥7；六项一票否决逐核：1-5 未命中，6=门禁冒烟全过且增量追加 ✓，预存红项沿 2026-09-28 基线对照裁决）
+
+#### 改进建议（不计分）
+1. task 创建时间 2026-09-29 与实际规划日 2026-10-08 不符，后续工作单宜取系统日期。
+2. 预存 lint 两处 + 全量 lint 124 卡死 → 建议 web/011 统一治理。
