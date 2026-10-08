@@ -66,9 +66,9 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | TimestampFieldContractTest#moduleListsAndDetailOutputUpdateTime | AC1/AC2 | RED ✓→GREEN 待填 |
-| 2 | 门禁基线对照（mvn 153+1=154 预期 4F+2E；038c/039/040a/040c 契约类全绿；前端零改动） | AC3/AC4 | 待填 |
-| 3 | 冒烟 web/040b1 定向测试（追加 scripts/smoke.sh） | AC4-③ | 待填 |
+| 1 | TimestampFieldContractTest#moduleListsAndDetailOutputUpdateTime | AC1/AC2 | RED→GREEN ✓ |
+| 2 | 门禁基线对照（mvn 153+1=154 预期 4F+2E；038c/039/040a/040c 契约类全绿；前端零改动） | AC3/AC4 | ✓ 154 4F+2E 逐条=基线；契约类 6+3+11+16 全绿 |
+| 3 | 冒烟 web/040b1 定向测试（追加 scripts/smoke.sh） | AC4-③ | ✓ 60=49✅+9❌+2⏭️（9❌=基线逐条，web/040b1 ✅） |
 
 **行数红线**：`TimestampFieldContractTest` 扩展后 ≤500；`ModuleVO` 增量后 ≪500；`ModuleControllerTest`（现 ~500 内）仅 2 行键名替换。
 
@@ -86,7 +86,13 @@
 > 实现后复跑与 REFACTOR 复查（实时留痕）。
 
 ```text
-（待 Generator 填写）
+[GREEN] mvn -q -f backend/pom.xml test -Dtest='TimestampFieldContractTest,ModuleFieldContractTest,ModuleControllerTest,AuthControllerTest' EXIT=0
+  TimestampFieldContractTest 6/6 ✓（新增模块域用例转绿）
+  ModuleFieldContractTest 3/3 ✓（038c 零回退）
+  ModuleControllerTest 11/11 ✓（:146/:177 同步后全绿）
+  AuthControllerTest 16/16 ✓
+[GREEN] mvn -q verify EXIT=1：Tests run 154, Failures 4, Errors 2 = 基线 153+1，失败六条逐条=基线（DataSourceConfigBindingTest×2、RoleControllerTest:466、SeedDataIntegrationTest:99、TestLayersSpec/TestUtilsSpec Docker）
+[GREEN] 执行时点：2026-09-29 实现后（TDD 第 2 拍）
 ```
 
 ## 门禁与冒烟记录
@@ -95,11 +101,11 @@
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 153 用例 4F+2E → 本单 +1 | 待填 | 待填 |
-| `npm run lint` | EXIT=124 挂起基线 | 待填 | 待填 |
-| `npm run test` | 20 failed\|288 passed（前端零改动） | 待填 | 待填 |
-| `npm run build` | ✓ | 待填 | 待填 |
-| `bash scripts/smoke.sh` | 59=48✅+9❌+2⏭️ → 预期 60 | 待填 | 待填 |
+| 后端 `mvn -q verify` | 153 用例 4F+2E → 本单 +1 | 154 用例 4F+2E，失败六条逐条=基线 | ✓ PASS |
+| `npm run lint` | EXIT=124 挂起基线 | EXIT=124 | ✓=基线 |
+| `npm run test` | 20 failed\|288 passed（前端零改动） | 20 failed\|288 passed (308)，Test Files 6 failed\|30 passed | ✓=基线 |
+| `npm run build` | ✓ | ✓ built in 18.27s | ✓=基线 |
+| `bash scripts/smoke.sh` | 59=48✅+9❌+2⏭️ → 预期 60 | 60=49✅+9❌+2⏭️，9❌=基线逐条，web/040b1 ✅ | ✓ PASS |
 
 ## 拆分说明
 
@@ -120,6 +126,8 @@
 - **R5（040b2 预研登记）**：R1 文档五处精确清单已锁定——`docs/01-architecture.md:46`、`ModuleController.java:46`、`PermissionController.java:41`、`RoleController.java:42`、`UserController.java:47`，勘误口径 `{records,total,size,current,...}`（用户裁决案A），供 040b2 规划直接引用；另 `docs/superpowers/plans/2026-08-26-harness-system.md:198` 同款历史文档**不动**（历史计划文档不维护）。
 
 **用户裁决在案**：四 VO 全站对称（040a 三域 + 040c me + 040b1 模块域）、R1 案A（归 040b2）——Evaluator 评审按此口径。
+
+**门禁插曲登记（非本单回归）**：首跑冒烟 11❌（多 infra-002/model-011/web-038a）同根因=本地未跟踪 `application.yml` 于 10:57:17 被改为 `expire-hours: 1`（template=2；mtime 实证发生在本单 verify 绿之后、冒烟之前；本单 diff 4 文件零交集 yml）。经用户裁决恢复 `expire-hours: 2` 后复跑冒烟=60 用例基线逐条（9❌），三用例恢复绿。
 
 ## 交付物（4 文件）
 

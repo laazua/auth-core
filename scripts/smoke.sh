@@ -425,6 +425,8 @@ smoke_case "web/039 创建时间字段对齐定向测试" mvn -q -f "$APP_DIR/po
 smoke_case "web/040 更新时间字段对齐定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='TimestampFieldContractTest'
 # web/040c：me 面个人中心 createTime/updateTime 修复（dto.auth.UserVO 时间字段）定向测试
 smoke_case "web/040c me 面时间字段修复定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='TimestampFieldContractTest'
+# web/040b1：模块域 updateTime 对齐（四 VO 对称收口）定向测试
+smoke_case "web/040b1 模块域 updateTime 对齐定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='TimestampFieldContractTest'
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

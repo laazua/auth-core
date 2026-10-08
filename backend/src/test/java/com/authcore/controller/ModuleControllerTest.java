@@ -143,7 +143,7 @@ class ModuleControllerTest {
             assertNotNull(item.path("description").asText(), "description 不应为空");
             assertNotNull(item.path("status").asText(), "status 不应为空");
             assertNotNull(item.path("createTime").asText(), "createTime 不应为空");
-            assertNotNull(item.path("updatedAt").asText(), "updatedAt 不应为空");
+            assertNotNull(item.path("updateTime").asText(), "updateTime 不应为空");
         }
     }
 
@@ -174,7 +174,7 @@ class ModuleControllerTest {
         assertNotNull(root.path("data").path("description").asText());
         assertNotNull(root.path("data").path("status").asText());
         assertNotNull(root.path("data").path("createTime").asText());
-        assertNotNull(root.path("data").path("updatedAt").asText());
+        assertNotNull(root.path("data").path("updateTime").asText());
 
         // 不存在的模块
         mockMvc.perform(get("/api/v1/modules/99999")
