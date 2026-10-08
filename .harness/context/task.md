@@ -1,168 +1,130 @@
-# Sprint 工作单：sprint-080
+# Sprint 工作单：sprint-081
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-080 |
-| 所属模块 | Evaluator 评审轮（跨 web 模块） |
-| 功能点 ID | 积压评审轮·第一轮（web/017、web/024、web/030、web/031、web/032 五项） |
-| 功能点名称 | Evaluator 积压台账评审——五项「实现完成待评审」功能点补评审与台账归位 |
-| 状态 | DONE |
+| Sprint ID | sprint-081 |
+| 所属模块 | web |
+| 功能点 ID | web/023（sprint-047 遗留收口，源码层移除） |
+| 功能点名称 | 移除整个标签页栏 TagsView——源码层删除与测试同步收口 |
+| 状态 | PLANNED |
 | 创建时间 | 2026-09-29 |
-| 消费者 | **Evaluator**（本单无实现段，Generator 跳过；Planner→Evaluator 直达） |
 
 ## 前置依赖
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| 积压红线 | 「禁止跳过 Evaluator」红线连续多轮违例积压（自 2026-09-02 起） | 本单清理 |
-| 评审基线 | sprint-079 eval 后 HEAD=f110179，基线 mvn 154/冒烟 61/前端三件套 | ✅ |
+| web/003 | DefaultLayout 骨架 | ✅ |
+| web/020 | 标签页操作区移除（组件内 actions 层） | ✅ |
+| sprint-080 | 台账勘误：023 系未实现非待评审 | ✅ |
 
 ## 业务背景
 
-session-state 挂起区「Evaluator 积压六项」清单**经 Planner sprint-080 台账考古勘误为五项待评审**，两项剔除：
+**半完成态考古**（本单核心事实）：web/023「移除整个标签页栏，仅保留面包屑导航」经 1d934de 大杂烩**部分实现**——布局层已移除（`DefaultLayout.vue` 零引用、`default-layout-tagsview-removed.spec` 3/3 绿、smoke `web-023` 产物断言已 ✅：孤儿组件不进产物故 JS/CSS 均无 `tags-view`），但**源码层遗留四件**：
 
-| 原清单项 | 勘误结论 | 依据 |
-|---------|---------|------|
-| sprint-060（web/029） | **已评审 PASS 8.6/10，剔除** | eval commit `f6d8acd` 实证 |
-| sprint-047（web/023） | **未实现，剔除评审轮归待实现** | registry 🔄「规划中」+ `components/Layout/TagsView.vue` 仍存在（移除目标未动） |
-| sprint-041（web/017） | **原清单漏列，补入** | RED `fe0e402`+GREEN `a232011` 实证实现完成、无 eval |
+1. `components/Layout/TagsView.vue`（10307 字节）成孤儿文件（全仓唯一非测试引用=`components.d.ts` 自动声明）
+2. **5 条基线红 spec**（20 failed 中的 TagsView 5 条）：`DefaultLayout.spec AC4 renders TagsView`（布局已移除未同步，1 条）+ `tags-view-actions-removed`/`tags-view-dropdown-removed`（020/022 交付断言组件内 actions/dropdown 已移除，但组件本体经 1d934de 后仍含 `:159 actions`/`:160 el-dropdown`/`:45 refreshTag`/`:18 showMore` → 4 条红）
+3. `components.d.ts`（TRACKED 入库）残留 TagsView 组件声明
+4. smoke `web-021/022` 断言语义过时：仍要求「**保留**右键菜单 `tags-view__context-menu`」——组件整体移除后产物无任何 tags-view 样式 → 该 `grep` 不中系此二用例 ❌ 根因（**删源组件不改变产物**，本单必须同步用例断言）
 
-**真实待评审五项**（历史流程欠账：实现完成但 Evaluator 从未评审，「禁止跳过 Evaluator」红线清理）：
-
-| # | 功能点 | sprint | 实现证据索引 | task 快照 | 备考 |
-|---|--------|--------|-------------|----------|------|
-| 1 | web/017 顶栏用户下拉 UI 修复 | 041 | `fe0e402`(RED)+`a232011`(GREEN) 三段式缺 docs | 被后续覆盖 | 067 期曾登记「与 web/036 同源可一并对照」 |
-| 2 | web/024 主内容区图标尺寸 | 048 | **⚠️ 09-03 窗口无独立 feat commit**（窗口 task=model/010） | 被覆盖 | 仅 registry 备注 AC 摘要（ProfileView BaseButton 16×16/20×20、Breadcrumb 13×13）；**考古风险见 AC2** |
-| 3 | web/030 权限页模块下拉 404 | 061 | `1d934de`（`-S permissions/all` 命中，大杂烩提交） | 被覆盖 | 接口现存活于 `ModuleController:151` |
-| 4 | web/031 用户抽屉确认按钮 | 062 | `c49bed0`（含 drawer test；loading 三态现存活） | 被 063 覆盖 | 单文件修复 |
-| 5 | web/032 SPA 刷新 404 | 063 | `c49bed0`（vite.config historyApiFallback+nginx try_files，均现存活） | **`c49bed0:.harness/context/task.md` 完整**（状态自标 DONE） | 063 期自行标 DONE 属当时惯例，未评审是核心事实 |
+原 047 期 4 条 AC 快照已被覆盖（task.md 单文件制式），本单 AC 依 registry 备注「移除整个标签页栏，仅保留面包屑导航」+考古语境**重建并登记**。
 
 ## 需求描述
 
-Evaluator 对五项逐一执行完整评审流程（考古→AC 核对→门禁对照→五维打分→结论→回写），一份轮报告含五个小节；共享门禁只亲跑一次服务全部。**非三段式/混杂提交系历史流程债**：TDD 维度按「当时可得的测试证据」评（混入提交的 test 文件计为有测试证据），不按现代三段式硬性要求扣死，但考古缺失（无实现证据）须如实判退。
+源码层完成 web/023：删除孤儿 `TagsView.vue`、清 `components.d.ts` 声明、5 条红 spec 同步收口（改写为删除态断言或移除过时段）、smoke `web-021/022` 断言语义同步（「保留右键菜单」→ 整体移除语义），使源码/测试/冒烟三层与「仅保留面包屑」目标一致。`DefaultLayout.vue` 布局层已达成（本单零改动）。
 
-## 验收标准
+## 验收标准（TDD 驱动）
 
-- [x] AC1 — web/017（sprint-041）评审完成：核对 4 条原始 AC（registry 备注+挂起区浏览器实测基线）、RED/GREEN commit 考古、当前代码对照（下拉弹层主题化/图标 16px 是否仍生效）、五维打分+结论
-- [x] AC2 — web/024（sprint-048）评审完成：**考古优先**——09-02~09-04 全窗口找实现证据（含混入 `2ac5581` 大杂烩的可能）；**若考古确认无实现证据→本项判退回（FAIL 退回实现），不得因 registry 标注「实现完成」放行**；有证据则按 3 条 AC（registry 备注）核对+打分
-- [x] AC3 — web/030/031/032（sprint-061/062/063）三项评审完成：各自实现考古（索引见背景表）、原始 AC 核对（030 有完整 task 快照、031/032 从 registry 备注重建）、当前功能探针（接口/按钮/回退配置现存活=实现落库实证）、逐项五维打分+结论
-- [x] AC4 — 共享门禁与台账归位：当前 HEAD 亲跑一次 `mvn -q verify`（期望 154 4F+2E）、前端三件套（期望基线）、冒烟（期望 61=50✅+9❌+2⏭️）——**注意评审对象为历史交付，门禁按当前基线对照（veto 6 豁免先例）**；五项 registry 状态回写（评审通过→✅ 备注含均分；判退→❌ 或退回实现登记）、挂起区积压清单清零、iteration-log/session-state 归位
+- [ ] AC1 — 源码层移除：`frontend/src/components/Layout/TagsView.vue` 文件不存在；全仓源码（`frontend/src/`，排除 `__tests__`/spec 内删除态断言自身）零 `TagsView` 引用；`components.d.ts` 无 TagsView 声明
+- [ ] AC2 — 测试同步收口：`tags-view-actions-removed.spec` 与 `tags-view-dropdown-removed.spec` 改写为「组件文件不存在」删除态断言（RED=改写时组件尚在）；`DefaultLayout.spec` AC4 段同步（renders→不存在，布局已移除）；处置后前端 `npm run test` **20 failed→15 failed（预期精确值，失败清单=原 20 减 TagsView 5 条，逐条核对无新增）**
+- [ ] AC3 — 冒烟同步：`web-021/022` 断言语义更新（移除「保留 `tags-view__context-menu`」过时断言，改为产物无相关样式/与 web-023 整体移除一致）；`web-023` 既有用例保持 ✅；`bash scripts/smoke.sh` 变化=原 9❌ 中 web-021/022 **预期转绿**（9→7❌），其余逐条=基线，整体用例数=61 不变
+- [ ] AC4 — 门禁：`mvn -q verify` 154 4F+2E=基线（零后端改动）；前端 lint=124 基线、build ✓；test 与冒烟变化**仅允许上述预期改善**（改善=基线变好，登记实测值，无新增失败）
 
-### AC1 — web/017
-> Given RED/GREEN commit 实证。When 评审。Then 4 条 AC 核对+当前代码对照+五维打分+结论入轮报告。
+### AC1 — 源码移除
+> When 删除组件与声明。Then 文件不存在、源码零引用。
 
-**用例**：`AC1 ← 轮报告 §1`
+**用例**：`AC1 ← 用例 smoke#web/023（产物层已有）+ 定向 grep 实测`
 
-### AC2 — web/024（考古风险项）
-> Given 09-03 窗口无独立 feat commit。When 考古全窗口。Then 有证据→核对 3 条 AC 打分；无证据→判退回并登记 registry ❌/退回状态。
+### AC2 — 测试收口
+> Given 3 spec 先行改写（RED=组件尚在/删除态断言不成立）。When 删组件。Then 15 failed 精确、零新增。
 
-**用例**：`AC2 ← 轮报告 §2（含考古过程记录）`
+**用例**：`AC2 ← npm run test 失败清单逐条对照`
 
-### AC3 — web/030/031/032
-> When 三项逐项考古+AC 核对+当前功能探针。Then 各自五维打分+结论。
+### AC3 — 冒烟同步
+> When web-021/022 断言语义同步。Then 转绿、web-023 保持、其余=基线。
 
-**用例**：`AC3 ← 轮报告 §3/§4/§5`
+**用例**：`AC3 ← bash scripts/smoke.sh 61 用例逐条`
 
-### AC4 — 共享门禁与台账归位
-> 门禁一次跑三线=当前基线；五项 registry 回写、积压清单清零、上下文归位。
+### AC4 — 门禁
+> mvn/前端三线与冒烟=基线或预期改善。
 
-**用例**：`AC4 ← 门禁实测记录 + registry/session-state diff`
+**用例**：`AC4 ← 门禁实测记录`
 
 ## 测试清单
 
-> 评审轮无新测试；「测试」=共享门禁三线+各项目功能探针（接口存活/配置存活/代码对照）。
+> TDD 载体=3 个 spec 删除态断言先行（RED）→删组件（GREEN）。
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | 共享门禁：`mvn -q verify` 期望 154 4F+2E=基线 | AC4 | ✓ |
-| 2 | 共享门禁：前端三件套期望=基线（lint124/20f\|288p/build ✓） | AC4 | ✓ |
-| 3 | 共享门禁：`bash scripts/smoke.sh` 期望 61=50✅+9❌+2⏭️ | AC4 | ✓ |
-| 4 | 各项功能探针（017 弹层主题代码/024 图标尺寸/030 接口/031 loading/032 回退配置当前存活） | AC1/AC2/AC3 | ✓ 五项全存活（031 :loading=submitting、030 双端接口、032 vite+nginx、024 audit 1/1、017 spec 绿） |
+| 1 | tags-view-actions-removed / tags-view-dropdown-removed 改写为删除态断言（先行 RED：existsSync=true 断言失败） | AC1/AC2 | 待填 |
+| 2 | DefaultLayout.spec AC4 段同步（renders→not exists） | AC2 | 待填 |
+| 3 | 门禁：mvn 154 + 前端 lint124/**15 failed 预期**/build ✓ | AC4 | 待填 |
+| 4 | 冒烟 61 用例（web-021/022 预期转绿、web-023 保持 ✅、9→7❌ 预期） | AC3/AC4 | 待填 |
 
 ## RED 证据
 
-评审轮不适用（无实现段）。
+> Generator 于删除组件前执行测试清单 #1 并粘贴关键输出（组件尚在，删除态断言失败=RED 实证）。
+
+```text
+（待 Generator 填写）
+```
+
+> 实现后复跑与 REFACTOR 复查。
+
+```text
+（待 Generator 填写）
+```
 
 ## 门禁与冒烟记录
 
+> Generator 亲测填写，Evaluator 不采信自述须亲跑。
+
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 154 用例 4F+2E | 154 4F+2E 六条逐条=基线 | ✓ PASS |
-| `npm run lint` | EXIT=124 | EXIT=124 | ✓=基线 |
-| `npm run test` | 20 failed\|288 passed | 20 failed\|288 passed (308) | ✓=基线 |
-| `npm run build` | ✓ | ✓ built in 17.46s | ✓=基线 |
-| `bash scripts/smoke.sh` | 61=50✅+9❌+2⏭️ | 61=50✅+9❌+2⏭️ 逐条=基线 | ✓ PASS |
+| 后端 `mvn -q verify` | 154 用例 4F+2E | 待填 | 待填 |
+| `npm run lint` | EXIT=124 | 待填 | 待填 |
+| `npm run test` | 20 failed\|288 passed → **预期 15 failed\|293 passed（308 不变）** | 待填 | 待填 |
+| `npm run build` | ✓ | 待填 | 待填 |
+| `bash scripts/smoke.sh` | 61=50✅+9❌+2⏭️ → **预期 61=52✅+7❌+2⏭️**（web-021/022 转绿） | 待填 | 待填 |
 
 ## 拆分说明
 
-预估验收标准 4 条（=上限）；无文件变更预算（评审轮只改 harness 回写文件，不计熔断）。**处置规则**：
-- 五项中任何一项判退回（FAIL）不阻塞其余四项评审（逐项独立结论）
-- web/024 判退回时 registry 记 ❌/退回并登记待实现；**不自行补实现**
-- 评分参照 review-criteria；历史提交形态（非三段式）按「测试证据存在性」评 TDD 维度，考古过程写入报告
-- 轮报告格式：一份报告五个小节（各节=AC 核对/考古摘要/五维评分/结论），总表汇总五项均分
+预估验收标准 4 条（=上限）；预估文件变更 **6 个（=上限，超限即熔断回报）**：
 
-**研究项（Evaluator 执行中）**：
-- R1 web/024 考古：`git log --since=2026-09-01 --until=2026-09-05` 全窗口+`git log -S "16" -- ProfileView.vue`/`-S "header-icon"` 等内容检索；结论定 AC2 走向
-- R2 各 sprint 原始 AC：030 有 task 快照（可找 061 期 plan commit，窗口 09-08~09-09 查 task.md）；031/032 从 registry 备注重建；017 从 registry+挂起区
-- R3 当前功能探针：五项实现是否仍存活于 HEAD（防后续 sprint 回退）
-- R4 共享门禁按当前 HEAD（f110179 后无新改动）三线跑一次
+1. `frontend/src/components/Layout/TagsView.vue` — **删除**（AC1）
+2. `frontend/src/components.d.ts` — 清 TagsView 声明（AC1，TRACKED 入库须手动/重生成）
+3. `frontend/src/__tests__/tags-view-actions-removed.spec.ts` — 改写为删除态断言（AC2，测试先行）
+4. `frontend/src/__tests__/tags-view-dropdown-removed.spec.ts` — 同上（AC2）
+5. `frontend/src/layouts/DefaultLayout.spec.ts` — AC4 段同步（AC2）
+6. `scripts/smoke.sh` — web-021/022 断言语义同步（AC3；web-023 用例已存在不动）
 
-## 交付物（评审轮）
+**超限熔断**：>6 文件或 >4 AC 即停止回报。**不动清单**：`DefaultLayout.vue`（布局层已达成零改动）、`default-layout-tagsview-removed.spec`（3/3 绿保持）、`main-area-icon-size-audit.spec`（提及系注释级无断言）、`web-023` smoke 用例（已 ✅）、后端全部、`web-020` 相关（侧边栏折叠与本功能点无关，其 ❌ 属基线）。
 
-1. 轮报告（五小节+汇总表）写入 task 评审记录
-2. registry 五项状态回写 + 挂起区积压清单清零
-3. session-state/iteration-log 归位（回写后→Planner 排后续：023 实现或 036b/c 等）
+**研究项（Generator 先于动手核实）**：
+- **R1 15 failed 精确性**：改写前跑 `npm run test` 记录 20 failed 完整清单基线，AC2 完成后逐条对照=**15 条且恰为原清单减 TagsView 5**（若出现非 TagsView 条目变化即熔断回报）。
+- **R2 components.d.ts 重生成**：unplugin-vue-components 于 dev/build 自动重生成——删组件后跑 `npm run build` 观察是否自动清除声明；不自动则手动删行并复跑 build 验证 TS 通过。
+- **R3 smoke web-021/022 改写形态**：现断言 `! grep tags-view__actions`（产物本已无 ✓）+ `grep tags-view__context-menu`（本 ❌ 根因）——改写=**删除「保留 context-menu」行**并把用例语义对齐 web-023（或在注释登记「右键菜单随组件整体移除」）；改后实跑转绿确认。
+- **R4 删除态断言实现**：`fs.existsSync(tagsViewPath)` 断言 false（顶层 readFileSync 须先移除，防组件删除后 spec 收集期抛错整批崩）。
+
+**历史快照登记**：047 期 4 AC 原文已不可考（task 覆盖制式），本单 4 AC 系 Planner 依 registry 备注与考古语境重建——Evaluator 评审按重建口径。
+
+## 交付物（6 文件）
+
+1-2. 删 TagsView.vue + 清 components.d.ts（AC1）
+3-5. 三 spec 同步（AC2）
+6. smoke web-021/022 同步（AC3）
 
 ## 评审记录
 
-**2026-09-29 Evaluator（sprint-080 积压评审轮·第一轮）：五项全部 PASS（9.3/8.4/9.2/9.1/9.1），积压清零**
-
-### 汇总表
-| # | 功能点 | sprint | 需求 | TDD | 测试 | 文档 | 诚实 | 均分 | 结论 |
-|---|--------|--------|------|-----|------|------|------|------|------|
-| 1 | web/017 下拉 UI 修复 | 041 | 9.5 | 9 | 9.5 | 9 | 9.5 | **9.3** | PASS→✅ |
-| 2 | web/024 图标尺寸 | 048 | 9 | 7.5 | 9 | 7.5 | 9 | **8.4** | PASS→✅（考古风险登记） |
-| 3 | web/030 权限下拉 404 | 061 | 9.5 | 8.5 | 9 | 9.5 | 9.5 | **9.2** | PASS→✅ |
-| 4 | web/031 抽屉按钮 | 062 | 9.5 | 8.5 | 9.5 | 8.5 | 9.5 | **9.1** | PASS→✅ |
-| 5 | web/032 刷新 404 | 063 | 9.5 | 8.5 | 9 | 9.5 | 9 | **9.1** | PASS→✅ |
-
-### 共享门禁（当前 HEAD 亲跑一次服务五项，veto 6 豁免基线对照）
-- mvn **154 4F+2E** 六条逐条=基线 ✓；前端 lint124 / **20 failed|288 passed** / build ✓（diff=0）✓；冒烟 **61=50✅+9❌+2⏭️** 逐条=基线 ✓
-
-### §1 web/017（sprint-041）9.3 PASS
-- AC 核对：4 条由 `dropdown-style.spec.ts`（RED 交付 97 行）源级断言 AC1-4 全绿亲跑 ✓（图标 16px/弹层主题化/min-width/分隔线）；当前态 Header dropdown 存活
-- 考古：`fe0e402`(RED)+`a232011`(GREEN：Header+element-plus.scss+smoke) 完整两段，缺 docs 段（当时惯例）
-- 扣分：文档 9（task 快照被后续覆盖、原 registry「规划中」滞后至本单勘误）
-
-### §2 web/024（sprint-048）8.4 PASS（**考古风险项，判退规则未触发**）
-- **判退规则核验**：有实现证据（当前态 Breadcrumb 13×13、`profile__header-icon` 20×20 存活；`main-area-icon-size-audit.spec` 1/1 绿；049/web025 评审通过 9.8 的依赖链）→ **不判退**
-- 考古实录：**无独立 feat commit**——09-03 窗口 task=model/010，`ProfileView.vue`→`profile/IndexView.vue` 重构与 audit spec 首版均被 `1d934de`（09-09 大杂烩）吸收；`header-icon` 内容检索追溯至 `2ac5581`（09-02）——**提交证据链断裂，实现以当前态考古认定**
-- 扣分：TDD 7.5（无 RED/GREEN 独立痕迹、测试后补入库嫌疑）、文档 7.5（task 快照丢失、registry 旧路径 ProfileView 失效）
-
-### §3 web/030（sprint-061）9.2 PASS
-- **task 快照完整**：`1d934de:.harness/context/task.md` 状态 AWAITING_REVIEW（从未评审的台账实证）
-- AC 核对：4 条；接口双端存活（`ModuleController:151` + `api/module.ts:36`）；task 记「测试先行 4/4」在 154 基线内全绿
-- 扣分：TDD 8.5（实现混入 1d934de 大杂烩、无独立 RED commit）
-
-### §4 web/031（sprint-062）9.1 PASS
-- AC 核对：3 条；**`:loading="submitting"` 实证**（`UserFormDrawer.vue:288`，提交状态三态 :29/:111/:132/:141，原「绑抽屉可见性」缺陷已修）；`UserFormDrawer.spec.ts` **4/4 亲跑绿**（registry「测试先行 4/4」吻合）
-- 扣分：TDD 8.5（混入 `c49bed0` 提交）、文档 8.5（062 task 快照被 063 覆盖、AC 从 registry 重建）
-
-### §5 web/032（sprint-063）9.1 PASS
-- **task 快照完整**：`c49bed0:.harness/context/task.md`（自标 DONE——当时惯例，未评审是核心事实，本单补评审关闭）
-- AC 核对：3 条；配置双存活（`vite.config.ts:43 historyApiFallback`、`nginx.conf:29 try_files`）；task 记核心路由测试 45/45
-- 扣分：TDD 8.5（独立 test commit 缺、混 c49bed0）、诚实 9（自标 DONE 越权为当时惯例）
-
-### 结论
-**五项全部 PASS**，Veto 1-6 均不命中（历史提交形态按「测试证据存在性」口径评 TDD 维度——工作单授权）。**积压清单清零**（029 已过+五项本单关闭+023 归待实现）。
-
-### 问题列表
-- P1（历史债）web/024 提交证据链断裂（无独立实现 commit，被 2ac5581/1d934de 两次大杂烩吸收）——登记为台账考古警示，后续审计以本报告为证据
-- P2（历史债）041/048/061/062 四期 task 快照被后续覆盖（task.md 单文件制式之弊）——评审考古成本高
-- P3（历史债）061/062/063 提交非三段式（`1d934de`/`c49bed0` 大杂烩）——当时流程未强制
-
-### 改进建议
-- task.md 单文件覆盖制式：历史快照仅能靠 `git show <commit>:.harness/context/task.md` 考古——建议关键节点（plan/eval）提交成为惯例已满足，**AWAITING_REVIEW 状态的 docs 提交**必须落（062 缺）
-- 下轮排期：web/023（sprint-047 待实现）、IndexView 拆分、036b/c、011、modules/003
+- （待 Evaluator）

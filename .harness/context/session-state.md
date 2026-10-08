@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟢 **sprint-080 通过，Evaluator 积压清零**（五项补评审全 PASS：web/017 ✅9.3、web/024 ✅8.4（考古风险登记）、web/030 ✅9.2、web/031 ✅9.1、web/032 ✅9.1；共享门禁 mvn 154/冒烟 61/前端三件套逐条=基线；积压六项勘误后全部关闭（029 已过+五项本单+023 归待实现）；前序 sprint-079 web/040b2 ✅ 9.8/10）前序 sprint-076 通过（web/040a ✅ 9.4/10）、sprint-075 通过（web/039 ✅ 9.4/10）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）前序 sprint-074 通过（web/038e ✅ 9.3/10，038 组五段全部收口）、sprint-073 通过（web/038d ✅ 9.0/10 REWORK-1）、sprint-072 通过（web/038c ✅ 9.0/10）、sprint-069 通过（modules/002 ✅）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
+- 状态: 🟡 sprint-081 规划完成待实现（子功能点 **web/023 源码层收口 🔄**，工作单 `.harness/context/task.md` PLANNED，4 AC/6 文件=上限；半完成态考古在案：布局/产物层已达成、收口=删孤儿组件+5 红 spec+smoke 021/022 语义；前序 sprint-080 积压清零五项 ✅、sprint-079 web/040b2 ✅ 9.8/10）前序 sprint-076 通过（web/040a ✅ 9.4/10）、sprint-075 通过（web/039 ✅ 9.4/10）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）前序 sprint-074 通过（web/038e ✅ 9.3/10，038 组五段全部收口）、sprint-073 通过（web/038d ✅ 9.0/10 REWORK-1）、sprint-072 通过（web/038c ✅ 9.0/10）、sprint-069 通过（modules/002 ✅）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
 - 当前模块: web
-- 当前功能点: sprint-080 评审轮已关闭（五项全 ✅）；下一个功能点待 Planner 取（web/023 实现 或 IndexView 拆分 或 036b/c 或 011 或 modules/003）
+- 当前功能点: web/023 源码层收口（删 TagsView.vue 孤儿组件、components.d.ts 清声明、3 spec 删除态改写先行 RED、smoke web-021/022「保留右键菜单」语义同步；预期 test 20→15 failed、冒烟 web-021/022 转绿 9→7❌）
 
 
 ## 下一步动作
-  Planner：读 `.harness/planner.md` 并严格执行，**Evaluator 积压已清零（sprint-080 关闭五项+029 已过+023 归待实现，台账勘误在案）**，后续候选优先级：① **web/023（sprint-047，移除 TagsView 标签页栏）实现**——唯一 🔄 待实现功能点（`components/Layout/TagsView.vue` 尚存 10307 字节，前置 web/003/web/020 ✅）；② IndexView 拆分（历史债 752 行/1404 行，用户裁定超限必须拆分）；③ web/036b/c（暗色模式二三段，067 登记）；④ web/011/036c（前端构建错误治理+串联 :deep() 42 处缺陷，068 登记）；⑤ modules/003 服务凭证（前置架构 §3 仲裁）。sprint-080 已通过（commit 链 65751d6 plan+eval），评审轮报告与考古警示（P1 web/024 证据链断裂、P2 task 快照覆盖、P3 大杂烩提交）见 task 评审记录。新工作单基线口径：mvn **154 4F+2E**、冒烟 **61=50✅+9❌+2⏭️**、前端 lint124/20 failed|288/build ✓。
+  Generator：读 `.harness/generator.md` 并严格执行工作单 `.harness/context/task.md`（sprint-081，web/023 源码层收口）。关键红线：① **TDD 先行**——3 spec 删除态改写先跑 **RED**（`fs.existsSync(TagsView)=true` 断言失败留痕，须先移除顶层 readFileSync 防删除后收集期崩溃）→ 删组件 → GREEN；② **文件 6=上限、AC 4=上限，超一即熔断**（删 TagsView.vue/components.d.ts/3 spec/smoke）；③ **不动清单**：`DefaultLayout.vue`（布局层已达成）、`default-layout-tagsview-removed.spec`（3/3 绿）、`main-area-icon-size-audit.spec`（注释级提及）、`web-023` smoke 用例（已 ✅）、后端全部、web-020 侧边栏折叠用例；④ R1-R4 研究项：15 failed 精确对照（原 20 减 TagsView 5、零新增即过，异动熔断）、components.d.ts 重生成方式（build 自动/手动删行）、web-021/022 改写=删「保留 context-menu」行、删除态断言形态；⑤ 基线口径：mvn **154 4F+2E**、前端 lint124/test **20 failed|288 → 预期 15 failed|293（308 不变）**/build ✓、冒烟 **61=50✅+9❌+2⏭️ → 预期 52✅+7❌+2⏭️（web-021/022 转绿）**；预期改善须逐条实测登记（改善≠回归，反向异动熔断）；两段式提交。sprint-081 工作单已含 047 期 4 AC 重建登记（Evaluator 按重建口径）。
 
 ## 挂起
 - 2026-09-29: Evaluator(sprint-080) — **积压清单清零登记**：下方历史条目中反复出现的「Evaluator 积压六项（sprint-047/048/060/061/062/063）均待评审」表述**全部失效关闭**——029(060) 早于本单已过（f6d8acd 8.6）、047(web/023) 系未实现非待评审、048/061/062/063+041(web/017 补入) 五项于 sprint-080 评审轮全 PASS（9.3/8.4/9.2/9.1/9.1）。历史条目原文按 append-only 保留不删。
