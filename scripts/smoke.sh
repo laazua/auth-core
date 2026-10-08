@@ -247,26 +247,22 @@ smoke_case "web-020 侧边栏底部折叠按钮移除构建产物" bash -c "
   grep -q 'header__toggle' dist/assets/css/Header-*.css || exit 1
 "
 
-# web/021：移除标签页操作区域下拉菜单验证（生产构建产物不含 .tags-view__more 与 .tags-view__dropdown-icon，保留右键菜单 .tags-view__context-menu）
+# web/021：移除标签页操作区域下拉菜单验证（生产构建产物不含 .tags-view__more 与 .tags-view__dropdown-icon；右键菜单断言随 web/023 整体移除语义同步删除——组件整体移除后产物零 tags-view 样式）
 smoke_case "web-021 标签页下拉菜单移除构建产物" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1
   npx vite build >/dev/null 2>&1 || exit 1
   # 检查 CSS 产物中不包含下拉菜单相关样式
   ! grep -q 'tags-view__more' dist/assets/css/*.css || exit 1
   ! grep -q 'tags-view__dropdown-icon' dist/assets/css/*.css || exit 1
-  # 检查右键上下文菜单样式保留
-  grep -q 'tags-view__context-menu' dist/assets/css/*.css || exit 1
 "
 
-# web/022：移除标签页操作区域整个红框部分验证（生产构建产物不含 .tags-view__actions 与 .tags-view__refresh，保留右键菜单 .tags-view__context-menu）
+# web/022：移除标签页操作区域整个红框部分验证（生产构建产物不含 .tags-view__actions 与 .tags-view__refresh；右键菜单断言随 web/023 整体移除语义同步删除）
 smoke_case "web-022 标签页操作区域整体移除构建产物" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1
   npx vite build >/dev/null 2>&1 || exit 1
   # 检查 CSS 产物中不包含操作区域相关样式
   ! grep -q 'tags-view__actions' dist/assets/css/*.css || exit 1
   ! grep -q 'tags-view__refresh' dist/assets/css/*.css || exit 1
-  # 检查右键上下文菜单样式保留
-  grep -q 'tags-view__context-menu' dist/assets/css/*.css || exit 1
 "
 
 # web/023：移除整个标签页栏验证（生产构建产物不含 TagsView 相关代码，contentStyle minHeight 为 calc(100vh - 60px)，保留 Breadcrumb）
@@ -279,6 +275,17 @@ smoke_case "web-023 移除整个标签页栏构建产物" bash -c "
   grep -q 'calc(100vh - 60px)' dist/assets/js/DefaultLayout-*.js || exit 1
   # 检查 Breadcrumb 组件保留
   grep -q 'Breadcrumb' dist/assets/js/*.js || exit 1
+"
+
+# web/023-src：移除整个标签页栏源码层验证（组件文件不存在、源码 .vue 零 TagsView 引用、components.d.ts 零自动声明）
+smoke_case "web-023-src 移除标签页栏源码层" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  # 组件文件已删除
+  test ! -f src/components/Layout/TagsView.vue || exit 1
+  # 源码 .vue 零 TagsView 引用（spec 均为 .ts 不入扫描面）
+  ! grep -rq 'TagsView' src/ --include='*.vue' || exit 1
+  # 自动声明文件零残留
+  ! grep -q 'TagsView' src/components.d.ts || exit 1
 "
 
 # web/024：修复主内容区图标尺寸异常验证（生产构建产物含图标定宽样式，ProfileView.vue 按钮图标 16x16px）

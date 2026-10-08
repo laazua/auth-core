@@ -13,7 +13,9 @@ function collectSourceFiles(): string[] {
     .filter((full) => fs.statSync(full).isFile())
     .filter((full) => {
       const rel = path.relative(srcRoot, full);
-      return /\.(vue|ts|scss)$/.test(rel) && !rel.includes('__tests__') && !rel.endsWith('.spec.ts');
+      return (
+        /\.(vue|ts|scss)$/.test(rel) && !rel.includes('__tests__') && !rel.endsWith('.spec.ts')
+      );
     });
 }
 

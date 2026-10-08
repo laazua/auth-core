@@ -166,8 +166,8 @@ describe('DefaultLayout', () => {
   });
 
   describe('AC4 - Tag Management (TagsView)', () => {
-    it('renders TagsView component', () => {
-      expect(wrapper.findComponent({ name: 'TagsView' }).exists()).toBe(true);
+    it('does not render TagsView component — web/023 整体移除（仅保留面包屑）', () => {
+      expect(wrapper.findComponent({ name: 'TagsView' }).exists()).toBe(false);
     });
   });
 

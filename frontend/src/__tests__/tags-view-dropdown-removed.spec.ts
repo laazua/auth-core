@@ -32,7 +32,9 @@ describe('TagsViewDropdownRemovedSpec', () => {
   it('noTagsViewSfcFileAnywhere — src 目录树不存在任意 TagsView*.vue（防换路径复加）', () => {
     // Arrange: 文件名级扫描不限定既知路径
     // Act
-    const hits = collectSourceFiles().filter((full) => /^TagsView.*\.vue$/.test(path.basename(full)));
+    const hits = collectSourceFiles().filter((full) =>
+      /^TagsView.*\.vue$/.test(path.basename(full))
+    );
 
     // Assert: 命中清单为空（回归面=组件以其他路径重新加入）
     expect(hits).toEqual([]);
