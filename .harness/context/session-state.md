@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟢 sprint-079 通过（**web/040b2 ✅ 9.8/10，web/040 组全收口（040a 9.4/040c 9.5/040b1 9.7/040b2 9.8），R1 分页口径错位问题单关闭**；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）；前序 sprint-078 通过（web/040b1 ✅ 9.7/10）前序 sprint-076 通过（web/040a ✅ 9.4/10）、sprint-075 通过（web/039 ✅ 9.4/10）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）前序 sprint-074 通过（web/038e ✅ 9.3/10，038 组五段全部收口）、sprint-073 通过（web/038d ✅ 9.0/10 REWORK-1）、sprint-072 通过（web/038c ✅ 9.0/10）、sprint-069 通过（modules/002 ✅）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
+- 状态: 🟡 sprint-080 规划完成（**积压评审轮工作单已产出**，`.harness/context/task.md` PLANNED，消费者=Evaluator；台账勘误：原积压六项→**五项待评审**（web/017 补入、web/029 已过剔除、web/023 未实现归待实现），030/031/032/024 状态 ✅→🔄；前序 sprint-079 通过（web/040b2 ✅ 9.8/10，组全收口）前序 sprint-076 通过（web/040a ✅ 9.4/10）、sprint-075 通过（web/039 ✅ 9.4/10）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）前序 sprint-074 通过（web/038e ✅ 9.3/10，038 组五段全部收口）、sprint-073 通过（web/038d ✅ 9.0/10 REWORK-1）、sprint-072 通过（web/038c ✅ 9.0/10）、sprint-069 通过（modules/002 ✅）；Evaluator 积压六项待评审（sprint-047/048/060/061/062/063，见挂起区）
 - 当前模块: web
-- 当前功能点: web/040b2 已收口（✅ 9.8/10）；下一个功能点待 Planner 取（积压评审或 IndexView/036b/c+011/modules-003）
+- 当前功能点: sprint-080 积压评审轮·第一轮（五项：web/017(041)/web/024(048·考古风险)/web/030(061)/web/031(062)/web/032(063)；无实现段，Evaluator 直达执行；共享门禁一次跑服务全部）
 
 
 ## 下一步动作
-  Planner：读 `.harness/planner.md` 并严格执行，优先级：① **Evaluator 积压六项评审**（sprint-047（web/023）、sprint-048（web/024）、sprint-060（web/029）、sprint-061（web/030）、sprint-062（web/031）、sprint-063（web/032）——积压已 5 单连续超 1 单红线，建议下轮优先排一个评审轮）；② IndexView 拆分规划；③ 036b/c+011；④ modules/003。**web/040 组已全收口**（sprint-079 通过 web/040b2 ✅ 9.8/10，commit 链 028ef15/1c06c49/6be3838/1ad408e+eval），R1 问题单关闭。新工作单注意：**基线引用上一单 eval 登记口径**（当前 mvn 154 4F+2E、冒烟 61=50✅+9❌+2⏭️、前端 lint124/20 failed|288/build ✓，P3 教训）。
+  Evaluator：读 `.harness/evaluator.md` 并严格执行工作单 `.harness/context/task.md`（sprint-080，**积压评审轮·第一轮，消费者=Evaluator，无实现段**）。要点：① 五项逐项评审（web/017/024/030/031/032），一份轮报告五小节+汇总表（各节=AC核对/考古摘要/五维评分/结论，review-criteria 打分）；② **AC2 考古风险**：web/024 09-03 窗口无独立 feat commit，全窗口考古（含 2ac5581 大杂烩可能），**无实现证据→判退回不得放行**；③ 共享门禁一次跑三线（mvn 期望 154 4F+2E、前端=基线、冒烟 61=50✅+9❌+2⏭️，按当前 HEAD 基线对照 veto 6 豁免先例）；④ 历史非三段式提交按「测试证据存在性」评 TDD 维度不扣死；⑤ 回写：五项 registry（通过→✅ 均分/判退→❌ 登记）、挂起区积压清单清零、task 评审记录、session-state→Planner。**积压清单勘误在案**（Planner sprint-080 考古）：029 已过（f6d8acd）剔除、023 未实现（TagsView 尚存）归待实现、017 原清单漏列补入。后续排期参考：023 实现、IndexView 拆分、036b/c、011、modules/003。
 
 ## 挂起
 - 2026-09-29: Generator(sprint-076) — **web/040c 新拆登记（用户裁决拆分在案，AC2 me 面缺口实证）**：仓库存在两个同名 `UserVO`——`dto.user.UserVO`（8 参带 createdAt/updatedAt，三域列表/详情用，本单已加 updateTime 注解）与 **`dto.auth.UserVO`（6 参，无任何时间字段）**；`/auth/me` 的 `MeResponse.user` 实为后者（同包无 import 直接引用，`AuthServiceImpl:5 import com.authcore.dto.auth.UserVO`、`toUserVO` 6 参构造），故 me.user **既无 createTime 也无 updateTime、个人中心创建/更新时间恒空**（075 评审「MeResponse 内嵌 UserVO 连带修复」系 Planner 调研误判同名异类——登记更正）。满足 me 面需改 `dto.auth.UserVO`+`AuthServiceImpl.toUserVO` = +2 文件超本单 6 文件熔断。**用户 2026-09-29 裁决**：本单 AC2 收窄为三域详情面（测试 me 段已摘除，`835de93`），me 修复另立 **web/040c**（2-3 文件：dto.auth.UserVO 加时间两参 + toUserVO 填值 + 契约测试扩展 + smoke）。me 面 RED 实证（`No value at JSON path "$.data.user.updateTime"`）已在 061817b 证据中留痕。

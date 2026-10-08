@@ -2,7 +2,7 @@
 
 本表是全系统的唯一功能点台账：每个功能点拥有全局唯一 ID（如 `infra/001`），被三个 prompt 与 context 文件引用。状态图例：⬜ 未开始 / 🔄 进行中 / ✅ 完成 / ❌ 阻塞 / ⚠️ 有缺口
 
-> 最后更新：2026-09-29（sprint-079 评审通过，**web/040 组全收口**：040a ✅9.4/040c ✅9.5/040b1 ✅9.7/040b2 ✅9.8，R1 分页口径错位问题单关闭；Evaluator 积压六项（sprint-047/048/060/061/062/063）待评审；modules/003 预留）
+> 最后更新：2026-09-29（sprint-080 规划：**积压台账勘误+评审轮工作单**——原积压六项勘误为五项待评审（029 已过 f6d8acd 剔除、023 未实现归待实现、补入 017 漏列），030/031/032/024 状态 ✅→🔄 语义归位；前序 sprint-079 web/040b2 ✅ 9.8/10 组全收口；modules/003 预留）
 
 ## 阶段总览
 
@@ -103,21 +103,21 @@
 | web/014 | 修复用户下拉菜单功能（个人中心/设置/修改密码/退出登录点击无效） | web/003, web/007 | ✅ | sprint-038 完成 |
 | web/015 | 修复 DefaultLayout.vue 缺失渐变背景导致页面纯白问题 | web/001, web/008 | ✅ | sprint-040 随 web/016 一并评审通过（均分 9.6/10） |
 | web/016 | 修复 CSS 主题变量源 variables.scss 未注入样式入口导致全站 UI 纯白 | web/001, web/008 | ✅ | sprint-040 评审通过（均分 9.6/10，浏览器实证渐变恢复） |
-| web/017 | 修复顶栏用户下拉菜单 UI 突兀与尺寸异常（图标拉伸成 68~96px 巨图致行高 78/106px 不一、弹层 EP 默认白底 4px 圆角未主题化、暗色弹层白底近白字不可读） | web/014, web/008, web/016 | 🔄 | sprint-041 规划中（2026-09-02 kickoff，4 条验收标准，浏览器实测基线见 task.md） |
+| web/017 | 修复顶栏用户下拉菜单 UI 突兀与尺寸异常（图标拉伸成 68~96px 巨图致行高 78/106px 不一、弹层 EP 默认白底 4px 圆角未主题化、暗色弹层白底近白字不可读） | web/014, web/008, web/016 | 🔄 | **实现完成待评审**（sprint-041，RED fe0e402+GREEN a232011 实证、缺 docs/eval；4 条验收标准，浏览器实测基线原 task 快照已被覆盖；sprint-080 评审轮对象，原清单漏列本单补入；与 web/036 同源可对照） |
 | web/018 | 修复侧边栏菜单图标不显示（图标字符串未解析为组件） | web/001, web/003, web/008 | ✅ | sprint-042 评审通过（2026-09-02，4 条验收标准，main.ts 全局注册 Element Plus 图标） |
 | web/019 | 修复侧边栏菜单图标尺寸过大（SVG 图标缺少显式 width/height，font-size 不生效） | web/001, web/003, web/008, web/018 | ✅ | sprint-043 评审通过（2026-09-02，4 条验收标准，Sidebar.vue 三处 .sidebar__icon 显式定宽 16×16px） |
 | web/020 | 移除侧边栏底部折叠按钮，仅保留顶栏左侧折叠按钮 | web/003, web/019 | ✅ | sprint-044 评审通过（2026-09-03，4 条验收标准） |
 | web/021 | 移除标签页操作区域（关闭其他标签、关闭所有标签），仅保留刷新按钮 | web/003, web/020 | ✅ | sprint-045 评审通过（2026-09-03，4 条验收标准） |
 | web/022 | 移除标签页操作区域整个红框部分（含刷新按钮），仅保留标签页栏 | web/003, web/021 | ⚠️ | sprint-046 实现有误（需求理解偏差，已废弃） |
 | web/023 | 移除整个标签页栏（TagsView），仅保留面包屑导航 | web/003, web/020 | 🔄 | sprint-047 规划中（2026-09-03 kickoff，4 条验收标准） |
-| web/024 | 修复主内容区图标尺寸异常（ElButton icon prop 等 EP 图标缺少显式尺寸被 flex 拉伸） | web/003, web/007, web/008, web/016 | ✅ | sprint-048 评审中（2026-09-03 实现完成，3 条验收标准，ProfileView.vue BaseButton+slot 16×16px + header-icon 20×20px，Breadcrumb.vue breadcrumb__icon 13×13px） |
+| web/024 | 修复主内容区图标尺寸异常（ElButton icon prop 等 EP 图标缺少显式尺寸被 flex 拉伸） | web/003, web/007, web/008, web/016 | 🔄 | **实现完成待评审·考古风险**（sprint-048，2026-09-03 备注称实现完成但 09-03 窗口无独立 feat commit，3 条 AC 摘要=ProfileView BaseButton 16×16/header-icon 20×20、Breadcrumb 13×13；sprint-080 评审轮对象，考古无证据则判退，状态语义勘误 ✅→🔄） |
 | web/025 | 优化主内容区图标与文字间距（ProfileView header、action buttons、Breadcrumb 等） | web/003, web/007, web/008, web/016, web/024 | ✅ | sprint-049 评审通过（2026-09-03，4 条验收标准，平均分 9.8/10，header gap 24px、action gap 16px、breadcrumb margin-right 12px） |
 | web/026 | 修复登录成功后不跳转首页（API 基础路径缺少 /v1 导致 /auth/me 404） | web/002, web/011a | ✅ | sprint-057 评审通过（2026-09-07，4 条验收标准，门禁+冒烟通过） |
 | web/027 | 修复远程开发环境 CORS 与代理配置导致的 403 错误 | web/011a, web/026 | ✅ | sprint-059 评审通过（2026-09-08，3 条验收标准，门禁+冒烟通过） |
 | web/029 | 修复侧边栏菜单导航404问题（动态路由未加载与菜单路径错误） | web/010, web/026, web/027 | ✅ | sprint-060 评审通过（2026-09-09，平均分 8.6/10，门禁+冒烟通过，router.spec.ts 9 passed, useMenu.spec.ts 10 passed, system-menu-path-fix.spec.ts 6 passed） |
-| web/030 | 修复权限管理页模块下拉选项接口 404（/modules/permissions/all 后端接口缺失） | web/006, modules/001, perms/001 | ✅ | sprint-061 实现完成（2026-09-09，4 条验收标准，测试先行 4/4 通过，后端核心测试全绿，冒烟 4 用例通过） |
-| web/031 | 修复用户管理新增/编辑抽屉确认按钮不可点击问题（:loading 绑定抽屉可见性而非提交状态） | web/004, web/011 | ✅ | sprint-062 实现完成（2026-09-10，3 条验收标准，单文件修复，测试先行 4/4 通过，前端构建通过） |
-| web/032 | 修复 SPA 路由刷新页面 404 问题（History 模式回退配置） | web/001 | ✅ | sprint-063 实现完成（2026-09-10，3 条验收标准，vite.config.ts historyApiFallback + nginx.conf try_files，前端构建通过，核心路由测试全绿） |
+| web/030 | 修复权限管理页模块下拉选项接口 404（/modules/permissions/all 后端接口缺失） | web/006, modules/001, perms/001 | 🔄 | **实现完成待评审**（sprint-061，2026-09-09 实现于 1d934de，接口现存活 ModuleController:151；sprint-080 评审轮对象，原 ✅ 系状态语义混用勘误为 🔄） |
+| web/031 | 修复用户管理新增/编辑抽屉确认按钮不可点击问题（:loading 绑定抽屉可见性而非提交状态） | web/004, web/011 | 🔄 | **实现完成待评审**（sprint-062，2026-09-10 实现于 c49bed0 含 drawer test，loading 三态现存活；sprint-080 评审轮对象，状态语义勘误 ✅→🔄） |
+| web/032 | 修复 SPA 路由刷新页面 404 问题（History 模式回退配置） | web/001 | 🔄 | **实现完成待评审**（sprint-063，2026-09-10 实现于 c49bed0，task 快照 `c49bed0:.harness/context/task.md` 自标 DONE 但未评审，vite/nginx 回退配置现存活；sprint-080 评审轮对象，状态语义勘误 ✅→🔄） |
 | web/033 | 登录页新增显示密码功能（密码框可见性切换按钮，可切换明文/掩码显示） | web/002, web/013 | ✅ | sprint-064 评审通过（2026-09-28，平均分 8.9/10，4 条验收标准全满足，测试先行 3/3，冒烟 web-033 通过；预存红项基线对照） |
 | web/034 | 系统管理菜单用户/角色路由迁移至 /system/users 与 /system/roles（修复访问 404，统一 URL 体系） | web/003, web/004, web/005, web/010, web/029 | ✅ | sprint-065 评审通过（2026-09-28，平均分 8.8/10，4 条 AC 全满足，测试先行 9 RED→28/28 GREEN，冒烟 web-034 通过；基线对照豁免否决项 6） |
 | web/035 | 修复登录后首次导航受保护路由落 404（动态路由首载 next({ ...to }) 携带 NotFound name 陷阱） | web/001, web/029, web/034 | ✅ | sprint-066 评审通过（2026-09-28，平均分 9.1/10，4 条 AC 全满足，测试先行 2 failed RED→14/14 GREEN，冒烟 web-035 通过；基线对照豁免否决项 6） |

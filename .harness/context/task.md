@@ -1,171 +1,120 @@
-# Sprint 工作单：sprint-079
+# Sprint 工作单：sprint-080
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-079 |
-| 所属模块 | web |
-| 功能点 ID | web/040b2（web/040b 拆分末段：R1 案A 架构分页键名勘误） |
-| 功能点名称 | R1 案A 文档勘误——架构 §4 与 4 个 controller Javadoc 分页 data 口径对齐实现 |
-| 状态 | IMPLEMENTED（待评审） |
+| Sprint ID | sprint-080 |
+| 所属模块 | Evaluator 评审轮（跨 web 模块） |
+| 功能点 ID | 积压评审轮·第一轮（web/017、web/024、web/030、web/031、web/032 五项） |
+| 功能点名称 | Evaluator 积压台账评审——五项「实现完成待评审」功能点补评审与台账归位 |
+| 状态 | PLANNED |
 | 创建时间 | 2026-09-29 |
+| 消费者 | **Evaluator**（本单无实现段，Generator 跳过；Planner→Evaluator 直达） |
 
 ## 前置依赖
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| web/040b1 | 模块域 updateTime 收尾（040b 拆分首段，评审通过 9.7/10） | ✅ |
-| R1 案A 裁决 | 用户裁决：文档对齐实现（案A），非实现迁就文档（案B） | ✅ 在案 |
+| 积压红线 | 「禁止跳过 Evaluator」红线连续多轮违例积压（自 2026-09-02 起） | 本单清理 |
+| 评审基线 | sprint-079 eval 后 HEAD=f110179，基线 mvn 154/冒烟 61/前端三件套 | ✅ |
 
 ## 业务背景
 
-R1 口径错位（sprint-066 发现、070/072 复述、075/076/077/078 规划连续登记）：架构文档与 controller Javadoc 声明分页 `data={list,total,page,size}`，实现实际为 MyBatis-Plus `IPage` 序列化 `{records,total,size,current,...}`（测试断言 `data.records`/`data.total` 多处、契约用例均以 records 为准）。**用户裁决案A**（2026-09-29）：文档对齐实现，零行为变更。040b 系列（040a 三域 / 040c me / 040b1 模块域）行为侧已全部收口，本单为**纯文档收尾段**：修 5 处声明、终清残留面、关闭 R1 问题单。
+session-state 挂起区「Evaluator 积压六项」清单**经 Planner sprint-080 台账考古勘误为五项待评审**，两项剔除：
 
-**拆分说明**：040b→040b1（已 ✅）+ 040b2（本单）两段系 9 文件超 6 熔断产物；本单 6 文件恰在上限（不得再加）。
+| 原清单项 | 勘误结论 | 依据 |
+|---------|---------|------|
+| sprint-060（web/029） | **已评审 PASS 8.6/10，剔除** | eval commit `f6d8acd` 实证 |
+| sprint-047（web/023） | **未实现，剔除评审轮归待实现** | registry 🔄「规划中」+ `components/Layout/TagsView.vue` 仍存在（移除目标未动） |
+| sprint-041（web/017） | **原清单漏列，补入** | RED `fe0e402`+GREEN `a232011` 实证实现完成、无 eval |
+
+**真实待评审五项**（历史流程欠账：实现完成但 Evaluator 从未评审，「禁止跳过 Evaluator」红线清理）：
+
+| # | 功能点 | sprint | 实现证据索引 | task 快照 | 备考 |
+|---|--------|--------|-------------|----------|------|
+| 1 | web/017 顶栏用户下拉 UI 修复 | 041 | `fe0e402`(RED)+`a232011`(GREEN) 三段式缺 docs | 被后续覆盖 | 067 期曾登记「与 web/036 同源可一并对照」 |
+| 2 | web/024 主内容区图标尺寸 | 048 | **⚠️ 09-03 窗口无独立 feat commit**（窗口 task=model/010） | 被覆盖 | 仅 registry 备注 AC 摘要（ProfileView BaseButton 16×16/20×20、Breadcrumb 13×13）；**考古风险见 AC2** |
+| 3 | web/030 权限页模块下拉 404 | 061 | `1d934de`（`-S permissions/all` 命中，大杂烩提交） | 被覆盖 | 接口现存活于 `ModuleController:151` |
+| 4 | web/031 用户抽屉确认按钮 | 062 | `c49bed0`（含 drawer test；loading 三态现存活） | 被 063 覆盖 | 单文件修复 |
+| 5 | web/032 SPA 刷新 404 | 063 | `c49bed0`（vite.config historyApiFallback+nginx try_files，均现存活） | **`c49bed0:.harness/context/task.md` 完整**（状态自标 DONE） | 063 期自行标 DONE 属当时惯例，未评审是核心事实 |
 
 ## 需求描述
 
-将 5 处 `data={list,total,page,size}` 勘误为实现口径 `data={records,total,size,current,...}`：
+Evaluator 对五项逐一执行完整评审流程（考古→AC 核对→门禁对照→五维打分→结论→回写），一份轮报告含五个小节；共享门禁只亲跑一次服务全部。**非三段式/混杂提交系历史流程债**：TDD 维度按「当时可得的测试证据」评（混入提交的 test 文件计为有测试证据），不按现代三段式硬性要求扣死，但考古缺失（无实现证据）须如实判退。
 
-1. `docs/01-architecture.md:46` — 分页接口 data 声明行（架构 §4 权威口径）
-2. `backend/src/main/java/com/authcore/controller/ModuleController.java:46` — `@return 分页结果：data={list,total,page,size}`
-3. `backend/src/main/java/com/authcore/controller/PermissionController.java:41` — 同款
-4. `backend/src/main/java/com/authcore/controller/RoleController.java:42` — 同款
-5. `backend/src/main/java/com/authcore/controller/UserController.java:47` — 同款
+## 验收标准
 
-**不动清单**：`docs/superpowers/plans/2026-08-26-harness-system.md:198`（历史计划文档，不维护——已登记）；分页参数 page/size 请求语义描述保持（勘误仅 data 载荷字段）；实现代码零改动（Javadoc 注释行）；前端零改动。
+- [ ] AC1 — web/017（sprint-041）评审完成：核对 4 条原始 AC（registry 备注+挂起区浏览器实测基线）、RED/GREEN commit 考古、当前代码对照（下拉弹层主题化/图标 16px 是否仍生效）、五维打分+结论
+- [ ] AC2 — web/024（sprint-048）评审完成：**考古优先**——09-02~09-04 全窗口找实现证据（含混入 `2ac5581` 大杂烩的可能）；**若考古确认无实现证据→本项判退回（FAIL 退回实现），不得因 registry 标注「实现完成」放行**；有证据则按 3 条 AC（registry 备注）核对+打分
+- [ ] AC3 — web/030/031/032（sprint-061/062/063）三项评审完成：各自实现考古（索引见背景表）、原始 AC 核对（030 有完整 task 快照、031/032 从 registry 备注重建）、当前功能探针（接口/按钮/回退配置现存活=实现落库实证）、逐项五维打分+结论
+- [ ] AC4 — 共享门禁与台账归位：当前 HEAD 亲跑一次 `mvn -q verify`（期望 154 4F+2E）、前端三件套（期望基线）、冒烟（期望 61=50✅+9❌+2⏭️）——**注意评审对象为历史交付，门禁按当前基线对照（veto 6 豁免先例）**；五项 registry 状态回写（评审通过→✅ 备注含均分；判退→❌ 或退回实现登记）、挂起区积压清单清零、iteration-log/session-state 归位
 
-## 验收标准（TDD 驱动）
+### AC1 — web/017
+> Given RED/GREEN commit 实证。When 评审。Then 4 条 AC 核对+当前代码对照+五维打分+结论入轮报告。
 
-- [x] AC1 — 架构 §4 口径勘误：`docs/01-architecture.md:46` 分页 data 声明改为 `{records,total,size,current,...}`（保留 page/size 请求参数说明）
-- [x] AC2 — 四 Javadoc 同步：Module/Permission/Role/User 四 controller `@return 分页结果：data={list,total,page,size}` → `data={records,total,size,current,...}`（仅注释行，方法体零改动）
-- [x] AC3 — 残留面终清（TDD 载体）：`grep -rn 'data={list,total,page,size}' docs/01-architecture.md backend/src/main/java/com/authcore/controller/` 零命中（历史计划文档 198 除外且不计入）；实现口径实测核对一次分页响应 JSON 字段集与文档一致（若实测与裁决措辞有出入，以实测为准并回写 task 登记）
-- [x] AC4 — 门禁与冒烟：后端 `mvn -q verify` **154 用例 4F+2E=基线**（078 后基线 153+1；本单 +0，失败六条逐条=基线；原工作单 153 系旧口径笔误，此处置勘误）；前端零改动三件套=基线（lint124 / 20 failed|288 passed / build ✓）；`bash scripts/smoke.sh` 新增 `web/040b2` 用例（残留面 grep 零命中断言）单跑通过、整体=**61=50✅+9❌+2⏭️**（基线 60 + 新用例 1，9❌ 逐条=基线）
+**用例**：`AC1 ← 轮报告 §1`
 
-### AC1 — 架构 §4
-> Given 案A 裁决在案。When 编辑 `docs/01-architecture.md` §4 分页行。Then data 载荷声明为 `{records,total,size,current,...}`，page/size 请求参数说明保留。
+### AC2 — web/024（考古风险项）
+> Given 09-03 窗口无独立 feat commit。When 考古全窗口。Then 有证据→核对 3 条 AC 打分；无证据→判退回并登记 registry ❌/退回状态。
 
-**用例**：`AC1 ← 用例 smoke#web/040b2（grep 零残留覆盖架构行）`
+**用例**：`AC2 ← 轮报告 §2（含考古过程记录）`
 
-### AC2 — 四 Javadoc
-> When 替换四处 `@return` 注释行。Then 与架构口径一致、方法体与 @param 零改动。
+### AC3 — web/030/031/032
+> When 三项逐项考古+AC 核对+当前功能探针。Then 各自五维打分+结论。
 
-**用例**：`AC2 ← 用例 smoke#web/040b2 + git diff 仅注释行核验`
+**用例**：`AC3 ← 轮报告 §3/§4/§5`
 
-### AC3 — 残留面终清
-> When 全库 grep 指定串。Then docs+controller 零命中（历史计划文档 198 例外）；实测分页 JSON 字段集与文档一致。
+### AC4 — 共享门禁与台账归位
+> 门禁一次跑三线=当前基线；五项 registry 回写、积压清单清零、上下文归位。
 
-**用例**：`AC3 ← 用例 smoke#web/040b2`
-
-### AC4 — 门禁与冒烟
-> mvn 153=基线、前端=基线、冒烟 61 逐条=基线+新用例 ✅。
-
-**用例**：`AC4 ← mvn -q verify + npm 三件套 + bash scripts/smoke.sh#web/040b2`
+**用例**：`AC4 ← 门禁实测记录 + registry/session-state diff`
 
 ## 测试清单
 
-> 纯文档段 TDD 载体=冒烟用例先行（grep 断言 RED→改五处→GREEN）。
+> 评审轮无新测试；「测试」=共享门禁三线+各项目功能探针（接口存活/配置存活/代码对照）。
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | smoke `web/040b2` 残留面 grep 零命中（追加 scripts/smoke.sh，先行留 RED：5 处命中=失败） | AC1/AC2/AC3 | RED→GREEN ✓ |
-| 2 | 门禁基线对照（mvn 154 4F+2E=078后基线；前端零改动三件套=基线） | AC4 | ✓ |
-| 3 | 冒烟整体复跑（预期 61=50✅+9❌+2⏭️ 逐条=基线） | AC4 | ✓ 61=50✅+9❌+2⏭️ |
+| 1 | 共享门禁：`mvn -q verify` 期望 154 4F+2E=基线 | AC4 | 待填 |
+| 2 | 共享门禁：前端三件套期望=基线（lint124/20f\|288p/build ✓） | AC4 | 待填 |
+| 3 | 共享门禁：`bash scripts/smoke.sh` 期望 61=50✅+9❌+2⏭️ | AC4 | 待填 |
+| 4 | 各项功能探针（017 弹层主题代码/024 图标尺寸/030 接口/031 loading/032 回退配置当前存活） | AC1/AC2/AC3 | 待填 |
 
 ## RED 证据
 
-> Generator 于改文档前执行测试清单 #1 并粘贴关键输出（grep 命中 5 处=RED 实证）。
-
-```text
-[RED] smoke web/040b2 单跑 sh -c '! grep -rn "{list,total,page,size}" docs/01-architecture.md backend/.../controller/' → EXIT=1，命中 5 处（架构:46 + Module:46/Permission:41/Role:42/User:47），历史 198 在扫描面外
-[RED] 设计修正留痕：首版 pattern "data={...}" 漏架构行（data 固定为 … 非 data=），改裸串 {list,total,page,size} 后 5 处全命中
-[R1 实测] ObjectMapper 序列化 MyBatis-Plus Page{current=1,size=10,total=42,records=[rec]} → {"records":["rec"],"total":42,"size":10,"current":1,"pages":5} —— 实测五字段 {records,total,size,current,pages}，与案A 裁决措辞 {records,total,size,current,...} 一致（省略号=pages），文档按实测写全五字段
-[RED] 执行时点：2026-09-29 实现前（TDD 第 1 拍），smoke 用例先行 EXIT=1
-```
-
-> 实现后复跑与 REFACTOR 复查。
-
-```text
-[GREEN] 残留断言单跑 sh -c '! grep -rn "{list,total,page,size}" …' → EXIT=0（0 命中）
-[GREEN] R4 diff 核验：四 controller 4 insertions/4 deletions 全为 @return 注释行，方法体/@param/@Operation 零变动；架构仅 §4 分页行 1±
-[GREEN] mvn -q verify EXIT=1：Tests run 154, Failures 4, Errors 2 —— 六条逐条=078 后基线（工作单 153 旧口径已勘误，本单 +0 用例）
-[GREEN] 前端三件套=基线（lint124 / 20 failed|288 passed / build ✓ 16.86s / diff=0）；冒烟 61=50✅+9❌+2⏭️ 逐条=基线，web/040b2 ✅
-[GREEN] 执行时点：2026-09-29 实现后（TDD 第 2 拍）
-```
+评审轮不适用（无实现段）。
 
 ## 门禁与冒烟记录
 
-> Generator 亲测填写，Evaluator 不采信自述须亲跑。
-
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 154 用例 4F+2E（078 后基线，+0） | 154 4F+2E 六条逐条=基线 | ✓ PASS |
-| `npm run lint` | EXIT=124 | EXIT=124 | ✓=基线 |
-| `npm run test` | 20 failed\|288 passed | 20 failed\|288 passed (308)，6 failed\|30 passed (36) | ✓=基线 |
-| `npm run build` | ✓ | ✓ built in 16.86s | ✓=基线 |
-| `bash scripts/smoke.sh` | 60=49✅+9❌+2⏭️ → 预期 61 | 61=50✅+9❌+2⏭️，9❌逐条=基线，web/040b2 ✅ | ✓ PASS |
+| 后端 `mvn -q verify` | 154 用例 4F+2E | 待填 | 待填 |
+| `npm run lint` | EXIT=124 | 待填 | 待填 |
+| `npm run test` | 20 failed\|288 passed | 待填 | 待填 |
+| `npm run build` | ✓ | 待填 | 待填 |
+| `bash scripts/smoke.sh` | 61=50✅+9❌+2⏭️ | 待填 | 待填 |
 
 ## 拆分说明
 
-预估验收标准 **4 条（=上限，不得再加）**；预估文件变更 **6 个（=上限，不得再加，超限即触发熔断回报）**：
+预估验收标准 4 条（=上限）；无文件变更预算（评审轮只改 harness 回写文件，不计熔断）。**处置规则**：
+- 五项中任何一项判退回（FAIL）不阻塞其余四项评审（逐项独立结论）
+- web/024 判退回时 registry 记 ❌/退回并登记待实现；**不自行补实现**
+- 评分参照 review-criteria；历史提交形态（非三段式）按「测试证据存在性」评 TDD 维度，考古过程写入报告
+- 轮报告格式：一份报告五个小节（各节=AC 核对/考古摘要/五维评分/结论），总表汇总五项均分
 
-1. `docs/01-architecture.md` — §4 分页行勘误（AC1）
-2. `ModuleController.java` — `:46` 注释行（AC2）
-3. `PermissionController.java` — `:41` 注释行（AC2）
-4. `RoleController.java` — `:42` 注释行（AC2）
-5. `UserController.java` — `:47` 注释行（AC2）
-6. `scripts/smoke.sh` — 追加 `web/040b2` 残留面 grep 断言用例（AC3 载体）
+**研究项（Evaluator 执行中）**：
+- R1 web/024 考古：`git log --since=2026-09-01 --until=2026-09-05` 全窗口+`git log -S "16" -- ProfileView.vue`/`-S "header-icon"` 等内容检索；结论定 AC2 走向
+- R2 各 sprint 原始 AC：030 有 task 快照（可找 061 期 plan commit，窗口 09-08~09-09 查 task.md）；031/032 从 registry 备注重建；017 从 registry+挂起区
+- R3 当前功能探针：五项实现是否仍存活于 HEAD（防后续 sprint 回退）
+- R4 共享门禁按当前 HEAD（f110179 后无新改动）三线跑一次
 
-**超限熔断**：>6 文件或 >4 AC 即停止回报。**不动清单**：`docs/superpowers/plans/2026-08-26-harness-system.md:198`（历史计划）、实现代码体/@param/@Operation、`docs/01-architecture.md` 其余行（§3/§4 时间行/§5 等）、前端全部、四个 VO、harness 规则文件。
+## 交付物（评审轮）
 
-**研究项（Generator 先于改写核实）**：
-- **R1 实测口径**：跑一次分页请求（或读现有测试日志）实测 `data` JSON 字段集——MyBatis-Plus IPage 预期 `{records,total,size,current,pages,...}`；若实测字段集与裁决措辞 `{records,total,size,current,...}` 不一致，**以实测为准**改文档并回写 task 登记（案A 本质=对齐实现）。
-- **R2 smoke 形态**：既有 `smoke_case` 命令形态核对——grep 断言用 `! grep -q ... || exit 1` 或 `test -z "$(grep ...)"` 形式，RED=先加用例跑出失败（命中 5 处），改后 GREEN。
-- **R3 残留面全扫**：`grep -rn "list,total,page,size"` 全库确认除五处与历史 198 外零命中（防漏登记新残留）。
-- **R4 diff 纯注释核验**：四 Java 文件 `git diff` 仅 `@return` 行变动（+1/-1×4），确保 mvn 编译零风险。
-
-**用户裁决在案**：案A 文档对齐实现（040b2 唯一范围）；历史计划文档不动。Evaluator 评审按此口径。
-
-## 交付物（6 文件）
-
-1. `docs/01-architecture.md` — §4 分页口径
-2-5. 四 controller Javadoc — `@return` 行
-6. `scripts/smoke.sh` — web/040b2 用例
+1. 轮报告（五小节+汇总表）写入 task 评审记录
+2. registry 五项状态回写 + 挂起区积压清单清零
+3. session-state/iteration-log 归位（回写后→Planner 排后续：023 实现或 036b/c 等）
 
 ## 评审记录
 
-**2026-09-29 Evaluator（sprint-079）：PASS — 平均 9.8/10（10+10+9.5+9.5+10，无否决项）**
-
-### 验收标准核对
-- AC1 ✓ 架构 §4:46 → `{records,total,size,current,pages} 五个字段`，page/size 请求说明保留 — diff ±1 实证
-- AC2 ✓ 四 Javadoc `@return` 同步 — git diff 仅 ±4 注释行，方法体/@param/@Operation 零变动
-- AC3 ✓ 残留面终清 — 亲跑 `sh -c '! grep -rn "{list,total,page,size}" …'` EXIT=0；RED checkout 1c06c49 复跑 5 命中 EXIT=1；历史 198 零触碰；补扫 README/docs 其余 md 与前端零漏改面；R1 实测五字段与文档一致
-- AC4 ✓ 门禁 — mvn **154 4F+2E** 六条逐条=078 后基线（本单 +0）；前端 lint124/20f|288p/build ✓ diff=0；冒烟 **61=50✅+9❌+2⏭️** 逐条=基线、web/040b2 ✅
-
-### 关键实证
-- 三段式：028ef15 plan → 1c06c49 test(RED) → 6be3838 feat(GREEN) → 1ad408e docs，违规 0
-- RED 真实性：checkout 1c06c49 亲跑 5 命中 EXIT=1，回 1ad408e 干净态
-- **TDD 价值实证**：pattern 首版 `data={...}` 漏架构行（非 `data=` 语法），若无先行 RED 即漏改第 5 处——Generator 自查自纠并留痕
-- 案A 完整性：裁决措辞 `{records,total,size,current,...}` + ObjectMapper 实测补全 `pages`，以实测为准（工作单 R1 授权）；工作单 153 旧基线笔误 Generator 主动勘误为 154
-
-### 评分表（review-criteria 5 维）
-| 维度 | 分 | 依据 |
-|------|----|------|
-| 需求完成度 | 10 | 五处零漏（grep 终清+全库补扫）、实测五字段对齐、历史 198 精确保留、R1 四轮登记问题单关闭 |
-| TDD/提交质量 | 10 | grep 载体先行、RED 复跑实证、pattern 缺陷被 RED 揪出、三段式规范 |
-| 测试/冒烟 | 9.5 | smoke 断言设计可用、61 逐条基线；扣 0.5：断言扫描面=两路径，全库防漏依赖人工 R3（可扩为全库+排除表） |
-| 文档回写 | 9.5 | task RED/GREEN/门禁/AC/基线勘误齐全、三处回写、唯一动作；扣 0.5：feat 混入 task 更新（P1 连续第二单） |
-| 诚实规范 | 10 | pattern 缺陷与基线笔误均主动留痕/勘误，无自宣布、无弱化 |
-
-### 结论
-**PASS**。Veto 1-6 均不命中（veto 6：mvn/冒烟/前端三线逐条=基线）。**web/040 组全收口**（040a 9.4 / 040c 9.5 / 040b1 9.7 / 040b2 9.8）。
-
-### 问题列表
-- P1（低）feat commit 含 task.md 更新，feat/docs 边界混同（连续第二单，建议后续门禁记录独立 docs 段）
-- P2（低）smoke 残留断言仅扫 docs/01-architecture + controller 两路径
-- P3（信息）Planner 工作单基线沿用 078 前 153 旧口径（Generator 勘误，跨单基线同步机制缺）
-
-### 改进建议
-- Planner 写工作单时基线引用上一单 eval 登记口径（153→154 同步）
-- 下轮排期：Evaluator 积压六项评审（sprint-047/048/060/061/062/063），或 IndexView 拆分/036b/c+011/modules-003
+- （待 Evaluator 执行本单后填写）
