@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/040b1（web/040b 拆分首段：模块域 updateTime 收尾） |
 | 功能点名称 | 模块域更新时间对齐——`ModuleVO` 输出 `updateTime`（四 VO 对称收口） |
-| 状态 | PLANNED |
+| 状态 | IMPLEMENTED（待评审） |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖

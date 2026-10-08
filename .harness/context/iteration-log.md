@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-29: Generator — sprint-078 web/040b1 实现+自测完成（RED 1bb949c：契约类 +模块域用例 6用例1红；GREEN 131329c：ModuleVO 注解+两处同步+smoke，36 用例绿、mvn 154=基线+1、冒烟 60=49✅+9❌+2⏭️ 基线逐条、前端=基线；插曲：yml expire-hours 10:57:17 被改 1 致首跑冒烟 11❌，非本单回归（mtime 铁证+diff 零交集），用户裁决恢复 2 复跑=基线逐条）→ 移交 Evaluator 评审
+
 - 2026-09-29: Planner — kickoff sprint-078（web/040b1，4 条验收标准，模块域 ModuleVO updateTime 收尾=四 VO 对称收口；040b 拆 b1 模块域/b2 R1 案A 文档勘误两段共 9 文件超熔断、一次注册 b1，同步点 :146/:177 与 040b2 五处文档清单已盘点登记）
 
 - 2026-09-29: Evaluator — pass sprint-077（web/040c ✅ 9.5/10，AC 3/3 亲测、mvn 153 4F+2E=基线+1、前端零改动 20 failed|288 passed、冒烟 59=48✅9❌2⏭️ web/040c ✅、六否决项零命中；个人中心两时间恒空收口，040b 建议下轮）
