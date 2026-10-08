@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-09-29: Generator — sprint-079 web/040b2 实现+自测完成（RED 1c06c49：smoke grep 断言 5 处命中 EXIT=1+pattern修正留痕+R1实测五字段；GREEN 6be3838：五处案A勘误、diff纯注释±4、残留零命中；mvn 154=078后基线（工作单153旧口径已勘误）、冒烟 61=50✅+9❌+2⏭️ 逐条基线、前端=基线）→ 移交 Evaluator 评审
+
 - 2026-09-29: Planner — kickoff sprint-079（web/040b2 R1 案A 文档勘误，4 条验收标准/6 文件=上限不拆，五处清单与历史 198 不动口径核实、smoke grep 断言为 TDD 载体（RED=5 命中）、R1 实测口径以实测为准）
 
 - 2026-09-29: Evaluator — pass sprint-078 web/040b1（9.7/10 五维 9.5+10+9.5+9.5+10 零否决；亲测 mvn 154 4F+2E=基线+1、冒烟 60=49✅+9❌+2⏭️ 逐条=基线、RED checkout 复跑 6用例1红、前端=基线、五 VO updateTime 注解终核、expire-hours=2；yml 漂移插曲=非本单回归处置规范；P1 GREEN混task/P2 全限定名第4单/P3 yml setup无校验）
