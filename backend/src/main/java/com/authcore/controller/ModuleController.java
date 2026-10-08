@@ -43,7 +43,7 @@ public class ModuleController {
      * @param name     模块名模糊匹配
      * @param code     模块编码模糊匹配
      * @param status   状态：1 启用 / 0 停用
-     * @return 分页结果：data={list,total,page,size}
+     * @return 分页结果：data={records,total,size,current,pages}
      */
     @Operation(summary = "分页条件查询模块")
     @GetMapping

@@ -44,7 +44,7 @@ public class UserController {
      * @param email    邮箱模糊匹配
      * @param phone    手机号模糊匹配
      * @param status   状态（0/1）
-     * @return 分页结果：data={list,total,page,size}
+     * @return 分页结果：data={records,total,size,current,pages}
      */
     @Operation(summary = "分页条件查询用户")
     @GetMapping

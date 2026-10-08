@@ -38,7 +38,7 @@ public class PermissionController {
      * @param name     权限名模糊匹配
      * @param code     权限编码模糊匹配
      * @param moduleId 模块 ID
-     * @return 分页结果：data={list,total,page,size}
+     * @return 分页结果：data={records,total,size,current,pages}
      */
     @Operation(summary = "分页条件查询权限")
     @GetMapping

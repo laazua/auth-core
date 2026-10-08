@@ -43,7 +43,7 @@
 
 - 所有 REST 接口统一使用前缀 `/api/v1/{resource}`；响应体统一为 Result 结构：Result{code:int(0=成功), message:String, data:T}，即 code 为 int 型业务码且 0 表示成功，message 为 String，data 为泛型载荷 T。
 - 业务错误码按资源分段：10xx 用户 / 11xx 角色 / 12xx 权限 / 13xx 模块 / 14xx 认证；HTTP 状态码语义固定为 401=未认证，403=未授权。
-- 分页参数为 page(默认1)/size(默认10)；分页接口的 data 固定为 {list,total,page,size} 四个字段。
+- 分页参数为 page(默认1)/size(默认10)；分页接口的 data 固定为 {records,total,size,current,pages} 五个字段。
 - 时间字段统一使用 ISO-8601 字符串（UTC+8）表示与传输。
 
 ## 5. 认证设计

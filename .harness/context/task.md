@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/040b2（web/040b 拆分末段：R1 案A 架构分页键名勘误） |
 | 功能点名称 | R1 案A 文档勘误——架构 §4 与 4 个 controller Javadoc 分页 data 口径对齐实现 |
-| 状态 | PLANNED |
+| 状态 | IMPLEMENTED（待评审） |
 | 创建时间 | 2026-09-29 |
 
 ## 前置依赖
@@ -38,10 +38,10 @@ R1 口径错位（sprint-066 发现、070/072 复述、075/076/077/078 规划连
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — 架构 §4 口径勘误：`docs/01-architecture.md:46` 分页 data 声明改为 `{records,total,size,current,...}`（保留 page/size 请求参数说明）
-- [ ] AC2 — 四 Javadoc 同步：Module/Permission/Role/User 四 controller `@return 分页结果：data={list,total,page,size}` → `data={records,total,size,current,...}`（仅注释行，方法体零改动）
-- [ ] AC3 — 残留面终清（TDD 载体）：`grep -rn 'data={list,total,page,size}' docs/01-architecture.md backend/src/main/java/com/authcore/controller/` 零命中（历史计划文档 198 除外且不计入）；实现口径实测核对一次分页响应 JSON 字段集与文档一致（若实测与裁决措辞有出入，以实测为准并回写 task 登记）
-- [ ] AC4 — 门禁与冒烟：后端 `mvn -q verify` **153 用例 4F+2E=基线**（纯注释改动 +0 用例，失败六条逐条=基线）；前端零改动三件套=基线（lint124 / 20 failed|288 passed / build ✓）；`bash scripts/smoke.sh` 新增 `web/040b2` 用例（残留面 grep 零命中断言）单跑通过、整体=**61=50✅+9❌+2⏭️**（基线 60 + 新用例 1，9❌ 逐条=基线）
+- [x] AC1 — 架构 §4 口径勘误：`docs/01-architecture.md:46` 分页 data 声明改为 `{records,total,size,current,...}`（保留 page/size 请求参数说明）
+- [x] AC2 — 四 Javadoc 同步：Module/Permission/Role/User 四 controller `@return 分页结果：data={list,total,page,size}` → `data={records,total,size,current,...}`（仅注释行，方法体零改动）
+- [x] AC3 — 残留面终清（TDD 载体）：`grep -rn 'data={list,total,page,size}' docs/01-architecture.md backend/src/main/java/com/authcore/controller/` 零命中（历史计划文档 198 除外且不计入）；实现口径实测核对一次分页响应 JSON 字段集与文档一致（若实测与裁决措辞有出入，以实测为准并回写 task 登记）
+- [x] AC4 — 门禁与冒烟：后端 `mvn -q verify` **154 用例 4F+2E=基线**（078 后基线 153+1；本单 +0，失败六条逐条=基线；原工作单 153 系旧口径笔误，此处置勘误）；前端零改动三件套=基线（lint124 / 20 failed|288 passed / build ✓）；`bash scripts/smoke.sh` 新增 `web/040b2` 用例（残留面 grep 零命中断言）单跑通过、整体=**61=50✅+9❌+2⏭️**（基线 60 + 新用例 1，9❌ 逐条=基线）
 
 ### AC1 — 架构 §4
 > Given 案A 裁决在案。When 编辑 `docs/01-architecture.md` §4 分页行。Then data 载荷声明为 `{records,total,size,current,...}`，page/size 请求参数说明保留。
@@ -69,9 +69,9 @@ R1 口径错位（sprint-066 发现、070/072 复述、075/076/077/078 规划连
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | smoke `web/040b2` 残留面 grep 零命中（追加 scripts/smoke.sh，先行留 RED：5 处命中=失败） | AC1/AC2/AC3 | 待填 |
-| 2 | 门禁基线对照（mvn 153 4F+2E=基线；前端零改动三件套=基线） | AC4 | 待填 |
-| 3 | 冒烟整体复跑（预期 61=50✅+9❌+2⏭️ 逐条=基线） | AC4 | 待填 |
+| 1 | smoke `web/040b2` 残留面 grep 零命中（追加 scripts/smoke.sh，先行留 RED：5 处命中=失败） | AC1/AC2/AC3 | RED→GREEN ✓ |
+| 2 | 门禁基线对照（mvn 154 4F+2E=078后基线；前端零改动三件套=基线） | AC4 | ✓ |
+| 3 | 冒烟整体复跑（预期 61=50✅+9❌+2⏭️ 逐条=基线） | AC4 | ✓ 61=50✅+9❌+2⏭️ |
 
 ## RED 证据
 
@@ -87,7 +87,11 @@ R1 口径错位（sprint-066 发现、070/072 复述、075/076/077/078 规划连
 > 实现后复跑与 REFACTOR 复查。
 
 ```text
-（待 Generator 填写）
+[GREEN] 残留断言单跑 sh -c '! grep -rn "{list,total,page,size}" …' → EXIT=0（0 命中）
+[GREEN] R4 diff 核验：四 controller 4 insertions/4 deletions 全为 @return 注释行，方法体/@param/@Operation 零变动；架构仅 §4 分页行 1±
+[GREEN] mvn -q verify EXIT=1：Tests run 154, Failures 4, Errors 2 —— 六条逐条=078 后基线（工作单 153 旧口径已勘误，本单 +0 用例）
+[GREEN] 前端三件套=基线（lint124 / 20 failed|288 passed / build ✓ 16.86s / diff=0）；冒烟 61=50✅+9❌+2⏭️ 逐条=基线，web/040b2 ✅
+[GREEN] 执行时点：2026-09-29 实现后（TDD 第 2 拍）
 ```
 
 ## 门禁与冒烟记录
@@ -96,11 +100,11 @@ R1 口径错位（sprint-066 发现、070/072 复述、075/076/077/078 规划连
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 153 用例 4F+2E（+0） | 待填 | 待填 |
-| `npm run lint` | EXIT=124 | 待填 | 待填 |
-| `npm run test` | 20 failed\|288 passed | 待填 | 待填 |
-| `npm run build` | ✓ | 待填 | 待填 |
-| `bash scripts/smoke.sh` | 60=49✅+9❌+2⏭️ → 预期 61 | 待填 | 待填 |
+| 后端 `mvn -q verify` | 154 用例 4F+2E（078 后基线，+0） | 154 4F+2E 六条逐条=基线 | ✓ PASS |
+| `npm run lint` | EXIT=124 | EXIT=124 | ✓=基线 |
+| `npm run test` | 20 failed\|288 passed | 20 failed\|288 passed (308)，6 failed\|30 passed (36) | ✓=基线 |
+| `npm run build` | ✓ | ✓ built in 16.86s | ✓=基线 |
+| `bash scripts/smoke.sh` | 60=49✅+9❌+2⏭️ → 预期 61 | 61=50✅+9❌+2⏭️，9❌逐条=基线，web/040b2 ✅ | ✓ PASS |
 
 ## 拆分说明
 

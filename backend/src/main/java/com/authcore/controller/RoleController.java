@@ -39,7 +39,7 @@ public class RoleController {
      * @param name     角色名模糊匹配
      * @param code     角色编码模糊匹配
      * @param status   状态（0/1）
-     * @return 分页结果：data={list,total,page,size}
+     * @return 分页结果：data={records,total,size,current,pages}
      */
     @Operation(summary = "分页条件查询角色")
     @GetMapping
