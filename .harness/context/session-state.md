@@ -2,15 +2,16 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟢 **评审通过 sprint-084（DONE，均分 9.5/10）**（web/036b 暗色局部白底缺陷修复闭环：4 AC 全满足、六否决零命中、RED 独立复现三实证、冒烟 65=56✅+7❌+2⏭️；案A 计数≥10 口径获认可；提交链 `2fdc450 test`→`742341d feat`→`7c7ad83 docs`→本轮评审回写）
+- 状态: 🟡 **规划完成 sprint-085**（Planner 注册 web/036c1 smoke 过期口径同步与弱断言强化，4 条验收标准；036c 首切片=纯口径层 2-4 文件≤6 不拆分；sprint-084 已 ✅ PASS 9.5/10）
 - 当前模块: web
-- 当前功能点: web/036b 暗色模式局部白底缺陷修复 — **✅ DONE（sprint-084 评审通过 9.5/10）**（4 AC 全勾：R1 全局下沉=删 BaseTable 遮罩块+reset.css 遮罩对 0.9、R2 settings→BaseButton 双处、反模式源层清零、产物死形态=0 暗规则=10（案A）、门禁 lint 0E|165W/test 315/build ✓/mvn=基线、冒烟 65=56✅+7❌+2⏭️ 且 web-036b ✅、web-011b 计数同步 ✅；spec 7 断言先行 RED→GREEN）
+- 当前功能点: web/036c1 smoke 过期口径同步与弱断言强化 — **🟡 工作单就绪（PLANNED）**（7❌ 只读分类实录钉死边界：web-013/026 过期计数 19/23 vs 实测 24、web-020 过期 chunk 名 Header-*.css→实载 DefaultLayout-*.css 归本单；roles-001/002=基线五类下游不背；model-008/010=子集态真缺陷归 036c2；profile 单字符类弱正则（083③）+ web/084 注释勘误（084②）同波）
 
 
 ## 下一步动作
-  Planner：读 `.harness/planner.md` 并严格执行——取下一个功能点。**建议下一单：web/040c（me 面 UserVO 时间字段连带修复）**——076 用户裁决已登记的预留单（2-3 文件：`dto.auth.UserVO` 加 updateTime/createdAt + `toUserVO` 填值 + 契约测试扩展 + smoke），规模小、前置全清。备选：web/036c（036 行收口：串联 `:deep()` 42 处/17 组件+冒烟 7❌ 治理+死代码清理，**超 6 文件熔断需先问用户案B**）、web/011d（any 165 机械波，同需规模裁决）。规划前先读 `.harness/context/session-state.md` 挂起区既有案A/案B 口径。
+  Generator：读 `.harness/generator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-085 / web/036c1）。首个实现要点：**三用例当前 ❌ 即天然 RED，先录后动**——① web-013/026 用例体首跑实录（期望 19/23 vs 实测 24）；② web-020 首跑实录（Header-*.css 缺失）；③ profile 旧正则错例误通过变异实录 + 新正则先写；随后按 R1-R4 研究项落同步（011b passed==total 先例、chunk 目标幂等、新用例建议 web-013 名实对齐）→ 门禁五线+冒烟 **❌7→恰4、总数≥66** 收口。**熔断与不动清单见工作单**（>6 文件/动产品代码/改四条登记 ❌ 用例语义即回报）。
 
 ## 挂起
+- 2026-10-09: Evaluator/Planner — **下一单建议更正（自纠登记）**：sprint-084 评审回写曾建议「web/040c」为下一功能点——**该建议失效**：040c 已于 sprint-077 评审通过（2026-09-29，9.5/10，registry 040 行实证 `dto.auth.UserVO` 已含 createdAt/updateTime、TimestampFieldContractTest:186 已断言）。失效原因=建议依据未复核 registry 即写入。本轮回写已改为 web/036c1；后续 Planner 建议功能点前须先扫 registry 状态列。
 - 2026-10-09: Generator(sprint-084) — **AC3③ 计数口径修订（用户案A 问答在案）**：修复前产物 `[data-theme=dark]` 规则基线=11，**其中 1 条正是死形态**（`[data-theme=dark][data-v-c7766763]` 永不命中）；合法修复必然移除死规则→产物=10（有效覆盖反而提升：遮罩暗色由「永白」变命中）。字面「≥11」不可达，用户裁定**案A**=下限 **≥10 且死形态=0**，主断言=死形态归零+可命中规则在+036a 三断言，计数降为辅断言。task AC3/R3/问答块已同步修订，冒烟用例本就以形态为主断言（未含计数），Evaluator 按此口径评审。
 - 2026-10-08: Generator(sprint-083) — **AC3 ① 证明口径修订（用户案A 问答在案）**：「机械段 `git diff -w` 空」字面不可达——prettier 自动波含 printWidth 100 长行拆分等风格改写（实测非空白变更 9564 行，主因行拆分），强求将迫使逐文件手工回卷、风险大于收益；用户裁定**案A**=逐文件 `工作树 == eslintFix(HEAD)` 等价证明（HEAD 副本过同配 `eslint --fix` 后与工作树逐字节比对，可抦截任何夹带，**比 diff -w 更强**），风格 token 允许。实测结果：**50 机械等价 + 8 手工 + 1 配置 = 59 文件零夹带**（手工 delta 仅 117 行，e083-hand-hunks.log + sidebar spec 单行同步复核）。任务单 AC3/RED 槽已修订，Evaluator 按此口径评审。
 - 2026-10-08: Planner(sprint-083) — **案B 单波豁免用户裁决（问答在案）+ 规模实测登记**：011c 规划实测全量残余 **4748 问题/60 文件**（src-only 240s 完成 exit=1）＝prettier 4536 Error+手工 23 Error+any 171 Warning+attrs-order 18 Warning，远超 082 案A 登记的定向 196 → 单子功能点预估 ≈66 文件**超 6 文件熔断**；严格按目录拆分需 9-11 单纯格式化波（案A，机械性逐单价值极低）。用户裁定**案B**：单波豁免推进，证明链=机械段（≈59 文件单命令）`git diff -w` 空 + 手工段（≈11 文件/23 Error）逐条登记 + test 0 failed|308/build/mvn 三线=基线；豁免边界（>70 文件/非空白 diff/版本升级/真缺陷大改即回报）与 any 171 归 011d 预留随工作单拆分说明在册。卡死根因第一嫌疑=`.eslintrc.cjs` 无 ignorePatterns、`eslint .` 扫 dist 29 bundle/1.9M（R1 待 Generator 对照钉死）。
