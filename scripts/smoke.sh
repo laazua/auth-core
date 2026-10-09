@@ -167,6 +167,14 @@ smoke_case "web-011b 前端全量测试零失败" bash -c "
   grep -qE '^      Tests  308 passed \(308\)$' /tmp/smoke-web-011b.log || exit 1
 "
 
+# web/011c：全量 lint 门禁恢复（eslint 全量 300s 内完成且零 dist 扫描；sprint-083 本单追加，lint:check 全量形态）
+smoke_case "web-011c 全量 lint 门禁恢复" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  timeout 300 npm run lint:check >/tmp/smoke-web-011c.log 2>&1 || exit 1
+  grep -q 'dist/' /tmp/smoke-web-011c.log && exit 1
+  exit 0
+"
+
 # web/013：登录页密码输入框默认隐藏（前端单测验证）
 smoke_case "web-013 登录页密码输入框默认隐藏" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1

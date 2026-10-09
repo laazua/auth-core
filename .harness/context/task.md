@@ -37,7 +37,7 @@
 
 - [ ] AC1 — 卡死根因消除：治理前 `npm run lint:check`（`eslint .` 口径）全量 **EXIT=124** 实录入 RED 槽；R1 对照实证钉死根因（dist 扫描 vs 其他，含 `eslint .` vs 忽略 dist 后的对照命令输出）；治理后全量在 300s 内完成运行、exit ∈ {0,1}（**≠124**）且输出零 `dist/` 路径。← 用例 `smoke web-011c lint 全量门禁恢复` + 门禁实测
 - [ ] AC2 — 全量 Error 清零：忽略 dist 后首跑清单入 RED 槽（Error 总数与按文件/规则分布，预期 ≈4559 = 4536 prettier + 23 手工 + 根级增量，以实测钉死）；修复后 `npm run lint:check` **exit 0、Error 0**；Warning 处置口径入册——attrs-order 18 随自动修复清零、any 171 允许残留但逐条登记归 011d。← 用例 `AC2 ← 门禁实测 lint:check exit 0（RED=4559±Error 清单）`
-- [ ] AC3 — 零语义回归：①机械段（自动修复涉及的约 59 文件）`git diff -w` **空**（零非空白变更）；②手工段文件清单与逐处 diff 理由登记入实现说明（预期 ≈11 文件/23 Error）；③`npm run test` **0 failed | 308 passed** 与 `npm run build` ✓ 均不回归（手工段若涉产品文件，每处须论证行为等价并由对应 spec 守护）。← 用例 `AC3 ← git diff -w 实测 + 门禁两线`
+- [ ] AC3 — 零语义回归：①机械段（自动修复涉及的约 59 文件）**逐文件证明 `工作树版 == prettier(HEAD 版)`（diff 空）——变更恰为 prettier 规范化、零额外改动**【案A 口径修订 2026-10-08 用户问答在案：prettier 含长行拆分等风格改写，原稿「`git diff -w` 空」字面不可达，升级为 prettier 等价证明（更强，可抦截任何夹带）；风格 token（拆行/逗号/引号）允许】；②手工段文件清单与逐处 diff 理由登记入实现说明（预期 ≈11 文件/23 Error）；③`npm run test` **0 failed | 308 passed** 与 `npm run build` ✓ 均不回归（手工段若涉产品文件，每处须论证行为等价并由对应 spec 守护）。← 用例 `AC3 ← prettier 等价逐文件实测 + 门禁两线`
 - [ ] AC4 — 门禁五线与冒烟：`mvn -q verify` 154 用例 4F+2E=基线五类逐条；`bash scripts/smoke.sh` 存量 **63 用例不减不改** + 本单追加 `web-011c` → 64（7❌ 属基线不背锅）；行数债登记——`IndexView.vue`(752)/`IndexView.spec`(1496)/`LoginView.spec`(667) 等 >500 行文件经格式化后的行数变化逐条入册。← 用例 `AC4 ← 门禁五线实测 + 冒烟 64`
 
 ### AC1 — 卡死解除
@@ -62,8 +62,8 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | 全量 `lint:check` 卡死实录（124）与 R1 对照实证 | AC1 | （待 Generator RED 槽） |
-| 2 | 忽略 dist 后首跑 Error 清单（4559± 分布入册） | AC2 | （待 Generator RED 槽） |
+| 1 | 全量 `lint:check` 卡死实录（124）与 R1 对照实证 | AC1 | ✓ RED-1=124 + RED-2 对照 <60s 完成（dist=根因钉死） |
+| 2 | 忽略 dist 后首跑 Error 清单（4559± 分布入册） | AC2 | ✓ RED-2=4748 问题/Error 4559/60 文件，root 0 增量 |
 | 3 | smoke `web-011c` lint 全量门禁恢复（先写后绿） | AC1/AC4 | （待 Generator） |
 | 4 | 门禁五线：lint:check exit 0 / test 0 failed\|308 / build ✓ / mvn=基线 / 冒烟 63 存量+新增 | AC2/AC3/AC4 | （待 Generator） |
 
@@ -72,9 +72,24 @@
 > Generator 于任何治理动作前执行测试清单并粘贴实证；机械段 `--fix` 前必须先存首跑清单快照。
 
 ```text
-[RED-1] 全量卡死实录：（待填——npm run lint:check 全量 EXIT=124 命令行与耗时）
-[RED-2] 忽略 dist 后首跑清单：（待填——Error 总数 + 按文件 top + 按规则分解 + Warnings 口径）
-[RED-3] smoke web-011c 首跑失败实录：（待填）
+[RED-1] 全量卡死实录（2026-10-08 实时，/tmp/opencode/e083-red1.log）：
+$ cd frontend && timeout 300 npm run lint:check
+> eslint . --ext .vue,.ts,.js
+（300s 内零输出——eslint 静默扫描 dist 29 bundle 直至超时）
+RED1_EXIT=124   ← 与 5+ 次历史复现（065 登记 300s、082 评审 124）一致
+
+[RED-2] 忽略 dist 后首跑清单（2026-10-08 实时，--ignore-pattern 'dist/**'，/tmp/opencode/e083-red2.log）：
+RED2_EXIT=1（完成运行，耗时 <60s——对照 RED-1 即钉死根因=dist 扫描）
+4748 problems（60 文件；root 配置 0 问题——vite/vitest/stylelint.config 零增量）
+  Error 4559 = prettier/prettier 4536 + no-unused-vars 8 + no-useless-catch 6
+             + vue/no-parsing-error 4 + no-useless-escape 2 + vue/no-ref-as-operand 1
+             + vue/no-dupe-keys 1 + vue/no-deprecated-filter 1
+  Warning 189 = no-explicit-any 171 + vue/attributes-order 18   ← 不阻断 exit，any 归 011d
+按文件 top：system/IndexView.vue 576、LoginView.vue 450、users/IndexView.vue 321、roles/IndexView.vue 308、…、LoginView.spec 151（082 案A 的 196=其中两文件子集）
+
+[RED-3] smoke web-011c 用例体首跑（2026-10-08 实时，用例体原文执行，/tmp/smoke-web-011c-red.log）：
+RED3_CASE_EXIT=124 → smoke harness 判 ❌ 失败（lint:check 300s 内零输出即超时，同 RED-1 签名）
+用例本体已先行写入 scripts/smoke.sh（web-011c 组，断言 timeout 300 完成 exit 0 且输出零 dist/）
 ```
 
 > 治理后复跑。
