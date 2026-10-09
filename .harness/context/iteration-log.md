@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-09: Generator — done sprint-084（web/036b 暗色局部白底缺陷修复，门禁+冒烟通过：RED 三实证先行=spec 7 failed/修复前产物死形态 1·暗规则 11 基线/用例体首跑 EXIT=1，web-011b 计数断言同波同步 RED 期正确拒 7 failed；GREEN=R1 全局下沉（删 BaseTable 遮罩死选择器块+reset.css 遮罩对 0.8→0.9）+R2 settings 双处 ElButton→BaseButton，案A 校准 AC3③≥10；门禁 lint 0E|165W、test 315/315、build ✓17.54s、mvn 154 4F+2E=基线五类；冒烟 **65=56✅+7❌+2⏭️**（web-036b ✅、7❌=基线零新增），提交 `2fdc450 test` → `742341d feat`）→ 移交 Evaluator 评审
 - 2026-10-09: Planner — kickoff sprint-084（web/036b，4 条验收标准，反模式全仓清查恰 3 处/2 文件+遮罩死选择器产物实证，≤6 文件不拆分，连带 web-011b 计数断言语义同步登记）
 - 2026-10-08: Evaluator — pass sprint-083（web/011c，平均分 9.3/10：五维 9.5/9/9/9.5/9.5；四门禁亲跑 mvn 154 4F+2E=基线、前端链 EXIT=0、lint:check 11s exit 0 零 dist、冒烟 64=55✅+7❌+2⏭️ 且 web-011c ✅ 零回归、RED 独立复现 124+4748/4559 规则逐条、案A 抽查 3/50 机械文件等价+手工 117 行全文复核、变更三方比对 59 文件零越界；六否决项零命中，案A/案B 口径认可，改进建议 5 条不计分）
 - 2026-10-08: Generator — done sprint-083（web/011c 全量 lint 门禁恢复：RED 124/4559/smoke 124 三实证→59 文件治理（配置 ignorePatterns+ignoreRestSiblings、机械 50 案A 等价零夹带、手工 8 含 dupe-key/toFormatter/catch 拆壳/&lt;&lt;/标记同步），门禁 lint 0 error|165 warning、test 308/308、build ✓、mvn 154 4F+2E=基线，冒烟 64=55✅+7❌+2⏭️ 零回归、web-011c ✅；提交 9e82973 test → ec7bbc4 feat）

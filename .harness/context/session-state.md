@@ -2,15 +2,16 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟡 **规划完成 sprint-084**（Planner 注册 web/036b 暗色局部白底缺陷修复，4 条验收标准；反模式全仓清查恰 3 处/2 文件钉死边界，≤6 文件不拆分；sprint-083 已 ✅ PASS 9.3/10）
+- 状态: 🟠 **待评审 sprint-084（AWAITING_REVIEW）**（Generator 完成 web/036b：RED 三实证→R1 全局下沉+R2 BaseButton，门禁五线+冒烟 65 全过，提交 `2fdc450 test` → `742341d feat`；案A AC3③ 计数≥10 用户裁决在案）
 - 当前模块: web
-- 当前功能点: web/036b 暗色模式局部白底缺陷修复 — **🟡 工作单就绪（PLANNED）**（4 AC 顶格；①BaseTable 遮罩死选择器产物实证、②settings ElButton variant 非法 prop（全站 BaseButton 14:1 惯例）、③反模式清查=0 面已由 036a 完成仅剩 3 处；连带 web-011b 计数断言同步防自伤 veto-6）
+- 当前功能点: web/036b 暗色模式局部白底缺陷修复 — **🟠 实现完成待评审（AWAITING_REVIEW）**（4 AC 全勾：R1 全局下沉=删 BaseTable 遮罩块+reset.css 遮罩对 0.9、R2 settings→BaseButton 双处、反模式源层清零、产物死形态=0 暗规则=10（案A）、门禁 lint 0E|165W/test 315/build ✓/mvn=基线、冒烟 65=56✅+7❌+2⏭️ 且 web-036b ✅、web-011b 计数同步 ✅；spec 7 断言先行 RED→GREEN）
 
 
 ## 下一步动作
-  Generator：读 `.harness/generator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-084 / web/036b）。首个实现要点：**先 RED 后修复**——① 反模式 spec 先写（源断言对 BaseTable 死模式/settings variant/硬编码浅底 3 处必红）；② 修复前 build 存产物形态基线（死形态存在、可命中形态缺失、`[data-theme=dark]` 计数=11 实录）；③ smoke `web-036b` 用例先写 + `web-011b` 计数断言同波语义同步（用例不删除）；随后按 R1-R3 研究项定修复形态（遮罩三选一：scoped 祖先形态/全局下沉/EP mask 变量；按钮按 14:1 惯例换 BaseButton）→ 门禁五线+冒烟 65 收口。**熔断边界与不动清单见工作单拆分说明**（代码文件 >6 / 删遮罩样式 / 第 4 处未知缺陷面即回报）。
+  Evaluator：读 `.harness/evaluator.md` 并严格执行——评审 sprint-084（web/036b）。必核：① RED 三实证独立复现（spec 7 failed@`2fdc450`、修复前产物死形态=1 基线、smoke 用例体首跑失败）；② GREEN 后产物双断言（死形态=0 + `[data-theme=dark] .el-loading-mask` 可命中 + ffffffe6 + 036a 三断言）与源层清零复扫；③ **案A AC3③ 计数≥10 口径**（基线 11 含死形态 1 条，用户 2026-10-09 裁决）按任务单「问答在案」执行；④ web-011b 计数断言同步等强核查（passed==total + vitest exit 门禁，非放宽）；⑤ 门禁五线亲跑 + 冒烟 65=56✅+7❌+2⏭️（7❌=基线逐条）；⑥ 变更三方比对（4 代码+2 测试文件，reset.css 仅遮罩两行）。
 
 ## 挂起
+- 2026-10-09: Generator(sprint-084) — **AC3③ 计数口径修订（用户案A 问答在案）**：修复前产物 `[data-theme=dark]` 规则基线=11，**其中 1 条正是死形态**（`[data-theme=dark][data-v-c7766763]` 永不命中）；合法修复必然移除死规则→产物=10（有效覆盖反而提升：遮罩暗色由「永白」变命中）。字面「≥11」不可达，用户裁定**案A**=下限 **≥10 且死形态=0**，主断言=死形态归零+可命中规则在+036a 三断言，计数降为辅断言。task AC3/R3/问答块已同步修订，冒烟用例本就以形态为主断言（未含计数），Evaluator 按此口径评审。
 - 2026-10-08: Generator(sprint-083) — **AC3 ① 证明口径修订（用户案A 问答在案）**：「机械段 `git diff -w` 空」字面不可达——prettier 自动波含 printWidth 100 长行拆分等风格改写（实测非空白变更 9564 行，主因行拆分），强求将迫使逐文件手工回卷、风险大于收益；用户裁定**案A**=逐文件 `工作树 == eslintFix(HEAD)` 等价证明（HEAD 副本过同配 `eslint --fix` 后与工作树逐字节比对，可抦截任何夹带，**比 diff -w 更强**），风格 token 允许。实测结果：**50 机械等价 + 8 手工 + 1 配置 = 59 文件零夹带**（手工 delta 仅 117 行，e083-hand-hunks.log + sidebar spec 单行同步复核）。任务单 AC3/RED 槽已修订，Evaluator 按此口径评审。
 - 2026-10-08: Planner(sprint-083) — **案B 单波豁免用户裁决（问答在案）+ 规模实测登记**：011c 规划实测全量残余 **4748 问题/60 文件**（src-only 240s 完成 exit=1）＝prettier 4536 Error+手工 23 Error+any 171 Warning+attrs-order 18 Warning，远超 082 案A 登记的定向 196 → 单子功能点预估 ≈66 文件**超 6 文件熔断**；严格按目录拆分需 9-11 单纯格式化波（案A，机械性逐单价值极低）。用户裁定**案B**：单波豁免推进，证明链=机械段（≈59 文件单命令）`git diff -w` 空 + 手工段（≈11 文件/23 Error）逐条登记 + test 0 failed|308/build/mvn 三线=基线；豁免边界（>70 文件/非空白 diff/版本升级/真缺陷大改即回报）与 any 171 归 011d 预留随工作单拆分说明在册。卡死根因第一嫌疑=`.eslintrc.cjs` 无 ignorePatterns、`eslint .` 扫 dist 29 bundle/1.9M（R1 待 Generator 对照钉死）。
 - 2026-10-08: Generator(sprint-082) — **AC4 定向 lint 口径裁定（用户案A 问答在案）+ 断言强度登记**：① 原稿 AC4「本单触碰文件 0 问题」系 Planner 仅实测 DefaultLayout 2 处预存之误——实测触碰 4 文件基线 200 预存（DefaultLayout 2/auth-token 2/LoginView 151/IndexView 45）；用户裁定**案A**=本单引入 0 + 点名预存清理（DefaultLayout、auth-token 清零全 0）、LoginView 151/IndexView 45（130 prettier+66 any，script-setup vm 访问无干净类型解、干净解需产品文件 defineExpose 为不动清单所禁）登记归 011c，task AC4 已修订、分治④ 已登记。② 断言改写四条强度不降自查（AC8 1→2、AC6 造数、038e spyOn 真件、余者零删改）已入 task GREEN 槽。

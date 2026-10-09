@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/036b**（web/036 行子功能点；036a ✅ sprint-067、036c 预留不动） |
 | 功能点名称 | 暗色模式局部白底缺陷修复——BaseTable 遮罩死选择器 + settings 非法 variant prop + 反模式全仓清零 |
-| 状态 | PLANNED |
+| 状态 | AWAITING_REVIEW（Generator 完成，门禁+冒烟通过，待 Evaluator） |
 | 创建时间 | 2026-10-09 |
 
 ## 前置依赖
@@ -36,10 +36,10 @@
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — BaseTable 遮罩暗色覆盖可命中：修复后 `BaseTable.vue` 不再含 `[data-theme='dark'] &` 反模式；构建产物存在**可命中**的暗色遮罩规则（选择器含 `[data-theme=dark]` 且**不存在** `[data-theme=dark][data-v-` 同元素复合形态）且亮色遮罩规则（`ffffffe6` 或等效 rgba 0.9）仍在。← 用例 `AC1 ← 用例 web-036b mask spec（源断言）+ 产物断言（build 后 grep）`
-- [ ] AC2 — settings 非法 variant 清零：两处按钮改 `<BaseButton variant="primary">`（前往修改）/`<BaseButton variant="danger">`（退出登录），点击行为 `router.push('/profile/password')`/`handleLogout` 零变；全仓 `<ElButton[^>]*variant=` = 0；settings 的 ElButton import 移除。← 用例 `AC2 ← 用例 web-036b settings spec（源断言）`
-- [ ] AC3 — 反模式清零与暗色面不回归：①`[data-theme='dark'] &` 全仓 = 0；②非 spec 的 .vue 中硬编码 `rgba(255, 255, 255` 浅底 = 0；③产物 `[data-theme=dark]` 规则数 ≥ 11（2026-10-09 基线实测）且 036a 三断言保持——`.dark{…--el-` EP 暗段、`--el-bg-color:#fff` 亮值、`--color-bg-page:#020617` 暗段。← 用例 `AC3 ← 用例 spec 全仓清查 + build 产物三断言`
-- [ ] AC4 — 门禁五线与冒烟 65：`mvn -q verify` 154 用例 4F+2E = 基线五类；`npm run test` **0 failed**（基线 308 + 本单新增，新增数入册）；`npm run build` ✓；`bash scripts/smoke.sh` 存量 64 不减 + 新增 `web-036b` → **65**（7❌ 基线不背锅），且 `web-011b` 用例同步为计数模式断言后 ✅。← 用例 `AC4 ← 用例 门禁五线实测 + 冒烟 65`
+- [x] AC1 — BaseTable 遮罩暗色覆盖可命中：修复后 `BaseTable.vue` 不再含 `[data-theme='dark'] &` 反模式；构建产物存在**可命中**的暗色遮罩规则（选择器含 `[data-theme=dark]` 且**不存在** `[data-theme=dark][data-v-` 同元素复合形态）且亮色遮罩规则（`ffffffe6` 或等效 rgba 0.9）仍在。← 用例 `AC1 ← 用例 web-036b mask spec（源断言）+ 产物断言（build 后 grep）`）；实测：源断言 2/2、死形态=0、可命中规则 `[data-theme=dark] .el-loading-mask{#0f172ae6!important}`、亮规则 `ffffffe6` 在。
+- [x] AC2 — settings 非法 variant 清零：两处按钮改 `<BaseButton variant="primary">`（前往修改）/`<BaseButton variant="danger">`（退出登录），点击行为 `router.push('/profile/password')`/`handleLogout` 零变；全仓 `<ElButton[^>]*variant=` = 0；settings 的 ElButton import 移除。← 用例 `AC2 ← 用例 web-036b settings spec（源断言）`；实测：spec 3/3 绿、全仓 `<ElButton variant=`(.vue)=0、两按钮 BaseButton variant=primary/danger、import 已移除 ElButton。
+- [x] AC3 — 反模式清零与暗色面不回归：①`[data-theme='dark'] &` 全仓 = 0；②非 spec 的 .vue 中硬编码 `rgba(255, 255, 255` 浅底 = 0；③产物 `[data-theme=dark]` 规则数 ≥ 10 且死形态 = 0（2026-10-09 用户案A裁决校准：基线11含1条死形态，合法移除后=10；计数降为辅断言）且 036a 三断言保持——`.dark{…--el-` EP 暗段、`--el-bg-color:#fff` 亮值、`--color-bg-page:#020617` 暗段。← 用例 `AC3 ← 用例 spec 全仓清查 + build 产物三断言`；实测：源层两反模式=0、产物暗规则=10(案A≥10)+死形态=0、036a 三断言 A/B/C 全过。
+- [x] AC4 — 门禁五线与冒烟 65：`mvn -q verify` 154 用例 4F+2E = 基线五类；`npm run test` **0 failed**（基线 308 + 本单新增，新增数入册）；`npm run build` ✓；`bash scripts/smoke.sh` 存量 64 不减 + 新增 `web-036b` → **65**（7❌ 基线不背锅），且 `web-011b` 用例同步为计数模式断言后 ✅。← 用例 `AC4 ← 用例 门禁五线实测 + 冒烟 65`；实测：mvn 154=4F+2E 五类基线、test 315 passed(315)、build ✓17.54s、冒烟 65=56✅+7❌+2⏭️、web-011b 同步后 ✅。
 
 ### AC1 — 遮罩暗色覆盖可命中
 > Given BaseTable 暗色遮罩规则编译为同元素双属性死形态。When 修复选择器形态并构建。Then 产物存在可命中暗色 mask 规则、死形态归零、亮色规则不回归。
@@ -50,7 +50,7 @@
 **用例**：`AC2 ← 用例 web-036b settings spec`
 
 ### AC3 — 反模式清零与暗色面不回归
-> Given 反模式恰 3 处。When 全部清零且构建。Then 源层清查=0、产物暗色规则 ≥11、036a 三断言保持。
+> Given 反模式恰 3 处。When 全部清零且构建。Then 源层清查=0、死形态=0、产物暗色规则 ≥10（案A校准）、036a 三断言保持。
 **用例**：`AC3 ← 用例 spec 全仓清查 + build 三断言`
 
 ### AC4 — 门禁五线与冒烟 65
@@ -66,7 +66,7 @@
 | 1 | `web-036b` 反模式 spec（死模式/非法 prop/硬编码浅底 全仓清查断言） | AC1/AC2/AC3 | ✓ RED-1=7 failed（修复前必红，e084-red1.log） |
 | 2 | 产物形态断言（死形态 `[data-theme=dark][data-v-` 归零 + 可命中暗 mask 规则存在 + 036a 三断言） | AC1/AC3 | ✓ RED-2 基线=死形态1/暗规则11/036a 三断言在（e084-red2.log），断言已入 smoke web-036b |
 | 3 | smoke `web-036b` 暗色遮罩与按钮语义修复（先写后绿）+ `web-011b` 计数断言语义同步 | AC1/AC2/AC4 | ✓ RED-3=用例体 EXIT=1 必失败 + 011b 同步断言 RED 期正确拒绝（7 failed 拒） |
-| 4 | 门禁五线：mvn=基线 / test 0 failed（308+新增）/ build ✓ / 冒烟 65 | AC4 | （待 Generator） |
+| 4 | 门禁五线：mvn=基线 / test 0 failed（308+新增）/ build ✓ / 冒烟 65 | AC4 | ✓ 五线实测全过（mvn 154=4F+2E、test 315、build 17.54s、冒烟 65=56✅+7❌+2⏭️、011b ✅） |
 
 ## RED 证据
 
@@ -96,7 +96,15 @@ RED3_CASE_EXIT=1（首条源层断言即红——BaseTable 死模式在场）
 > 治理后复跑。
 
 ```text
-[GREEN] （待填——spec 全绿、产物双断言过、test 0 failed|308+新增、冒烟 65）
+[GREEN]（2026-10-09 实时）
+spec：Tests 7 passed (7)（e084-green1.log，SRC_EXIT=0）
+产物：死形态计数=0；可命中暗 mask 规则 `[data-theme=dark] .el-loading-mask{background-color:#0f172ae6!important}`（0.9=案A前 R1 判定值）；
+  亮规则 `ffffffe6` 在（reset 0.9 + EP `--el-mask-color` 双处）；暗规则总数=10（案A ≥10 达标）；036a 三断言 A_OK/B_OK/C_OK
+源层复扫：rgba(255,255,255 .vue=0；`[data-theme='dark'] &` .vue=0；`<ElButton variant=` .vue=0
+门禁：lint EXIT=0（0E/165W=基线）｜test 0 failed | 315 passed (315)（308+7）｜build ✓ 17.54s｜mvn 154=4F+2E 五类逐一等于基线
+冒烟（复跑标准口径 /tmp/e084-smoke2.log）：65 = 56✅+7❌+2⏭️，7❌=已知分治清单零新增；web-036b/011b/011c/036a 全 ✅
+  连带插曲（已修）：首跑 web-036b ❌——源层 ElButton grep 未加 `--include='*.vue'` 误命中本单 spec 用例名字符串（.ts），
+  修正为仅扫 .vue 后用例体 CASE_EXIT=0，全量复跑 56✅ 达标；此为用例自身口径缺陷，非实现回退。
 ```
 
 ## 门禁与冒烟记录
@@ -105,11 +113,11 @@ RED3_CASE_EXIT=1（首条源层断言即红——BaseTable 死模式在场）
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 154 用例 4F+2E（五类，veto-6 豁免） | （待填） | （待填） |
-| `npm run lint` / `lint:check` | **EXIT=0，0 errors / 165 warnings**（083 治后） | （待填） | （待填） |
-| `npm run test` | **0 failed \| 308 passed**（新增后=308+N） | （待填） | （待填） |
-| `npm run build` | ✓（~18s） | （待填） | （待填） |
-| `bash scripts/smoke.sh` | **64=55✅+7❌+2⏭️**（7❌ 基线） | （待填：预期 65=56✅+7❌+2⏭️） | （待填） |
+| 后端 `mvn -q verify` | 154 用例 4F+2E（五类，veto-6 豁免） | **154=4F+2E**（DataSource 2F/Role 1F/Seed 1F/TestLayers 1E/TestUtils 1E，逐一=基线） | ✅ 基线内 |
+| `npm run lint` / `lint:check` | **EXIT=0，0 errors / 165 warnings**（083 治后） | **EXIT=0，0 errors / 165 warnings** | ✅ |
+| `npm run test` | **0 failed \| 308 passed**（新增后=308+N） | **0 failed \| 315 passed (315)**（308+本单 spec 7） | ✅ |
+| `npm run build` | ✓（~18s） | **✓ built in 17.54s**（1790 modules） | ✅ |
+| `bash scripts/smoke.sh` | **64=55✅+7❌+2⏭️**（7❌ 基线） | **65=56✅+7❌+2⏭️**（+web-036b ✅；7❌ 逐一=基线清单，零新增） | ✅ |
 
 ## 拆分说明
 
@@ -118,7 +126,10 @@ RED3_CASE_EXIT=1（首条源层断言即红——BaseTable 死模式在场）
 **研究项（Generator 先于动手核实）**：
 - **R1 遮罩修复形态判定**：三选一——① scoped 内改祖先形态（如 `html[data-theme='dark'] &` 或 `:global` 等价）；② 覆盖下沉至 reset.css 全局层（允许 reset.css **仅遮罩行**最小增改，其余不动）；③ 改用 `var(--el-mask-color)` 暗变量跟随 EP 双轨。判定标准=**产物可命中形态存在 + 死形态归零 + 亮色遮罩不回归**；禁止删除遮罩样式或降级 `!important` 语义导致亮色回归。
 - **R2 组件体系判定**：settings 换 BaseButton 的最小 diff（模板 2 处 + import 调整），断言 variant 归属与点击行为（router.push/handleLogout）零变；确认 BaseButton 在暗色下的样式覆盖（element-plus.scss/global 层已有 base-button 规则则只验不改）。
-- **R3 产物断言口径**：死形态 grep（`\[data-theme=dark\]\[data-v-`）必须无命中；可命中形态 grep（`\[data-theme=dark\][^{}]*\.el-loading-mask`）必须命中；暗规则计数 ≥11 为辅断言（修复重写形态时计数可 +1，以形态为主）。
+- **R3 产物断言口径**：死形态 grep（`\[data-theme=dark\]\[data-v-`）必须无命中；可命中形态 grep（`\[data-theme=dark\][^{}]*\.el-loading-mask`）必须命中；暗规则计数 ≥10 为辅断言（基线11含死形态1条；案A裁决=形态为主计数为辅，死形态归零后合法计数10）。
+
+**问答在案（2026-10-09 用户裁决）**：
+- **案A — AC3③ 计数口径校准**：GREEN 期实测移除死形态后产物 `[data-theme=dark]` 规则=10（基线11含死形态1条——永不命中的坏规则；移除后有效覆盖反而提升，遮罩暗色由「永白」变命中）。裁决：AC3③ 下限 **≥10 且死形态=0**，主断言=死形态归零+可命中规则在+036a 三断言，计数为辅断言。同 083 案A 先例（AC 字面与现实冲突→用户裁定→登记在案）。
 
 **超限熔断**：实际代码文件 >6、或需改 EP/构建版本、或修复中出现删除遮罩/删除既有全局暗规则等行为回退、或反模式清查发现第 4 处未知缺陷面 → **停止回报，回 Planner 重切分**。
 
@@ -134,7 +145,22 @@ RED3_CASE_EXIT=1（首条源层断言即红——BaseTable 死模式在场）
 
 ## 实现说明
 
-（待 Generator）
+**R1 判定（遮罩形态）**：采用**全局下沉**（选项②）——删除 BaseTable 整个 `:deep(.el-loading-mask)` 块（白底 `rgba(255,255,255,0.9)` 与死形态 `[data-theme='dark'] &` 一并离场，满足 AC3②「.vue 零硬编码浅底」），遮罩主题唯一真相源=reset.css 全局对（亮 `rgba(255,255,255,0.9)` / 暗 `[data-theme="dark"]` 祖先形态 `rgba(15,23,42,0.9)`，仅改 0.8→0.9 两行守住 AC1「亮规则 0.9=ffffffe6」字面）。判否其余两案：① scoped 祖先形态仍留 .vue 暗遮罩规则，AC3② 的「白底离场」字面虽可过但暗规则仍散落组件层、且与 reset 双源易再漂移；③ `var(--el-mask-color)` 依赖 EP 变量注入链路，改动面大于两行且 036a 未盖该链路断言。
+
+**R2 判定（按钮）**：settings 两处 `<ElButton variant=…>` → `<BaseButton variant=…>`（EP 无 variant prop，EP button 不吃该语义）；import 行移除 `ElButton`、增 `import BaseButton from '@/components/BaseButton.vue';`（14 视图显式 import 惯例）；BaseButton 变体样式 scoped `&--primary/&--danger` 编译完备，`@click="router.push('/profile/password')"`/`@click="handleLogout"` 经 BaseButton emit('click') 原样透传，行为零变。
+
+**变更清单**（代码 4 文件 + 测试 2 文件）：
+- `frontend/src/components/BaseTable.vue`：删除 `:deep(.el-loading-mask)` 整块（-9 行，死形态+白底同时清零）
+- `frontend/src/styles/reset.css`：遮罩对 0.8→0.9 两行（唯一全局改动，落在不动清单允许的遮罩行内）
+- `frontend/src/views/settings/IndexView.vue`：import 1 行调整 + 模板 2 处 ElButton→BaseButton
+- `scripts/smoke.sh`：新增 web-036b 用例 + web-011b 计数断言同步（test: 段落）+ 用例 ElButton grep 补 `--include='*.vue'`（GREEN 段口径修正）
+- `frontend/src/__tests__/web-036b-dark-fix.spec.ts`：7 断言反模式 spec（test: 段落先行）
+
+**连带同步（082 建议①提前落地）**：web-011b 由硬编码 `308 passed (308)` 改为 `^      Tests  [0-9]+ passed \([0-9]+\)$`（passed==total 且无 skipped 行）；vitest `|| exit 1` 门禁保留，语义=零失败不降级、计数随用例演进。RED 期实测该断言对 `7 failed | 308 passed (315)` 正确拒绝，证明非放宽。
+
+**案A 在案**：AC3③ 计数基线 11 含死形态 1 条，合法移除后=10，用户裁决下限 ≥10 且死形态=0（详见「问答在案」）。
+
+**未动**：036c 全部（串联 :deep 42 处、死代码、过期 grep）、011d（any 165）、冒烟 7❌、后端、EP/构建版本。
 
 ## 评审意见
 
