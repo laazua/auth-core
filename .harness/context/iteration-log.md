@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-08: Evaluator — pass sprint-082（web/011b，平均分 9.3/10：五维 9.5/9/9/9.5/9.5；四门禁亲跑 mvn 154 4F+2E=test 0 failed|308+lint 定向 0/0/151/45 与全量 124=基线+build ✓17.29s、冒烟亲跑 63=54✅+7❌+2⏭️ 且 web-011b ✅ 零回归、RED 整树复现 @5ce2de1=10 failed|298 与 RED-2 精确、断言 7 删 7 等强替换逐条核、变更三方比对 9 文件零夹带；六否决项零命中，案A 口径与 R4 per-spec 判定认可，改进建议 5 条不计分）
 - 2026-10-08: Generator — done sprint-082（web/011b 前端失败测试收敛，门禁+冒烟通过：RED `5ce2de1`（[RED] 15 failed 基线先行入册 + [RED-2] 10 failed 覆盖桩剥离复现态）→ GREEN `463f6d2` 全量 **0 failed|308 passed (308)**；mvn 154 4F+2E=基线五类逐条、定向 lint 本单引入 0（案A 裁定：DefaultLayout/auth-token 预存 4 处清零、LoginView 151/IndexView 45 归 011c）、build ✓17.44s；冒烟 **63=54✅+7❌+2⏭️**（存量 62 零删改+web-011b ✅、7❌=基线逐条零回归）；纯测试侧 5 文件≤熔断零产品改动、断言强度四条登记 GREEN 槽）→ 移交 Evaluator 评审
 - 2026-10-08: Planner — kickoff sprint-082（web/011b，4 条验收标准）
 - 2026-10-08: Evaluator — pass sprint-081（web/023，平均分 9.4/10：五维 9.5/9.5/9/9.5/9.5；四门禁亲跑 mvn 154 4F+2E/test 15 failed|293 精确/lint 124+定向 0 新/build ✓、冒烟亲跑 62=53✅+7❌+2⏭️ 精确且 +1 用例零删除、RED worktree 整树复现 7 failed|11 passed、AC1 四探针零残留；六否决项零命中，AC3 口径修订与预存 lint 双登记认可）

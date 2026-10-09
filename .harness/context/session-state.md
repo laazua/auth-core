@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟡 **待评审 sprint-082**（web/011b 前端失败测试收敛实现完成：RED `5ce2de1`（[RED] 15 failed 基线先行 + [RED-2] 10 failed 剥离覆盖桩复现态）→ GREEN `463f6d2`，4 AC 全达成；test **0 failed|308 passed (308)**、mvn 154 4F+2E=基线、定向 lint 本单引入 0（案A 裁定）、build ✓17.44s、冒烟 **63=54✅+7❌+2⏭️**（+web-011b ✅、7❌=基线零回归）；前序 sprint-081 PASS 9.4/10、080 积压清零）
+- 状态: ✅ **sprint-082 评审通过**（2026-10-08 Evaluator PASS 9.3/10，web/011b 失败测试收敛完成：test 0 failed|308 与冒烟 63=54✅+7❌+2⏭️ 双实测、mvn/定向lint/build=基线或达标、RED 整树复现 10 failed 精确、断言 7 删 7 等强替换；前序 081 PASS 9.4/10、080 积压清零；sprint-083 → Planner）
 - 当前模块: web
-- 当前功能点: web/011b（实现完成待评审：纯测试侧 5 文件=auth-token/LoginView/IndexView/DefaultLayout 四 spec + smoke.sh，零产品改动；15→0 failed；断言强度四条登记 GREEN 槽、AC4 案A 口径三处登记在案）
+- 当前功能点: web/011b 前端失败测试收敛 — **✅ PASS 9.3/10**（五维 9.5/9/9/9.5/9.5；4 AC 亲核全满足，纯测试侧 5 文件零产品改动，web/011 行「构建错误+失败测试」双面收口，011c=预留独立治理项）
 
 
 ## 下一步动作
-  Evaluator：读 `.harness/evaluator.md` 并严格执行评审 sprint-082（web/011b 前端失败测试收敛，AWAITING_REVIEW）。复核要点：① **RED 链核验**——commit 链 `5ce2de1`(test RED)→`463f6d2`(feat GREEN) 完整、双 RED 证据随 RED 提交实时入册（`git show 5ce2de1 -- .harness/context/task.md` 可证 [RED] 15 failed|293 基线 + [RED-2] 10 failed|298 覆盖桩剥离复现态），必要时 checkout 5ce2de1 整树复跑 RED（10 failed=LoginView 2+IndexView 8，全静态路由桩根因）后归位；② 门禁亲跑不采信自述：test **0 failed|308 passed (308)**、mvn **154 4F+2E** 五类逐条=基线、build ✓、定向 lint 案A 口径实测 4 文件 0/0/151/45；③ 冒烟亲跑 **63=54✅+7❌+2⏭️**（7❌=基线集合逐条 model-008/010、roles-001/002、web-013/020/026 零回归；web-011b 新增 ✅；存量 62 零删改）；④ **断言强度红线复核**——GREEN 槽四条改写登记（AC8 1→2 增强、AC6 perms 造数、038e 真 router spyOn、零删断言零恒真式）；⑤ **AC4 案A 口径复核**——task AC4 修订+分治④+挂起区三处登记（原稿「触碰文件 0 问题」系 Planner 仅实测 DefaultLayout 2 处之误，用户裁定案A=本单引入 0、预存 196 归 011c）；⑥ 文件熔断核对——5 文件（4 spec+smoke.sh）≤6 上限、产品文件零改动、不动清单（全量 lint/冒烟存量/后端）零触碰。veto-6 沿基线对照豁免。
+  Planner：读 `.harness/planner.md` 并严格执行——取下一功能点（sprint-083）。评审后候选：**首选 web/011c（全量 lint 卡死治理：EXIT=124 超时 5+ 次复现 + 定向预存 196 问题——LoginView 151/IndexView 45，直承本单分治④ 登记，治理后可恢复 lint 门禁全量线）**；次选 web/036b（暗色局部白底缺陷）/ web/036c（冒烟过期 grep 同步——7❌ 中 web-013/020/026 归它）；远期 IndexView 拆分超限债、modules/003（前置架构 §3 仲裁）。工作单须含研究项与门禁基线口径（test **0 failed|308 新基线**、冒烟 63=54✅+7❌+2⏭️、mvn 154 4F+2E、lint 全量 124+定向 0/0/151/45、build ✓，均 2026-10-08 sprint-082 评审亲测）。
 
 ## 挂起
 - 2026-10-08: Generator(sprint-082) — **AC4 定向 lint 口径裁定（用户案A 问答在案）+ 断言强度登记**：① 原稿 AC4「本单触碰文件 0 问题」系 Planner 仅实测 DefaultLayout 2 处预存之误——实测触碰 4 文件基线 200 预存（DefaultLayout 2/auth-token 2/LoginView 151/IndexView 45）；用户裁定**案A**=本单引入 0 + 点名预存清理（DefaultLayout、auth-token 清零全 0）、LoginView 151/IndexView 45（130 prettier+66 any，script-setup vm 访问无干净类型解、干净解需产品文件 defineExpose 为不动清单所禁）登记归 011c，task AC4 已修订、分治④ 已登记。② 断言改写四条强度不降自查（AC8 1→2、AC6 造数、038e spyOn 真件、余者零删改）已入 task GREEN 槽。
