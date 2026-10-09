@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟡 **规划完成 sprint-085**（Planner 注册 web/036c1 smoke 过期口径同步与弱断言强化，4 条验收标准；036c 首切片=纯口径层 2-4 文件≤6 不拆分；sprint-084 已 ✅ PASS 9.5/10）
+- 状态: 🟠 **待评审 sprint-085（AWAITING_REVIEW）**（Generator 完成 web/036c1：RED 四路实录→GREEN 口径同步，门禁五线+冒烟 66 全过，提交 `7e32938 test` → `66bf809 feat` → `docs:` 回写；冒烟 ❌7→恰4 翻绿 web-013/020/026）
 - 当前模块: web
-- 当前功能点: web/036c1 smoke 过期口径同步与弱断言强化 — **🟡 工作单就绪（PLANNED）**（7❌ 只读分类实录钉死边界：web-013/026 过期计数 19/23 vs 实测 24、web-020 过期 chunk 名 Header-*.css→实载 DefaultLayout-*.css 归本单；roles-001/002=基线五类下游不背；model-008/010=子集态真缺陷归 036c2；profile 单字符类弱正则（083③）+ web/084 注释勘误（084②）同波）
+- 当前功能点: web/036c1 smoke 过期口径同步与弱断言强化 — **🟠 实现完成待评审**（4 AC 全勾：011b 语义同步双用例、chunk 目标对准、profile 精确正则+变异证据、新增自检用例+冒烟 66=60✅+4❌+2⏭️ 恰中登记不背面）
 
 
 ## 下一步动作
-  Generator：读 `.harness/generator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-085 / web/036c1）。首个实现要点：**三用例当前 ❌ 即天然 RED，先录后动**——① web-013/026 用例体首跑实录（期望 19/23 vs 实测 24）；② web-020 首跑实录（Header-*.css 缺失）；③ profile 旧正则错例误通过变异实录 + 新正则先写；随后按 R1-R4 研究项落同步（011b passed==total 先例、chunk 目标幂等、新用例建议 web-013 名实对齐）→ 门禁五线+冒烟 **❌7→恰4、总数≥66** 收口。**熔断与不动清单见工作单**（>6 文件/动产品代码/改四条登记 ❌ 用例语义即回报）。
+  Evaluator：读 `.harness/evaluator.md` 并严格执行——评审 sprint-085（web/036c1）。必核：① RED 四路独立复现（worktree @`7e32938`：三用例体首跑必红+新用例首跑红+profile 旧正则变异 true）；② GREEN 语义等强核查（passed==total 与 `|| exit 1`/末行状态保留、013/026 零硬编码残留、020 负断言原语义、036a 用例零改动）；③ 门禁五线亲跑 + 冒烟 66=60✅+4❌+2⏭️（❌恰=model-008/010、roles-001/002 登记面）；④ 变更范围=2 文件+task 回写零夹带；⑤ 自检用例反指涉修复合理性复核（邻接串拼接防字面自匹配）。
 
 ## 挂起
 - 2026-10-09: Evaluator/Planner — **下一单建议更正（自纠登记）**：sprint-084 评审回写曾建议「web/040c」为下一功能点——**该建议失效**：040c 已于 sprint-077 评审通过（2026-09-29，9.5/10，registry 040 行实证 `dto.auth.UserVO` 已含 createdAt/updateTime、TimestampFieldContractTest:186 已断言）。失效原因=建议依据未复核 registry 即写入。本轮回写已改为 web/036c1；后续 Planner 建议功能点前须先扫 registry 状态列。

@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/036c1**（web/036 行第三子功能点 036c 的第一切片；036a ✅ sprint-067、036b ✅ sprint-084；036c 余量拆 036c2+ 预留） |
 | 功能点名称 | smoke 过期口径同步与弱断言强化——web-013/020/026 过期 grep 复活 + profile spec 单字符类弱正则强化 + 计数断言语义化 |
-| 状态 | PLANNED |
+| 状态 | AWAITING_REVIEW（Generator 完成，门禁+冒烟通过，待 Evaluator） |
 | 创建时间 | 2026-10-09 |
 
 ## 前置依赖
@@ -48,10 +48,10 @@
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — web-013 与 web-026 计数断言语义同步：两用例对 LoginView.spec 的断言改为 passed==total 模式（`^      Tests  [0-9]+ passed \([0-9]+\)$`，vitest `\|\| exit 1` 门禁保留，不删除用例、不断言体），断言行零硬编码具体计数（19/23 字样从断言中消失）；`bash scripts/smoke.sh` 中两用例复跑 ✅。← 用例 `AC1 ← 用例 smoke web-013、web-026（当前 ❌ 即 RED，同步后复跑 ✅）`
-- [ ] AC2 — web-020 正断言对准现存产物：`header__toggle` 断言目标由不存在的 `Header-*.css` 改为实际承载文件 `DefaultLayout-*.css`（或全 `dist/assets/css/*.css` 兜底，二选一在实现说明登记）；`sidebar__footer`/`sidebar__toggle` 负断言原语义保留；复跑 ✅。← 用例 `AC2 ← 用例 smoke web-020（当前 ❌ 即 RED，修正后复跑 ✅）`
-- [ ] AC3 — profile spec 弱正则强化：`profile-view-icon-size.spec.ts:38` 单字符类 `['"@/components/BaseButton.vue['"]` 改为精确断言（精确匹配 import 语句完整形态），并给出**断言有效性证据**：旧正则对错例（如 `import x from 'zzz'`）误通过、新正则拒绝同一错例；该 spec 独立运行 ✅ 且 `npm run test` 全量 0 failed。顺波落位 084 建议②：smoke web-011b 注释 `web/084`→`sprint-084` 勘误。← 用例 `AC3 ← 用例 profile-view-icon-size spec 强化断言 + 全量回归`
-- [ ] AC4 — 追加冒烟用例与全量收敛：为本单能力追加 **≥1 条**冒烟用例（建议形态：web-013 名实对齐——登录页密码框默认隐藏行为的直接断言，取代/叠加「整文件计数」体；Generator 可选等效形态但须覆盖本单口径能力并留 RED）；全量 `bash scripts/smoke.sh`：总数 **≥66**（65+新增）、**❌ 恰为 4 条**（model-008、model-010、roles-001、roles-002，=登记不背面）、零新增失败。← 用例 `AC4 ← 用例 门禁五线实测 + 冒烟全量复跑`
+- [x] AC1 — web-013 与 web-026 计数断言语义同步：两用例对 LoginView.spec 的断言改为 passed==total 模式（`^      Tests  [0-9]+ passed \([0-9]+\)$`，vitest `\|\| exit 1` 门禁保留，不删除用例、不断言体），断言行零硬编码具体计数（19/23 字样从断言中消失）；`bash scripts/smoke.sh` 中两用例复跑 ✅。← 用例 `AC1 ← 用例 smoke web-013、web-026（当前 ❌ 即 RED，同步后复跑 ✅）`；实测：两用例同步后复跑 EXIT=0、断言行零硬编码 19/23、全量冒烟 web-013/web-026 ✅。
+- [x] AC2 — web-020 正断言对准现存产物：`header__toggle` 断言目标由不存在的 `Header-*.css` 改为实际承载文件 `DefaultLayout-*.css`（或全 `dist/assets/css/*.css` 兜底，二选一在实现说明登记）；`sidebar__footer`/`sidebar__toggle` 负断言原语义保留；复跑 ✅。← 用例 `AC2 ← 用例 smoke web-020（当前 ❌ 即 RED，修正后复跑 ✅）`；实测：目标改 DefaultLayout-*.css（幂等通配，亲跑 build grep 命中=1）、负断言语义保留、web-020 复跑 EXIT=0 ✅。
+- [x] AC3 — profile spec 弱正则强化：`profile-view-icon-size.spec.ts:38` 单字符类 `['"@/components/BaseButton.vue['"]` 改为精确断言（精确匹配 import 语句完整形态），并给出**断言有效性证据**：旧正则对错例（如 `import x from 'zzz'`）误通过、新正则拒绝同一错例；该 spec 独立运行 ✅ 且 `npm run test` 全量 0 failed。顺波落位 084 建议②：smoke web-011b 注释 `web/084`→`sprint-084` 勘误。← 用例 `AC3 ← 用例 profile-view-icon-size spec 强化断言 + 全量回归`；实测：精确正则锚定行首缩进+完整 import 语句、变异证据=旧正则对错例 true 误过/新正则 false 拒、spec 3/3、全量 315/315、011b 注释勘误同波。
+- [x] AC4 — 追加冒烟用例与全量收敛：为本单能力追加 **≥1 条**冒烟用例（建议形态：web-013 名实对齐——登录页密码框默认隐藏行为的直接断言，取代/叠加「整文件计数」体；Generator 可选等效形态但须覆盖本单口径能力并留 RED）；全量 `bash scripts/smoke.sh`：总数 **≥66**（65+新增）、**❌ 恰为 4 条**（model-008、model-010、roles-001、roles-002，=登记不背面）、零新增失败。← 用例 `AC4 ← 用例 门禁五线实测 + 冒烟全量复跑`；实测：新增 web-036c1（首跑 RED EXIT=1→GREEN EXIT=0）、全量冒烟 66=60✅+4❌+2⏭️（❌恰=model-008/010、roles-001/002 登记不背面，翻绿 web-013/020/026，零新增失败）。
 
 ### AC1 — web-013/026 计数断言语义同步
 > Given 两用例硬编码 19/23 而实测 24、用例新增即自伤。When 按 011b 先例改 passed==total 语义。Then 断言零硬编码且两用例复跑 ✅。
@@ -78,7 +78,7 @@
 | 1 | smoke web-013/web-026 同步前失败实证（计数 19/23 vs 实测 24） | AC1 | ✓ RED-1=两用例 EXIT=1 + 实测 `Tests 24 passed (24)`（evidence in RED 槽） |
 | 2 | smoke web-020 同步前失败实证（Header-*.css 不存在，实载 DefaultLayout-*.css） | AC2 | ✓ RED-2=EXIT=1（目标文件不存在）+ DefaultLayout-*.css 命中=1 |
 | 3 | profile spec 强化断言 + 旧正则错例误通过变异证据 | AC3 | ✓ RED-3=旧正则错例 true 误过 / 新正则 false 拒真例 true（node 实录） |
-| 4 | 新增冒烟用例首跑（对现状缺/红）+ 门禁五线 + 全量冒烟 ❌=4 | AC4 | ✓ 新用例 web-036c1 首跑 EXIT=1（三反模式在场=RED）；门禁/冒烟待 GREEN |
+| 4 | 新增冒烟用例首跑（对现状缺/红）+ 门禁五线 + 全量冒烟 ❌=4 | AC4 | ✓ 首跑 RED EXIT=1→复跑 GREEN EXIT=0；五线全过、冒烟 66=60✅+4❌+2⏭️ 恰中 |
 
 ## RED 证据
 
@@ -103,7 +103,13 @@ EXIT=1；失败尾 `grep: dist/assets/css/Header-*.css: 没有那个文件或目
 > 治理后复跑。
 
 ```text
-[GREEN] （待 Generator——三用例转绿、spec 强化过、冒烟 ❌7→4、门禁五线=基线）
+[GREEN]（2026-10-09 实时）
+四用例复跑：web-013=0、web-020=0、web-026=0、web-036c1=0（插曲：自检用例两度自指涉——
+  ① 注释含过期字样、② 负断言模式字面与用例同文件自匹配 → 邻接串拼接消字面，CASE_EXIT=0）
+profile spec：Tests 3 passed (3)；全量 test 0 failed | 315 passed (315)
+门禁：lint EXIT=0（0E/165W=基线）｜build ✓ 17.39s｜mvn 154=4F+2E 五类=基线
+冒烟全量（/tmp/g085-smoke.log）：66 = 60✅+4❌+2⏭️——❌恰为登记四条（model-008/010、roles-001/002），
+  翻绿 web-013/web-020/web-026，新增 web-036c1 ✅，web-011b/011c ✅，零新增失败
 ```
 
 ## 门禁与冒烟记录
@@ -112,11 +118,11 @@ EXIT=1；失败尾 `grep: dist/assets/css/Header-*.css: 没有那个文件或目
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 154 用例 4F+2E（五类，veto-6 豁免） | （待填） | （待填） |
-| `npm run lint` / `lint:check` | **EXIT=0，0 errors / 165 warnings** | （待填） | （待填） |
-| `npm run test` | **0 failed \| 315 passed (315)** | （待填） | （待填） |
-| `npm run build` | ✓（~18s） | （待填） | （待填） |
-| `bash scripts/smoke.sh` | **65=56✅+7❌+2⏭️** | （待填：目标 总数≥66、❌恰4=008/010/roles×2） | （待填） |
+| 后端 `mvn -q verify` | 154 用例 4F+2E（五类，veto-6 豁免） | **154=4F+2E**（失败类逐一=基线五类） | ✅ 基线内 |
+| `npm run lint` / `lint:check` | **EXIT=0，0 errors / 165 warnings** | **EXIT=0，0E/165W**（=基线） | ✅ |
+| `npm run test` | **0 failed \| 315 passed (315)** | **0 failed \| 315 passed (315)**（计数不变：无新增单测，新增在冒烟层） | ✅ |
+| `npm run build` | ✓（~18s） | **✓ built in 17.39s** | ✅ |
+| `bash scripts/smoke.sh` | **65=56✅+7❌+2⏭️** | **66=60✅+4❌+2⏭️**（+1 新用例；翻绿 013/020/026；❌恰=登记四条零新增） | ✅ |
 
 ## 拆分说明
 
@@ -141,7 +147,24 @@ EXIT=1；失败尾 `grep: dist/assets/css/Header-*.css: 没有那个文件或目
 
 ## 实现说明
 
-（待 Generator）
+**实现要点**：
+- **AC1 计数语义化**：web-013/026 断言改 011b 同款 passed==total 正则（passed==total 且无 skipped 行），web-013 保留「末行状态即用例状态」原结构、web-026 保留 `|| exit 1` 与 `.env` 断言语义——零删除零降级
+- **AC2 目标对准**：`header__toggle` 断言 Header 目录通配（文件不存在）→ `DefaultLayout-*.css`（亲跑 build grep 命中=1，通配抗 chunk 哈希漂移）；负断言与注释同步措辞
+- **AC3 精确正则**：单字符类（任意含类内字符的错例均误通过，变异实证 true）→ 锚定行首缩进的完整 import 语句精确正则（错例 false/真例 true）；011b 注释笔误 `web/084`→`sprint-084` 勘误
+- **AC4 新增用例 `web-036c1`**：双向就位自检——负断言=硬编码 19/23 与过期 chunk 通配清零、正断言=语义模式与实载目标在场；**实现插曲两度自指涉**（注释含过期字样→改措辞；负断言模式字面与同文件用例自匹配→邻接串拼接消字面），最终 EXIT=0
+- **7❌ 分类处置**：web-013/020/026 翻绿（本单）；roles-001/002=基线五类下游、model-008/010=子集态真缺陷（RoleServiceInterfaceSpec#roleServiceInterfaceHasAllMethods 定位实录）→ 登记不背面，归 036c2/后续
+
+**变更清单**：
+### 新增
+- `scripts/smoke.sh:436-446` — 新增冒烟用例 `web-036c1 过期口径同步就位自检`（本单增量，65→66）
+### 修改
+- `scripts/smoke.sh:167` — web-011b 注释笔误勘误（084②）
+- `scripts/smoke.sh:182-183` — web-013 计数断言 19→passed==total 语义（AC1）
+- `scripts/smoke.sh:263-264` — web-020 目标改 DefaultLayout-*.css + 注释（AC2）
+- `scripts/smoke.sh:335-336` — web-026 计数断言 23→passed==total 语义（AC1）
+- `frontend/src/views/__tests__/profile-view-icon-size.spec.ts:37-41` — 弱正则→精确 import 断言（AC3）
+### 删除
+- （无）
 
 ## 评审意见
 

@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-09: Generator — done sprint-085（web/036c1，门禁+冒烟通过：RED 四路实录=三用例天然红+新用例首跑红+旧正则变异 true→GREEN=web-013/026 passed==total 语义化、web-020 对准 DefaultLayout-*.css、profile 精确正则、011b 注释勘误，自检用例两度自指涉修复（措辞+邻接串消字面）；门禁 lint 0E|165W、test 315/315、build ✓17.39s、mvn 154 4F+2E=基线，冒烟 **66=60✅+4❌+2⏭️**（❌7→4 翻绿 013/020/026、恰为登记不背面、新增 web-036c1 ✅）；提交 `7e32938 test` → `66bf809 feat`）→ 移交 Evaluator 评审
 - 2026-10-09: Planner — kickoff sprint-085（web/036c1，4 条验收标准；036c 拆分首切片：7❌ 只读分类实录=web-013/020/026 过期口径归本单、roles×2 基线下游、model×2 子集态归 036c2；profile 弱正则(083③)+web/084 注释(084②) 同波；040c 误荐失效自纠登记）
 - 2026-10-09: Evaluator — pass sprint-084（web/036b，平均分 9.5/10：五维 9.5×5；四门禁亲跑 mvn 154 4F+2E=基线五类、前端链 EXIT=0（0E|165W、315|315、build ✓19.56s）、冒烟亲跑 65=56✅+7❌+2⏭️ 零新增且 web-036b/011b ✅、RED 独立复现 @2fdc450（spec 7 红+产物死形态 1·暗规则 11+用例体必败）、变更 9 文件=清单零夹带、011b 同步等强核、案A 计数≥10 口径执行；六否决零命中，改进建议 4 条不计分）
 - 2026-10-09: Generator — done sprint-084（web/036b 暗色局部白底缺陷修复，门禁+冒烟通过：RED 三实证先行=spec 7 failed/修复前产物死形态 1·暗规则 11 基线/用例体首跑 EXIT=1，web-011b 计数断言同波同步 RED 期正确拒 7 failed；GREEN=R1 全局下沉（删 BaseTable 遮罩死选择器块+reset.css 遮罩对 0.8→0.9）+R2 settings 双处 ElButton→BaseButton，案A 校准 AC3③≥10；门禁 lint 0E|165W、test 315/315、build ✓17.54s、mvn 154 4F+2E=基线五类；冒烟 **65=56✅+7❌+2⏭️**（web-036b ✅、7❌=基线零新增），提交 `2fdc450 test` → `742341d feat`）→ 移交 Evaluator 评审
