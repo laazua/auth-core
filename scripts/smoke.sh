@@ -164,7 +164,8 @@ smoke_case "modules-001 模块 CRUD 定向测试" mvn -q -f "$APP_DIR/pom.xml" t
 smoke_case "web-011b 前端全量测试零失败" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1
   npx vitest run >/tmp/smoke-web-011b.log 2>&1 || exit 1
-  grep -qE '^      Tests  308 passed \(308\)$' /tmp/smoke-web-011b.log || exit 1
+  # web/084 语义同步：测试总数随新增用例演进（082 评审建议①），断言 passed==total 且无 skipped 行，强度=零失败不降
+  grep -qE '^      Tests  [0-9]+ passed \([0-9]+\)$' /tmp/smoke-web-011b.log || exit 1
 "
 
 # web/011c：全量 lint 门禁恢复（eslint 全量 300s 内完成且零 dist 扫描；sprint-083 本单追加，lint:check 全量形态）
@@ -409,6 +410,25 @@ smoke_case "web-036a EP 暗色变量接入与双轨同步验证" bash -c "
   grep -rqE '\.dark\{[^}]*--el-' dist/assets/css/*.css || exit 1
   grep -rq -- '--el-bg-color:#fff' dist/assets/css/*.css || exit 1
   grep -rqE -- '--color-bg-page: *#020617' dist/assets/css/*.css || exit 1
+"
+
+# web/036b：暗色遮罩与按钮语义修复（sprint-084 本单追加：源层反模式清零 + spec 守护 + 产物死形态归零 + 036a 三断言不回归）
+smoke_case "web-036b 暗色遮罩与按钮语义修复" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  # 源层反模式清零（AC1/AC2/AC3①②）
+  grep -rq \"\[data-theme='dark'\] &\" src/components/BaseTable.vue && exit 1
+  grep -rqE '<ElButton[^>]*variant=' src && exit 1
+  grep -rq 'rgba(255, 255, 255' src --include='*.vue' --exclude-dir='__tests__' && exit 1
+  # spec 守护（源层断言全绿）
+  npx vitest run src/__tests__/web-036b-dark-fix.spec.ts 2>&1 | grep -qE 'Tests  [0-9]+ passed \([0-9]+\)' || exit 1
+  # 产物形态（AC1 产物：死形态归零 + 可命中 [data-theme=dark] mask 规则在 + 亮规则在 + AC3③ 036a 三断言）
+  npx vite build >/dev/null 2>&1 || exit 1
+  grep -rqE '\[data-theme=dark\]\[data-v-' dist/assets/css/*.css && exit 1
+  grep -rqE '\[data-theme=dark\][^{]*\.el-loading-mask' dist/assets/css/*.css || exit 1
+  grep -rq 'ffffffe6' dist/assets/css/*.css || exit 1
+  grep -rqE '\.dark\{[^}]*--el-' dist/assets/css/*.css || exit 1
+  grep -rq -- '--el-bg-color:#fff' dist/assets/css/*.css || exit 1
+  grep -rq -- '--color-bg-page: *#020617' dist/assets/css/*.css || exit 1
 "
 
 # web/037：面包屑导航间距优化与图标横排（与顶栏 16px/与内容卡片 24px 留白 + .el-breadcrumb__inner flex 使图标同行）验证

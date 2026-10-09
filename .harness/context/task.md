@@ -63,9 +63,9 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | `web-036b` 反模式 spec（死模式/非法 prop/硬编码浅底 全仓清查断言） | AC1/AC2/AC3 | （待 Generator） |
-| 2 | 产物形态断言（死形态 `[data-theme=dark][data-v-` 归零 + 可命中暗 mask 规则存在 + 036a 三断言） | AC1/AC3 | （待 Generator） |
-| 3 | smoke `web-036b` 暗色遮罩与按钮语义修复（先写后绿）+ `web-011b` 计数断言语义同步 | AC1/AC2/AC4 | （待 Generator） |
+| 1 | `web-036b` 反模式 spec（死模式/非法 prop/硬编码浅底 全仓清查断言） | AC1/AC2/AC3 | ✓ RED-1=7 failed（修复前必红，e084-red1.log） |
+| 2 | 产物形态断言（死形态 `[data-theme=dark][data-v-` 归零 + 可命中暗 mask 规则存在 + 036a 三断言） | AC1/AC3 | ✓ RED-2 基线=死形态1/暗规则11/036a 三断言在（e084-red2.log），断言已入 smoke web-036b |
+| 3 | smoke `web-036b` 暗色遮罩与按钮语义修复（先写后绿）+ `web-011b` 计数断言语义同步 | AC1/AC2/AC4 | ✓ RED-3=用例体 EXIT=1 必失败 + 011b 同步断言 RED 期正确拒绝（7 failed 拒） |
 | 4 | 门禁五线：mvn=基线 / test 0 failed（308+新增）/ build ✓ / 冒烟 65 | AC4 | （待 Generator） |
 
 ## RED 证据
@@ -73,9 +73,24 @@
 > Generator 于任何修复动作前执行测试清单并粘贴实证；产物形态基线快照（修复前 build）必须先存。
 
 ```text
-[RED-1] 反模式 spec 首跑（待 Generator——源断言对 3 处现状必红，摘录失败断言）
-[RED-2] 产物形态基线（待 Generator——修复前 build：死形态存在/可命中形态缺失/暗规则计数=11 实录）
-[RED-3] smoke web-036b 用例体首跑（待 Generator——修复前必失败实录）
+[RED-1] 反模式 spec 首跑（2026-10-09 实时，/tmp/opencode/e084-red1.log）：
+RED1_EXIT=1 → Failed Tests 7（spec 首写即 7 断言全红）
+  ✗ BaseTable 不含 [data-theme='dark'] &（缺陷在场）
+  ✗ BaseTable 不硬编码 rgba(255, 255, 255（:205 在场）
+  ✗ settings 零 ElButton / ✗ BaseButton variant=primary+danger / ✗ 全仓 <ElButton variant=
+  ✗ 全仓零 & 死模式 / ✗ 全仓零硬编码浅底（BaseTable:205 唯一命中）
+  Tests  7 failed (7)
+
+[RED-2] 产物形态基线（2026-10-09 实时，修复前 npx vite build，/tmp/opencode/e084-red2.log）：
+BUILD_OK；死形态 `[data-theme=dark][data-v-c7766763] .el-loading-mask` 计数=1（在场）
+可命中规则并存态：reset.css 祖先形态 `[data-theme=dark] .el-loading-mask{#0f172acc}` ✓（被 scoped 白规则特异度同级+晚载压制）
+亮规则 `[data-v-c7766763] .el-loading-mask{#ffffffe6}` 在；[data-theme=dark] 规则总数=11
+036a 三断言基线：.dark{--el ✓ / --el-bg-color:#fff ✓ / --color-bg-page: #020617 ✓（空格形态）
+
+[RED-3] smoke web-036b 用例体首跑（2026-10-09 实时，/tmp/smoke-web-036b-red.log）：
+RED3_CASE_EXIT=1（首条源层断言即红——BaseTable 死模式在场）
+连带 web-011b 计数断言语义同步（passed==total 模式）RED 期实测：
+  vitest 全量 7 failed | 308 passed (315) → 用例 `|| exit 1` 门禁与同步断言双双正确拒绝（同步非放宽证据）
 ```
 
 > 治理后复跑。
