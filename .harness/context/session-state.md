@@ -2,15 +2,16 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: ✅ **sprint-082 评审通过**（2026-10-08 Evaluator PASS 9.3/10，web/011b 失败测试收敛完成：test 0 failed|308 与冒烟 63=54✅+7❌+2⏭️ 双实测、mvn/定向lint/build=基线或达标、RED 整树复现 10 failed 精确、断言 7 删 7 等强替换；前序 081 PASS 9.4/10、080 积压清零；sprint-083 → Planner）
+- 状态: 🟡 **规划完成 sprint-083**（Planner 案B 裁决注册 web/011c 全量 lint 门禁恢复，4 条验收标准；实测 4559 Error/60 文件超 6 熔断经用户单波豁免；sprint-082 已 ✅ PASS 9.3/10）
 - 当前模块: web
-- 当前功能点: web/011b 前端失败测试收敛 — **✅ PASS 9.3/10**（五维 9.5/9/9/9.5/9.5；4 AC 亲核全满足，纯测试侧 5 文件零产品改动，web/011 行「构建错误+失败测试」双面收口，011c=预留独立治理项）
+- 当前功能点: web/011c 全量 lint 门禁恢复 — **🟡 工作单就绪（PLANNED）**（4 AC 顶格；卡死根因第一嫌疑 dist 无 ignore、R1-R5 研究项在册；门禁语义=Error 4559→0 即 exit 0，any 171 归 011d）
 
 
 ## 下一步动作
-  Planner：读 `.harness/planner.md` 并严格执行——取下一功能点（sprint-083）。评审后候选：**首选 web/011c（全量 lint 卡死治理：EXIT=124 超时 5+ 次复现 + 定向预存 196 问题——LoginView 151/IndexView 45，直承本单分治④ 登记，治理后可恢复 lint 门禁全量线）**；次选 web/036b（暗色局部白底缺陷）/ web/036c（冒烟过期 grep 同步——7❌ 中 web-013/020/026 归它）；远期 IndexView 拆分超限债、modules/003（前置架构 §3 仲裁）。工作单须含研究项与门禁基线口径（test **0 failed|308 新基线**、冒烟 63=54✅+7❌+2⏭️、mvn 154 4F+2E、lint 全量 124+定向 0/0/151/45、build ✓，均 2026-10-08 sprint-082 评审亲测）。
+  Generator：读 `.harness/generator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-083 / web/011c）。首个实现要点：**先 RED 后治理**——① 全量 `lint:check` 124 卡死实录入槽（R1 对照命令两份输出钉死 dist 根因）；② dist 忽略后首跑 4559± Error 清单快照入槽（--fix 前必存）；③ smoke `web-011c` 用例先写（RED 态必失败）；随后机械段 `npm run lint` --fix 波（存 diff -w 证明）→ 手工段 23 Error 逐条（no-dupe-keys/no-parsing-error 真缺陷判定先行）→ 门禁五线+冒烟 64 收口。**熔断边界与不动清单见工作单拆分说明**（>70 文件/非空白 diff/版本升级即回报）。
 
 ## 挂起
+- 2026-10-08: Planner(sprint-083) — **案B 单波豁免用户裁决（问答在案）+ 规模实测登记**：011c 规划实测全量残余 **4748 问题/60 文件**（src-only 240s 完成 exit=1）＝prettier 4536 Error+手工 23 Error+any 171 Warning+attrs-order 18 Warning，远超 082 案A 登记的定向 196 → 单子功能点预估 ≈66 文件**超 6 文件熔断**；严格按目录拆分需 9-11 单纯格式化波（案A，机械性逐单价值极低）。用户裁定**案B**：单波豁免推进，证明链=机械段（≈59 文件单命令）`git diff -w` 空 + 手工段（≈11 文件/23 Error）逐条登记 + test 0 failed|308/build/mvn 三线=基线；豁免边界（>70 文件/非空白 diff/版本升级/真缺陷大改即回报）与 any 171 归 011d 预留随工作单拆分说明在册。卡死根因第一嫌疑=`.eslintrc.cjs` 无 ignorePatterns、`eslint .` 扫 dist 29 bundle/1.9M（R1 待 Generator 对照钉死）。
 - 2026-10-08: Generator(sprint-082) — **AC4 定向 lint 口径裁定（用户案A 问答在案）+ 断言强度登记**：① 原稿 AC4「本单触碰文件 0 问题」系 Planner 仅实测 DefaultLayout 2 处预存之误——实测触碰 4 文件基线 200 预存（DefaultLayout 2/auth-token 2/LoginView 151/IndexView 45）；用户裁定**案A**=本单引入 0 + 点名预存清理（DefaultLayout、auth-token 清零全 0）、LoginView 151/IndexView 45（130 prettier+66 any，script-setup vm 访问无干净类型解、干净解需产品文件 defineExpose 为不动清单所禁）登记归 011c，task AC4 已修订、分治④ 已登记。② 断言改写四条强度不降自查（AC8 1→2、AC6 造数、038e spyOn 真件、余者零删改）已入 task GREEN 槽。
 - 2026-10-08: Generator(sprint-081) — **AC3 口径修订登记（工作单勘误）+ lint 预存登记**：① 冒烟用例数 **61→62**——tdd-workflow 冒烟节「Generator 必须为本次交付能力追加至少一条冒烟用例」强制，本单新增 `web-023-src 移除标签页栏源码层`（组件文件不存在 + 源码 .vue 零 TagsView 引用 + components.d.ts 零声明）；工作单 AC3/门禁表原文「61 不变/52✅」勘误为「62=53✅+7❌+2⏭️」，用例本体零删除（web-021/022 仅删过时「保留右键菜单」断言行并注释登记语义）。② lint 预存两处：`DefaultLayout.spec.ts:72 VueWrapper<any>`（warning）与 `:183` EOF 缺换行（prettier error），`git show HEAD:` 对照实证=HEAD 即有、非本单产生，按 §10 不混入无关格式化原则不动，建议归 web/011 治理。
 - 2026-09-29: Evaluator(sprint-080) — **积压清单清零登记**：下方历史条目中反复出现的「Evaluator 积压六项（sprint-047/048/060/061/062/063）均待评审」表述**全部失效关闭**——029(060) 早于本单已过（f6d8acd 8.6）、047(web/023) 系未实现非待评审、048/061/062/063+041(web/017 补入) 五项于 sprint-080 评审轮全 PASS（9.3/8.4/9.2/9.1/9.1）。历史条目原文按 append-only 保留不删。
