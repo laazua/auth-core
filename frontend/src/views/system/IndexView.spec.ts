@@ -102,7 +102,7 @@ vi.mock('@/components/ElTabs.vue', () => ({
     props: ['modelValue', 'type'],
     emits: ['update:modelValue', 'tab-click'],
     template:
-      '<div class="el-tabs-mock"><div class="el-tabs__nav"><button v-for="tab in $slots.default()" :key="tab.props?.name" class="el-tabs__item" :class="{ \'is-active\': tab.props?.name === modelValue }" @click="$emit(\'update:modelValue\', tab.props?.name)">{{ tab.children }}</button></div><div class="el-tabs__content"><slot /></div></div>',
+      '<div class="el-tabs-mock"><div class="el-tabs__nav"><button v-for="tab in $slots.default()" :key="tab.props?.name" class="el-tabs__item" :class="{ \'is-active\': tab.props?.name === modelValue }" @click="$emit(\'update:modelValue\', tab.props?.name)">{{ tab.props?.label }}</button></div><div class="el-tabs__content"><slot /></div></div>',
   },
 }));
 
@@ -172,7 +172,7 @@ vi.mock('element-plus', async (importOriginal) => {
       props: ['modelValue', 'type'],
       emits: ['update:modelValue', 'tab-click'],
       template:
-        '<div class="el-tabs-mock"><div class="el-tabs__nav"><button v-for="tab in $slots.default()" :key="tab.props?.name" class="el-tabs__item" :class="{ \'is-active\': tab.props?.name === modelValue }" @click="$emit(\'update:modelValue\', tab.props?.name)">{{ tab.children }}</button></div><div class="el-tabs__content"><slot /></div></div>',
+        '<div class="el-tabs-mock"><div class="el-tabs__nav"><button v-for="tab in $slots.default()" :key="tab.props?.name" class="el-tabs__item" :class="{ \'is-active\': tab.props?.name === modelValue }" @click="$emit(\'update:modelValue\', tab.props?.name)">{{ tab.props?.label }}</button></div><div class="el-tabs__content"><slot /></div></div>',
     },
     ElTabPane: {
       name: 'ElTabPane',
@@ -261,7 +261,7 @@ describe('IndexView - 权限/模块管理页', () => {
   let authStore: ReturnType<typeof useAuthStore>;
   let pinia: ReturnType<typeof createPinia>;
 
-  const createWrapper = (
+  const createWrapper = async (
     permissions: string[] = [
       'perm:view',
       'perm:create',
@@ -307,6 +307,9 @@ describe('IndexView - 权限/模块管理页', () => {
       ],
     });
     router.push(initialRoute);
+    // 实证：push 早于 install 且不 await 时 currentRoute 永停在 START（path='/' 20ms 不动），
+    // watch(route.path,{immediate}) 分支不进 → 先 await isReady 再 mount 使路由在 setup 期即落定
+    await router.isReady();
 
     return mount(IndexView, {
       global: {
@@ -389,7 +392,7 @@ describe('IndexView - 权限/模块管理页', () => {
 
   describe('Component Rendering', () => {
     it('renders permission management tab by default at /system/permissions', async () => {
-      const wrapper = createWrapper();
+      const wrapper = await createWrapper();
       await wrapper.vm.$nextTick();
 
       expect(wrapper.find('.system-index').exists()).toBe(true);
@@ -397,7 +400,7 @@ describe('IndexView - 权限/模块管理页', () => {
     });
 
     it('renders module management tab at /system/modules', async () => {
-      const wrapper = createWrapper([], '/system/modules');
+      const wrapper = await createWrapper([], '/system/modules');
       await wrapper.vm.$nextTick();
 
       expect(wrapper.find('.system-index').exists()).toBe(true);
@@ -405,7 +408,7 @@ describe('IndexView - 权限/模块管理页', () => {
     });
 
     it('shows tabs for permission and module management', async () => {
-      const wrapper = createWrapper();
+      const wrapper = await createWrapper();
       await wrapper.vm.$nextTick();
 
       expect(wrapper.find('.el-tabs-mock').exists()).toBe(true);
@@ -416,7 +419,7 @@ describe('IndexView - 权限/模块管理页', () => {
 
   describe('AC1 - 权限列表分页查询与多条件筛选', () => {
     it('loads first page by default on mount', async () => {
-      const wrapper = createWrapper();
+      const wrapper = await createWrapper();
       await wrapper.vm.$nextTick();
 
       expect(mockPermissionApi.list).toHaveBeenCalledWith(
@@ -425,7 +428,7 @@ describe('IndexView - 权限/模块管理页', () => {
     });
 
     it('filters permissions by search keyword', async () => {
-      const wrapper = createWrapper();
+      const wrapper = await createWrapper();
       await wrapper.vm.$nextTick();
 
       const searchInput = wrapper.find('input[placeholder*="权限名/编码"]');
@@ -443,10 +446,15 @@ describe('IndexView - 权限/模块管理页', () => {
     });
 
     it('filters permissions by module', async () => {
-      const wrapper = createWrapper();
+      const wrapper = await createWrapper();
       await wrapper.vm.$nextTick();
 
-      const moduleSelect = wrapper.find('select');
+      // moduleOptions 由 onMounted 异步装载（实证跨一个宏任务才就绪），先等就绪再交互；
+      // 两面板同在 DOM（v-show），按 .permission-tab 限定防选中模块面 select
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      await wrapper.vm.$nextTick();
+
+      const moduleSelect = wrapper.find('.permission-tab select');
       await moduleSelect.setValue('1');
       await wrapper.vm.$nextTick();
 
@@ -454,7 +462,8 @@ describe('IndexView - 权限/模块管理页', () => {
         expect.objectContaining({
           page: 1,
           size: 10,
-          moduleId: '1',
+          // 口径同步：handlePermissionSearch 经 Number() 转换（IndexView.vue:259），实参为 number
+          moduleId: 1,
         })
       );
     });
@@ -473,7 +482,7 @@ describe('IndexView - 权限/模块管理页', () => {
         },
       });
 
-      const wrapper = createWrapper();
+      const wrapper = await createWrapper();
       await wrapper.vm.$nextTick();
 
       (wrapper.vm as any).handlePermissionPageChange(2);
@@ -498,7 +507,7 @@ describe('IndexView - 权限/模块管理页', () => {
         },
       });
 
-      const wrapper = createWrapper();
+      const wrapper = await createWrapper();
       await wrapper.vm.$nextTick();
 
       (wrapper.vm as any).handlePermissionSizeChange(20);
@@ -512,15 +521,19 @@ describe('IndexView - 权限/模块管理页', () => {
 
   describe('AC2 - 权限创建唯一校验 + 模块必选', () => {
     it('opens create drawer when clicking create button', async () => {
-      const wrapper = createWrapper();
+      const wrapper = await createWrapper();
       await wrapper.vm.$nextTick();
 
       const createButton = wrapper.find('.permission-toolbar__create');
       await createButton.trigger('click');
       await wrapper.vm.$nextTick();
 
-      expect(wrapper.findComponent({ name: 'PermissionFormDrawer' }).props('visible')).toBe(true);
-      expect(wrapper.findComponent({ name: 'PermissionFormDrawer' }).props('mode')).toBe('create');
+      // 模板内 edit/create 两实例同名（edit 在前），须按 mode 定位 create 实例
+      const createDrawer = wrapper
+        .findAllComponents({ name: 'PermissionFormDrawer' })
+        .find((c) => c.props('mode') === 'create');
+      expect(createDrawer, '应存在 create 模式抽屉实例').toBeDefined();
+      expect(createDrawer!.props('visible')).toBe(true);
     });
 
     it('creates permission successfully with valid form', async () => {
@@ -568,7 +581,7 @@ describe('IndexView - 权限/模块管理页', () => {
           },
         });
 
-      const wrapper = createWrapper();
+      const wrapper = await createWrapper();
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -595,7 +608,7 @@ describe('IndexView - 权限/模块管理页', () => {
       (error as any).response = { data: { code: 1201, message: '权限名已存在' } };
       mockPermissionApi.create.mockRejectedValue(error);
 
-      const wrapper = createWrapper();
+      const wrapper = await createWrapper();
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -616,7 +629,7 @@ describe('IndexView - 权限/模块管理页', () => {
       (error as any).response = { data: { code: 1202, message: '权限编码已存在' } };
       mockPermissionApi.create.mockRejectedValue(error);
 
-      const wrapper = createWrapper();
+      const wrapper = await createWrapper();
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -637,7 +650,7 @@ describe('IndexView - 权限/模块管理页', () => {
       (error as any).response = { data: { code: 400, message: '模块ID不能为空' } };
       mockPermissionApi.create.mockRejectedValue(error);
 
-      const wrapper = createWrapper();
+      const wrapper = await createWrapper();
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -656,7 +669,7 @@ describe('IndexView - 权限/模块管理页', () => {
 
   describe('AC3 - 权限更新 code 不可改', () => {
     it('opens edit drawer with permission data when clicking edit', async () => {
-      const wrapper = createWrapper();
+      const wrapper = await createWrapper();
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -710,7 +723,7 @@ describe('IndexView - 权限/模块管理页', () => {
           },
         });
 
-      const wrapper = createWrapper();
+      const wrapper = await createWrapper();
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -739,7 +752,7 @@ describe('IndexView - 权限/模块管理页', () => {
       (error as any).response = { data: { code: 1203, message: '该权限已被角色引用，无法删除' } };
       mockPermissionApi.delete.mockRejectedValue(error);
 
-      const wrapper = createWrapper();
+      const wrapper = await createWrapper();
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -786,7 +799,7 @@ describe('IndexView - 权限/模块管理页', () => {
           },
         });
 
-      const wrapper = createWrapper();
+      const wrapper = await createWrapper();
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -801,7 +814,7 @@ describe('IndexView - 权限/模块管理页', () => {
 
   describe('AC5 - 模块列表分页查询与条件筛选', () => {
     it('loads first page by default on mount at /system/modules', async () => {
-      const wrapper = createWrapper([], '/system/modules');
+      const wrapper = await createWrapper([], '/system/modules');
       await wrapper.vm.$nextTick();
 
       expect(mockModuleApi.list).toHaveBeenCalledWith(
@@ -810,7 +823,7 @@ describe('IndexView - 权限/模块管理页', () => {
     });
 
     it('filters modules by search keyword', async () => {
-      const wrapper = createWrapper([], '/system/modules');
+      const wrapper = await createWrapper([], '/system/modules');
       await wrapper.vm.$nextTick();
 
       const searchInput = wrapper.find('input[placeholder*="模块名/编码"]');
@@ -828,10 +841,11 @@ describe('IndexView - 权限/模块管理页', () => {
     });
 
     it('filters modules by status', async () => {
-      const wrapper = createWrapper([], '/system/modules');
+      const wrapper = await createWrapper([], '/system/modules');
       await wrapper.vm.$nextTick();
 
-      const statusSelect = wrapper.find('select');
+      // 两面板同在 DOM（v-show），按 .module-tab 限定防选中权限面 select
+      const statusSelect = wrapper.find('.module-tab select');
       await statusSelect.setValue('1');
       await wrapper.vm.$nextTick();
 
@@ -858,7 +872,7 @@ describe('IndexView - 权限/模块管理页', () => {
         },
       });
 
-      const wrapper = createWrapper([], '/system/modules');
+      const wrapper = await createWrapper([], '/system/modules');
       await wrapper.vm.$nextTick();
 
       (wrapper.vm as any).handleModulePageChange(2);
@@ -883,7 +897,7 @@ describe('IndexView - 权限/模块管理页', () => {
         },
       });
 
-      const wrapper = createWrapper([], '/system/modules');
+      const wrapper = await createWrapper([], '/system/modules');
       await wrapper.vm.$nextTick();
 
       (wrapper.vm as any).handleModuleSizeChange(20);
@@ -897,15 +911,20 @@ describe('IndexView - 权限/模块管理页', () => {
 
   describe('AC6 - 模块创建唯一校验', () => {
     it('opens create drawer when clicking create button', async () => {
-      const wrapper = createWrapper([], '/system/modules');
+      // 按钮 v-if=canCreateModule（IndexView.vue:581），须授予 module:view/create 才渲染
+      const wrapper = await createWrapper(['module:view', 'module:create'], '/system/modules');
       await wrapper.vm.$nextTick();
 
       const createButton = wrapper.find('.module-toolbar__create');
       await createButton.trigger('click');
       await wrapper.vm.$nextTick();
 
-      expect(wrapper.findComponent({ name: 'ModuleFormDrawer' }).props('visible')).toBe(true);
-      expect(wrapper.findComponent({ name: 'ModuleFormDrawer' }).props('mode')).toBe('create');
+      // 模板内 edit/create 两实例同名（edit 在前），须按 mode 定位 create 实例
+      const createDrawer = wrapper
+        .findAllComponents({ name: 'ModuleFormDrawer' })
+        .find((c) => c.props('mode') === 'create');
+      expect(createDrawer, '应存在 create 模式抽屉实例').toBeDefined();
+      expect(createDrawer!.props('visible')).toBe(true);
     });
 
     it('creates module successfully with valid form', async () => {
@@ -952,7 +971,7 @@ describe('IndexView - 权限/模块管理页', () => {
           },
         });
 
-      const wrapper = createWrapper([], '/system/modules');
+      const wrapper = await createWrapper([], '/system/modules');
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -981,7 +1000,7 @@ describe('IndexView - 权限/模块管理页', () => {
       (error as any).response = { data: { code: 1301, message: '模块名已存在' } };
       mockModuleApi.create.mockRejectedValue(error);
 
-      const wrapper = createWrapper([], '/system/modules');
+      const wrapper = await createWrapper([], '/system/modules');
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -1003,7 +1022,7 @@ describe('IndexView - 权限/模块管理页', () => {
       (error as any).response = { data: { code: 1302, message: '模块编码已存在' } };
       mockModuleApi.create.mockRejectedValue(error);
 
-      const wrapper = createWrapper([], '/system/modules');
+      const wrapper = await createWrapper([], '/system/modules');
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -1023,7 +1042,7 @@ describe('IndexView - 权限/模块管理页', () => {
 
   describe('AC7 - 模块更新 code 不可改 + 级联查询权限', () => {
     it('opens edit drawer with module data when clicking edit', async () => {
-      const wrapper = createWrapper([], '/system/modules');
+      const wrapper = await createWrapper([], '/system/modules');
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -1076,7 +1095,7 @@ describe('IndexView - 权限/模块管理页', () => {
           },
         });
 
-      const wrapper = createWrapper([], '/system/modules');
+      const wrapper = await createWrapper([], '/system/modules');
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -1197,7 +1216,7 @@ describe('IndexView - 权限/模块管理页', () => {
           },
         });
 
-      const wrapper = createWrapper([], '/system/modules');
+      const wrapper = await createWrapper([], '/system/modules');
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -1206,7 +1225,8 @@ describe('IndexView - 权限/模块管理页', () => {
 
       expect(mockModuleApi.update).toHaveBeenCalledWith(1, { status: 0 });
       expect(mockElMessage.success).toHaveBeenCalledWith('操作成功');
-      expect(mockModuleApi.list).toHaveBeenCalledTimes(1);
+      // 口径同步：路由修复后 watch(immediate) 初载 + 变更后刷新 = 2 次（旧期望 1 次系初载缺失的坏桩口径）
+      expect(mockModuleApi.list).toHaveBeenCalledTimes(2);
     });
 
     it('rejects delete when module has permissions (code=1303)', async () => {
@@ -1214,7 +1234,7 @@ describe('IndexView - 权限/模块管理页', () => {
       (error as any).response = { data: { code: 1303, message: '该模块下存在权限，无法删除' } };
       mockModuleApi.delete.mockRejectedValue(error);
 
-      const wrapper = createWrapper([], '/system/modules');
+      const wrapper = await createWrapper([], '/system/modules');
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -1246,7 +1266,7 @@ describe('IndexView - 权限/模块管理页', () => {
         },
       });
 
-      const wrapper = createWrapper([], '/system/modules');
+      const wrapper = await createWrapper([], '/system/modules');
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -1255,7 +1275,8 @@ describe('IndexView - 权限/模块管理页', () => {
 
       expect(mockModuleApi.delete).toHaveBeenCalledWith(3);
       expect(mockElMessage.success).toHaveBeenCalledWith('删除成功');
-      expect(mockModuleApi.list).toHaveBeenCalledTimes(1);
+      // 口径同步：路由修复后 watch(immediate) 初载 + 变更后刷新 = 2 次（旧期望 1 次系初载缺失的坏桩口径）
+      expect(mockModuleApi.list).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -1353,7 +1374,7 @@ describe('IndexView - 权限/模块管理页', () => {
 
   describe('Permission Control', () => {
     it('hides create button when no permission:create', async () => {
-      const wrapper = createWrapper(['perm:view', 'perm:update', 'perm:delete']);
+      const wrapper = await createWrapper(['perm:view', 'perm:update', 'perm:delete']);
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -1362,7 +1383,7 @@ describe('IndexView - 权限/模块管理页', () => {
     });
 
     it('hides delete button when no permission:delete', async () => {
-      const wrapper = createWrapper(['perm:view', 'perm:create', 'perm:update']);
+      const wrapper = await createWrapper(['perm:view', 'perm:create', 'perm:update']);
       await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
@@ -1370,7 +1391,7 @@ describe('IndexView - 权限/模块管理页', () => {
     });
 
     it('hides module create button when no module:create', async () => {
-      const wrapper = createWrapper(
+      const wrapper = await createWrapper(
         ['perm:view', 'module:view', 'module:update', 'module:delete'],
         '/system/modules'
       );
@@ -1382,7 +1403,7 @@ describe('IndexView - 权限/模块管理页', () => {
     });
 
     it('hides module delete button when no module:delete', async () => {
-      const wrapper = createWrapper(
+      const wrapper = await createWrapper(
         ['perm:view', 'module:view', 'module:create', 'module:update'],
         '/system/modules'
       );
@@ -1395,7 +1416,7 @@ describe('IndexView - 权限/模块管理页', () => {
 
   describe('Responsive Design', () => {
     it('has responsive table container for mobile', async () => {
-      const wrapper = createWrapper();
+      const wrapper = await createWrapper();
       await wrapper.vm.$nextTick();
 
       expect(wrapper.find('.permission-table-container').exists()).toBe(true);
@@ -1432,7 +1453,7 @@ describe('IndexView - 权限/模块管理页', () => {
 
     it('moduleEnterButtonNavigatesWhenReady', async () => {
       // Arrange: baseUrl 非空且 status=1 的模块行
-      const wrapper = createWrapper(modulePermissions, '/system/modules');
+      const wrapper = await createWrapper(modulePermissions, '/system/modules');
       await wrapper.vm.$nextTick();
       const vm = wrapper.vm as any;
 
@@ -1442,13 +1463,14 @@ describe('IndexView - 权限/模块管理页', () => {
       // Assert: 按钮存在、可点、点击导航至 iframe 路由
       expect(enterNode, '操作列应渲染「进入」按钮').toBeDefined();
       expect(enterNode!.props.disabled).toBeFalsy();
+      const pushSpy = vi.spyOn(vm.router, 'push');
       enterNode!.props.onClick();
-      expect(vm.router.push).toHaveBeenCalledWith('/workspace/module/news');
+      expect(pushSpy).toHaveBeenCalledWith('/workspace/module/news');
     });
 
     it('moduleEnterButtonDisabledWhenBaseUrlMissing', async () => {
       // Arrange: baseUrl 缺失 / 停用 两种不可点情形
-      const wrapper = createWrapper(modulePermissions, '/system/modules');
+      const wrapper = await createWrapper(modulePermissions, '/system/modules');
       await wrapper.vm.$nextTick();
       const vm = wrapper.vm as any;
 

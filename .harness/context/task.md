@@ -72,8 +72,34 @@ web/011「修复前端构建错误与失败测试」行 🔄 自 sprint-056：**
 > Generator 于任何修复动作前执行测试清单并粘贴三组完整清单（现存失败=bugfix RED 实证）。
 
 ```text
-[RED] （待 Generator 于修复前执行 npm run test 并粘贴 15 failed 完整清单与三组报错栈帧）
+[RED] npx vitest run（修复前基线 2026-10-08，实时摘录，完整日志 /tmp/opencode/e082-red.log）
+Test Files  3 failed | 33 passed (36)
+     Tests  15 failed | 293 passed (308)   ← 恰=工作单基线 15（2+2+11）
+
+[AC1 auth-token 2 条] FAIL auth-token-persistence.spec#calls storage.set when setToken called with token
+  → expected "spy" to be called with arguments: [ 'token', '"test-jwt-token"' ] Number of calls: 0（:16）
+  根因：spec:5 `vi.mock('@/utils/storage')` 把 storage.set 链路掐成空桩，断言却打在 localStorage spy 上——测试桩自相矛盾（产品 storage.ts:16 本就写 localStorage）
+FAIL auth-token-persistence.spec#calls storage.remove when setToken(null) called → Number of calls: 0（:23，同源）
+
+[AC2 LoginView 2 条] FAIL LoginView.spec#handles successful login response
+  → expected 'Cannot read properties of undefined (…' to be ''（:193）
+  根因：LoginView.vue:75 `router.currentRoute.value.name` 撞 setup.ts:35 全局 useRouter 桩（仅 {push,replace,…} 无 currentRoute）→ :106 catch 写入 errorMessage
+FAIL LoginView.spec#redirects to dashboard after successful login → expected 'Login' to be 'Dashboard'（:659）
+  根因：useRouter 桩 push 为 no-op，真实 router 停在 /login（测试已备好 isReady+真实 router，只差组件拿到真件）
+
+[AC3 IndexView 11 条] FAIL IndexView.spec#shows tabs for permission and module management
+  → expected '{\n "_": 1\n}{\n "_": 1\n}新增权限权限名编码…' to contain '权限管理'（:412）
+  根因：element-plus mock 工厂 IndexView.spec:175 模板 `{{ tab.children }}` 打印 vnode 槽对象（toDisplayString→JSON `{_:1}`），label 在 tab.props.label
+FAIL IndexView.spec#loads first page by default on mount 等 10 条 → list spy Number of calls: 0（:422）
+  根因：setup.ts:43 全局 useRoute 静态桩 path='/' → IndexView.vue:442 watch(route.path,{immediate}) 的 permissions/modules 两分支均不进，fetch 不执行；:435 handleTabClick 的 router.push 亦为 no-op（AC7 pushSpy 断言同源）
+分布：11 failed | 29 passed（40），失败面全部=上述两类根因
 ```
+
+[RED-2] test: 提交态复测（剥离两处 vue-router 覆盖桩、其余 spec 修复保留，2026-10-08 实时，完整日志 /tmp/opencode/e082-red2.log）
+Test Files  2 failed | 34 passed (36)
+     Tests  10 failed | 298 passed (308)   ← LoginView 2（与 [RED] 同栈）+ IndexView 8（AC1/AC2/AC4/AC5/AC6/AC7/AC8×2，全部 list/push spy 断言失败=静态路由桩根因）
+说明：EP label 解析、抽屉 mode 定位、面板作用域/等待等 spec 侧修复不依赖 router 真件，在本提交态已转绿（IndexView 11→8）；
+覆盖桩 `vi.mock('vue-router', …)` 归 feat: 提交——test: 提交树保持可复现 RED，供 Evaluator 回放（10 failed 即该态实测）。
 
 > 实现后复跑。
 
