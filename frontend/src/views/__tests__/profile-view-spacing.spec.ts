@@ -24,7 +24,9 @@ describe('ProfileViewSpacingSpec', () => {
 
     const styleContent = styleMatch![1];
     // 查找 .profile__action-btn :deep(.base-button) { ... gap: 16px ... }
-    const actionBtnGapMatch = styleContent.match(/\.profile__action-btn\s*\{[\s\S]*?:deep\(\(?\.base-button\)?\)\s*\{[\s\S]*?gap\s*:\s*16px/);
+    const actionBtnGapMatch = styleContent.match(
+      /\.profile__action-btn\s*\{[\s\S]*?:deep\(\(?\.base-button\)?\)\s*\{[\s\S]*?gap\s*:\s*16px/
+    );
     expect(actionBtnGapMatch).not.toBeNull();
   });
 });

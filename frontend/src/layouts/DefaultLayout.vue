@@ -1,38 +1,38 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useAppStore } from '@/stores/app';
-import { useTheme } from '@/composables/useTheme';
-import Sidebar from '@/components/Sidebar.vue';
-import Header from '@/components/Header.vue';
-import Breadcrumb from '@/components/Breadcrumb.vue';
+  import { computed, onMounted, onUnmounted, ref } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
+  import { useAppStore } from '@/stores/app';
+  import { useTheme } from '@/composables/useTheme';
+  import Sidebar from '@/components/Sidebar.vue';
+  import Header from '@/components/Header.vue';
+  import Breadcrumb from '@/components/Breadcrumb.vue';
 
-const route = useRoute();
-const router = useRouter();
-const appStore = useAppStore();
-const { initTheme } = useTheme();
+  const route = useRoute();
+  const router = useRouter();
+  const appStore = useAppStore();
+  const { initTheme } = useTheme();
 
-const isMobile = ref(false);
+  const isMobile = ref(false);
 
-const contentStyle = computed(() => ({
-  marginLeft: appStore.sidebarCollapsed ? '64px' : '260px',
-  minHeight: `calc(100vh - 60px)`,
-  transition: 'margin-left 0.15s ease-out',
-}));
+  const contentStyle = computed(() => ({
+    marginLeft: appStore.sidebarCollapsed ? '64px' : '260px',
+    minHeight: `calc(100vh - 60px)`,
+    transition: 'margin-left 0.15s ease-out',
+  }));
 
-const handleResize = () => {
-  isMobile.value = window.innerWidth < 768;
-  appStore.setDevice(isMobile.value ? 'mobile' : 'desktop');
-  if (isMobile.value) {
-    appStore.setSidebarCollapsed(true);
-    appStore.setSidebarOpened(false);
-  }
-};
+  const handleResize = () => {
+    isMobile.value = window.innerWidth < 768;
+    appStore.setDevice(isMobile.value ? 'mobile' : 'desktop');
+    if (isMobile.value) {
+      appStore.setSidebarCollapsed(true);
+      appStore.setSidebarOpened(false);
+    }
+  };
 
-const handleRouteChange = () => {
-  const fullPath = route.fullPath;
-  appStore.setActiveTag(fullPath);
-};
+  const handleRouteChange = () => {
+    const fullPath = route.fullPath;
+    appStore.setActiveTag(fullPath);
+  };
 
   onMounted(() => {
     handleResize();
@@ -40,14 +40,14 @@ const handleRouteChange = () => {
     initTheme();
     appStore.restoreTags();
 
-  if (typeof router.afterEach === 'function') {
-    router.afterEach(handleRouteChange);
-  }
-});
+    if (typeof router.afterEach === 'function') {
+      router.afterEach(handleRouteChange);
+    }
+  });
 
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize);
-});
+  onUnmounted(() => {
+    window.removeEventListener('resize', handleResize);
+  });
 </script>
 
 <template>
@@ -80,51 +80,51 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
-.layout {
-  display: flex;
-  min-height: 100vh;
-  background: var(--color-bg-page);
-  background-image: var(--gradient-bg);
-  background-attachment: fixed;
-}
-
-.layout__main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.layout__content {
-  flex: 1;
-  overflow: auto;
-  padding: 16px 24px 24px;
-  min-width: 0;
-}
-
-.layout__page {
-  min-height: 100%;
-  background: var(--color-bg-content);
-  border-radius: var(--color-border-radius-card);
-  box-shadow: var(--color-shadow-light);
-  border: 1px solid var(--color-border-light);
-  padding: 24px;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.15s ease-out;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-@media (max-width: 767.98px) {
-  .layout__main {
-    margin-left: 0 !important;
+  .layout {
+    display: flex;
+    min-height: 100vh;
+    background: var(--color-bg-page);
+    background-image: var(--gradient-bg);
+    background-attachment: fixed;
   }
-}
+
+  .layout__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .layout__content {
+    flex: 1;
+    overflow: auto;
+    padding: 16px 24px 24px;
+    min-width: 0;
+  }
+
+  .layout__page {
+    min-height: 100%;
+    background: var(--color-bg-content);
+    border-radius: var(--color-border-radius-card);
+    box-shadow: var(--color-shadow-light);
+    border: 1px solid var(--color-border-light);
+    padding: 24px;
+  }
+
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 0.15s ease-out;
+  }
+
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
+  }
+
+  @media (max-width: 767.98px) {
+    .layout__main {
+      margin-left: 0 !important;
+    }
+  }
 </style>

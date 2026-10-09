@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
-import { useAppStore } from '@/stores/app';
-import { useTheme } from '@/composables/useTheme';
-import Sidebar from '@/components/Sidebar.vue';
-import Header from '@/components/Header.vue';
-import Breadcrumb from '@/components/Breadcrumb.vue';
+  import { computed, onMounted, onUnmounted, ref } from 'vue';
+  import { useRoute } from 'vue-router';
+  import { useAppStore } from '@/stores/app';
+  import { useTheme } from '@/composables/useTheme';
+  import Sidebar from '@/components/Sidebar.vue';
+  import Header from '@/components/Header.vue';
+  import Breadcrumb from '@/components/Breadcrumb.vue';
 
-const route = useRoute();
-const appStore = useAppStore();
-const { initTheme } = useTheme();
+  const route = useRoute();
+  const appStore = useAppStore();
+  const { initTheme } = useTheme();
 
   const isMobile = ref(false);
 
@@ -58,46 +58,46 @@ const { initTheme } = useTheme();
 </template>
 
 <style scoped lang="scss">
-.layout {
-  display: flex;
-  min-height: 100vh;
-  background: var(--color-bg-page);
-  background-image: var(--gradient-bg);
-  background-attachment: fixed;
-}
+  .layout {
+    display: flex;
+    min-height: 100vh;
+    background: var(--color-bg-page);
+    background-image: var(--gradient-bg);
+    background-attachment: fixed;
+  }
 
-.layout__main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  overflow: hidden;
-}
+  .layout__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
 
-.layout__content {
-  flex: 1;
-  overflow: auto;
-  padding: 24px 28px;
-  position: relative;
-  z-index: 1;
-}
+  .layout__content {
+    flex: 1;
+    overflow: auto;
+    padding: 24px 28px;
+    position: relative;
+    z-index: 1;
+  }
 
-.layout__page {
-  min-height: 100%;
-  background: var(--color-bg-content);
-  border-radius: var(--color-border-radius-card);
-  box-shadow: var(--color-shadow-light);
-  border: 1px solid var(--color-border-light);
-  padding: 24px;
-}
+  .layout__page {
+    min-height: 100%;
+    background: var(--color-bg-content);
+    border-radius: var(--color-border-radius-card);
+    box-shadow: var(--color-shadow-light);
+    border: 1px solid var(--color-border-light);
+    padding: 24px;
+  }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.15s ease-out;
-}
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 0.15s ease-out;
+  }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
+  }
 </style>

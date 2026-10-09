@@ -31,9 +31,24 @@ const createWrapper = (routePath = '/login') => {
     history: createWebHistory(),
     routes: [
       { path: '/login', name: 'Login', component: LoginView, meta: { public: true } },
-      { path: '/dashboard', name: 'Dashboard', component: { template: '<div>Dashboard</div>' }, meta: { requiresAuth: true } },
-      { path: '/403', name: 'Forbidden', component: { template: '<div>403</div>' }, meta: { public: true } },
-      { path: '/user', name: 'User', component: { template: '<div>User</div>' }, meta: { requiresAuth: true } },
+      {
+        path: '/dashboard',
+        name: 'Dashboard',
+        component: { template: '<div>Dashboard</div>' },
+        meta: { requiresAuth: true },
+      },
+      {
+        path: '/403',
+        name: 'Forbidden',
+        component: { template: '<div>403</div>' },
+        meta: { public: true },
+      },
+      {
+        path: '/user',
+        name: 'User',
+        component: { template: '<div>User</div>' },
+        meta: { requiresAuth: true },
+      },
     ],
   });
   router.push(routePath);
@@ -71,7 +86,9 @@ describe('LoginView', () => {
           status: 1,
           createTime: '2024-01-01T00:00:00Z',
         },
-        roles: [{ id: 1, code: 'admin', name: 'Admin', status: 1, createTime: '2024-01-01T00:00:00Z' }],
+        roles: [
+          { id: 1, code: 'admin', name: 'Admin', status: 1, createTime: '2024-01-01T00:00:00Z' },
+        ],
         permissions: ['*'],
       },
     });
@@ -101,13 +118,17 @@ describe('LoginView', () => {
     it('has correct validation rules defined', () => {
       const wrapper = createWrapper();
       const vm = wrapper.vm as any;
-      
+
       expect(vm.rules.username).toBeDefined();
-      expect(vm.rules.username.some((r: any) => r.required && r.message === '请输入用户')).toBe(true);
+      expect(vm.rules.username.some((r: any) => r.required && r.message === '请输入用户')).toBe(
+        true
+      );
       expect(vm.rules.username.some((r: any) => r.min === 3 && r.max === 20)).toBe(true);
-      
+
       expect(vm.rules.password).toBeDefined();
-      expect(vm.rules.password.some((r: any) => r.required && r.message === '请输入密码')).toBe(true);
+      expect(vm.rules.password.some((r: any) => r.required && r.message === '请输入密码')).toBe(
+        true
+      );
       expect(vm.rules.password.some((r: any) => r.min === 6 && r.max === 30)).toBe(true);
     });
 
@@ -126,9 +147,9 @@ describe('LoginView', () => {
     it('calls authApi.login with correct credentials', async () => {
       const wrapper = createWrapper();
       const vm = wrapper.vm as any;
-      
+
       mockAuthApi.login.mockResolvedValue({
-        message: "success",
+        message: 'success',
         timestamp: Date.now(),
         code: 0,
         data: {
@@ -167,7 +188,7 @@ describe('LoginView', () => {
       const vm = wrapper.vm as any;
 
       mockAuthApi.login.mockResolvedValue({
-        message: "success",
+        message: 'success',
         timestamp: Date.now(),
         code: 0,
         data: {
@@ -205,7 +226,7 @@ describe('LoginView', () => {
       const authStore = useAuthStore();
 
       mockAuthApi.login.mockResolvedValue({
-        message: "success",
+        message: 'success',
         timestamp: Date.now(),
         code: 0,
         data: {
@@ -244,9 +265,9 @@ describe('LoginView', () => {
     it('sets loading state during login process', async () => {
       const wrapper = createWrapper();
       const vm = wrapper.vm as any;
-      
+
       mockAuthApi.login.mockResolvedValue({
-        message: "success",
+        message: 'success',
         timestamp: Date.now(),
         code: 0,
         data: {
@@ -272,9 +293,9 @@ describe('LoginView', () => {
       vm.loginForm.password = 'admin123456';
 
       expect(vm.loading).toBe(false);
-      
+
       await vm.handleLogin();
-      
+
       expect(vm.loading).toBe(false);
     });
 
@@ -283,13 +304,23 @@ describe('LoginView', () => {
         history: createWebHistory(),
         routes: [
           { path: '/login', name: 'Login', component: LoginView, meta: { public: true } },
-          { path: '/dashboard', name: 'Dashboard', component: { template: '<div>Dashboard</div>' }, meta: { requiresAuth: true } },
-          { path: '/user', name: 'User', component: { template: '<div>User</div>' }, meta: { requiresAuth: true } },
+          {
+            path: '/dashboard',
+            name: 'Dashboard',
+            component: { template: '<div>Dashboard</div>' },
+            meta: { requiresAuth: true },
+          },
+          {
+            path: '/user',
+            name: 'User',
+            component: { template: '<div>User</div>' },
+            meta: { requiresAuth: true },
+          },
         ],
       });
       router.push('/login?redirect=/user');
       await router.isReady();
-      
+
       const wrapper = mount(LoginView, {
         global: {
           plugins: [router],
@@ -300,7 +331,7 @@ describe('LoginView', () => {
         },
       });
       const vm = wrapper.vm as any;
-      
+
       const redirect = vm.$route.query.redirect || '/dashboard';
       expect(redirect).toBe('/user');
     });
@@ -308,7 +339,7 @@ describe('LoginView', () => {
     it('defaults to dashboard when no redirect param', () => {
       const wrapper = createWrapper();
       const vm = wrapper.vm as any;
-      
+
       const redirect = vm.$route.query.redirect || '/dashboard';
       expect(redirect).toBe('/dashboard');
     });
@@ -318,7 +349,7 @@ describe('LoginView', () => {
     it('shows error message on 401 unauthorized', async () => {
       const wrapper = createWrapper();
       const vm = wrapper.vm as any;
-      
+
       mockAuthApi.login.mockRejectedValue(new Error('用户名或密码错误'));
 
       vm.formRef = {
@@ -337,7 +368,7 @@ describe('LoginView', () => {
     it('shows error message on 403 account disabled', async () => {
       const wrapper = createWrapper();
       const vm = wrapper.vm as any;
-      
+
       mockAuthApi.login.mockRejectedValue(new Error('账号已停用'));
 
       vm.formRef = {
@@ -355,7 +386,7 @@ describe('LoginView', () => {
     it('resets loading state after failure', async () => {
       const wrapper = createWrapper();
       const vm = wrapper.vm as any;
-      
+
       mockAuthApi.login.mockRejectedValue(new Error('用户名或密码错误'));
 
       vm.formRef = {
@@ -372,7 +403,7 @@ describe('LoginView', () => {
     it('stops login if validation fails', async () => {
       const wrapper = createWrapper();
       const vm = wrapper.vm as any;
-      
+
       vm.formRef = {
         validate: vi.fn().mockRejectedValue(new Error('Validation failed')),
       };
@@ -455,7 +486,15 @@ describe('LoginView', () => {
           token: 'mock-jwt-token',
           tokenType: 'Bearer',
           expiresIn: 3600,
-          userInfo: { id: 1, username: 'admin', nickname: '管理员', email: 'admin@example.com', phone: '13800138000', status: 1, createTime: '2024-01-01T00:00:00Z' },
+          userInfo: {
+            id: 1,
+            username: 'admin',
+            nickname: '管理员',
+            email: 'admin@example.com',
+            phone: '13800138000',
+            status: 1,
+            createTime: '2024-01-01T00:00:00Z',
+          },
         },
       });
       await vm.handleLogin();
@@ -473,14 +512,14 @@ describe('LoginView', () => {
     it('triggers login API call on Enter key', async () => {
       const wrapper = createWrapper();
       const vm = wrapper.vm as any;
-      
+
       vm.formRef = {
         validate: vi.fn().mockResolvedValue(undefined),
       };
       vm.loginForm.username = 'admin';
       vm.loginForm.password = 'admin123456';
-      
-mockAuthApi.login.mockResolvedValue({
+
+      mockAuthApi.login.mockResolvedValue({
         code: 0,
         message: 'success',
         timestamp: Date.now(),
@@ -501,10 +540,10 @@ mockAuthApi.login.mockResolvedValue({
       });
 
       vm.handleKeyUp({ key: 'Enter' } as KeyboardEvent);
-      
+
       // Wait for async handleLogin to complete
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       expect(mockAuthApi.login).toHaveBeenCalledWith({
         username: 'admin',
         password: 'admin123456',
@@ -515,123 +554,123 @@ mockAuthApi.login.mockResolvedValue({
     it('does not trigger login on non-Enter keys', async () => {
       const wrapper = createWrapper();
       const vm = wrapper.vm as any;
-      
+
       vm.handleKeyUp({ key: 'Tab' } as KeyboardEvent);
       vm.handleKeyUp({ key: 'Escape' } as KeyboardEvent);
-      
+
       // Wait a bit to ensure no async calls
-await new Promise(resolve => setTimeout(resolve, 10));
-       
-       expect(mockAuthApi.login).not.toHaveBeenCalled();
-     });
-   });
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-   describe('Login Redirect Fix (web/026)', () => {
-     it('redirects to dashboard on successful login with correct credentials', async () => {
-       const wrapper = createWrapper();
-       const vm = wrapper.vm as any;
-
-       mockAuthApi.login.mockResolvedValue({
-         code: 0,
-         message: 'success',
-         timestamp: Date.now(),
-         data: {
-           token: 'mock-jwt-token',
-           tokenType: 'Bearer',
-           expiresIn: 3600,
-           userInfo: {
-             id: 1,
-             username: 'admin',
-             nickname: '管理员',
-             email: 'admin@example.com',
-             phone: '13800138000',
-             status: 1,
-             createTime: '2024-01-01T00:00:00Z',
-           },
-         },
-       });
-
-       vm.formRef = {
-         validate: vi.fn().mockResolvedValue(undefined),
-       };
-       vm.loginForm.username = 'admin';
-       vm.loginForm.password = 'admin123456';
-
-       await vm.handleLogin();
-
-       expect(mockAuthApi.login).toHaveBeenCalled();
-       expect(mockAuthApi.me).toHaveBeenCalled();
-       expect(mockElMessage.success).toHaveBeenCalledWith('登录成功');
-     });
-
-     it('shows error message when me() API fails with 404', async () => {
-       const wrapper = createWrapper();
-       const vm = wrapper.vm as any;
-
-mockAuthApi.login.mockResolvedValue({
-          code: 0,
-          message: 'success',
-          timestamp: Date.now(),
-          data: {
-            token: 'mock-token',
-            tokenType: 'Bearer',
-            expiresIn: 3600,
-            userInfo: {
-              id: 1,
-              username: 'admin',
-              nickname: '管理员',
-              email: 'admin@example.com',
-              phone: '13800138000',
-              status: 1,
-              createTime: '2024-01-01T00:00:00Z',
-            },
-          },
-        });
-
-       mockAuthApi.me.mockRejectedValue(new Error('404 Not Found'));
-
-       vm.formRef = { validate: vi.fn().mockResolvedValue(undefined) };
-       vm.loginForm.username = 'admin';
-       vm.loginForm.password = 'admin123456';
-
-       await vm.handleLogin();
-
-       expect(mockElMessage.error).toHaveBeenCalledWith(expect.stringContaining('接口地址错误'));
-       expect(vm.errorMessage).toContain('接口地址错误');
-     });
-
-     it('shows error message on login failure (wrong password)', async () => {
-       const wrapper = createWrapper();
-       const vm = wrapper.vm as any;
-
-       mockAuthApi.login.mockRejectedValue(new Error('用户名或密码错误'));
-
-       vm.formRef = { validate: vi.fn().mockResolvedValue(undefined) };
-       vm.loginForm.username = 'admin';
-       vm.loginForm.password = 'wrongpassword';
-
-       await vm.handleLogin();
-
-       expect(mockElMessage.error).toHaveBeenCalledWith('用户名或密码错误');
-       expect(vm.errorMessage).toBe('用户名或密码错误');
-     });
-
-it('shows error message on account disabled', async () => {
-        const wrapper = createWrapper();
-        const vm = wrapper.vm as any;
-
-        mockAuthApi.login.mockRejectedValue(new Error('账号已停用'));
-
-        vm.formRef = { validate: vi.fn().mockResolvedValue(undefined) };
-        vm.loginForm.username = 'disabled';
-        vm.loginForm.password = 'password123';
-
-        await vm.handleLogin();
-
-        expect(mockElMessage.error).toHaveBeenCalledWith('账号已停用');
-        expect(vm.errorMessage).toBe('账号已停用');
-      });
+      expect(mockAuthApi.login).not.toHaveBeenCalled();
     });
+  });
+
+  describe('Login Redirect Fix (web/026)', () => {
+    it('redirects to dashboard on successful login with correct credentials', async () => {
+      const wrapper = createWrapper();
+      const vm = wrapper.vm as any;
+
+      mockAuthApi.login.mockResolvedValue({
+        code: 0,
+        message: 'success',
+        timestamp: Date.now(),
+        data: {
+          token: 'mock-jwt-token',
+          tokenType: 'Bearer',
+          expiresIn: 3600,
+          userInfo: {
+            id: 1,
+            username: 'admin',
+            nickname: '管理员',
+            email: 'admin@example.com',
+            phone: '13800138000',
+            status: 1,
+            createTime: '2024-01-01T00:00:00Z',
+          },
+        },
+      });
+
+      vm.formRef = {
+        validate: vi.fn().mockResolvedValue(undefined),
+      };
+      vm.loginForm.username = 'admin';
+      vm.loginForm.password = 'admin123456';
+
+      await vm.handleLogin();
+
+      expect(mockAuthApi.login).toHaveBeenCalled();
+      expect(mockAuthApi.me).toHaveBeenCalled();
+      expect(mockElMessage.success).toHaveBeenCalledWith('登录成功');
+    });
+
+    it('shows error message when me() API fails with 404', async () => {
+      const wrapper = createWrapper();
+      const vm = wrapper.vm as any;
+
+      mockAuthApi.login.mockResolvedValue({
+        code: 0,
+        message: 'success',
+        timestamp: Date.now(),
+        data: {
+          token: 'mock-token',
+          tokenType: 'Bearer',
+          expiresIn: 3600,
+          userInfo: {
+            id: 1,
+            username: 'admin',
+            nickname: '管理员',
+            email: 'admin@example.com',
+            phone: '13800138000',
+            status: 1,
+            createTime: '2024-01-01T00:00:00Z',
+          },
+        },
+      });
+
+      mockAuthApi.me.mockRejectedValue(new Error('404 Not Found'));
+
+      vm.formRef = { validate: vi.fn().mockResolvedValue(undefined) };
+      vm.loginForm.username = 'admin';
+      vm.loginForm.password = 'admin123456';
+
+      await vm.handleLogin();
+
+      expect(mockElMessage.error).toHaveBeenCalledWith(expect.stringContaining('接口地址错误'));
+      expect(vm.errorMessage).toContain('接口地址错误');
+    });
+
+    it('shows error message on login failure (wrong password)', async () => {
+      const wrapper = createWrapper();
+      const vm = wrapper.vm as any;
+
+      mockAuthApi.login.mockRejectedValue(new Error('用户名或密码错误'));
+
+      vm.formRef = { validate: vi.fn().mockResolvedValue(undefined) };
+      vm.loginForm.username = 'admin';
+      vm.loginForm.password = 'wrongpassword';
+
+      await vm.handleLogin();
+
+      expect(mockElMessage.error).toHaveBeenCalledWith('用户名或密码错误');
+      expect(vm.errorMessage).toBe('用户名或密码错误');
+    });
+
+    it('shows error message on account disabled', async () => {
+      const wrapper = createWrapper();
+      const vm = wrapper.vm as any;
+
+      mockAuthApi.login.mockRejectedValue(new Error('账号已停用'));
+
+      vm.formRef = { validate: vi.fn().mockResolvedValue(undefined) };
+      vm.loginForm.username = 'disabled';
+      vm.loginForm.password = 'password123';
+
+      await vm.handleLogin();
+
+      expect(mockElMessage.error).toHaveBeenCalledWith('账号已停用');
+      expect(vm.errorMessage).toBe('账号已停用');
+    });
+  });
 
   describe('Login Redirect (web/028)', () => {
     it('redirects to dashboard after successful login', async () => {
@@ -639,7 +678,12 @@ it('shows error message on account disabled', async () => {
         history: createWebHistory(),
         routes: [
           { path: '/login', name: 'Login', component: LoginView, meta: { public: true } },
-          { path: '/dashboard', name: 'Dashboard', component: { template: '<div>Dashboard</div>' }, meta: { requiresAuth: true } },
+          {
+            path: '/dashboard',
+            name: 'Dashboard',
+            component: { template: '<div>Dashboard</div>' },
+            meta: { requiresAuth: true },
+          },
         ],
       });
       router.push('/login?redirect=/dashboard');
@@ -651,8 +695,23 @@ it('shows error message on account disabled', async () => {
       const vm = wrapper.vm as any;
 
       mockAuthApi.login.mockResolvedValue({
-        code: 0, message: 'success', timestamp: Date.now(),
-        data: { token: 'mock-jwt-token', tokenType: 'Bearer', expiresIn: 3600, userInfo: { id: 1, username: 'admin', nickname: '管理员', email: 'admin@example.com', phone: '13800138000', status: 1, createTime: '2024-01-01T00:00:00Z' } },
+        code: 0,
+        message: 'success',
+        timestamp: Date.now(),
+        data: {
+          token: 'mock-jwt-token',
+          tokenType: 'Bearer',
+          expiresIn: 3600,
+          userInfo: {
+            id: 1,
+            username: 'admin',
+            nickname: '管理员',
+            email: 'admin@example.com',
+            phone: '13800138000',
+            status: 1,
+            createTime: '2024-01-01T00:00:00Z',
+          },
+        },
       });
 
       vm.formRef = { validate: vi.fn().mockResolvedValue(undefined) };
@@ -665,4 +724,4 @@ it('shows error message on account disabled', async () => {
       expect(router.currentRoute.value.name).toBe('Dashboard');
     });
   });
-  });
+});

@@ -36,13 +36,13 @@
     clear: [];
   }>();
 
-  const showPassword = ref(false);
+  const passwordVisible = ref(false);
   const isFocused = ref(false);
   const inputRef = ref<HTMLInputElement>();
 
   const inputType = computed(() => {
     if (props.type === 'password') {
-      return showPassword.value ? 'text' : 'password';
+      return passwordVisible.value ? 'text' : 'password';
     }
     return props.type;
   });
@@ -84,7 +84,7 @@
   };
 
   const togglePassword = () => {
-    showPassword.value = !showPassword.value;
+    passwordVisible.value = !passwordVisible.value;
     inputRef.value?.focus();
   };
 </script>
@@ -138,7 +138,7 @@
         @click="togglePassword"
       >
         <svg
-          v-if="showPassword"
+          v-if="passwordVisible"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"

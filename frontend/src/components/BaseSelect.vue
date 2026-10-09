@@ -48,7 +48,9 @@
 
   const selectedOptions = computed(() => {
     if (props.multiple && Array.isArray(props.modelValue)) {
-      return props.options.filter((opt) => (props.modelValue as (string | number)[]).includes(opt.value));
+      return props.options.filter((opt) =>
+        (props.modelValue as (string | number)[]).includes(opt.value)
+      );
     }
     if (!props.multiple && props.modelValue !== null) {
       return props.options.find((opt) => opt.value === props.modelValue);
@@ -88,7 +90,9 @@
     if (option.disabled) return;
 
     if (props.multiple) {
-      const current = (Array.isArray(props.modelValue) ? [...props.modelValue] : []) as (string | number)[];
+      const current = (Array.isArray(props.modelValue) ? [...props.modelValue] : []) as (
+        string | number
+      )[];
       const index = current.indexOf(option.value);
       if (index > -1) {
         current.splice(index, 1);

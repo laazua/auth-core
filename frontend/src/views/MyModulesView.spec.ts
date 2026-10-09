@@ -42,8 +42,22 @@ const zeroPermissionStore = {
 };
 
 const sampleModules = [
-  { id: 1, name: '新闻服务', code: 'news', baseUrl: 'http://news', description: '新闻聚合服务', status: 1 },
-  { id: 2, name: '报表服务', code: 'report', baseUrl: 'http://report', description: '报表分析平台', status: 1 },
+  {
+    id: 1,
+    name: '新闻服务',
+    code: 'news',
+    baseUrl: 'http://news',
+    description: '新闻聚合服务',
+    status: 1,
+  },
+  {
+    id: 2,
+    name: '报表服务',
+    code: 'report',
+    baseUrl: 'http://report',
+    description: '报表分析平台',
+    status: 1,
+  },
 ];
 
 const mountView = async (): Promise<VueWrapper> => {
@@ -87,7 +101,9 @@ describe('MyModulesView — 我的模块菜单页（web/038d）', () => {
       const matched = router.resolve('/mymodules').matched;
       expect(matched.length, '/mymodules 应为「布局父 + 页面子」两层').toBe(2);
       expect(matched[1].name).toBe('MyModules');
-      const parent = (await (matched[0].components!.default as () => Promise<{ default: unknown }>)()).default;
+      const parent = (
+        await (matched[0].components!.default as () => Promise<{ default: unknown }>)()
+      ).default;
       const expectedLayout = (await import('@/layouts/DefaultLayout.vue')).default;
       expect(parent, '父记录组件必须是 DefaultLayout').toBe(expectedLayout);
     });

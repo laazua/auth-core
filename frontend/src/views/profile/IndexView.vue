@@ -12,7 +12,7 @@
 
   import type { UserInfo } from '@/types/auth';
 
-const userInfo = ref<UserInfo | null>(null);
+  const userInfo = ref<UserInfo | null>(null);
 
   const breadcrumbRoutes = [
     { path: '/dashboard', meta: { title: '首页', icon: 'Monitor' } },

@@ -12,16 +12,27 @@ vi.mock('@/components/BaseButton.vue', () => ({
     name: 'BaseButton',
     props: ['variant', 'size', 'loading', 'disabled'],
     emits: ['click'],
-    template: '<button class="base-button-mock" @click="$emit(\'click\', $event)" :disabled="disabled || loading"><slot /></button>',
+    template:
+      '<button class="base-button-mock" @click="$emit(\'click\', $event)" :disabled="disabled || loading"><slot /></button>',
   },
 }));
 
 vi.mock('@/components/BaseInput.vue', () => ({
   default: {
     name: 'BaseInput',
-    props: ['modelValue', 'placeholder', 'type', 'clearable', 'showPassword', 'disabled', 'readonly', 'maxlength'],
+    props: [
+      'modelValue',
+      'placeholder',
+      'type',
+      'clearable',
+      'showPassword',
+      'disabled',
+      'readonly',
+      'maxlength',
+    ],
     emits: ['update:modelValue', 'blur', 'focus', 'change', 'clear'],
-    template: '<input class="base-input-mock" :value="modelValue" :placeholder="placeholder" :type="type" :disabled="disabled" :readonly="readonly" :maxlength="maxlength" @input="$emit(\'update:modelValue\', $event.target.value)" @blur="$emit(\'blur\', $event)" @focus="$emit(\'focus\', $event)" @change="$emit(\'change\', $event.target.value)" />',
+    template:
+      '<input class="base-input-mock" :value="modelValue" :placeholder="placeholder" :type="type" :disabled="disabled" :readonly="readonly" :maxlength="maxlength" @input="$emit(\'update:modelValue\', $event.target.value)" @blur="$emit(\'blur\', $event)" @focus="$emit(\'focus\', $event)" @change="$emit(\'change\', $event.target.value)" />',
   },
 }));
 
@@ -30,7 +41,8 @@ vi.mock('@/components/BaseSelect.vue', () => ({
     name: 'BaseSelect',
     props: ['modelValue', 'options', 'placeholder', 'disabled', 'clearable', 'filterable'],
     emits: ['update:modelValue', 'change', 'blur', 'focus', 'clear'],
-    template: '<select class="base-select-mock" :value="modelValue" :disabled="disabled" @input="$emit(\'update:modelValue\', $event.target.value)" @change="$emit(\'change\', $event.target.value)"><option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option></select>',
+    template:
+      '<select class="base-select-mock" :value="modelValue" :disabled="disabled" @input="$emit(\'update:modelValue\', $event.target.value)" @change="$emit(\'change\', $event.target.value)"><option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option></select>',
   },
 }));
 
@@ -38,7 +50,15 @@ vi.mock('@/components/BaseTable.vue', () => ({
   default: {
     name: 'BaseTable',
     props: ['data', 'columns', 'loading', 'rowKey', 'emptyText'],
-    emits: ['sort-change', 'selection-change', 'row-click', 'row-dblclick', 'header-click', 'current-change', 'size-change'],
+    emits: [
+      'sort-change',
+      'selection-change',
+      'row-click',
+      'row-dblclick',
+      'header-click',
+      'current-change',
+      'size-change',
+    ],
     template: `
       <div class="base-table-mock">
         <table>
@@ -71,7 +91,8 @@ vi.mock('@/components/BaseCard.vue', () => ({
   default: {
     name: 'BaseCard',
     props: ['title', 'subtitle', 'bordered', 'shadow', 'padding'],
-    template: '<div class="base-card-mock"><div v-if="title || $slots.header" class="base-card-mock__header"><slot name="header"><div><h3 v-if="title">{{ title }}</h3><p v-if="subtitle">{{ subtitle }}</p></div></slot></div><div class="base-card-mock__body"><slot /></div><div v-if="$slots.footer" class="base-card-mock__footer"><slot name="footer" /></div></div>',
+    template:
+      '<div class="base-card-mock"><div v-if="title || $slots.header" class="base-card-mock__header"><slot name="header"><div><h3 v-if="title">{{ title }}</h3><p v-if="subtitle">{{ subtitle }}</p></div></slot></div><div class="base-card-mock__body"><slot /></div><div v-if="$slots.footer" class="base-card-mock__footer"><slot name="footer" /></div></div>',
   },
 }));
 
@@ -80,7 +101,8 @@ vi.mock('@/views/roles/RoleFormDrawer.vue', () => ({
     name: 'RoleFormDrawer',
     props: ['visible', 'mode', 'initialData'],
     emits: ['submit', 'close'],
-    template: '<div class="role-form-drawer-mock" v-if="visible" data-test="role-form-drawer"><slot /></div>',
+    template:
+      '<div class="role-form-drawer-mock" v-if="visible" data-test="role-form-drawer"><slot /></div>',
   },
 }));
 
@@ -89,7 +111,8 @@ vi.mock('@/views/roles/PermissionAssignDrawer.vue', () => ({
     name: 'PermissionAssignDrawer',
     props: ['visible', 'roleId'],
     emits: ['submit', 'close'],
-    template: '<div class="permission-assign-drawer-mock" v-if="visible" data-test="permission-assign-drawer"><slot /></div>',
+    template:
+      '<div class="permission-assign-drawer-mock" v-if="visible" data-test="permission-assign-drawer"><slot /></div>',
   },
 }));
 
@@ -142,8 +165,26 @@ const mockRoles = [
     status: 1,
     createTime: '2024-01-01T00:00:00Z',
     permissions: [
-      { id: 1, code: 'user:view', name: '用户查看', type: 2, parentId: 0, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z' },
-      { id: 2, code: 'user:create', name: '用户新增', type: 2, parentId: 0, sort: 2, status: 1, createTime: '2024-01-01T00:00:00Z' },
+      {
+        id: 1,
+        code: 'user:view',
+        name: '用户查看',
+        type: 2,
+        parentId: 0,
+        sort: 1,
+        status: 1,
+        createTime: '2024-01-01T00:00:00Z',
+      },
+      {
+        id: 2,
+        code: 'user:create',
+        name: '用户新增',
+        type: 2,
+        parentId: 0,
+        sort: 2,
+        status: 1,
+        createTime: '2024-01-01T00:00:00Z',
+      },
     ],
   },
   {
@@ -154,7 +195,16 @@ const mockRoles = [
     status: 1,
     createTime: '2024-01-02T00:00:00Z',
     permissions: [
-      { id: 1, code: 'user:view', name: '用户查看', type: 2, parentId: 0, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z' },
+      {
+        id: 1,
+        code: 'user:view',
+        name: '用户查看',
+        type: 2,
+        parentId: 0,
+        sort: 1,
+        status: 1,
+        createTime: '2024-01-01T00:00:00Z',
+      },
     ],
   },
   {
@@ -195,10 +245,62 @@ const mockPermissionTree = [
         moduleName: '系统管理',
         description: '用户管理',
         children: [
-          { id: 1, code: 'user:view', name: '用户查看', type: 2, parentId: 11, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '用户管理', description: '用户查看', children: [] },
-          { id: 2, code: 'user:create', name: '用户新增', type: 2, parentId: 11, sort: 2, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '用户管理', description: '用户新增', children: [] },
-          { id: 3, code: 'user:update', name: '用户编辑', type: 2, parentId: 11, sort: 3, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '用户管理', description: '用户编辑', children: [] },
-          { id: 4, code: 'user:delete', name: '用户删除', type: 2, parentId: 11, sort: 4, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '用户管理', description: '用户删除', children: [] },
+          {
+            id: 1,
+            code: 'user:view',
+            name: '用户查看',
+            type: 2,
+            parentId: 11,
+            sort: 1,
+            status: 1,
+            createTime: '2024-01-01T00:00:00Z',
+            moduleId: 1,
+            moduleName: '用户管理',
+            description: '用户查看',
+            children: [],
+          },
+          {
+            id: 2,
+            code: 'user:create',
+            name: '用户新增',
+            type: 2,
+            parentId: 11,
+            sort: 2,
+            status: 1,
+            createTime: '2024-01-01T00:00:00Z',
+            moduleId: 1,
+            moduleName: '用户管理',
+            description: '用户新增',
+            children: [],
+          },
+          {
+            id: 3,
+            code: 'user:update',
+            name: '用户编辑',
+            type: 2,
+            parentId: 11,
+            sort: 3,
+            status: 1,
+            createTime: '2024-01-01T00:00:00Z',
+            moduleId: 1,
+            moduleName: '用户管理',
+            description: '用户编辑',
+            children: [],
+          },
+          {
+            id: 4,
+            code: 'user:delete',
+            name: '用户删除',
+            type: 2,
+            parentId: 11,
+            sort: 4,
+            status: 1,
+            createTime: '2024-01-01T00:00:00Z',
+            moduleId: 1,
+            moduleName: '用户管理',
+            description: '用户删除',
+            children: [],
+          },
         ],
       },
       {
@@ -214,11 +316,76 @@ const mockPermissionTree = [
         moduleName: '系统管理',
         description: '角色管理',
         children: [
-          { id: 5, code: 'role:view', name: '角色查看', type: 2, parentId: 12, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '角色管理', description: '角色查看', children: [] },
-          { id: 6, code: 'role:create', name: '角色新增', type: 2, parentId: 12, sort: 2, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '角色管理', description: '角色新增', children: [] },
-          { id: 7, code: 'role:update', name: '角色编辑', type: 2, parentId: 12, sort: 3, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '角色管理', description: '角色编辑', children: [] },
-          { id: 8, code: 'role:delete', name: '角色删除', type: 2, parentId: 12, sort: 4, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '角色管理', description: '角色删除', children: [] },
-          { id: 9, code: 'role:assign-permission', name: '权限分配', type: 2, parentId: 12, sort: 5, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 1, moduleName: '角色管理', description: '权限分配', children: [] },
+          {
+            id: 5,
+            code: 'role:view',
+            name: '角色查看',
+            type: 2,
+            parentId: 12,
+            sort: 1,
+            status: 1,
+            createTime: '2024-01-01T00:00:00Z',
+            moduleId: 1,
+            moduleName: '角色管理',
+            description: '角色查看',
+            children: [],
+          },
+          {
+            id: 6,
+            code: 'role:create',
+            name: '角色新增',
+            type: 2,
+            parentId: 12,
+            sort: 2,
+            status: 1,
+            createTime: '2024-01-01T00:00:00Z',
+            moduleId: 1,
+            moduleName: '角色管理',
+            description: '角色新增',
+            children: [],
+          },
+          {
+            id: 7,
+            code: 'role:update',
+            name: '角色编辑',
+            type: 2,
+            parentId: 12,
+            sort: 3,
+            status: 1,
+            createTime: '2024-01-01T00:00:00Z',
+            moduleId: 1,
+            moduleName: '角色管理',
+            description: '角色编辑',
+            children: [],
+          },
+          {
+            id: 8,
+            code: 'role:delete',
+            name: '角色删除',
+            type: 2,
+            parentId: 12,
+            sort: 4,
+            status: 1,
+            createTime: '2024-01-01T00:00:00Z',
+            moduleId: 1,
+            moduleName: '角色管理',
+            description: '角色删除',
+            children: [],
+          },
+          {
+            id: 9,
+            code: 'role:assign-permission',
+            name: '权限分配',
+            type: 2,
+            parentId: 12,
+            sort: 5,
+            status: 1,
+            createTime: '2024-01-01T00:00:00Z',
+            moduleId: 1,
+            moduleName: '角色管理',
+            description: '权限分配',
+            children: [],
+          },
         ],
       },
     ],
@@ -249,10 +416,62 @@ const mockPermissionTree = [
         moduleName: '内容管理',
         description: '文章管理',
         children: [
-          { id: 10, code: 'article:read', name: '文章查看', type: 2, parentId: 21, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 2, moduleName: '文章管理', description: '文章查看', children: [] },
-          { id: 11, code: 'article:create', name: '文章新增', type: 2, parentId: 21, sort: 2, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 2, moduleName: '文章管理', description: '文章新增', children: [] },
-          { id: 12, code: 'article:update', name: '文章编辑', type: 2, parentId: 21, sort: 3, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 2, moduleName: '文章管理', description: '文章编辑', children: [] },
-          { id: 13, code: 'article:delete', name: '文章删除', type: 2, parentId: 21, sort: 4, status: 1, createTime: '2024-01-01T00:00:00Z', moduleId: 2, moduleName: '文章管理', description: '文章删除', children: [] },
+          {
+            id: 10,
+            code: 'article:read',
+            name: '文章查看',
+            type: 2,
+            parentId: 21,
+            sort: 1,
+            status: 1,
+            createTime: '2024-01-01T00:00:00Z',
+            moduleId: 2,
+            moduleName: '文章管理',
+            description: '文章查看',
+            children: [],
+          },
+          {
+            id: 11,
+            code: 'article:create',
+            name: '文章新增',
+            type: 2,
+            parentId: 21,
+            sort: 2,
+            status: 1,
+            createTime: '2024-01-01T00:00:00Z',
+            moduleId: 2,
+            moduleName: '文章管理',
+            description: '文章新增',
+            children: [],
+          },
+          {
+            id: 12,
+            code: 'article:update',
+            name: '文章编辑',
+            type: 2,
+            parentId: 21,
+            sort: 3,
+            status: 1,
+            createTime: '2024-01-01T00:00:00Z',
+            moduleId: 2,
+            moduleName: '文章管理',
+            description: '文章编辑',
+            children: [],
+          },
+          {
+            id: 13,
+            code: 'article:delete',
+            name: '文章删除',
+            type: 2,
+            parentId: 21,
+            sort: 4,
+            status: 1,
+            createTime: '2024-01-01T00:00:00Z',
+            moduleId: 2,
+            moduleName: '文章管理',
+            description: '文章删除',
+            children: [],
+          },
         ],
       },
     ],
@@ -263,15 +482,38 @@ describe('IndexView - 角色管理页', () => {
   let authStore: ReturnType<typeof useAuthStore>;
   let pinia: ReturnType<typeof createPinia>;
 
-  const createWrapper = (permissions: string[] = ['role:view', 'role:create', 'role:update', 'role:delete', 'role:assign-permission']) => {
+  const createWrapper = (
+    permissions: string[] = [
+      'role:view',
+      'role:create',
+      'role:update',
+      'role:delete',
+      'role:assign-permission',
+    ]
+  ) => {
     authStore.setPermissions(permissions);
 
     const router = createRouter({
       history: createWebHistory(),
       routes: [
-        { path: '/', name: 'Home', component: { template: '<div>Home</div>' }, meta: { requiresAuth: true } },
-        { path: '/roles', name: 'Roles', component: IndexView, meta: { requiresAuth: true, permissions: ['role:view'] } },
-        { path: '/login', name: 'Login', component: { template: '<div>Login</div>' }, meta: { public: true } },
+        {
+          path: '/',
+          name: 'Home',
+          component: { template: '<div>Home</div>' },
+          meta: { requiresAuth: true },
+        },
+        {
+          path: '/roles',
+          name: 'Roles',
+          component: IndexView,
+          meta: { requiresAuth: true, permissions: ['role:view'] },
+        },
+        {
+          path: '/login',
+          name: 'Login',
+          component: { template: '<div>Login</div>' },
+          meta: { public: true },
+        },
       ],
     });
     router.push('/roles');
@@ -291,7 +533,20 @@ describe('IndexView - 角色管理页', () => {
     pinia = createPinia();
     setActivePinia(pinia);
     authStore = useAuthStore();
-    authStore.login('mock-token', { id: 1, username: 'admin', nickname: '管理员', email: '', phone: '', status: 1, createTime: '' }, ['admin'], ['role:view', 'role:create', 'role:update', 'role:delete', 'role:assign-permission', '*']);
+    authStore.login(
+      'mock-token',
+      {
+        id: 1,
+        username: 'admin',
+        nickname: '管理员',
+        email: '',
+        phone: '',
+        status: 1,
+        createTime: '',
+      },
+      ['admin'],
+      ['role:view', 'role:create', 'role:update', 'role:delete', 'role:assign-permission', '*']
+    );
 
     mockRoleApi.list.mockResolvedValue({
       code: 0,
@@ -339,7 +594,7 @@ describe('IndexView - 角色管理页', () => {
       expect(table.exists()).toBe(true);
       expect(table.props('columns')).toBeDefined();
       const columns = table.props('columns') as any[];
-      const columnProps = columns.map(c => c.prop);
+      const columnProps = columns.map((c) => c.prop);
       expect(columnProps).toContain('name');
       expect(columnProps).toContain('code');
       expect(columnProps).toContain('status');
@@ -364,12 +619,14 @@ describe('IndexView - 角色管理页', () => {
       await searchInput.setValue('admin');
       await wrapper.vm.$nextTick();
 
-      expect(mockRoleApi.list).toHaveBeenCalledWith(expect.objectContaining({
-        page: 1,
-        size: 10,
-        name: 'admin',
-        code: 'admin',
-      }));
+      expect(mockRoleApi.list).toHaveBeenCalledWith(
+        expect.objectContaining({
+          page: 1,
+          size: 10,
+          name: 'admin',
+          code: 'admin',
+        })
+      );
     });
 
     it('filters roles by status', async () => {
@@ -380,11 +637,13 @@ describe('IndexView - 角色管理页', () => {
       await statusSelect.setValue('1');
       await wrapper.vm.$nextTick();
 
-      expect(mockRoleApi.list).toHaveBeenLastCalledWith(expect.objectContaining({
-        page: 1,
-        size: 10,
-        status: '1',
-      }));
+      expect(mockRoleApi.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          page: 1,
+          size: 10,
+          status: '1',
+        })
+      );
     });
 
     it('changes page correctly', async () => {
@@ -407,7 +666,9 @@ describe('IndexView - 角色管理页', () => {
       wrapper.vm.handlePageChange(2);
       await wrapper.vm.$nextTick();
 
-      expect(mockRoleApi.list).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2, size: 10 }));
+      expect(mockRoleApi.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({ page: 2, size: 10 })
+      );
     });
 
     it('changes page size correctly', async () => {
@@ -430,7 +691,9 @@ describe('IndexView - 角色管理页', () => {
       wrapper.vm.handleSizeChange(20);
       await wrapper.vm.$nextTick();
 
-      expect(mockRoleApi.list).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1, size: 20 }));
+      expect(mockRoleApi.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({ page: 1, size: 20 })
+      );
     });
   });
 
@@ -492,7 +755,7 @@ describe('IndexView - 角色管理页', () => {
         });
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       await wrapper.vm.handleCreateSubmit({
@@ -519,15 +782,17 @@ describe('IndexView - 角色管理页', () => {
       mockRoleApi.create.mockRejectedValue(error);
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      await expect(wrapper.vm.handleCreateSubmit({
-        code: 'ROLE_NEW',
-        name: '超级管理员',
-        description: '新角色描述',
-        status: 1,
-      })).rejects.toThrow();
+      await expect(
+        wrapper.vm.handleCreateSubmit({
+          code: 'ROLE_NEW',
+          name: '超级管理员',
+          description: '新角色描述',
+          status: 1,
+        })
+      ).rejects.toThrow();
 
       expect(mockElMessage.error).toHaveBeenCalledWith('角色名已存在');
     });
@@ -538,15 +803,17 @@ describe('IndexView - 角色管理页', () => {
       mockRoleApi.create.mockRejectedValue(error);
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
-      await expect(wrapper.vm.handleCreateSubmit({
-        code: 'ROLE_ADMIN',
-        name: '新角色',
-        description: '新角色描述',
-        status: 1,
-      })).rejects.toThrow();
+      await expect(
+        wrapper.vm.handleCreateSubmit({
+          code: 'ROLE_ADMIN',
+          name: '新角色',
+          description: '新角色描述',
+          status: 1,
+        })
+      ).rejects.toThrow();
 
       expect(mockElMessage.error).toHaveBeenCalledWith('角色编码已存在');
     });
@@ -555,7 +822,7 @@ describe('IndexView - 角色管理页', () => {
   describe('AC3 - 更新角色 code 不可改', () => {
     it('opens edit drawer with role data when clicking edit', async () => {
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       wrapper.vm.handleEdit(mockRoles[0]);
@@ -609,7 +876,7 @@ describe('IndexView - 角色管理页', () => {
         });
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       wrapper.vm.handleEdit(mockRoles[0]);
@@ -633,11 +900,11 @@ describe('IndexView - 角色管理页', () => {
 
   describe('AC4 - 启停用、删除引用保护', () => {
     it('toggles role status successfully', async () => {
-      mockRoleApi.update.mockResolvedValue({ 
-        code: 0, 
-        message: 'success', 
-        timestamp: Date.now(), 
-        data: { ...mockRoles[0], status: 0 } 
+      mockRoleApi.update.mockResolvedValue({
+        code: 0,
+        message: 'success',
+        timestamp: Date.now(),
+        data: { ...mockRoles[0], status: 0 },
       });
 
       mockRoleApi.list
@@ -658,7 +925,7 @@ describe('IndexView - 角色管理页', () => {
           message: 'success',
           timestamp: Date.now(),
           data: {
-            records: mockRoles.map(r => r.id === 1 ? { ...r, status: 0 } : r),
+            records: mockRoles.map((r) => (r.id === 1 ? { ...r, status: 0 } : r)),
             total: 3,
             current: 1,
             size: 10,
@@ -667,7 +934,7 @@ describe('IndexView - 角色管理页', () => {
         });
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       await wrapper.vm.handleStatusToggle(mockRoles[0]);
@@ -685,7 +952,7 @@ describe('IndexView - 角色管理页', () => {
       (mockElMessageBox.confirm as Mock).mockResolvedValue('confirm');
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       await expect(wrapper.vm.handleDelete(mockRoles[0])).rejects.toThrow();
@@ -702,7 +969,7 @@ describe('IndexView - 角色管理页', () => {
       (mockElMessageBox.confirm as Mock).mockResolvedValue('confirm');
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       await expect(wrapper.vm.handleDelete(mockRoles[0])).rejects.toThrow();
@@ -713,11 +980,11 @@ describe('IndexView - 角色管理页', () => {
     });
 
     it('deletes role successfully when no references', async () => {
-      mockRoleApi.delete.mockResolvedValue({ 
-        code: 0, 
-        message: 'success', 
-        timestamp: Date.now(), 
-        data: undefined 
+      mockRoleApi.delete.mockResolvedValue({
+        code: 0,
+        message: 'success',
+        timestamp: Date.now(),
+        data: undefined,
       });
       (mockElMessageBox.confirm as Mock).mockResolvedValue('confirm');
 
@@ -748,7 +1015,7 @@ describe('IndexView - 角色管理页', () => {
         });
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       await wrapper.vm.handleDelete(mockRoles[2]);
@@ -763,7 +1030,7 @@ describe('IndexView - 角色管理页', () => {
   describe('AC5 - 权限分配树功能完整', () => {
     it('opens permission assign drawer when clicking permissions button', async () => {
       const wrapper = createWrapper(['role:view', 'role:assign-permission']);
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       wrapper.vm.handlePermissionAssign(mockRoles[0]);
@@ -775,7 +1042,7 @@ describe('IndexView - 角色管理页', () => {
 
     it('opens permission assign drawer and fetches role permissions', async () => {
       const wrapper = createWrapper(['role:view', 'role:assign-permission']);
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       wrapper.vm.handlePermissionAssign(mockRoles[0]);
@@ -801,11 +1068,11 @@ describe('IndexView - 角色管理页', () => {
         data: mockRoles[0],
       });
 
-      mockRoleApi.assignPermissions.mockResolvedValue({ 
-        code: 0, 
-        message: 'success', 
-        timestamp: Date.now(), 
-        data: undefined 
+      mockRoleApi.assignPermissions.mockResolvedValue({
+        code: 0,
+        message: 'success',
+        timestamp: Date.now(),
+        data: undefined,
       });
 
       mockRoleApi.list
@@ -826,14 +1093,44 @@ describe('IndexView - 角色管理页', () => {
           message: 'success',
           timestamp: Date.now(),
           data: {
-            records: [{
-              ...mockRoles[0],
-              permissions: [
-                { id: 1, code: 'user:view', name: '用户查看', type: 2, parentId: 0, sort: 1, status: 1, createTime: '2024-01-01T00:00:00Z' },
-                { id: 2, code: 'user:create', name: '用户新增', type: 2, parentId: 0, sort: 2, status: 1, createTime: '2024-01-01T00:00:00Z' },
-                { id: 3, code: 'user:update', name: '用户编辑', type: 2, parentId: 0, sort: 3, status: 1, createTime: '2024-01-01T00:00:00Z' },
-              ],
-            }, ...mockRoles.slice(1)],
+            records: [
+              {
+                ...mockRoles[0],
+                permissions: [
+                  {
+                    id: 1,
+                    code: 'user:view',
+                    name: '用户查看',
+                    type: 2,
+                    parentId: 0,
+                    sort: 1,
+                    status: 1,
+                    createTime: '2024-01-01T00:00:00Z',
+                  },
+                  {
+                    id: 2,
+                    code: 'user:create',
+                    name: '用户新增',
+                    type: 2,
+                    parentId: 0,
+                    sort: 2,
+                    status: 1,
+                    createTime: '2024-01-01T00:00:00Z',
+                  },
+                  {
+                    id: 3,
+                    code: 'user:update',
+                    name: '用户编辑',
+                    type: 2,
+                    parentId: 0,
+                    sort: 3,
+                    status: 1,
+                    createTime: '2024-01-01T00:00:00Z',
+                  },
+                ],
+              },
+              ...mockRoles.slice(1),
+            ],
             total: 3,
             current: 1,
             size: 10,
@@ -842,7 +1139,7 @@ describe('IndexView - 角色管理页', () => {
         });
 
       const wrapper = createWrapper(['role:view', 'role:assign-permission']);
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       wrapper.vm.handlePermissionAssign(mockRoles[0]);
@@ -860,7 +1157,7 @@ describe('IndexView - 角色管理页', () => {
   describe('Permission Control', () => {
     it('hides create button when no create permission', async () => {
       const wrapper = createWrapper(['role:view', 'role:update', 'role:delete']);
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       expect(wrapper.vm.canCreate).toBe(false);
@@ -869,7 +1166,7 @@ describe('IndexView - 角色管理页', () => {
 
     it('hides delete button when no delete permission', async () => {
       const wrapper = createWrapper(['role:view', 'role:create', 'role:update']);
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       expect(wrapper.vm.canDelete).toBe(false);
@@ -877,7 +1174,7 @@ describe('IndexView - 角色管理页', () => {
 
     it('hides permission assign button when no assign permission', async () => {
       const wrapper = createWrapper(['role:view', 'role:create', 'role:update', 'role:delete']);
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       expect(wrapper.vm.canAssignPermission).toBe(false);

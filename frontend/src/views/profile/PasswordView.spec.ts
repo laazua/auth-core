@@ -36,9 +36,24 @@ const createWrapper = (routePath = '/profile/password') => {
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: '/login', name: 'Login', component: { template: '<div>Login</div>' }, meta: { public: true } },
-      { path: '/dashboard', name: 'Dashboard', component: { template: '<div>Dashboard</div>' }, meta: { requiresAuth: true } },
-      { path: '/profile/password', name: 'Password', component: PasswordView, meta: { requiresAuth: true, title: '修改密码' } },
+      {
+        path: '/login',
+        name: 'Login',
+        component: { template: '<div>Login</div>' },
+        meta: { public: true },
+      },
+      {
+        path: '/dashboard',
+        name: 'Dashboard',
+        component: { template: '<div>Dashboard</div>' },
+        meta: { requiresAuth: true },
+      },
+      {
+        path: '/profile/password',
+        name: 'Password',
+        component: PasswordView,
+        meta: { requiresAuth: true, title: '修改密码' },
+      },
     ],
   });
   router.push(routePath);
@@ -69,7 +84,20 @@ describe('PasswordView', () => {
     setActivePinia(pinia);
     vi.clearAllMocks();
     authStore = useAuthStore();
-    authStore.login('mock-token', { id: 1, username: 'admin', nickname: '管理员', email: 'admin@example.com', phone: '13800138000', status: 1, createTime: '2024-01-01T00:00:00Z' }, [], []);
+    authStore.login(
+      'mock-token',
+      {
+        id: 1,
+        username: 'admin',
+        nickname: '管理员',
+        email: 'admin@example.com',
+        phone: '13800138000',
+        status: 1,
+        createTime: '2024-01-01T00:00:00Z',
+      },
+      [],
+      []
+    );
   });
 
   afterEach(() => {
@@ -111,7 +139,9 @@ describe('PasswordView', () => {
 
       await vm.handleSubmit();
 
-      expect(vm.errors.newPassword).toContain('密码需包含大小写字母、数字、特殊字符至少三类且长度≥8');
+      expect(vm.errors.newPassword).toContain(
+        '密码需包含大小写字母、数字、特殊字符至少三类且长度≥8'
+      );
     });
 
     it('shows password complexity error for password without uppercase', async () => {
@@ -127,7 +157,9 @@ describe('PasswordView', () => {
 
       await vm.handleSubmit();
 
-      expect(vm.errors.newPassword).toContain('密码需包含大小写字母、数字、特殊字符至少三类且长度≥8');
+      expect(vm.errors.newPassword).toContain(
+        '密码需包含大小写字母、数字、特殊字符至少三类且长度≥8'
+      );
     });
 
     it('shows password complexity error for password without number', async () => {
@@ -143,7 +175,9 @@ describe('PasswordView', () => {
 
       await vm.handleSubmit();
 
-      expect(vm.errors.newPassword).toContain('密码需包含大小写字母、数字、特殊字符至少三类且长度≥8');
+      expect(vm.errors.newPassword).toContain(
+        '密码需包含大小写字母、数字、特殊字符至少三类且长度≥8'
+      );
     });
 
     it('shows password complexity error for password without special char', async () => {
@@ -159,7 +193,9 @@ describe('PasswordView', () => {
 
       await vm.handleSubmit();
 
-      expect(vm.errors.newPassword).toContain('密码需包含大小写字母、数字、特殊字符至少三类且长度≥8');
+      expect(vm.errors.newPassword).toContain(
+        '密码需包含大小写字母、数字、特殊字符至少三类且长度≥8'
+      );
     });
 
     it('shows confirm password mismatch error', async () => {
@@ -205,7 +241,12 @@ describe('PasswordView', () => {
       vm.form.newPassword = 'ValidPass123!';
       vm.form.confirmPassword = 'ValidPass123!';
 
-      mockUserApi.changePassword.mockResolvedValue({ code: 0, message: 'success', timestamp: Date.now(), data: undefined });
+      mockUserApi.changePassword.mockResolvedValue({
+        code: 0,
+        message: 'success',
+        timestamp: Date.now(),
+        data: undefined,
+      });
 
       await vm.handleSubmit();
 
@@ -276,7 +317,12 @@ describe('PasswordView', () => {
       vm.form.newPassword = 'NewPass123!';
       vm.form.confirmPassword = 'NewPass123!';
 
-      mockUserApi.changePassword.mockResolvedValue({ code: 0, message: 'success', timestamp: Date.now(), data: undefined });
+      mockUserApi.changePassword.mockResolvedValue({
+        code: 0,
+        message: 'success',
+        timestamp: Date.now(),
+        data: undefined,
+      });
 
       const logoutSpy = vi.spyOn(authStore, 'logout');
 

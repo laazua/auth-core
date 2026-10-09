@@ -1450,11 +1450,16 @@ describe('IndexView - 权限/模块管理页', () => {
     });
 
     const getEnterNode = (vm: Record<string, any>, row: Record<string, unknown>) => {
-      const columns = vm.moduleColumns as Array<{ prop: string; render?: (r: unknown) => { children?: Array<Record<string, any>> } }>;
+      const columns = vm.moduleColumns as Array<{
+        prop: string;
+        render?: (r: unknown) => { children?: Array<Record<string, any>> };
+      }>;
       const actions = columns.find((c) => c.prop === 'actions');
       expect(actions, '应存在操作列定义').toBeDefined();
       const vnode = actions!.render!(row);
-      return vnode.children?.find((c) => String(c.props?.class ?? '').includes('module-table__action-enter'));
+      return vnode.children?.find((c) =>
+        String(c.props?.class ?? '').includes('module-table__action-enter')
+      );
     };
 
     it('moduleEnterButtonNavigatesWhenReady', async () => {

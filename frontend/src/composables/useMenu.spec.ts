@@ -23,7 +23,9 @@ describe('useMenu - Dynamic Menu Generation & Permission Filtering', () => {
     hasPermission: vi.fn((p: string) => ['user:view', 'role:view', 'perm:view'].includes(p)),
     hasRole: vi.fn((r: string) => r === 'user'),
     hasAnyRole: vi.fn((roles: string[]) => roles.includes('user')),
-    hasAnyPermission: vi.fn((perms: string[]) => perms.some((p) => ['user:view', 'role:view', 'perm:view'].includes(p))),
+    hasAnyPermission: vi.fn((perms: string[]) =>
+      perms.some((p) => ['user:view', 'role:view', 'perm:view'].includes(p))
+    ),
   };
 
   const mockLimitedAuthStore = {

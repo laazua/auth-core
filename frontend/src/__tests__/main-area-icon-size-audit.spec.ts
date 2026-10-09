@@ -6,8 +6,9 @@ import { globSync } from 'glob';
 const viewsDir = path.resolve(__dirname, '../../views');
 
 describe('MainAreaIconSizeAuditSpec', () => {
-  const viewFiles = globSync('**/*.vue', { cwd: viewsDir, absolute: true })
-    .filter(f => !f.includes('LoginView.vue') && !f.includes('__tests__'));
+  const viewFiles = globSync('**/*.vue', { cwd: viewsDir, absolute: true }).filter(
+    (f) => !f.includes('LoginView.vue') && !f.includes('__tests__')
+  );
 
   it('allViewsIconSizeControlled — 所有视图（除 LoginView）无直接使用 <Component :is="Icon" /> 渲染 EP 图标且无显式尺寸包裹', () => {
     const violations: string[] = [];
@@ -19,7 +20,8 @@ describe('MainAreaIconSizeAuditSpec', () => {
       // 检查：直接使用 <component :is="..." /> 渲染 EP 图标且无显式尺寸类
       // 排除：Breadcrumb.vue、Header.vue、Sidebar.vue、TagsView.vue 等组件内部使用
       // 只检查 views/ 下的页面级组件
-      const componentIsIconPattern = /<component\s+:is\s*=\s*["']?(?:User|Lock|Setting|Monitor|Moon|Sunny|SwitchButton|Key|Cpu|Bell|FullScreen|Fold|Expand|More|Close|CloseBold|RefreshRight|Search)["']?/g;
+      const componentIsIconPattern =
+        /<component\s+:is\s*=\s*["']?(?:User|Lock|Setting|Monitor|Moon|Sunny|SwitchButton|Key|Cpu|Bell|FullScreen|Fold|Expand|More|Close|CloseBold|RefreshRight|Search)["']?/g;
       const matches = content.match(componentIsIconPattern);
 
       if (matches) {
@@ -31,7 +33,8 @@ describe('MainAreaIconSizeAuditSpec', () => {
           const context = contextBefore + contextAfter;
 
           // 判断是否有显式尺寸控制
-          const hasExplicitSize = context.includes('width: 16px') ||
+          const hasExplicitSize =
+            context.includes('width: 16px') ||
             context.includes('height: 16px') ||
             context.includes('width="16"') ||
             context.includes('height="16"') ||
@@ -52,7 +55,8 @@ describe('MainAreaIconSizeAuditSpec', () => {
       }
 
       // 检查：ElButton :icon prop 且无显式尺寸包裹
-      const elButtonIconPattern = /<ElButton[^>]*:\s*icon\s*=\s*["']?(?:User|Lock|Setting|Monitor|Moon|Sunny|SwitchButton|Key|Cpu|Bell|FullScreen|Fold|Expand|More|Close|CloseBold|RefreshRight|Search)["']?/g;
+      const elButtonIconPattern =
+        /<ElButton[^>]*:\s*icon\s*=\s*["']?(?:User|Lock|Setting|Monitor|Moon|Sunny|SwitchButton|Key|Cpu|Bell|FullScreen|Fold|Expand|More|Close|CloseBold|RefreshRight|Search)["']?/g;
       const elButtonMatches = content.match(elButtonIconPattern);
 
       if (elButtonMatches) {
@@ -64,7 +68,8 @@ describe('MainAreaIconSizeAuditSpec', () => {
           const context = contextBefore + contextAfter;
 
           // 检查是否在 BaseButton 中且使用 slot
-          const isBaseButtonWithSlot = content.includes('BaseButton') &&
+          const isBaseButtonWithSlot =
+            content.includes('BaseButton') &&
             (context.includes('<template #icon>') || context.includes('v-slot:icon'));
 
           if (!isBaseButtonWithSlot) {

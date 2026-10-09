@@ -12,16 +12,27 @@ vi.mock('@/components/BaseButton.vue', () => ({
     name: 'BaseButton',
     props: ['variant', 'size', 'loading', 'disabled'],
     emits: ['click'],
-    template: '<button class="base-button-mock" @click="$emit(\'click\', $event)" :disabled="disabled || loading" :class="{ \'is-loading\': loading }"><slot /></button>',
+    template:
+      '<button class="base-button-mock" @click="$emit(\'click\', $event)" :disabled="disabled || loading" :class="{ \'is-loading\': loading }"><slot /></button>',
   },
 }));
 
 vi.mock('@/components/BaseInput.vue', () => ({
   default: {
     name: 'BaseInput',
-    props: ['modelValue', 'placeholder', 'type', 'clearable', 'showPassword', 'disabled', 'readonly', 'maxlength'],
+    props: [
+      'modelValue',
+      'placeholder',
+      'type',
+      'clearable',
+      'showPassword',
+      'disabled',
+      'readonly',
+      'maxlength',
+    ],
     emits: ['update:modelValue', 'blur', 'focus', 'change', 'clear'],
-    template: '<input class="base-input-mock" :value="modelValue" :placeholder="placeholder" :type="type" :disabled="disabled" :readonly="readonly" :maxlength="maxlength" @input="$emit(\'update:modelValue\', $event.target.value)" @blur="$emit(\'blur\', $event)" @focus="$emit(\'focus\', $event)" @change="$emit(\'change\', $event.target.value)" />',
+    template:
+      '<input class="base-input-mock" :value="modelValue" :placeholder="placeholder" :type="type" :disabled="disabled" :readonly="readonly" :maxlength="maxlength" @input="$emit(\'update:modelValue\', $event.target.value)" @blur="$emit(\'blur\', $event)" @focus="$emit(\'focus\', $event)" @change="$emit(\'change\', $event.target.value)" />',
   },
 }));
 
@@ -30,7 +41,8 @@ vi.mock('@/components/BaseSelect.vue', () => ({
     name: 'BaseSelect',
     props: ['modelValue', 'options', 'placeholder', 'disabled', 'clearable', 'filterable'],
     emits: ['update:modelValue', 'change', 'blur', 'focus', 'clear'],
-    template: '<select class="base-select-mock" :value="modelValue" :disabled="disabled" @input="$emit(\'update:modelValue\', $event.target.value)" @change="$emit(\'change\', $event.target.value)"><option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option></select>',
+    template:
+      '<select class="base-select-mock" :value="modelValue" :disabled="disabled" @input="$emit(\'update:modelValue\', $event.target.value)" @change="$emit(\'change\', $event.target.value)"><option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option></select>',
   },
 }));
 
@@ -58,7 +70,12 @@ vi.mock('element-plus', async (importOriginal) => {
 describe('UserFormDrawer - 用户表单抽屉', () => {
   let pinia: ReturnType<typeof createPinia>;
 
-  const createWrapper = (props: { visible: boolean; mode: 'create' | 'edit'; initialData?: any } = { visible: true, mode: 'create' }) => {
+  const createWrapper = (
+    props: { visible: boolean; mode: 'create' | 'edit'; initialData?: any } = {
+      visible: true,
+      mode: 'create',
+    }
+  ) => {
     const wrapper = mount(UserFormDrawer, {
       props,
       global: {
@@ -124,7 +141,14 @@ describe('UserFormDrawer - 用户表单抽屉', () => {
     });
 
     it('编辑模式：打开抽屉时确认按钮可点击（非 loading、非 disabled）', async () => {
-      const initialData = { id: 1, username: 'admin', nickname: '管理员', email: 'admin@example.com', phone: '13800138000', status: 1 };
+      const initialData = {
+        id: 1,
+        username: 'admin',
+        nickname: '管理员',
+        email: 'admin@example.com',
+        phone: '13800138000',
+        status: 1,
+      };
       const wrapper = createWrapper({ visible: true, mode: 'edit', initialData });
       await wrapper.vm.$nextTick();
 
@@ -141,7 +165,7 @@ describe('UserFormDrawer - 用户表单抽屉', () => {
       await wrapper.vm.$nextTick();
 
       const confirmButton = wrapper.find('.base-button-mock:last-child');
-      
+
       // 模拟表单验证通过
       const formRef = wrapper.vm.$refs.formRef as any;
       if (formRef) {
@@ -157,12 +181,19 @@ describe('UserFormDrawer - 用户表单抽屉', () => {
     });
 
     it('编辑模式：点击确认按钮触发表单校验通过后，按钮立即进入 loading 状态，直到提交完成', async () => {
-      const initialData = { id: 1, username: 'admin', nickname: '管理员', email: 'admin@example.com', phone: '13800138000', status: 1 };
+      const initialData = {
+        id: 1,
+        username: 'admin',
+        nickname: '管理员',
+        email: 'admin@example.com',
+        phone: '13800138000',
+        status: 1,
+      };
       const wrapper = createWrapper({ visible: true, mode: 'edit', initialData });
       await wrapper.vm.$nextTick();
 
       const confirmButton = wrapper.find('.base-button-mock:last-child');
-      
+
       // 模拟表单验证通过
       const formRef = wrapper.vm.$refs.formRef as any;
       if (formRef) {

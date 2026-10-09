@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
   export interface Column {
     prop: string;
     label: string;
@@ -45,7 +44,16 @@
     'header-click': [column: unknown, event: MouseEvent];
   }>();
 
-  const handleSortChange = (data: { column: unknown; prop: string | null; order: 'ascending' | 'descending' | null }) => {
+  // 类型断言移入 script：模板内联 as 联合类型经 prettier 换行后 vue 模板解析器无法解析（RED-2 101→波后 106 异动实证）
+  const toFormatter = (formatter?: Column['formatter']) =>
+    formatter as
+      ((row: unknown, column: unknown, cellValue: unknown, index: number) => string) | undefined;
+
+  const handleSortChange = (data: {
+    column: unknown;
+    prop: string | null;
+    order: 'ascending' | 'descending' | null;
+  }) => {
     emit('sort-change', data.column, data.prop ?? '', data.order ?? '');
   };
 
@@ -98,7 +106,7 @@
         :align="column.align"
         :header-align="column.headerAlign"
         :show-overflow-tooltip="column.showOverflowTooltip"
-        :formatter="column.formatter as ((row: unknown, column: unknown, cellValue: unknown, index: number) => string) | undefined"
+        :formatter="toFormatter(column.formatter)"
       />
       <el-table-column
         v-else

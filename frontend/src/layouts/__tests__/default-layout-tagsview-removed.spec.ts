@@ -7,9 +7,10 @@ const defaultLayoutSource = fs.readFileSync(defaultLayoutPath, 'utf-8');
 
 const templateStart = defaultLayoutSource.indexOf('<template>');
 const templateEnd = defaultLayoutSource.lastIndexOf('</template>');
-const template = templateStart !== -1 && templateEnd !== -1 && templateEnd > templateStart
-  ? defaultLayoutSource.slice(templateStart + 10, templateEnd)
-  : '';
+const template =
+  templateStart !== -1 && templateEnd !== -1 && templateEnd > templateStart
+    ? defaultLayoutSource.slice(templateStart + 10, templateEnd)
+    : '';
 const scriptMatch = defaultLayoutSource.match(/<script setup lang="ts">([\s\S]*?)<\/script>/);
 
 describe('DefaultLayoutTagsViewRemovedSpec', () => {

@@ -19,7 +19,19 @@ vi.mock('@/composables/useTheme', () => ({
 const mockRouter = {
   push: vi.fn(),
   replace: vi.fn(),
-  resolve: vi.fn((path: string) => ({ path, name: path === '/login' ? 'Login' : path === '/profile/password' ? 'Password' : path === '/profile' ? 'Profile' : path === '/settings' ? 'Settings' : undefined })),
+  resolve: vi.fn((path: string) => ({
+    path,
+    name:
+      path === '/login'
+        ? 'Login'
+        : path === '/profile/password'
+          ? 'Password'
+          : path === '/profile'
+            ? 'Profile'
+            : path === '/settings'
+              ? 'Settings'
+              : undefined,
+  })),
 };
 
 vi.mock('vue-router', async (importOriginal) => {
@@ -61,7 +73,16 @@ describe('Header.vue', () => {
     mockRouter.push.mockReset();
     mockRouter.resolve.mockImplementation((path: string) => ({
       path,
-      name: path === '/login' ? 'Login' : path === '/profile/password' ? 'Password' : path === '/profile' ? 'Profile' : path === '/settings' ? 'Settings' : undefined,
+      name:
+        path === '/login'
+          ? 'Login'
+          : path === '/profile/password'
+            ? 'Password'
+            : path === '/profile'
+              ? 'Profile'
+              : path === '/settings'
+                ? 'Settings'
+                : undefined,
     }));
   });
 

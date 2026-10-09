@@ -13,7 +13,9 @@ describe('BreadcrumbSpacingSpec', () => {
 
     const styleContent = styleMatch![1];
     // 查找 .breadcrumb__icon { ... margin-right: 12px ... }
-    const iconMarginMatch = styleContent.match(/\.breadcrumb__icon\s*\{[\s\S]*?margin-right\s*:\s*12px/);
+    const iconMarginMatch = styleContent.match(
+      /\.breadcrumb__icon\s*\{[\s\S]*?margin-right\s*:\s*12px/
+    );
     expect(iconMarginMatch).not.toBeNull();
   });
 });

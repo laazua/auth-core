@@ -32,9 +32,13 @@ const createMockAuthStore = () => {
 
 const mockAuthStore = createMockAuthStore();
 
-vi.mocked(useAuthStore).mockReturnValue(mockAuthStore as unknown as ReturnType<typeof useAuthStore>);
+vi.mocked(useAuthStore).mockReturnValue(
+  mockAuthStore as unknown as ReturnType<typeof useAuthStore>
+);
 
-const createTestRouter = (routes: Array<{ path: string; name: string; meta?: Record<string, unknown> }>): Router => {
+const createTestRouter = (
+  routes: Array<{ path: string; name: string; meta?: Record<string, unknown> }>
+): Router => {
   return createRouter({
     history: createWebHistory(),
     routes: routes.map((r) => ({
@@ -90,7 +94,9 @@ describe('Router Guards', () => {
       }
 
       // Check permissions
-      const requiredPermissions = to.matched.flatMap((record) => record.meta.permissions as string[] || []);
+      const requiredPermissions = to.matched.flatMap(
+        (record) => (record.meta.permissions as string[]) || []
+      );
       if (requiresAuth && requiredPermissions.length > 0) {
         const hasPermission = requiredPermissions.some((p) => mockAuthStore.hasPermission(p));
         if (!hasPermission) {
@@ -100,7 +106,7 @@ describe('Router Guards', () => {
       }
 
       // Check roles
-      const requiredRoles = to.matched.flatMap((record) => record.meta.roles as string[] || []);
+      const requiredRoles = to.matched.flatMap((record) => (record.meta.roles as string[]) || []);
       if (requiresAuth && requiredRoles.length > 0) {
         const hasRole = requiredRoles.some((r) => mockAuthStore.hasRole(r));
         if (!hasRole) {
@@ -190,7 +196,9 @@ describe('Router Guards', () => {
       mockAuthStore.isAuthenticated = true;
       mockAuthStore.token = 'valid-token';
       mockAuthStore.permissions = ['role:view'];
-      mockAuthStore.hasPermission.mockImplementation((p: string) => mockAuthStore.permissions.includes(p));
+      mockAuthStore.hasPermission.mockImplementation((p: string) =>
+        mockAuthStore.permissions.includes(p)
+      );
 
       setupAuthGuard(router);
       await router.push('/user');
@@ -203,7 +211,9 @@ describe('Router Guards', () => {
       mockAuthStore.isAuthenticated = true;
       mockAuthStore.token = 'valid-token';
       mockAuthStore.permissions = ['user:view', 'role:view'];
-      mockAuthStore.hasPermission.mockImplementation((p: string) => mockAuthStore.permissions.includes(p));
+      mockAuthStore.hasPermission.mockImplementation((p: string) =>
+        mockAuthStore.permissions.includes(p)
+      );
 
       setupAuthGuard(router);
       await router.push('/user');
@@ -255,7 +265,11 @@ describe('Router Guards', () => {
     it('authGuard redirects unauthenticated to login', async () => {
       mockAuthStore.isAuthenticated = false;
 
-      const to = { name: 'Dashboard', fullPath: '/dashboard', matched: [{ meta: { requiresAuth: true } }] };
+      const to = {
+        name: 'Dashboard',
+        fullPath: '/dashboard',
+        matched: [{ meta: { requiresAuth: true } }],
+      };
       const from = { name: 'Login' };
       const next = vi.fn();
 
@@ -305,7 +319,10 @@ describe('Router Guards', () => {
       mockAuthStore.hasPermission.mockReturnValue(false);
 
       const guard = permissionGuard(['user:view']);
-      const to = { name: 'User', matched: [{ meta: { requiresAuth: true, permissions: ['user:view'] } }] };
+      const to = {
+        name: 'User',
+        matched: [{ meta: { requiresAuth: true, permissions: ['user:view'] } }],
+      };
       const from = { name: 'Dashboard' };
       const next = vi.fn();
 
@@ -319,7 +336,10 @@ describe('Router Guards', () => {
       mockAuthStore.hasPermission.mockReturnValue(true);
 
       const guard = permissionGuard(['user:view']);
-      const to = { name: 'User', matched: [{ meta: { requiresAuth: true, permissions: ['user:view'] } }] };
+      const to = {
+        name: 'User',
+        matched: [{ meta: { requiresAuth: true, permissions: ['user:view'] } }],
+      };
       const from = { name: 'Dashboard' };
       const next = vi.fn();
 
@@ -367,9 +387,24 @@ describe('Router Guards', () => {
       const r = createRouter({
         history: createWebHistory(),
         routes: [
-          { path: '/login', name: 'Login', component: { template: '<div>Login</div>' }, meta: { public: true } },
-          { path: '/dashboard', name: 'Dashboard', component: { template: '<div>Dashboard</div>' }, meta: { requiresAuth: true } },
-          { path: '/user', name: 'User', component: { template: '<div>User</div>' }, meta: { requiresAuth: true } },
+          {
+            path: '/login',
+            name: 'Login',
+            component: { template: '<div>Login</div>' },
+            meta: { public: true },
+          },
+          {
+            path: '/dashboard',
+            name: 'Dashboard',
+            component: { template: '<div>Dashboard</div>' },
+            meta: { requiresAuth: true },
+          },
+          {
+            path: '/user',
+            name: 'User',
+            component: { template: '<div>User</div>' },
+            meta: { requiresAuth: true },
+          },
         ],
       });
 
@@ -412,7 +447,7 @@ describe('Router Guards', () => {
     beforeEach(() => {
       setActivePinia(createPinia());
       vi.clearAllMocks();
-      
+
       // Reset mock auth store state
       mockAuthStore.isAuthenticated = false;
       mockAuthStore.token = null;

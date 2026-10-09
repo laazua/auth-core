@@ -10,7 +10,12 @@ export const createResult = <T>(data: T, code = 0, message = 'success'): Result<
   timestamp: Date.now(),
 });
 
-export const createPageResult = <T>(records: T[], total: number, size = 10, current = 1): PageResult<T> => ({
+export const createPageResult = <T>(
+  records: T[],
+  total: number,
+  size = 10,
+  current = 1
+): PageResult<T> => ({
   records,
   total,
   size,
@@ -50,7 +55,9 @@ export const createPermissionVO = (overrides: Partial<PermissionVO> = {}): Permi
   ...overrides,
 });
 
-export const createPermissionTreeNode = (overrides: Partial<PermissionTreeNode> = {}): PermissionTreeNode => ({
+export const createPermissionTreeNode = (
+  overrides: Partial<PermissionTreeNode> = {}
+): PermissionTreeNode => ({
   id: 1,
   code: 'user:view',
   name: '用户查看',

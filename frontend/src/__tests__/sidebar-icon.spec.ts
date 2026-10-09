@@ -12,7 +12,9 @@ const useMenuTsContent = readFileSync(useMenuTsPath, 'utf-8');
 
 describe('SidebarIconSpec', () => {
   it('mainRegistersAllElementPlusIcons — main.ts 批量导入并注册 @element-plus/icons-vue 所有导出为全局组件', () => {
-    expect(mainTsContent).toContain("import * as ElementPlusIconsVue from '@element-plus/icons-vue'");
+    expect(mainTsContent).toContain(
+      "import * as ElementPlusIconsVue from '@element-plus/icons-vue'"
+    );
     expect(mainTsContent).toContain('Object.entries(ElementPlusIconsVue)');
     expect(mainTsContent).toContain('app.component(');
   });
@@ -29,8 +31,12 @@ describe('SidebarIconSpec', () => {
 
   it('iconSizeAndThemeColorCompliance — Sidebar.vue scoped 样式中 .sidebar__icon 显式尺寸 16px、颜色主题变量化、激活态变色', () => {
     expect(sidebarVueContent).toMatch(/\.sidebar__icon\s*\{[^}]*font-size:\s*16px/);
-    expect(sidebarVueContent).toMatch(/\.sidebar__icon\s*\{[^}]*color:\s*var\(--color-text-placeholder\)/);
+    expect(sidebarVueContent).toMatch(
+      /\.sidebar__icon\s*\{[^}]*color:\s*var\(--color-text-placeholder\)/
+    );
     // .is-active 内嵌套 .sidebar__icon { color: var(--color-primary); }
-    expect(sidebarVueContent).toMatch(/&\.is-active\s*\{[^}]*\.sidebar__icon\s*\{[^}]*color:\s*var\(--color-primary\)/);
+    expect(sidebarVueContent).toMatch(
+      /&\.is-active\s*\{[^}]*\.sidebar__icon\s*\{[^}]*color:\s*var\(--color-primary\)/
+    );
   });
 });

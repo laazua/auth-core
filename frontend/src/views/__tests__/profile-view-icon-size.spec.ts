@@ -13,10 +13,13 @@ describe('ProfileViewIconSizeSpec', () => {
 
     // 断言：使用 BaseButton 且图标通过 slot 显式包裹（width/height 16px）
     // 或者使用显式尺寸容器包裹图标
-    const hasBaseButtonWithIconSlot = profileViewContent.includes('BaseButton') &&
+    const hasBaseButtonWithIconSlot =
+      profileViewContent.includes('BaseButton') &&
       profileViewContent.includes('<template #icon>') &&
-      (profileViewContent.includes('width: 16px') || profileViewContent.includes('width="16"') ||
-       profileViewContent.includes('.profile__action-icon') || profileViewContent.includes('icon-size'));
+      (profileViewContent.includes('width: 16px') ||
+        profileViewContent.includes('width="16"') ||
+        profileViewContent.includes('.profile__action-icon') ||
+        profileViewContent.includes('icon-size'));
 
     expect(hasBaseButtonWithIconSlot).toBe(true);
   });
@@ -32,6 +35,6 @@ describe('ProfileViewIconSizeSpec', () => {
     expect(profileViewContent).not.toMatch(/import.*ElButton.*from.*element-plus/);
 
     // 断言：导入 BaseButton
-    expect(profileViewContent).toMatch(/import BaseButton from ['"@\/components\/BaseButton.vue['"]/);
+    expect(profileViewContent).toMatch(/import BaseButton from ['"@/components/BaseButton.vue['"]/);
   });
 });

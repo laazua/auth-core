@@ -19,7 +19,12 @@ vi.mock('vue-router', async (importOriginal) => {
   return {
     ...actual,
     useRouter: () => mockRouter,
-    useRoute: () => ({ path: '/workspace/module/news', params: { code: 'news' }, query: {}, meta: {} }),
+    useRoute: () => ({
+      path: '/workspace/module/news',
+      params: { code: 'news' },
+      query: {},
+      meta: {},
+    }),
   };
 });
 
@@ -37,7 +42,9 @@ describe('ModuleIframeView — 模块 iframe 内嵌视图（web/038e）', () => 
       const matched = router.resolve('/workspace/module/news').matched;
       expect(matched.length, '/workspace/module/:code 应为两层').toBe(2);
       expect(matched[1].name, '子记录 name').toBe('ModuleWorkspace');
-      const parent = (await (matched[0].components!.default as () => Promise<{ default: unknown }>)()).default;
+      const parent = (
+        await (matched[0].components!.default as () => Promise<{ default: unknown }>)()
+      ).default;
       expect(parent, '父记录组件必须是 DefaultLayout').toBe(DefaultLayout);
 
       // When: 挂载视图（route params code=news）
@@ -66,7 +73,9 @@ describe('ModuleIframeView — 模块 iframe 内嵌视图（web/038e）', () => 
       expect(matched.length, '应 depth=2 而非 catch-all').toBe(2);
       expect(matched[1].name).toBe('ModuleWorkspace');
       expect(matched[1].name, '不得是 NotFound').not.toBe('NotFound');
-      const parent = (await (matched[0].components!.default as () => Promise<{ default: unknown }>)()).default;
+      const parent = (
+        await (matched[0].components!.default as () => Promise<{ default: unknown }>)()
+      ).default;
       expect(parent, '父记录组件必须是 DefaultLayout').toBe(DefaultLayout);
     });
   });

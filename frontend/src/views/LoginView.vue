@@ -1,120 +1,142 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { ElMessage } from 'element-plus';
-import { useAuthStore } from '@/stores/auth';
-import { authApi } from '@/api';
-import BaseButton from '@/components/BaseButton.vue';
-import BaseInput from '@/components/BaseInput.vue';
-import { User, Lock, Monitor, Setting, Key, Cpu } from '@element-plus/icons-vue';
+  import { reactive, ref } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
+  import { ElMessage } from 'element-plus';
+  import { useAuthStore } from '@/stores/auth';
+  import { authApi } from '@/api';
+  import BaseButton from '@/components/BaseButton.vue';
+  import BaseInput from '@/components/BaseInput.vue';
+  import { User, Lock, Monitor, Setting, Key, Cpu } from '@element-plus/icons-vue';
 
-const router = useRouter();
-const route = useRoute();
-const authStore = useAuthStore();
+  const router = useRouter();
+  const route = useRoute();
+  const authStore = useAuthStore();
 
-const loginForm = reactive({
-  username: '',
-  password: '',
-  rememberMe: false,
-});
+  const loginForm = reactive({
+    username: '',
+    password: '',
+    rememberMe: false,
+  });
 
-const rules = {
-  username: [
-    { required: true, message: '请输入用户', trigger: 'blur' },
-    { min: 3, max: 20, message: '用户名长度为 3-20 位', trigger: 'blur' },
-  ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 30, message: '密码长度为 6-30 位', trigger: 'blur' },
-  ],
-};
+  const rules = {
+    username: [
+      { required: true, message: '请输入用户', trigger: 'blur' },
+      { min: 3, max: 20, message: '用户名长度为 3-20 位', trigger: 'blur' },
+    ],
+    password: [
+      { required: true, message: '请输入密码', trigger: 'blur' },
+      { min: 6, max: 30, message: '密码长度为 6-30 位', trigger: 'blur' },
+    ],
+  };
 
-const loading = ref(false);
-const formRef = ref();
-const errorMessage = ref('');
+  const loading = ref(false);
+  const formRef = ref();
+  const errorMessage = ref('');
 
-const features = [
-  { icon: Monitor, title: '仪表盘概览', desc: '实时展示系统核心指标与运行状态' },
-  { icon: Setting, title: '权限管理', desc: '细粒度 RBAC 权限控制体系' },
-  { icon: Key, title: '认证授权', desc: 'JWT 无状态认证与动态路由' },
-  { icon: Cpu, title: '模块化架构', desc: '插件式模块接入与解耦设计' },
-];
+  const features = [
+    { icon: Monitor, title: '仪表盘概览', desc: '实时展示系统核心指标与运行状态' },
+    { icon: Setting, title: '权限管理', desc: '细粒度 RBAC 权限控制体系' },
+    { icon: Key, title: '认证授权', desc: 'JWT 无状态认证与动态路由' },
+    { icon: Cpu, title: '模块化架构', desc: '插件式模块接入与解耦设计' },
+  ];
 
-const handleLogin = async () => {
-  if (!formRef.value) return;
+  const handleLogin = async () => {
+    if (!formRef.value) return;
 
-  errorMessage.value = '';
+    errorMessage.value = '';
 
-  try {
-    await formRef.value.validate();
-  } catch {
-    return;
-  }
-
-  loading.value = true;
-
-  try {
-    const loginResponse = await authApi.login(loginForm);
-    console.log('[Login] loginResponse:', loginResponse);
-    if (loginResponse.code === 0 && loginResponse.data) {
-      const { token } = loginResponse.data;
-      authStore.setToken(token);
-      console.log('[Login] token set, isAuthenticated:', authStore.isAuthenticated);
-      const meResponse = await authApi.me();
-      console.log('[Login] meResponse:', meResponse);
-      if (meResponse.code === 0 && meResponse.data) {
-        const { user, roles, permissions } = meResponse.data;
-        console.log('[Login] user:', user, 'roles:', roles, 'permissions:', permissions);
-        authStore.login(token, user, roles.map((r: any) => r.code), permissions);
-        console.log('[Login] authStore after login - token:', authStore.token, 'roles:', authStore.roles, 'permissions:', authStore.permissions);
-        ElMessage.success('登录成功');
-
-        const redirect = (route.query.redirect as string) || '/dashboard';
-        console.log('[Login] redirect to:', redirect);
-        await router.push(redirect);
-        console.log('[Login] router.push completed, current route:', router.currentRoute.value.name, router.currentRoute.value.path);
-      } else {
-        throw new Error(meResponse.message || '获取用户信息失败');
-      }
-    } else {
-      throw new Error(loginResponse.message || '登录失败');
+    try {
+      await formRef.value.validate();
+    } catch {
+      return;
     }
-  } catch (error: unknown) {
-    let message = '登录失败';
-    const axiosError = error as { response?: { status: number; data?: { code: number; message: string } } };
-    if (axiosError.response) {
-      const { status, data } = axiosError.response;
-      if (status === 401 && data?.code === 1401) {
-        if (authStore.token) {
-          message = '获取用户信息失败，令牌可能已过期，请重新登录';
+
+    loading.value = true;
+
+    try {
+      const loginResponse = await authApi.login(loginForm);
+      console.log('[Login] loginResponse:', loginResponse);
+      if (loginResponse.code === 0 && loginResponse.data) {
+        const { token } = loginResponse.data;
+        authStore.setToken(token);
+        console.log('[Login] token set, isAuthenticated:', authStore.isAuthenticated);
+        const meResponse = await authApi.me();
+        console.log('[Login] meResponse:', meResponse);
+        if (meResponse.code === 0 && meResponse.data) {
+          const { user, roles, permissions } = meResponse.data;
+          console.log('[Login] user:', user, 'roles:', roles, 'permissions:', permissions);
+          authStore.login(
+            token,
+            user,
+            roles.map((r: any) => r.code),
+            permissions
+          );
+          console.log(
+            '[Login] authStore after login - token:',
+            authStore.token,
+            'roles:',
+            authStore.roles,
+            'permissions:',
+            authStore.permissions
+          );
+          ElMessage.success('登录成功');
+
+          const redirect = (route.query.redirect as string) || '/dashboard';
+          console.log('[Login] redirect to:', redirect);
+          await router.push(redirect);
+          console.log(
+            '[Login] router.push completed, current route:',
+            router.currentRoute.value.name,
+            router.currentRoute.value.path
+          );
         } else {
-          message = data.message || '用户名或密码错误';
+          throw new Error(meResponse.message || '获取用户信息失败');
         }
       } else {
-        message = data?.message || `请求失败 (${status})`;
+        throw new Error(loginResponse.message || '登录失败');
       }
-    } else if (error instanceof Error) {
-      message = error.message;
-    } else if (typeof error === 'string') {
-      message = error;
-    } else if (error && typeof error === 'object' && 'message' in error) {
-      message = String((error as any).message);
+    } catch (error: unknown) {
+      let message = '登录失败';
+      const axiosError = error as {
+        response?: { status: number; data?: { code: number; message: string } };
+      };
+      if (axiosError.response) {
+        const { status, data } = axiosError.response;
+        if (status === 401 && data?.code === 1401) {
+          if (authStore.token) {
+            message = '获取用户信息失败，令牌可能已过期，请重新登录';
+          } else {
+            message = data.message || '用户名或密码错误';
+          }
+        } else {
+          message = data?.message || `请求失败 (${status})`;
+        }
+      } else if (error instanceof Error) {
+        message = error.message;
+      } else if (typeof error === 'string') {
+        message = error;
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        message = String((error as any).message);
+      }
+      if (
+        message.includes('404') ||
+        message.includes('Network Error') ||
+        message.includes('ECONNABORTED')
+      ) {
+        message = '接口地址错误，请检查 API 基础路径配置 (VITE_API_BASE_URL)';
+      }
+      errorMessage.value = message;
+      ElMessage.error(message);
+    } finally {
+      loading.value = false;
     }
-    if (message.includes('404') || message.includes('Network Error') || message.includes('ECONNABORTED')) {
-      message = '接口地址错误，请检查 API 基础路径配置 (VITE_API_BASE_URL)';
-    }
-    errorMessage.value = message;
-    ElMessage.error(message);
-  } finally {
-    loading.value = false;
-  }
-};
+  };
 
-const handleKeyUp = (event: KeyboardEvent) => {
-  if (event.key === 'Enter') {
-    handleLogin();
-  }
-};
+  const handleKeyUp = (event: KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      handleLogin();
+    }
+  };
 </script>
 
 <template>
@@ -125,7 +147,13 @@ const handleKeyUp = (event: KeyboardEvent) => {
           <div class="login__brand-logo">
             <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect width="32" height="32" rx="8" fill="var(--color-primary)" />
-              <path d="M8 16L14 22L24 10" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path
+                d="M8 16L14 22L24 10"
+                stroke="white"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
           </div>
           <h1 class="login__brand-title">Auth Core</h1>
@@ -235,407 +263,407 @@ const handleKeyUp = (event: KeyboardEvent) => {
 </template>
 
 <style scoped lang="scss">
-.login-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-bg-page);
-  background-image: var(--gradient-bg);
-  background-attachment: fixed;
-  padding: 24px;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image:
-      radial-gradient(circle at 15% 85%, rgba(29, 78, 216, 0.04) 0%, transparent 50%),
-      radial-gradient(circle at 85% 15%, rgba(109, 40, 217, 0.03) 0%, transparent 50%);
-    pointer-events: none;
-  }
-}
-
-.login-container {
-  display: flex;
-  width: 100%;
-  max-width: 1120px;
-  height: calc(100vh - 48px);
-  max-height: 680px;
-  border-radius: 16px;
-  overflow: hidden;
-  position: relative;
-  z-index: 1;
-  box-shadow: var(--color-shadow-heavy);
-  border: 1px solid var(--color-border-light);
-}
-
-.login__brand {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-bg);
-  padding: 60px 48px;
-  position: relative;
-  min-width: 0;
-  border-right: 1px solid var(--color-border-light);
-}
-
-.login__brand-content {
-  position: relative;
-  z-index: 1;
-  max-width: 420px;
-  color: var(--color-text-primary);
-  width: 100%;
-}
-
-.login__brand-logo {
-  width: 64px;
-  height: 64px;
-  margin-bottom: 24px;
-  filter: drop-shadow(0 4px 16px var(--color-primary-glow));
-
-  svg {
-    width: 100%;
-    height: 100%;
-  }
-}
-
-.login__brand-title {
-  margin: 0 0 8px;
-  font-size: 32px;
-  font-weight: var(--font-weight-bold);
-  line-height: 1.2;
-  letter-spacing: -1px;
-  color: var(--color-text-primary);
-}
-
-.login__brand-slogan {
-  margin: 0 0 16px;
-  font-size: 18px;
-  font-weight: var(--font-weight-normal);
-  color: var(--color-text-regular);
-}
-
-.login__brand-desc {
-  margin: 0 0 40px;
-  font-size: 14px;
-  line-height: 1.7;
-  color: var(--color-text-secondary);
-}
-
-.login__features {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-bottom: 40px;
-}
-
-.login__feature {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px;
-  background: var(--color-bg-hover);
-  border-radius: 10px;
-  border: 1px solid var(--color-border-light);
-  transition: all var(--transition-duration-base) var(--transition-timing);
-
-  &:hover {
-    background: var(--color-bg-active);
-    border-color: var(--color-border);
-  }
-}
-
-.login__feature-icon {
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-primary-bg);
-  border-radius: 8px;
-  color: var(--color-primary);
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
-}
-
-.login__feature-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.login__feature-title {
-  margin: 0 0 4px;
-  font-size: 14px;
-  font-weight: var(--font-weight-semibold);
-  line-height: 1.3;
-}
-
-.login__feature-desc {
-  margin: 0;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  line-height: 1.4;
-}
-
-.login__brand-footer {
-  padding-top: 24px;
-  border-top: 1px solid var(--color-border-light);
-
-  p {
-    margin: 0;
-    font-size: 12px;
-    color: var(--color-text-placeholder);
-  }
-}
-
-.login__form-wrapper {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 40px;
-  min-width: 0;
-  overflow-y: auto;
-  background: var(--color-bg-page);
-}
-
-.login__card {
-  width: 100%;
-  max-width: 400px;
-  background: var(--color-bg);
-  border-radius: 16px;
-  box-shadow: var(--color-shadow-base);
-  border: 1px solid var(--color-border-light);
-  padding: 40px 32px;
-  position: relative;
-  overflow: hidden;
-}
-
-.login__header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.login__title {
-  margin: 0 0 8px;
-  font-size: 24px;
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
-  letter-spacing: -0.5px;
-}
-
-.login__subtitle {
-  margin: 0;
-  font-size: 14px;
-  color: var(--color-text-secondary);
-}
-
-.login__form {
-  margin-bottom: 24px;
-
-  :deep(.el-form-item) {
-    margin-bottom: 20px;
-  }
-
-  :deep(.el-form-item__error) {
-    font-size: 12px;
-    margin-top: 6px;
-  }
-}
-
-.login__error {
-  margin-bottom: 16px !important;
-
-  :deep(.el-form-item__content) {
-    padding: 0;
-  }
-}
-
-.login__error-message {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background: var(--color-error-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  color: var(--color-error);
-  font-size: 13px;
-
-  svg {
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
-  }
-}
-
-.login__remember {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  :deep(.el-checkbox) {
-    :deep(.el-checkbox__label) {
-      font-size: 13px;
-      color: var(--color-text-regular);
-    }
-
-    :deep(.el-checkbox__input) {
-      :deep(.el-checkbox__inner) {
-        border-color: var(--color-border);
-        width: 16px;
-        height: 16px;
-
-        &:hover {
-          border-color: var(--color-primary);
-        }
-      }
-
-      :deep(.el-checkbox__inner--checked) {
-        background: var(--color-primary);
-        border-color: var(--color-primary);
-      }
-    }
-  }
-}
-
-.login__forgot {
-  font-size: 13px;
-  color: var(--color-primary);
-  font-weight: var(--font-weight-medium);
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
-.login__submit {
-  width: 100%;
-  border-radius: 10px;
-  padding: 12px;
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-}
-
-.login__footer {
-  text-align: center;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-border-light);
-
-  p {
-    margin: 0;
-    font-size: 12px;
-    color: var(--color-text-placeholder);
-  }
-}
-
-@media (max-width: 768px) {
   .login-page {
-    padding: 16px;
-    align-items: flex-start;
-    min-height: auto;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-page);
+    background-image: var(--gradient-bg);
+    background-attachment: fixed;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image:
+        radial-gradient(circle at 15% 85%, rgba(29, 78, 216, 0.04) 0%, transparent 50%),
+        radial-gradient(circle at 85% 15%, rgba(109, 40, 217, 0.03) 0%, transparent 50%);
+      pointer-events: none;
+    }
   }
 
   .login-container {
-    flex-direction: column;
-    height: auto;
-    max-height: none;
-    border-radius: 12px;
+    display: flex;
+    width: 100%;
+    max-width: 1120px;
+    height: calc(100vh - 48px);
+    max-height: 680px;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    box-shadow: var(--color-shadow-heavy);
+    border: 1px solid var(--color-border-light);
   }
 
   .login__brand {
-    padding: 48px 24px;
-    text-align: center;
-    border-right: none;
-    border-bottom: 1px solid var(--color-border-light);
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg);
+    padding: 60px 48px;
+    position: relative;
+    min-width: 0;
+    border-right: 1px solid var(--color-border-light);
   }
 
   .login__brand-content {
-    max-width: 100%;
-  }
-
-  .login__brand-title {
-    font-size: 28px;
-  }
-
-  .login__brand-slogan {
-    font-size: 16px;
+    position: relative;
+    z-index: 1;
+    max-width: 420px;
+    color: var(--color-text-primary);
+    width: 100%;
   }
 
   .login__brand-logo {
-    width: 56px;
-    height: 56px;
-    margin-bottom: 20px;
-  }
+    width: 64px;
+    height: 64px;
+    margin-bottom: 24px;
+    filter: drop-shadow(0 4px 16px var(--color-primary-glow));
 
-  .login__features {
-    gap: 10px;
-  }
-
-  .login__feature {
-    padding: 10px;
-  }
-
-  .login__feature-icon {
-    width: 32px;
-    height: 32px;
-  }
-
-  .login__form-wrapper {
-    padding: 32px 20px;
-  }
-
-  .login__card {
-    padding: 32px 24px;
-    box-shadow: var(--color-shadow-light);
-    border: 1px solid var(--color-border-light);
-  }
-}
-
-@media (max-width: 480px) {
-  .login-page {
-    padding: 0;
-  }
-
-  .login-container {
-    border-radius: 0;
-    min-height: 100vh;
-  }
-
-  .login__brand {
-    padding: 32px 20px;
+    svg {
+      width: 100%;
+      height: 100%;
+    }
   }
 
   .login__brand-title {
-    font-size: 24px;
+    margin: 0 0 8px;
+    font-size: 32px;
+    font-weight: var(--font-weight-bold);
+    line-height: 1.2;
+    letter-spacing: -1px;
+    color: var(--color-text-primary);
+  }
+
+  .login__brand-slogan {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: var(--font-weight-normal);
+    color: var(--color-text-regular);
   }
 
   .login__brand-desc {
-    font-size: 13px;
+    margin: 0 0 40px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
   }
 
   .login__features {
-    display: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+
+  .login__feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    background: var(--color-bg-hover);
+    border-radius: 10px;
+    border: 1px solid var(--color-border-light);
+    transition: all var(--transition-duration-base) var(--transition-timing);
+
+    &:hover {
+      background: var(--color-bg-active);
+      border-color: var(--color-border);
+    }
+  }
+
+  .login__feature-icon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-primary-bg);
+    border-radius: 8px;
+    color: var(--color-primary);
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .login__feature-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .login__feature-title {
+    margin: 0 0 4px;
+    font-size: 14px;
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.3;
+  }
+
+  .login__feature-desc {
+    margin: 0;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+  }
+
+  .login__brand-footer {
+    padding-top: 24px;
+    border-top: 1px solid var(--color-border-light);
+
+    p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--color-text-placeholder);
+    }
   }
 
   .login__form-wrapper {
-    padding: 24px 16px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 40px;
+    min-width: 0;
+    overflow-y: auto;
+    background: var(--color-bg-page);
   }
 
   .login__card {
-    padding: 24px 20px;
+    width: 100%;
+    max-width: 400px;
+    background: var(--color-bg);
+    border-radius: 16px;
+    box-shadow: var(--color-shadow-base);
+    border: 1px solid var(--color-border-light);
+    padding: 40px 32px;
+    position: relative;
+    overflow: hidden;
   }
-}
+
+  .login__header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .login__title {
+    margin: 0 0 8px;
+    font-size: 24px;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    letter-spacing: -0.5px;
+  }
+
+  .login__subtitle {
+    margin: 0;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+  }
+
+  .login__form {
+    margin-bottom: 24px;
+
+    :deep(.el-form-item) {
+      margin-bottom: 20px;
+    }
+
+    :deep(.el-form-item__error) {
+      font-size: 12px;
+      margin-top: 6px;
+    }
+  }
+
+  .login__error {
+    margin-bottom: 16px !important;
+
+    :deep(.el-form-item__content) {
+      padding: 0;
+    }
+  }
+
+  .login__error-message {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--color-error-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    color: var(--color-error);
+    font-size: 13px;
+
+    svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+  }
+
+  .login__remember {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    :deep(.el-checkbox) {
+      :deep(.el-checkbox__label) {
+        font-size: 13px;
+        color: var(--color-text-regular);
+      }
+
+      :deep(.el-checkbox__input) {
+        :deep(.el-checkbox__inner) {
+          border-color: var(--color-border);
+          width: 16px;
+          height: 16px;
+
+          &:hover {
+            border-color: var(--color-primary);
+          }
+        }
+
+        :deep(.el-checkbox__inner--checked) {
+          background: var(--color-primary);
+          border-color: var(--color-primary);
+        }
+      }
+    }
+  }
+
+  .login__forgot {
+    font-size: 13px;
+    color: var(--color-primary);
+    font-weight: var(--font-weight-medium);
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .login__submit {
+    width: 100%;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .login__footer {
+    text-align: center;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border-light);
+
+    p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--color-text-placeholder);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .login-page {
+      padding: 16px;
+      align-items: flex-start;
+      min-height: auto;
+    }
+
+    .login-container {
+      flex-direction: column;
+      height: auto;
+      max-height: none;
+      border-radius: 12px;
+    }
+
+    .login__brand {
+      padding: 48px 24px;
+      text-align: center;
+      border-right: none;
+      border-bottom: 1px solid var(--color-border-light);
+    }
+
+    .login__brand-content {
+      max-width: 100%;
+    }
+
+    .login__brand-title {
+      font-size: 28px;
+    }
+
+    .login__brand-slogan {
+      font-size: 16px;
+    }
+
+    .login__brand-logo {
+      width: 56px;
+      height: 56px;
+      margin-bottom: 20px;
+    }
+
+    .login__features {
+      gap: 10px;
+    }
+
+    .login__feature {
+      padding: 10px;
+    }
+
+    .login__feature-icon {
+      width: 32px;
+      height: 32px;
+    }
+
+    .login__form-wrapper {
+      padding: 32px 20px;
+    }
+
+    .login__card {
+      padding: 32px 24px;
+      box-shadow: var(--color-shadow-light);
+      border: 1px solid var(--color-border-light);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .login-page {
+      padding: 0;
+    }
+
+    .login-container {
+      border-radius: 0;
+      min-height: 100vh;
+    }
+
+    .login__brand {
+      padding: 32px 20px;
+    }
+
+    .login__brand-title {
+      font-size: 24px;
+    }
+
+    .login__brand-desc {
+      font-size: 13px;
+    }
+
+    .login__features {
+      display: none;
+    }
+
+    .login__form-wrapper {
+      padding: 24px 16px;
+    }
+
+    .login__card {
+      padding: 24px 20px;
+    }
+  }
 </style>

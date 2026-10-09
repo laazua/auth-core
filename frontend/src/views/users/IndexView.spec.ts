@@ -12,16 +12,27 @@ vi.mock('@/components/BaseButton.vue', () => ({
     name: 'BaseButton',
     props: ['variant', 'size', 'loading', 'disabled'],
     emits: ['click'],
-    template: '<button class="base-button-mock" @click="$emit(\'click\', $event)" :disabled="disabled || loading"><slot /></button>',
+    template:
+      '<button class="base-button-mock" @click="$emit(\'click\', $event)" :disabled="disabled || loading"><slot /></button>',
   },
 }));
 
 vi.mock('@/components/BaseInput.vue', () => ({
   default: {
     name: 'BaseInput',
-    props: ['modelValue', 'placeholder', 'type', 'clearable', 'showPassword', 'disabled', 'readonly', 'maxlength'],
+    props: [
+      'modelValue',
+      'placeholder',
+      'type',
+      'clearable',
+      'showPassword',
+      'disabled',
+      'readonly',
+      'maxlength',
+    ],
     emits: ['update:modelValue', 'blur', 'focus', 'change', 'clear'],
-    template: '<input class="base-input-mock" :value="modelValue" :placeholder="placeholder" :type="type" :disabled="disabled" :readonly="readonly" :maxlength="maxlength" @input="$emit(\'update:modelValue\', $event.target.value)" @blur="$emit(\'blur\', $event)" @focus="$emit(\'focus\', $event)" @change="$emit(\'change\', $event.target.value)" />',
+    template:
+      '<input class="base-input-mock" :value="modelValue" :placeholder="placeholder" :type="type" :disabled="disabled" :readonly="readonly" :maxlength="maxlength" @input="$emit(\'update:modelValue\', $event.target.value)" @blur="$emit(\'blur\', $event)" @focus="$emit(\'focus\', $event)" @change="$emit(\'change\', $event.target.value)" />',
   },
 }));
 
@@ -30,7 +41,8 @@ vi.mock('@/components/BaseSelect.vue', () => ({
     name: 'BaseSelect',
     props: ['modelValue', 'options', 'placeholder', 'disabled', 'clearable', 'filterable'],
     emits: ['update:modelValue', 'change', 'blur', 'focus', 'clear'],
-    template: '<select class="base-select-mock" :value="modelValue" :disabled="disabled" @input="$emit(\'update:modelValue\', $event.target.value)" @change="$emit(\'change\', $event.target.value)"><option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option></select>',
+    template:
+      '<select class="base-select-mock" :value="modelValue" :disabled="disabled" @input="$emit(\'update:modelValue\', $event.target.value)" @change="$emit(\'change\', $event.target.value)"><option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option></select>',
   },
 }));
 
@@ -38,7 +50,15 @@ vi.mock('@/components/BaseTable.vue', () => ({
   default: {
     name: 'BaseTable',
     props: ['data', 'columns', 'loading', 'rowKey', 'emptyText'],
-    emits: ['sort-change', 'selection-change', 'row-click', 'row-dblclick', 'header-click', 'current-change', 'size-change'],
+    emits: [
+      'sort-change',
+      'selection-change',
+      'row-click',
+      'row-dblclick',
+      'header-click',
+      'current-change',
+      'size-change',
+    ],
     template: `
       <div class="base-table-mock">
         <table>
@@ -71,7 +91,8 @@ vi.mock('@/components/BaseCard.vue', () => ({
   default: {
     name: 'BaseCard',
     props: ['title', 'subtitle', 'bordered', 'shadow', 'padding'],
-    template: '<div class="base-card-mock"><div v-if="title || $slots.header" class="base-card-mock__header"><slot name="header"><div><h3 v-if="title">{{ title }}</h3><p v-if="subtitle">{{ subtitle }}</p></div></slot></div><div class="base-card-mock__body"><slot /></div><div v-if="$slots.footer" class="base-card-mock__footer"><slot name="footer" /></div></div>',
+    template:
+      '<div class="base-card-mock"><div v-if="title || $slots.header" class="base-card-mock__header"><slot name="header"><div><h3 v-if="title">{{ title }}</h3><p v-if="subtitle">{{ subtitle }}</p></div></slot></div><div class="base-card-mock__body"><slot /></div><div v-if="$slots.footer" class="base-card-mock__footer"><slot name="footer" /></div></div>',
   },
 }));
 
@@ -80,7 +101,8 @@ vi.mock('@/views/users/UserFormDrawer.vue', () => ({
     name: 'UserFormDrawer',
     props: ['visible', 'mode', 'initialData'],
     emits: ['submit', 'close'],
-    template: '<div class="user-form-drawer-mock" v-if="visible" data-test="user-form-drawer"><slot /></div>',
+    template:
+      '<div class="user-form-drawer-mock" v-if="visible" data-test="user-form-drawer"><slot /></div>',
   },
 }));
 
@@ -89,7 +111,8 @@ vi.mock('@/views/users/RoleAssignDrawer.vue', () => ({
     name: 'RoleAssignDrawer',
     props: ['visible', 'userId'],
     emits: ['submit', 'close'],
-    template: '<div class="role-assign-drawer-mock" v-if="visible" data-test="role-assign-drawer"><slot /></div>',
+    template:
+      '<div class="role-assign-drawer-mock" v-if="visible" data-test="role-assign-drawer"><slot /></div>',
   },
 }));
 
@@ -142,7 +165,9 @@ const mockUsers = [
     phone: '13800138000',
     status: 1,
     createTime: '2024-01-01T00:00:00Z',
-    roles: [{ id: 1, code: 'admin', name: '管理员', status: 1, createTime: '2024-01-01T00:00:00Z' }],
+    roles: [
+      { id: 1, code: 'admin', name: '管理员', status: 1, createTime: '2024-01-01T00:00:00Z' },
+    ],
   },
   {
     id: 2,
@@ -152,7 +177,9 @@ const mockUsers = [
     phone: '13800138001',
     status: 1,
     createTime: '2024-01-02T00:00:00Z',
-    roles: [{ id: 2, code: 'user', name: '普通用户', status: 1, createTime: '2024-01-01T00:00:00Z' }],
+    roles: [
+      { id: 2, code: 'user', name: '普通用户', status: 1, createTime: '2024-01-01T00:00:00Z' },
+    ],
   },
   {
     id: 3,
@@ -176,37 +203,82 @@ describe('IndexView - 用户管理页', () => {
   let authStore: ReturnType<typeof useAuthStore>;
   let pinia: ReturnType<typeof createPinia>;
 
-const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'user:update', 'user:delete', 'user:reset-password', 'user:assign-role']) => {
-  // Update authStore with the given permissions
-  authStore.setPermissions(permissions);
-  
-  const router = createRouter({
-    history: createWebHistory(),
-    routes: [
-      { path: '/', name: 'Home', component: { template: '<div>Home</div>' }, meta: { requiresAuth: true } },
-      { path: '/users', name: 'Users', component: IndexView, meta: { requiresAuth: true, permissions: ['user:view'] } },
-      { path: '/login', name: 'Login', component: { template: '<div>Login</div>' }, meta: { public: true } },
-    ],
-  });
-  router.push('/users');
+  const createWrapper = (
+    permissions: string[] = [
+      'user:view',
+      'user:create',
+      'user:update',
+      'user:delete',
+      'user:reset-password',
+      'user:assign-role',
+    ]
+  ) => {
+    // Update authStore with the given permissions
+    authStore.setPermissions(permissions);
 
-  return mount(IndexView, {
-    global: {
-      plugins: [pinia, router],
-      mocks: {
-        $t: (key: string) => key,
+    const router = createRouter({
+      history: createWebHistory(),
+      routes: [
+        {
+          path: '/',
+          name: 'Home',
+          component: { template: '<div>Home</div>' },
+          meta: { requiresAuth: true },
+        },
+        {
+          path: '/users',
+          name: 'Users',
+          component: IndexView,
+          meta: { requiresAuth: true, permissions: ['user:view'] },
+        },
+        {
+          path: '/login',
+          name: 'Login',
+          component: { template: '<div>Login</div>' },
+          meta: { public: true },
+        },
+      ],
+    });
+    router.push('/users');
+
+    return mount(IndexView, {
+      global: {
+        plugins: [pinia, router],
+        mocks: {
+          $t: (key: string) => key,
+        },
       },
-    },
-  });
-};
+    });
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
     pinia = createPinia();
     setActivePinia(pinia);
     authStore = useAuthStore();
-    authStore.login('mock-token', { id: 1, username: 'admin', nickname: '管理员', email: '', phone: '', status: 1, createTime: '' }, ['admin'], ['user:view', 'user:create', 'user:update', 'user:delete', 'user:reset-password', 'user:assign-role', '*']);
-    
+    authStore.login(
+      'mock-token',
+      {
+        id: 1,
+        username: 'admin',
+        nickname: '管理员',
+        email: '',
+        phone: '',
+        status: 1,
+        createTime: '',
+      },
+      ['admin'],
+      [
+        'user:view',
+        'user:create',
+        'user:update',
+        'user:delete',
+        'user:reset-password',
+        'user:assign-role',
+        '*',
+      ]
+    );
+
     mockUserApi.list.mockResolvedValue({
       code: 0,
       message: 'success',
@@ -253,7 +325,7 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
       expect(table.exists()).toBe(true);
       expect(table.props('columns')).toBeDefined();
       const columns = table.props('columns') as any[];
-      const columnProps = columns.map(c => c.prop);
+      const columnProps = columns.map((c) => c.prop);
       expect(columnProps).toContain('username');
       expect(columnProps).toContain('nickname');
       expect(columnProps).toContain('email');
@@ -281,14 +353,16 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
       await searchInput.setValue('admin');
       await wrapper.vm.$nextTick();
 
-      expect(mockUserApi.list).toHaveBeenCalledWith(expect.objectContaining({
-        page: 1,
-        size: 10,
-        username: 'admin',
-        nickname: 'admin',
-        email: 'admin',
-        phone: 'admin',
-      }));
+      expect(mockUserApi.list).toHaveBeenCalledWith(
+        expect.objectContaining({
+          page: 1,
+          size: 10,
+          username: 'admin',
+          nickname: 'admin',
+          email: 'admin',
+          phone: 'admin',
+        })
+      );
     });
 
     it('filters users by status', async () => {
@@ -299,11 +373,13 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
       await statusSelect.setValue('1');
       await wrapper.vm.$nextTick();
 
-      expect(mockUserApi.list).toHaveBeenLastCalledWith(expect.objectContaining({
-        page: 1,
-        size: 10,
-        status: '1',
-      }));
+      expect(mockUserApi.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          page: 1,
+          size: 10,
+          status: '1',
+        })
+      );
     });
 
     it('changes page correctly', async () => {
@@ -327,7 +403,9 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
       (wrapper.vm as any).handlePageChange(2);
       await wrapper.vm.$nextTick();
 
-      expect(mockUserApi.list).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2, size: 10 }));
+      expect(mockUserApi.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({ page: 2, size: 10 })
+      );
     });
 
     it('changes page size correctly', async () => {
@@ -351,7 +429,9 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
       (wrapper.vm as any).handleSizeChange(20);
       await wrapper.vm.$nextTick();
 
-      expect(mockUserApi.list).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1, size: 20 }));
+      expect(mockUserApi.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({ page: 1, size: 20 })
+      );
     });
   });
 
@@ -415,7 +495,7 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
 
       const wrapper = createWrapper();
       // Wait for initial load
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       // Directly call handleCreateSubmit
@@ -448,19 +528,21 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
       mockUserApi.create.mockRejectedValue(error);
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       // Directly call handleCreateSubmit and expect it to throw
-      await expect((wrapper.vm as any).handleCreateSubmit({
-        username: 'admin',
-        password: 'password123',
-        confirmPassword: 'password123',
-        nickname: '管理员',
-        email: 'admin@example.com',
-        phone: '13800138000',
-        status: 1,
-      })).rejects.toThrow();
+      await expect(
+        (wrapper.vm as any).handleCreateSubmit({
+          username: 'admin',
+          password: 'password123',
+          confirmPassword: 'password123',
+          nickname: '管理员',
+          email: 'admin@example.com',
+          phone: '13800138000',
+          status: 1,
+        })
+      ).rejects.toThrow();
 
       expect(mockElMessage.error).toHaveBeenCalledWith('用户名已存在');
     });
@@ -476,7 +558,7 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
       });
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       // Directly call handleEdit method
@@ -500,7 +582,7 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
       });
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       wrapper.vm.handleEdit(mockUsers[0]);
@@ -559,7 +641,7 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
       });
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       (wrapper.vm as any).handleEdit(mockUsers[0]);
@@ -586,7 +668,12 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
 
   describe('AC4 - 启停用、重置密码、角色分配', () => {
     it('toggles user status successfully', async () => {
-      mockUserApi.disable.mockResolvedValue({ code: 0, message: 'success', timestamp: Date.now(), data: undefined });
+      mockUserApi.disable.mockResolvedValue({
+        code: 0,
+        message: 'success',
+        timestamp: Date.now(),
+        data: undefined,
+      });
 
       mockUserApi.list
         .mockResolvedValueOnce({
@@ -606,7 +693,7 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
           message: 'success',
           timestamp: Date.now(),
           data: {
-            records: mockUsers.map(u => u.id === 1 ? { ...u, status: 0 } : u),
+            records: mockUsers.map((u) => (u.id === 1 ? { ...u, status: 0 } : u)),
             total: 3,
             size: 10,
             current: 1,
@@ -615,7 +702,7 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
         });
 
       const wrapper = createWrapper();
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       // Directly call handleStatusToggle
@@ -628,10 +715,15 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
     });
 
     it('resets password with confirmation dialog', async () => {
-      mockUserApi.resetPassword.mockResolvedValue({ code: 0, message: 'success', timestamp: Date.now(), data: undefined });
+      mockUserApi.resetPassword.mockResolvedValue({
+        code: 0,
+        message: 'success',
+        timestamp: Date.now(),
+        data: undefined,
+      });
 
       const wrapper = createWrapper(['user:view', 'user:reset-password']);
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       // Directly call handleResetPassword
@@ -639,7 +731,9 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
       await wrapper.vm.$nextTick();
 
       expect(mockElMessageBox.confirm).toHaveBeenCalled();
-      expect(mockUserApi.resetPassword).toHaveBeenCalledWith(1, { newPassword: expect.any(String) });
+      expect(mockUserApi.resetPassword).toHaveBeenCalledWith(1, {
+        newPassword: expect.any(String),
+      });
       expect(mockElMessage.success).toHaveBeenCalledWith(expect.stringContaining('重置成功'));
     });
 
@@ -665,7 +759,7 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
       });
 
       const wrapper = createWrapper(['user:view', 'user:assign-role']);
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       // Directly call handleRoleAssign
@@ -677,7 +771,12 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
     });
 
     it('assigns roles successfully via role assign drawer', async () => {
-      mockUserApi.assignRoles.mockResolvedValue({ code: 0, message: 'success', timestamp: Date.now(), data: undefined });
+      mockUserApi.assignRoles.mockResolvedValue({
+        code: 0,
+        message: 'success',
+        timestamp: Date.now(),
+        data: undefined,
+      });
 
       mockUserApi.list
         .mockResolvedValueOnce({
@@ -726,7 +825,7 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
       });
 
       const wrapper = createWrapper(['user:view', 'user:assign-role']);
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       (wrapper.vm as any).handleRoleAssign(mockUsers[0]);
@@ -742,7 +841,7 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
 
     it('hides reset password button when no permission', async () => {
       const wrapper = createWrapper(['user:view', 'user:create', 'user:update', 'user:delete']);
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       // Check that reset password button is not rendered in table actions
@@ -754,7 +853,7 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
 
     it('hides role assign button when no permission', async () => {
       const wrapper = createWrapper(['user:view', 'user:create', 'user:update', 'user:delete']);
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       // Check that role assign button is not rendered in table actions
@@ -763,7 +862,7 @@ const createWrapper = (permissions: string[] = ['user:view', 'user:create', 'use
 
     it('hides create button when no create permission', async () => {
       const wrapper = createWrapper(['user:view', 'user:update', 'user:delete']);
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await wrapper.vm.$nextTick();
 
       expect((wrapper.vm as any).canCreate).toBe(false);

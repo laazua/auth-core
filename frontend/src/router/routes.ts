@@ -147,6 +147,10 @@ export const generateRoutes = (roles: string[]): RouteRecordRaw[] => {
     return route.meta.roles.some((role: string) => roles.includes(role));
   });
 
-  const routes: RouteRecordRaw[] = [...layoutRoutes, ...(accessibleRoutes as RouteRecordRaw[]), { path: '/:pathMatch(.*)*', redirect: '/404' }];
+  const routes: RouteRecordRaw[] = [
+    ...layoutRoutes,
+    ...(accessibleRoutes as RouteRecordRaw[]),
+    { path: '/:pathMatch(.*)*', redirect: '/404' },
+  ];
   return routes;
 };

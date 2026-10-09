@@ -42,7 +42,8 @@ describe('SidebarIconSizeSpec', () => {
   });
 
   it('fallbackIconExplicitSize16px — 顶层 .sidebar__icon 含 width: 16px; height: 16px;', () => {
-    const ruleBlock = extractRuleBlock(sidebarVueContent, '\n.sidebar__icon');
+    // web/011c 格式治理同步：vueIndentScriptAndStyle 使顶层选择器带 2 空格缩进，标记随格式口径更新（语义不变=顶层规则块）
+    const ruleBlock = extractRuleBlock(sidebarVueContent, '\n  .sidebar__icon');
     expect(ruleBlock).not.toBeNull();
     expect(ruleBlock).toContain('width: 16px');
     expect(ruleBlock).toContain('height: 16px');

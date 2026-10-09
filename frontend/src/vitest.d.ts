@@ -2,7 +2,9 @@
 
 declare global {
   namespace vi {
-    const fn: <T extends (...args: any[]) => any>(implementation?: T) => ReturnType<T> & {
+    const fn: <T extends (...args: any[]) => any>(
+      implementation?: T
+    ) => ReturnType<T> & {
       mockImplementation: (fn: (...args: any[]) => any) => void;
       mockReturnValue: <T>(value: T) => void;
       mockResolvedValue: <T>(value: T) => void;
@@ -23,6 +25,9 @@ declare global {
     const useRealTimers: () => void;
     const advanceTimersByTime: (ms: number) => void;
     const runOnlyPendingTimers: () => void;
-    const waitFor: <T>(callback: () => Promise<T> | T, options?: { timeout?: number; interval?: number }) => Promise<T>;
+    const waitFor: <T>(
+      callback: () => Promise<T> | T,
+      options?: { timeout?: number; interval?: number }
+    ) => Promise<T>;
   }
 }
