@@ -138,6 +138,12 @@ vi.mock('@/views/system/ModuleFormDrawer.vue', () => ({
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { createRouter, createWebHistory } from 'vue-router';
+// 覆盖 setup.ts 的 vue-router 全局桩：本 spec 各用例均装真实 router 插件，
+// 组件须拿到真件使 watch(route.path) 分支与 router.push 生效（R1 根因判定）
+vi.mock(
+  'vue-router',
+  async (importOriginal) => (await importOriginal()) as typeof import('vue-router')
+);
 import IndexView from '@/views/system/IndexView.vue';
 import { useAuthStore } from '@/stores/auth';
 import { permissionApi } from '@/api/permission';

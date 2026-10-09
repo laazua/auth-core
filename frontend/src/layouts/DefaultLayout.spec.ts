@@ -69,7 +69,7 @@ const router = createRouter({
 });
 
 describe('DefaultLayout', () => {
-  let wrapper: VueWrapper<any>;
+  let wrapper: VueWrapper;
   let appStore: ReturnType<typeof useAppStore>;
 
   beforeEach(() => {

@@ -16,6 +16,12 @@ vi.mock('element-plus', () => ({
     error: vi.fn(),
   },
 }));
+// 覆盖 setup.ts 的 vue-router 全局桩：本 spec 已装真实 router 插件，
+// 组件须拿到真件（currentRoute/push），否则 LoginView.vue:75 读 currentRoute.value 抛错、导航 no-op（R1）
+vi.mock(
+  'vue-router',
+  async (importOriginal) => (await importOriginal()) as typeof import('vue-router')
+);
 
 const mockAuthApi = vi.mocked(authApi);
 const mockElMessage = vi.mocked(ElMessage);
