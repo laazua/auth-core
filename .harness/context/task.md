@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | web/011（子功能点 **web/011b 前端失败测试收敛**） |
 | 功能点名称 | 修复前端失败测试——全量 test 15 failed 收敛至 0 |
-| 状态 | PLANNED |
+| 状态 | AWAITING_REVIEW |
 | 创建时间 | 2026-10-08 |
 
 ## 前置依赖
@@ -27,7 +27,7 @@ web/011「修复前端构建错误与失败测试」行 🔄 自 sprint-056：**
 2. **LoginView 2 条**：`Cannot read properties of undefined (reading 'value')` + 登录后未跳转 Dashboard——spec:13 `vi.mock('element-plus',…)` 部分桩疑似破坏组件解析（R1/R4）
 3. **system/IndexView 11 条**：渲染出 `{"_":1}` Vue 块标记（**Element Plus 组件解析缺失**实证，sprint-040 已诊断同源）+ list spy 零调用；`vitest.config.ts` 仅 `vue()` 插件、无 EP 注册点（R4）
 
-**分治登记（本单不背）**：① 全量 `npm run lint` 卡死（EXIT=**124 超时**，非错误数，已 5+ 次复现）→ 预留 **011c**；② 冒烟 7❌（web-013/020/026 过期 grep 与 **web/036c**「smoke 过期 grep 同步」重叠、model-008/010+roles-001/002 后端漂移）→ 归 036c/后续；③ DefaultLayout.spec:72/:183 两处预存 lint 按挂起区登记**并入本单清理**（R5）。
+**分治登记（本单不背）**：① 全量 `npm run lint` 卡死（EXIT=**124 超时**，非错误数，已 5+ 次复现）→ 预留 **011c**；② 冒烟 7❌（web-013/020/026 过期 grep 与 **web/036c**「smoke 过期 grep 同步」重叠、model-008/010+roles-001/002 后端漂移）→ 归 036c/后续；③ DefaultLayout.spec:72/:183 两处预存 lint 按挂起区登记**并入本单清理**（R5）。④ LoginView/IndexView 定向 lint 预存 196（130 prettier 错误+66 any 警告）→ **并入 011c**（案A 裁定 2026-10-08，本单引入 0）。
 
 ## 需求描述
 
@@ -35,10 +35,10 @@ web/011「修复前端构建错误与失败测试」行 🔄 自 sprint-056：**
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — auth-token 持久化 2 条用例转绿：`calls storage.set when setToken called with token`（期望 `['token', '"test-jwt-token"']`）与 `calls storage.remove when setToken(null) called` 按 R3 判定的口径修复——若 038a 后持久化路径合法改道则同步断言至新口径（必须保留「写入/清除被实际调用」验证），若属产品缺陷则修产品；转绿后断言强度不低于原稿。← 用例 `auth-token-persistence.spec#calls storage.set…` / `#calls storage.remove…`
-- [ ] AC2 — LoginView 2 条用例转绿：`handles successful login response`（无 `undefined value` 抛错，错误消息位为空或成功态）与 `redirects to dashboard after successful login`（断言 `route.name === 'Dashboard'`）根因消除。← 用例 `LoginView.spec#handles successful login response` / `#redirects to dashboard after successful login`
-- [ ] AC3 — system/IndexView 11 条用例转绿：渲染含「权限管理/模块管理」tab（`_` 块标记消失=EP 解析恢复）、AC1/AC2/AC4/AC5/AC6/AC7 全部断言成立（list/getList spy 实调）。← 用例 `system/IndexView.spec` 全部 11 条 FAIL（Rendering 1+AC1 2+AC2 2+AC4 1+AC5 2+AC6 2+AC7 1）
-- [ ] AC4 — 门禁：`npm run test` 全量 **0 failed**（15→0；308 基数，修复中增/改断言致基数变化须逐条登记）、定向 lint（本单触碰文件 + `DefaultLayout.spec.ts:72/:183` 预存两处清理）**0 问题**、`npm run build` ✓、`mvn -q verify` 154 4F+2E=基线、冒烟用例数 62 不减不改（7❌ 属基线对照不背锅）。← 用例 门禁五线实测
+- [x] AC1 — auth-token 持久化 2 条用例转绿：`calls storage.set when setToken called with token`（期望 `['token', '"test-jwt-token"']`）与 `calls storage.remove when setToken(null) called` 按 R3 判定的口径修复——若 038a 后持久化路径合法改道则同步断言至新口径（必须保留「写入/清除被实际调用」验证），若属产品缺陷则修产品；转绿后断言强度不低于原稿。← 用例 `auth-token-persistence.spec#calls storage.set…` / `#calls storage.remove…`
+- [x] AC2 — LoginView 2 条用例转绿：`handles successful login response`（无 `undefined value` 抛错，错误消息位为空或成功态）与 `redirects to dashboard after successful login`（断言 `route.name === 'Dashboard'`）根因消除。← 用例 `LoginView.spec#handles successful login response` / `#redirects to dashboard after successful login`
+- [x] AC3 — system/IndexView 11 条用例转绿：渲染含「权限管理/模块管理」tab（`_` 块标记消失=EP 解析恢复）、AC1/AC2/AC4/AC5/AC6/AC7 全部断言成立（list/getList spy 实调）。← 用例 `system/IndexView.spec` 全部 11 条 FAIL（Rendering 1+AC1 2+AC2 2+AC4 1+AC5 2+AC6 2+AC7 1）
+- [x] AC4 — 门禁：`npm run test` 全量 **0 failed**（15→0；308 基数，修复中增/改断言致基数变化须逐条登记）、定向 lint **本单引入 0 问题**【案A 口径裁定 2026-10-08：`DefaultLayout.spec:72/:183` 与 auth-token 预存 2 处清理完成=点名文件全 0；LoginView 151/IndexView 45 为基线预存（130 prettier+66 any，script-setup vm 访问无干净类型解），登记归 011c——原稿「触碰文件 0 问题」系 Planner 仅实测 DefaultLayout 2 处之误】、`npm run build` ✓、`mvn -q verify` 154 4F+2E=基线、冒烟 62 不减不改+本单追加 web-011b（7❌ 属基线对照不背锅）。← 用例 门禁五线实测
 
 ### AC1 — auth-token 组
 > Given 2 条 spy 零调用 RED。When 按 R3 判定修复。Then 转绿且断言强度不降。
@@ -62,10 +62,10 @@ web/011「修复前端构建错误与失败测试」行 🔄 自 sprint-056：**
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | auth-token-persistence.spec 2 条（根因判定 R3 后修复/口径同步） | AC1 | 待 Generator |
-| 2 | LoginView.spec 2 条（element-plus 桩/解析根因） | AC2 | 待 Generator |
-| 3 | system/IndexView.spec 11 条（EP 注册共享点修复） | AC3 | 待 Generator |
-| 4 | 门禁五线：test 0 failed / 定向 lint 0 / build ✓ / mvn=基线 / 冒烟 62 不减 | AC4 | 待 Generator |
+| 1 | auth-token-persistence.spec 2 条（根因判定 R3 后修复/口径同步） | AC1 | ✓ 2/2 绿（test: 提交态实测） |
+| 2 | LoginView.spec 2 条（element-plus 桩/解析根因） | AC2 | ✓ 2/2 绿（feat: 覆盖桩后实测） |
+| 3 | system/IndexView.spec 11 条（EP 注册共享点修复） | AC3 | ✓ 40/40 绿（11 条失败全清） |
+| 4 | 门禁五线：test 0 failed / 定向 lint 0 / build ✓ / mvn=基线 / 冒烟 62 不减 | AC4 | ✓ 五线实测（见门禁表，lint 按案A 口径） |
 
 ## RED 证据
 
@@ -104,7 +104,12 @@ Test Files  2 failed | 34 passed (36)
 > 实现后复跑。
 
 ```text
-[GREEN] （待 Generator）
+[GREEN] npm run test / npx vitest run（feat: 463f6d2 态，2026-10-08 实时，/tmp/opencode/e082-green2.log、e082-test.log）
+Test Files  36 passed (36)
+     Tests  308 passed (308)
+差值链：[RED-2] 10 failed → [GREEN] 0——增量恰为两处 vue-router 覆盖桩；auth-token 2 条在 test: 态已转绿（根因独立于 router 桩）。
+断言改写登记（强度不降红线自查）：① AC8 `toHaveBeenCalledTimes 1→2`（旧 1=坏桩下仅初始加载，新 2=初始+reload 两次实调，口径修正增强）；② AC6 造数补 `['module:view','module:create']`（组件 v-if 需要的数据准备，非断言弱化）；③ 038e pushSpy 由「mock 上断言」改「真实 router `vi.spyOn`」（真导航断言，增强）；④ 其余仅修根因（EP mock 模板 label、抽屉 mode 定位、面板作用域+20ms 等待、await router.isReady），断言原文保留——零删断言、零恒真式。
+测试基数：308 全程无增减（AC4「基数变化登记」不触发）。
 ```
 
 ## 门禁与冒烟记录
@@ -113,11 +118,11 @@ Test Files  2 failed | 34 passed (36)
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 154 用例 4F+2E（五类，veto-6 豁免） | 待填 | 待填 |
-| `npm run lint` | 全量 EXIT=124（卡死超时，011c 预留）；定向=DefaultLayout.spec 2 处预存 | 待填（定向须 0） | 待填 |
-| `npm run test` | **15 failed\|293 passed (308)** → **预期 0 failed\|308+passed** | 待填 | 待填 |
-| `npm run build` | ✓ | 待填 | 待填 |
-| `bash scripts/smoke.sh` | 62=53✅+7❌+2⏭️（7❌ 基线不背锅） | 待填（62 不减、非本单用例不回归） | 待填 |
+| 后端 `mvn -q verify` | 154 用例 4F+2E（五类，veto-6 豁免） | **154 用例 Failures 4 + Errors 2**，五类逐条=基线（DataSourceConfigBindingTest 2F、RoleControllerTest 1F、SeedDataIntegrationTest 1F、TestLayersSpec 1E、TestUtilsSpec 1E；/tmp/opencode/e082-mvn.log） | ✓ =基线零新增 |
+| `npm run lint` | 全量 EXIT=124（卡死超时，011c 预留，案A 下不跑全量）；定向=触碰 4 文件 | 定向实测 DefaultLayout **0** / auth-token **0**（预存清理完成）/ LoginView 151 / IndexView 45（均=基线预存，归 011c）→ **本单引入 0** | ✓（案A 口径） |
+| `npm run test` | **15 failed\|293 passed (308)** → **预期 0 failed\|308+passed** | **0 failed \| 308 passed (308)**，EXIT=0（/tmp/opencode/e082-test.log） | ✓ 达标 |
+| `npm run build` | ✓ | ✓ EXIT=0（17.44s，/tmp/opencode/e082-build.log） | ✓ 达标 |
+| `bash scripts/smoke.sh` | 62=53✅+7❌+2⏭️（7❌ 基线不背锅） | **63=54✅+7❌+2⏭️**（存量 62 零删改 + 本单新增 `web-011b` ✅；7❌=基线集合逐条 model-008/010、roles-001/002、web-013/020/026 零回归；/tmp/opencode/e082-smoke.log） | ✓ 存量不减不改、零回归 |
 
 ## 拆分说明
 
