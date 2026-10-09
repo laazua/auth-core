@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟢 **评审通过 sprint-083**（Evaluator ✅ PASS 9.3/10：五维 9.5/9/9/9.5/9.5，六否决零命中；web/011 全系 ✅ 收口）
+- 状态: 🟡 **规划完成 sprint-084**（Planner 注册 web/036b 暗色局部白底缺陷修复，4 条验收标准；反模式全仓清查恰 3 处/2 文件钉死边界，≤6 文件不拆分；sprint-083 已 ✅ PASS 9.3/10）
 - 当前模块: web
-- 当前功能点: web/011c 全量 lint 门禁恢复 — **✅ DONE（评审通过 9.3/10）**（全量 lint 门禁恢复可用：124 卡死解除、Error 4559→0、案A 零夹带；遗留分治：any 165→011d、冒烟 3 过期 grep→036c）
+- 当前功能点: web/036b 暗色模式局部白底缺陷修复 — **🟡 工作单就绪（PLANNED）**（4 AC 顶格；①BaseTable 遮罩死选择器产物实证、②settings ElButton variant 非法 prop（全站 BaseButton 14:1 惯例）、③反模式清查=0 面已由 036a 完成仅剩 3 处；连带 web-011b 计数断言同步防自伤 veto-6）
 
 
 ## 下一步动作
-  Planner：读 `.harness/planner.md` 并严格执行——取下一功能点。建议首选 **web/036b（暗色模式局部白底缺陷）**（产品缺陷按「正确性优先」＞清理项；036c 打磨治理含冒烟 web-013/020/026 过期 grep 清零次之，011d any 165 再次；均已在 registry 036/web 备注预留）。sprint-083 评审报告与改进建议 5 条见 task.md 评审意见区。
+  Generator：读 `.harness/generator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-084 / web/036b）。首个实现要点：**先 RED 后修复**——① 反模式 spec 先写（源断言对 BaseTable 死模式/settings variant/硬编码浅底 3 处必红）；② 修复前 build 存产物形态基线（死形态存在、可命中形态缺失、`[data-theme=dark]` 计数=11 实录）；③ smoke `web-036b` 用例先写 + `web-011b` 计数断言同波语义同步（用例不删除）；随后按 R1-R3 研究项定修复形态（遮罩三选一：scoped 祖先形态/全局下沉/EP mask 变量；按钮按 14:1 惯例换 BaseButton）→ 门禁五线+冒烟 65 收口。**熔断边界与不动清单见工作单拆分说明**（代码文件 >6 / 删遮罩样式 / 第 4 处未知缺陷面即回报）。
 
 ## 挂起
 - 2026-10-08: Generator(sprint-083) — **AC3 ① 证明口径修订（用户案A 问答在案）**：「机械段 `git diff -w` 空」字面不可达——prettier 自动波含 printWidth 100 长行拆分等风格改写（实测非空白变更 9564 行，主因行拆分），强求将迫使逐文件手工回卷、风险大于收益；用户裁定**案A**=逐文件 `工作树 == eslintFix(HEAD)` 等价证明（HEAD 副本过同配 `eslint --fix` 后与工作树逐字节比对，可抦截任何夹带，**比 diff -w 更强**），风格 token 允许。实测结果：**50 机械等价 + 8 手工 + 1 配置 = 59 文件零夹带**（手工 delta 仅 117 行，e083-hand-hunks.log + sidebar spec 单行同步复核）。任务单 AC3/RED 槽已修订，Evaluator 按此口径评审。
@@ -43,6 +43,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-09: Planner — kickoff sprint-084（web/036b，4 条验收标准，反模式清查钉死恰 3 处/2 文件、产物死形态实证、连带 web-011b 计数断言同步登记）
 - 2026-10-08: Evaluator — pass sprint-083（web/011c，平均分 9.3/10，五维 9.5/9/9/9.5/9.5：门禁亲跑 mvn 154 4F+2E=基线、前端链 EXIT=0（0E/165W、308/308、build 17.81s）、lint:check 11s 零 dist、冒烟 64=55✅+7❌+2⏭️ 零回归、RED 独立复现 124/4559 规则逐条、案A 抽查 3 文件等价+手工 117 行复核、零越界；六否决零命中）
 - 2026-10-08: Generator — done sprint-083（web/011c 全量 lint 门禁恢复：R1 钉死 dist 无 ignorePatterns 根因，RED 124/4559/用例体三实证先行，59 文件治理=配置 2 处+机械 50 案A 零夹带+手工 8 逐条（含 canDelete .value 真缺陷修），lint 双 exit 0（4559→0 error/165 warning）、test 308/308（sidebar spec 标记语义同步 1 处）、build ✓、mvn 154 4F+2E=基线、冒烟 64=55✅+7❌+2⏭️ 零回归 web-011c ✅；提交 9e82973 test → ec7bbc4 feat）
 - 2026-10-08: Planner — kickoff sprint-083（web/011c，4 条验收标准，案B 单波豁免用户裁决在案）
