@@ -75,19 +75,29 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | smoke web-013/web-026 同步前失败实证（计数 19/23 vs 实测 24） | AC1 | （待 Generator——RED 实录） |
-| 2 | smoke web-020 同步前失败实证（Header-*.css 不存在，实载 DefaultLayout-*.css） | AC2 | （待 Generator——RED 实录） |
-| 3 | profile spec 强化断言 + 旧正则错例误通过变异证据 | AC3 | （待 Generator——RED 实录） |
-| 4 | 新增冒烟用例首跑（对现状缺/红）+ 门禁五线 + 全量冒烟 ❌=4 | AC4 | （待 Generator） |
+| 1 | smoke web-013/web-026 同步前失败实证（计数 19/23 vs 实测 24） | AC1 | ✓ RED-1=两用例 EXIT=1 + 实测 `Tests 24 passed (24)`（evidence in RED 槽） |
+| 2 | smoke web-020 同步前失败实证（Header-*.css 不存在，实载 DefaultLayout-*.css） | AC2 | ✓ RED-2=EXIT=1（目标文件不存在）+ DefaultLayout-*.css 命中=1 |
+| 3 | profile spec 强化断言 + 旧正则错例误通过变异证据 | AC3 | ✓ RED-3=旧正则错例 true 误过 / 新正则 false 拒真例 true（node 实录） |
+| 4 | 新增冒烟用例首跑（对现状缺/红）+ 门禁五线 + 全量冒烟 ❌=4 | AC4 | ✓ 新用例 web-036c1 首跑 EXIT=1（三反模式在场=RED）；门禁/冒烟待 GREEN |
 
 ## RED 证据
 
 > Generator 于任何修改动作前执行测试清单并粘贴实证。
 
 ```text
-[RED-1] （待 Generator——web-013/026 用例体首跑实录：期望 19/23 vs 实测 24）
-[RED-2] （待 Generator——web-020 用例体首跑实录：Header-*.css 缺失致正断言红）
-[RED-3] （待 Generator——旧正则对错例误通过 + 新正则首写对现状的断言形态）
+[RED-1] web-013/web-026 用例体首跑（2026-10-09 实时，/tmp/r085-013.log、/tmp/r085-026.log）：
+web-013 EXIT=1、web-026 EXIT=1（均为 ❌ 状态）
+计数实证（直跑 LoginView.spec 绕过 grep -q 吞噬）：`Tests  24 passed (24)`——用例硬编码 '19 passed'/'23 passed' 全部过期
+（smoke.sh:182 `grep -q '19 passed'`、:334 `grep -q '23 passed'`）
+
+[RED-2] web-020 用例体首跑（/tmp/r085-020.log）：
+EXIT=1；失败尾 `grep: dist/assets/css/Header-*.css: 没有那个文件或目录`（目标文件不存在）
+对照：grep 全 dist 命中 `header__toggle` 恰在 `DefaultLayout-*.css`（命中计数=1，Planner 预研复核）
+
+[RED-3] profile 弱正则变异实录（node 单行，/tmp 实时输出）：
+旧正则 `/['"@\/components\/BaseButton.vue['"]/` 对错例 `totally.bogus junk` 误通过 = **true**（缺陷面）
+新正则 `/^import BaseButton from ['"]@\/components\/BaseButton\.vue['"];?$/m` 错例 = false、真例 = true
+另：新自检用例 web-036c1 首跑 EXIT=**1**（'19 passed'/'23 passed'/'Header-*.css' 三反模式在场=红，/tmp/r085-036c1.sh）
 ```
 
 > 治理后复跑。

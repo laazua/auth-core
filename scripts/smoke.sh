@@ -431,6 +431,18 @@ smoke_case "web-036b 暗色遮罩与按钮语义修复" bash -c "
   grep -rq -- '--color-bg-page: *#020617' dist/assets/css/*.css || exit 1
 "
 
+# web/036c1：过期口径同步就位自检（sprint-085 本单追加：硬编码计数与过期 chunk 目标清零 + 语义模式与实载目标在场，双向断言）
+smoke_case "web-036c1 过期口径同步就位自检" bash -c "
+  SC=/opt/codes/auth-core/scripts/smoke.sh
+  # 反模式清零：硬编码计数 19/23 与过期目标 Header-*.css（同步前在场=红）
+  ! grep -q '19 passed' \$SC || exit 1
+  ! grep -q '23 passed' \$SC || exit 1
+  ! grep -q 'Header-\*\.css' \$SC || exit 1
+  # 就位正断言：passed==total 语义模式（011b 先例）与实载 chunk 目标在场
+  grep -q 'Tests  \[0-9\]+ passed' \$SC || exit 1
+  grep -q 'DefaultLayout-\*\.css' \$SC || exit 1
+"
+
 # web/037：面包屑导航间距优化与图标横排（与顶栏 16px/与内容卡片 24px 留白 + .el-breadcrumb__inner flex 使图标同行）验证
 smoke_case "web-037 面包屑间距与图标横排验证" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1
