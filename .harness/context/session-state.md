@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟠 **待评审 sprint-084（AWAITING_REVIEW）**（Generator 完成 web/036b：RED 三实证→R1 全局下沉+R2 BaseButton，门禁五线+冒烟 65 全过，提交 `2fdc450 test` → `742341d feat`；案A AC3③ 计数≥10 用户裁决在案）
+- 状态: 🟢 **评审通过 sprint-084（DONE，均分 9.5/10）**（web/036b 暗色局部白底缺陷修复闭环：4 AC 全满足、六否决零命中、RED 独立复现三实证、冒烟 65=56✅+7❌+2⏭️；案A 计数≥10 口径获认可；提交链 `2fdc450 test`→`742341d feat`→`7c7ad83 docs`→本轮评审回写）
 - 当前模块: web
-- 当前功能点: web/036b 暗色模式局部白底缺陷修复 — **🟠 实现完成待评审（AWAITING_REVIEW）**（4 AC 全勾：R1 全局下沉=删 BaseTable 遮罩块+reset.css 遮罩对 0.9、R2 settings→BaseButton 双处、反模式源层清零、产物死形态=0 暗规则=10（案A）、门禁 lint 0E|165W/test 315/build ✓/mvn=基线、冒烟 65=56✅+7❌+2⏭️ 且 web-036b ✅、web-011b 计数同步 ✅；spec 7 断言先行 RED→GREEN）
+- 当前功能点: web/036b 暗色模式局部白底缺陷修复 — **✅ DONE（sprint-084 评审通过 9.5/10）**（4 AC 全勾：R1 全局下沉=删 BaseTable 遮罩块+reset.css 遮罩对 0.9、R2 settings→BaseButton 双处、反模式源层清零、产物死形态=0 暗规则=10（案A）、门禁 lint 0E|165W/test 315/build ✓/mvn=基线、冒烟 65=56✅+7❌+2⏭️ 且 web-036b ✅、web-011b 计数同步 ✅；spec 7 断言先行 RED→GREEN）
 
 
 ## 下一步动作
-  Evaluator：读 `.harness/evaluator.md` 并严格执行——评审 sprint-084（web/036b）。必核：① RED 三实证独立复现（spec 7 failed@`2fdc450`、修复前产物死形态=1 基线、smoke 用例体首跑失败）；② GREEN 后产物双断言（死形态=0 + `[data-theme=dark] .el-loading-mask` 可命中 + ffffffe6 + 036a 三断言）与源层清零复扫；③ **案A AC3③ 计数≥10 口径**（基线 11 含死形态 1 条，用户 2026-10-09 裁决）按任务单「问答在案」执行；④ web-011b 计数断言同步等强核查（passed==total + vitest exit 门禁，非放宽）；⑤ 门禁五线亲跑 + 冒烟 65=56✅+7❌+2⏭️（7❌=基线逐条）；⑥ 变更三方比对（4 代码+2 测试文件，reset.css 仅遮罩两行）。
+  Planner：读 `.harness/planner.md` 并严格执行——取下一个功能点。**建议下一单：web/040c（me 面 UserVO 时间字段连带修复）**——076 用户裁决已登记的预留单（2-3 文件：`dto.auth.UserVO` 加 updateTime/createdAt + `toUserVO` 填值 + 契约测试扩展 + smoke），规模小、前置全清。备选：web/036c（036 行收口：串联 `:deep()` 42 处/17 组件+冒烟 7❌ 治理+死代码清理，**超 6 文件熔断需先问用户案B**）、web/011d（any 165 机械波，同需规模裁决）。规划前先读 `.harness/context/session-state.md` 挂起区既有案A/案B 口径。
 
 ## 挂起
 - 2026-10-09: Generator(sprint-084) — **AC3③ 计数口径修订（用户案A 问答在案）**：修复前产物 `[data-theme=dark]` 规则基线=11，**其中 1 条正是死形态**（`[data-theme=dark][data-v-c7766763]` 永不命中）；合法修复必然移除死规则→产物=10（有效覆盖反而提升：遮罩暗色由「永白」变命中）。字面「≥11」不可达，用户裁定**案A**=下限 **≥10 且死形态=0**，主断言=死形态归零+可命中规则在+036a 三断言，计数降为辅断言。task AC3/R3/问答块已同步修订，冒烟用例本就以形态为主断言（未含计数），Evaluator 按此口径评审。
