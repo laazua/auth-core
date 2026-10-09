@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-08: Evaluator — pass sprint-083（web/011c，平均分 9.3/10：五维 9.5/9/9/9.5/9.5；四门禁亲跑 mvn 154 4F+2E=基线、前端链 EXIT=0、lint:check 11s exit 0 零 dist、冒烟 64=55✅+7❌+2⏭️ 且 web-011c ✅ 零回归、RED 独立复现 124+4748/4559 规则逐条、案A 抽查 3/50 机械文件等价+手工 117 行全文复核、变更三方比对 59 文件零越界；六否决项零命中，案A/案B 口径认可，改进建议 5 条不计分）
 - 2026-10-08: Generator — done sprint-083（web/011c 全量 lint 门禁恢复：RED 124/4559/smoke 124 三实证→59 文件治理（配置 ignorePatterns+ignoreRestSiblings、机械 50 案A 等价零夹带、手工 8 含 dupe-key/toFormatter/catch 拆壳/&lt;&lt;/标记同步），门禁 lint 0 error|165 warning、test 308/308、build ✓、mvn 154 4F+2E=基线，冒烟 64=55✅+7❌+2⏭️ 零回归、web-011c ✅；提交 9e82973 test → ec7bbc4 feat）
 - 2026-10-08: Planner — kickoff sprint-083（web/011c，4 条验收标准，案B 单波豁免用户裁决在案：实测 4559 Error/60 文件超 6 熔断、卡死根因第一嫌疑 dist 无 ignore、any 171 归 011d）
 - 2026-10-08: Evaluator — pass sprint-082（web/011b，平均分 9.3/10：五维 9.5/9/9/9.5/9.5；四门禁亲跑 mvn 154 4F+2E=test 0 failed|308+lint 定向 0/0/151/45 与全量 124=基线+build ✓17.29s、冒烟亲跑 63=54✅+7❌+2⏭️ 且 web-011b ✅ 零回归、RED 整树复现 @5ce2de1=10 failed|298 与 RED-2 精确、断言 7 删 7 等强替换逐条核、变更三方比对 9 文件零夹带；六否决项零命中，案A 口径与 R4 per-spec 判定认可，改进建议 5 条不计分）

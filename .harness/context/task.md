@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/011c**（由 web/011 行预留独立转正注册；011 行已 ✅ 约束不改） |
 | 功能点名称 | 全量 lint 门禁恢复——dist 忽略解锁卡死 + 全量 Error 4559 清零 |
-| 状态 | AWAITING_REVIEW |
+| 状态 | DONE |
 | 创建时间 | 2026-10-08 |
 
 ## 前置依赖
@@ -186,4 +186,11 @@ Warning 口径：165 = any 171 − 6（6 处 catch (error:any) 拆壳连带消�
 
 ## 评审意见
 
-- （待 Evaluator）
+**2026-10-08 Evaluator — sprint-083 评审：✅ 通过（平均分 9.3/10，六否决项零命中）**
+
+1. **AC 逐条全满足（亲核）**：AC1 亲测 `lint:check` EXIT=0 耗时 11s（≠124）且输出零 `dist/` 路径、smoke web-011c ✅；AC2 RED 复现 4748/4559 规则分布逐条一致、治后 0 errors/165 warnings（全 no-explicit-any，逐文件审计仅 3 文件各 −2=−6=catch 拆壳，171−6=165 精确，零新增 any）；AC3 案A 独立抽查——机械段 3 文件（DashboardView/Header/useTheme）`eslintFix(HEAD)` 复跑等价 + 手工段 117 行 delta 全文复核（catch 拆壳=纯重抛等价、BaseInput 改名 4 处一致性+props 面保留、正则转义字符类内语义不变、`&lt;&lt;` 渲染等价）+ sidebar 单行 delta=标记同步；test 0 failed|308、build ✓ 17.81s；AC4 mvn 亲跑 154 4F+2E=基线五类逐条、冒烟亲跑 64=55✅+7❌+2⏭️（7❌=基线逐条、零新增）、smoke.sh diff=+8 行纯增量零删改、行数债实测登记入册。
+2. **RED 独立复现**：worktree @9e82973+dist 软链重跑——RED1 EXIT=124、RED2 4748 problems(4559E/189W) 规则分布 prettier4536/unused8/catch6/parsing4/escape2/ref1/dupe1/deprecated1 与 RED 槽逐条一致；git 序 plan→test→feat 两段式成立。
+3. **范围三方比对零越界**：feat 59 文件=config 1+src 58，零后端/零 package.json/零 dist/零版本升级；变更清单与 diff 一致。
+4. **五维**：功能正确性 9.5 / 代码质量 9 / 规范遵守 9 / TDD 执行度 9.5 / 安全性 9.5 = **9.3**。
+5. **真缺陷修复加分面**：roles `canDelete` ref 裸用恒真（原 :82 render 函数内无权限也渲染删除按钮）→ `.value` 修复，§6 语义贴合。
+6. 改进建议（不计分）：① 测试清单 #3 结果格仍「（待 Generator）」待补；② AC4 文中 (752) 系 074 旧值（实测 HEAD~1=766，登记本体已用实测值）；③ profile spec 正则为预存单字符类弱断言（083 仅转义清理），建议 036c 强化；④ any 165+`--max-warnings` 收紧归 011d；⑤ 冒烟 web-013/020/026 过期 grep 归 036c。
