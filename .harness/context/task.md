@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/036c1**（web/036 行第三子功能点 036c 的第一切片；036a ✅ sprint-067、036b ✅ sprint-084；036c 余量拆 036c2+ 预留） |
 | 功能点名称 | smoke 过期口径同步与弱断言强化——web-013/020/026 过期 grep 复活 + profile spec 单字符类弱正则强化 + 计数断言语义化 |
-| 状态 | AWAITING_REVIEW（Generator 完成，门禁+冒烟通过，待 Evaluator） |
+| 状态 | DONE（sprint-085 评审通过 9.5/10，2026-10-09 Evaluator） |
 | 创建时间 | 2026-10-09 |
 
 ## 前置依赖
@@ -168,4 +168,35 @@ profile spec：Tests 3 passed (3)；全量 test 0 failed | 315 passed (315)
 
 ## 评审意见
 
-- （待 Evaluator）
+**sprint-085 第 1 轮评审 — ✅ 通过 9.5/10（2026-10-09 Evaluator，六否决零命中）**
+
+### 验收标准核对
+- [x] AC1 — 满足：web-013/026 断言改 passed==total 模式（diff smoke.sh:182-183、335-336），零硬编码残留（亲跑 `grep -n "19 passed\|23 passed" scripts/smoke.sh` = 无）；web-026 `|| exit 1` 与 `.env` 断言原语义保留（diff 331-336 行可见）；全量冒烟两用例 ✅（个人实测）
+- [x] AC2 — 满足：目标改 `DefaultLayout-*.css`（diff 263-264），`sidebar__footer`/`sidebar__toggle` 负断言原样保留；RED 复现时目标缺失报错 `grep: dist/assets/css/Header-*.css: 没有那个文件或目录`，GREEN 后个人实测 web-020 ✅
+- [x] AC3 — 满足：精确正则 `^[ \t]*import BaseButton from ['"]@\/components\/BaseButton\.vue['"];?$/m`（spec:37-40）；变异独立复现=旧正则对 AC3 给定错例 `import x from 'zzz'` 误通过 **true**、新正则 **false**；FE 全量 315/315 含该 spec；011b 注释勘误 `web/084`→`sprint-084` 仅注释文字（断言行 diff 未动）
+- [x] AC4 — 满足：新增 `web-036c1 过期口径同步就位自检`（diff 436-446，用例区增量 64+2cond=66 亲核）；个人亲跑全量冒烟 **66=60✅+4❌+2⏭️**，❌恰=model-008/010、roles-001/002（登记不背面），零新增失败；四条本单用例+web-011b+web-036a 均 ✅
+
+### 门禁与冒烟实测
+mvn -q verify（亲跑）：`Tests run: 154, Failures: 4, Errors: 2`——失败类逐一=基线五类（DataSourceConfigBindingTest 2F、RoleControllerTest 1F、SeedDataIntegrationTest 1F、TestLayersSpec 1E、TestUtilsSpec 1E），veto-6 豁免面零新增；
+前端（亲跑 `npm run lint && npm run test && npm run build`）：EXIT=0，`✖ 165 problems (0 errors, 165 warnings)`、`Tests  315 passed (315)`、`✓ built in 17.76s`；
+冒烟 scripts/smoke.sh（亲跑）：`SMOKE FAILED（66 用例）`（整体 EXIT=1 由基线四条驱动）——✅=60、❌=4（model-008、model-010、roles-001、roles-002）、⏭️=2；关键逐条：web-011b ✅、web-013 ✅、web-020 ✅、web-026 ✅、web-036a ✅、**web-036c1 ✅（新增）**；
+增量取证：`git diff 447ce7e..HEAD` 用例区净增 web-036c1 一条（禁止删除核验=既有用例 hunk 仅注释/断言同步，零删除）；
+RED 独立复现（worktree @`7e32938`，路径重写至工作树）：web-013/020/026/web-036c1 四用例 EXIT=**1/1/1/1**；变异复现=旧 true/新 false。
+
+### 评分
+| 维度 | 分数 | 证据 |
+|------|------|------|
+| 功能正确性 | 9.5 | AC1-4 逐条亲核全满足（上节）；个人冒烟 66=60✅+4❌+2⏭️ ❌恰=登记四条、翻绿三条+新增一条零新增失败；变异旧误过/新拒绝成立 |
+| 代码质量 | 9 | diff 全量审读：web-013 保留末行状态结构、web-026 保留 `\|\| exit 1`+.env、020 负断言零改动、011b 仅注释勘误；自检用例两度自指涉问题定位准确并以注释说明邻接串消字面意图（task GREEN 槽透明留痕）；扣分=邻接串写法对初读者有理解成本（注释已缓解） |
+| 规范遵守 | 9.5 | §11 清单逐项：diff 新增行零 >120（awk 超长行均为预存 hunk 外）、smoke.sh 495≤500 行、spec 断言具体预期值（§9 强化而非凑数）、两段式提交+范围最小集 6 文件（§10）、lint 亲跑 0 errors |
+| TDD 执行度 | 9.5 | `test:`7e32938→`feat:`66bf809 两段物证（test 提交仅=新用例+RED 槽）；RED 四路独立复现全中（4×EXIT=1+变异 true/false）；测试清单 4 行与 RED 槽实时对应；全量回归 315/315 |
+| 安全性 | 10 | 五查：纯测试/口径层零产品代码（diff 6 文件无 .java/.vue/yml/产品 .ts）；diff 全文无密钥/明文；SQL/日志/越权面零触碰；RBAC §6 无涉 |
+
+### 决策
+✅ 通过（平均分 9.5/10；六项一票否决逐项核对：1 功能缺失✗、2 安全漏洞✗、3 明确 Bug✗、4 无测试先行✗（RED 四路复现+两段提交）、5 RBAC 偏差✗（零产品代码）、6 回归冒烟✗（五线亲跑全达基线+用例增量取证）——零命中）
+
+### 改进建议（可选，不计分）
+1. web-036c1 负断言定点锁 19/23 两历史字面——未来其他计数过期（如 '25 passed'）不被该用例捕获；泛化模式经推演不可行（`[0-9]+ passed` 会误伤 036a 的 `1 passed` 断言），定点锁是正确权衡，若要加严可于 036c2 对「计数断言」设统一命名段注释锚点
+2. task 变更清单 profile spec 标 `:37-41`，实际强化块 `:37-40`（41=`});`）——行号一位偏差，内容三节逐条相符非失实
+3. task RED-3 记的新正则未含缩进锚定、最终为 `^[ \t]*`——AC3 实测文字与复跑变异均按最终形态成立，属证据槽记录粒度问题，建议后续 RED 槽直接粘贴最终断言全文
+

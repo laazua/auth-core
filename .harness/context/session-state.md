@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟠 **待评审 sprint-085（AWAITING_REVIEW）**（Generator 完成 web/036c1：RED 四路实录→GREEN 口径同步，门禁五线+冒烟 66 全过，提交 `7e32938 test` → `66bf809 feat` → `docs:` 回写；冒烟 ❌7→恰4 翻绿 web-013/020/026）
+- 状态: ✅ **sprint-085 评审通过 9.5/10**（web/036c1 收口：66=60✅+4❌+2⏭️、六否决零命中，回写 `docs:` 在案）
 - 当前模块: web
-- 当前功能点: web/036c1 smoke 过期口径同步与弱断言强化 — **🟠 实现完成待评审**（4 AC 全勾：011b 语义同步双用例、chunk 目标对准、profile 精确正则+变异证据、新增自检用例+冒烟 66=60✅+4❌+2⏭️ 恰中登记不背面）
+- 当前功能点: web/036c1 — ✅ DONE
 
 
 ## 下一步动作
-  Evaluator：读 `.harness/evaluator.md` 并严格执行——评审 sprint-085（web/036c1）。必核：① RED 四路独立复现（worktree @`7e32938`：三用例体首跑必红+新用例首跑红+profile 旧正则变异 true）；② GREEN 语义等强核查（passed==total 与 `|| exit 1`/末行状态保留、013/026 零硬编码残留、020 负断言原语义、036a 用例零改动）；③ 门禁五线亲跑 + 冒烟 66=60✅+4❌+2⏭️（❌恰=model-008/010、roles-001/002 登记面）；④ 变更范围=2 文件+task 回写零夹带；⑤ 自检用例反指涉修复合理性复核（邻接串拼接防字面自匹配）。
+  Planner：读 `.harness/planner.md` 并严格执行——取下一功能点。建议（已扫 registry 状态列核验在册）：主推 **web/036c2**（036 行预留：冗余覆盖与死代码清理 + model-008/010 子集态测试缺陷；规划先全仓普查定规模，>6 文件触发案B 须问用户）；备选 **web/011d**（any 165 warning，011c 行备注归入在册）。禁推：modules/003 与 web/038（⬜ 未注册且各有前置仲裁，须先注册）、roles-001/002 与后端五类基线（登记「后续/人工」面）。
 
 ## 挂起
 - 2026-10-09: Evaluator/Planner — **下一单建议更正（自纠登记）**：sprint-084 评审回写曾建议「web/040c」为下一功能点——**该建议失效**：040c 已于 sprint-077 评审通过（2026-09-29，9.5/10，registry 040 行实证 `dto.auth.UserVO` 已含 createdAt/updateTime、TimestampFieldContractTest:186 已断言）。失效原因=建议依据未复核 registry 即写入。本轮回写已改为 web/036c1；后续 Planner 建议功能点前须先扫 registry 状态列。
@@ -45,6 +45,9 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-09: Evaluator — pass sprint-085（web/036c1，平均分 9.5/10，五维 9.5/9/9.5/9.5/10：门禁亲跑 mvn 154 4F+2E=基线、前端链 EXIT=0（0E/165W、315/315、build 17.76s）、冒烟 66=60✅+4❌+2⏭️ ❌恰=登记四条零新增、RED 独立复现 4×EXIT=1+变异 true/false、用例增量+范围 6 文件零夹带；六否决零命中）
+- 2026-10-09: Generator — done sprint-085（web/036c1，RED 四路实录→GREEN 口径同步，四用例转绿+全量 315/315+冒烟 ❌7→4=66，提交 7e32938 test→66bf809 feat）
+- 2026-10-09: Planner — kickoff sprint-085（web/036c1，4 条验收标准，7❌ 分类实录与 036c 三切片拆分登记）
 - 2026-10-09: Planner — kickoff sprint-084（web/036b，4 条验收标准，反模式清查钉死恰 3 处/2 文件、产物死形态实证、连带 web-011b 计数断言同步登记）
 - 2026-10-08: Evaluator — pass sprint-083（web/011c，平均分 9.3/10，五维 9.5/9/9/9.5/9.5：门禁亲跑 mvn 154 4F+2E=基线、前端链 EXIT=0（0E/165W、308/308、build 17.81s）、lint:check 11s 零 dist、冒烟 64=55✅+7❌+2⏭️ 零回归、RED 独立复现 124/4559 规则逐条、案A 抽查 3 文件等价+手工 117 行复核、零越界；六否决零命中）
 - 2026-10-08: Generator — done sprint-083（web/011c 全量 lint 门禁恢复：R1 钉死 dist 无 ignorePatterns 根因，RED 124/4559/用例体三实证先行，59 文件治理=配置 2 处+机械 50 案A 零夹带+手工 8 逐条（含 canDelete .value 真缺陷修），lint 双 exit 0（4559→0 error/165 warning）、test 308/308（sidebar spec 标记语义同步 1 处）、build ✓、mvn 154 4F+2E=基线、冒烟 64=55✅+7❌+2⏭️ 零回归 web-011c ✅；提交 9e82973 test → ec7bbc4 feat）
