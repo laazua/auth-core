@@ -34,7 +34,9 @@ describe('ProfileViewIconSizeSpec', () => {
     // 断言：不再从 element-plus 导入 ElButton
     expect(profileViewContent).not.toMatch(/import.*ElButton.*from.*element-plus/);
 
-    // 断言：导入 BaseButton
-    expect(profileViewContent).toMatch(/import BaseButton from ['"@/components/BaseButton.vue['"]/);
+    // 断言：精确匹配 BaseButton 导入语句（036c1 强化：原单字符类 ['"@/components/BaseButton.vue['"] 任意含类内字符的错例均误通过）
+    expect(profileViewContent).toMatch(
+      /^[ \t]*import BaseButton from ['"]@\/components\/BaseButton\.vue['"];?$/m
+    );
   });
 });

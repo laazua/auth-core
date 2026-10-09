@@ -164,7 +164,7 @@ smoke_case "modules-001 模块 CRUD 定向测试" mvn -q -f "$APP_DIR/pom.xml" t
 smoke_case "web-011b 前端全量测试零失败" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1
   npx vitest run >/tmp/smoke-web-011b.log 2>&1 || exit 1
-  # web/084 语义同步：测试总数随新增用例演进（082 评审建议①），断言 passed==total 且无 skipped 行，强度=零失败不降
+  # sprint-084 语义同步（036c1 笔误勘误）：测试总数随新增用例演进（082 评审建议①），断言 passed==total 且无 skipped 行，强度=零失败不降
   grep -qE '^      Tests  [0-9]+ passed \([0-9]+\)$' /tmp/smoke-web-011b.log || exit 1
 "
 
@@ -179,7 +179,8 @@ smoke_case "web-011c 全量 lint 门禁恢复" bash -c "
 # web/013：登录页密码输入框默认隐藏（前端单测验证）
 smoke_case "web-013 登录页密码输入框默认隐藏" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1
-  npm run test -- --run src/views/LoginView.spec.ts 2>&1 | grep -q '19 passed'
+  # web/036c1 语义同步：passed==total 模式（011b 先例），杜绝用例新增即自伤
+  npm run test -- --run src/views/LoginView.spec.ts 2>&1 | grep -qE '^      Tests  [0-9]+ passed \([0-9]+\)$'
 "
 
 # web/014：用户下拉菜单功能修复验证（前端单测）
@@ -259,8 +260,8 @@ smoke_case "web-020 侧边栏底部折叠按钮移除构建产物" bash -c "
   # 检查 CSS 产物中不包含 .sidebar__footer 与 .sidebar__toggle
   ! grep -q 'sidebar__footer' dist/assets/css/*.css || exit 1
   ! grep -q 'sidebar__toggle' dist/assets/css/*.css || exit 1
-  # 检查顶栏折叠按钮 .header__toggle 保留（在 Header-*.css 中）
-  grep -q 'header__toggle' dist/assets/css/Header-*.css || exit 1
+  # 检查顶栏折叠按钮 .header__toggle 保留（036c1 口径同步：实载于 DefaultLayout chunk，Header 目录通配目标已失效）
+  grep -q 'header__toggle' dist/assets/css/DefaultLayout-*.css || exit 1
 "
 
 # web/021：移除标签页操作区域下拉菜单验证（生产构建产物不含 .tags-view__more 与 .tags-view__dropdown-icon；右键菜单断言随 web/023 整体移除语义同步删除——组件整体移除后产物零 tags-view 样式）
@@ -331,7 +332,8 @@ smoke_case "web-026 登录跳转修复验证" bash -c "
   # 验证 API 基础路径配置正确
   grep -q 'VITE_API_BASE_URL=/api/v1' .env || exit 1
   # 验证 LoginView 登录成功跳转测试通过
-  npm run test -- --run src/views/LoginView.spec.ts 2>&1 | grep -q '23 passed' || exit 1
+  # web/036c1 语义同步：passed==total（011b 先例）
+  npm run test -- --run src/views/LoginView.spec.ts 2>&1 | grep -qE '^      Tests  [0-9]+ passed \([0-9]+\)$' || exit 1
   # 验证构建产物正常产出
   npx vite build >/dev/null 2>&1 || exit 1
 "
@@ -434,10 +436,10 @@ smoke_case "web-036b 暗色遮罩与按钮语义修复" bash -c "
 # web/036c1：过期口径同步就位自检（sprint-085 本单追加：硬编码计数与过期 chunk 目标清零 + 语义模式与实载目标在场，双向断言）
 smoke_case "web-036c1 过期口径同步就位自检" bash -c "
   SC=/opt/codes/auth-core/scripts/smoke.sh
-  # 反模式清零：硬编码计数 19/23 与过期目标 Header-*.css（同步前在场=红）
-  ! grep -q '19 passed' \$SC || exit 1
-  ! grep -q '23 passed' \$SC || exit 1
-  ! grep -q 'Header-\*\.css' \$SC || exit 1
+  # 反模式清零：硬编码计数与过期 chunk 目标（同步前在场=红；模式以邻接串拼接防字面自匹配）
+  ! grep -q '1''9 passed' \$SC || exit 1
+  ! grep -q '2''3 passed' \$SC || exit 1
+  ! grep -q 'Header-''\*\.css' \$SC || exit 1
   # 就位正断言：passed==total 语义模式（011b 先例）与实载 chunk 目标在场
   grep -q 'Tests  \[0-9\]+ passed' \$SC || exit 1
   grep -q 'DefaultLayout-\*\.css' \$SC || exit 1
