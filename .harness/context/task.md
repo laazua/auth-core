@@ -154,6 +154,17 @@ Test Files  36 passed (36)
 5. DefaultLayout.spec 两处预存 lint 清理（AC4）
 6. （可选 +1）产品侧最小增量（仅当 R1 判定产品 bug 且 ≤6 线内）
 
-## 评审记录
+## 实现说明
+
+**根因判定（R1，三组全部=测试侧，产品文件零改动）**：
+1. auth-token 2 条：spec:5 `vi.mock('@/utils/storage')` 自相矛盾（桩掐断链路、断言打在 setup.ts 的 localStorage spy 上）——移除该 mock，回归真实 `storage.set→localStorage.setItem` 链路（storage.ts:16 本就写 localStorage，038a Cookie 改道不影响 refresh/token 存储口径）。
+2. LoginView 2 条：`LoginView.vue:75` 读 `router.currentRoute.value.name` 撞 setup.ts:35 全局 useRouter 桩（无 currentRoute）→ :106 catch 写入 errorMessage；桩 push no-op 使导航停在 Login——补文件级 `vi.mock('vue-router', importOriginal)` 覆盖桩（本 spec 装真实 router 插件，组件须拿到真件）。
+3. system/IndexView 11 条：setup.ts:43 静态 useRoute `path:'/'` 使 IndexView.vue:442 watch(immediate) 两分支永不进入（fetch 零调用、pushSpy no-op）；element-plus mock 模板 `{{ tab.children }}` 打印 vnode 块标记 `{_:1}`——同补 vue-router 文件级覆盖桩 + 模板改 `tab.props?.label` + 抽屉 mode 定位/面板作用域/20ms 等待/`await router.isReady()` 等测试机械修复。
+
+**提交链**：`5ce2de1` test RED（[RED] 15 failed 基线先行 + [RED-2] 10 failed 剥离覆盖桩复现态）→ `463f6d2` feat GREEN（两处覆盖桩 + DefaultLayout 两处预存 lint + smoke web-011b）→ `2c69650` docs（AWAITING_REVIEW）。
+
+**变更清单**（纯测试侧 5 文件 + 本单文档回写）：`frontend/src/__tests__/auth-token-persistence.spec.ts`（去 mock+注释）、`frontend/src/views/LoginView.spec.ts`（+6 覆盖桩）、`frontend/src/views/system/IndexView.spec.ts`（覆盖桩+根因侧修复，130 行 diff）、`frontend/src/layouts/DefaultLayout.spec.ts`（:72 去泛型+:183 EOF）、`scripts/smoke.sh`（+7 行 web-011b）；文档 task/session/iteration/registry。断言强度四条改写登记见 RED 证据区 [GREEN] 块；AC4 案A 口径修订见验收标准与分治登记④。
+
+## 评审意见
 
 - （待 Evaluator）
