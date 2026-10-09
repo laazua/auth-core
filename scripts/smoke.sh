@@ -417,7 +417,7 @@ smoke_case "web-036b 暗色遮罩与按钮语义修复" bash -c "
   cd /opt/codes/auth-core/frontend || exit 1
   # 源层反模式清零（AC1/AC2/AC3①②）
   grep -rq \"\[data-theme='dark'\] &\" src/components/BaseTable.vue && exit 1
-  grep -rqE '<ElButton[^>]*variant=' src && exit 1
+  grep -rqE --include='*.vue' '<ElButton[^>]*variant=' src && exit 1
   grep -rq 'rgba(255, 255, 255' src --include='*.vue' --exclude-dir='__tests__' && exit 1
   # spec 守护（源层断言全绿）
   npx vitest run src/__tests__/web-036b-dark-fix.spec.ts 2>&1 | grep -qE 'Tests  [0-9]+ passed \([0-9]+\)' || exit 1

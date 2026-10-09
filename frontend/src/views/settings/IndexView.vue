@@ -6,8 +6,9 @@
   import { ElMessage } from 'element-plus';
   import BaseCard from '@/components/BaseCard.vue';
   import Breadcrumb from '@/components/Breadcrumb.vue';
+  import BaseButton from '@/components/BaseButton.vue';
   import { Setting, SwitchButton, Monitor, Moon, Sunny } from '@element-plus/icons-vue';
-  import { ElSwitch, ElButton, ElDivider, ElSelect, ElOption } from 'element-plus';
+  import { ElSwitch, ElDivider, ElSelect, ElOption } from 'element-plus';
 
   const router = useRouter();
   const authStore = useAuthStore();
@@ -145,8 +146,8 @@
                   <p class="settings__item-description">更新您的登录密码</p>
                 </div>
               </div>
-              <ElButton variant="primary" @click="router.push('/profile/password')"
-                >前往修改</ElButton
+              <BaseButton variant="primary" @click="router.push('/profile/password')"
+                >前往修改</BaseButton
               >
             </div>
 
@@ -160,7 +161,7 @@
                   <p class="settings__item-description">安全退出当前账户</p>
                 </div>
               </div>
-              <ElButton variant="danger" @click="handleLogout">退出登录</ElButton>
+              <BaseButton variant="danger" @click="handleLogout">退出登录</BaseButton>
             </div>
           </div>
         </div>

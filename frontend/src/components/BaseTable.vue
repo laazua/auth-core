@@ -201,14 +201,6 @@
     }
   }
 
-  :deep(.el-loading-mask) {
-    background: rgba(255, 255, 255, 0.9) !important;
-
-    [data-theme='dark'] & {
-      background: rgba(29, 30, 31, 0.9) !important;
-    }
-  }
-
   :deep(.el-loading-spinner) {
     :deep(.el-loading-spinner__circular) {
       border-color: var(--color-primary) !important;
