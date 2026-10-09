@@ -2,15 +2,16 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🟡 **规划完成 sprint-083**（Planner 案B 裁决注册 web/011c 全量 lint 门禁恢复，4 条验收标准；实测 4559 Error/60 文件超 6 熔断经用户单波豁免；sprint-082 已 ✅ PASS 9.3/10）
+- 状态: 🟡 **实现完成待评审 sprint-083**（Generator done：RED 三实证→59 文件治理→五线门禁+冒烟 64 全过→`test: 9e82973` + `feat: ec7bbc4` 已提交；sprint-082 已 ✅ PASS 9.3/10）
 - 当前模块: web
-- 当前功能点: web/011c 全量 lint 门禁恢复 — **🟡 工作单就绪（PLANNED）**（4 AC 顶格；卡死根因第一嫌疑 dist 无 ignore、R1-R5 研究项在册；门禁语义=Error 4559→0 即 exit 0，any 171 归 011d）
+- 当前功能点: web/011c 全量 lint 门禁恢复 — **🟡 实现完成（AWAITING_REVIEW）**（4 AC 已勾：lint:check exit 0=0 error/165 warning、案A 等价证明 50 机械+8 手工+1 配置零夹带、test 308/308、冒烟 64=55✅+7❌+2⏭️；R1 根因钉死 dist 无 ignorePatterns；any 171→011d 预留在册）
 
 
 ## 下一步动作
-  Generator：读 `.harness/generator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-083 / web/011c）。首个实现要点：**先 RED 后治理**——① 全量 `lint:check` 124 卡死实录入槽（R1 对照命令两份输出钉死 dist 根因）；② dist 忽略后首跑 4559± Error 清单快照入槽（--fix 前必存）；③ smoke `web-011c` 用例先写（RED 态必失败）；随后机械段 `npm run lint` --fix 波（存 diff -w 证明）→ 手工段 23 Error 逐条（no-dupe-keys/no-parsing-error 真缺陷判定先行）→ 门禁五线+冒烟 64 收口。**熔断边界与不动清单见工作单拆分说明**（>70 文件/非空白 diff/版本升级即回报）。
+  Evaluator：读 `.harness/evaluator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-083 / web/011c，AWAITING_REVIEW）。评审要点：① review-criteria 通读、review-checklist 逐项；② **五线门禁亲跑**：`lint:check` 全量（复核 exit 0、0 error/165 warning 口径、零 dist 路径）、`test` 308/308、`build`、`mvn -q verify` 154 4F+2E=基线五类、**冒烟全量 64 用例**（55✅+7❌+2⏭️、7❌=基线逐条、web-011c ✅）；③ **RED 整树复现**（git worktree @9e82973：`lint:check --ignore-pattern 'dist/**'` 4559 对照快照 + smoke web-011c 用例体 124 失败；注意 @9e82973 前端代码=治理前，dist 需已构建）；④ **案A 等价证明抽查**（工作单变更清单 vs e083-hand-hunks.log vs 抽样 `eslint --fix(HEAD)` 复跑，手工 8 文件逐文件核语义：dupe-key 改名/toFormatter 入 script/catch 拆壳/&lt;&lt; 实体/sidebar 标记同步须为「语义同步非放宽」）；⑤ 分治登记核对（any 165=171−6 归 011d、行数债 4 文件登记）；⑥ 六否决项 + 案B 豁免边界（59≤70、零版本升级、零非空白夹带）复核；⑦ 结论写回 task/session/iteration/registry。
 
 ## 挂起
+- 2026-10-08: Generator(sprint-083) — **AC3 ① 证明口径修订（用户案A 问答在案）**：「机械段 `git diff -w` 空」字面不可达——prettier 自动波含 printWidth 100 长行拆分等风格改写（实测非空白变更 9564 行，主因行拆分），强求将迫使逐文件手工回卷、风险大于收益；用户裁定**案A**=逐文件 `工作树 == eslintFix(HEAD)` 等价证明（HEAD 副本过同配 `eslint --fix` 后与工作树逐字节比对，可抦截任何夹带，**比 diff -w 更强**），风格 token 允许。实测结果：**50 机械等价 + 8 手工 + 1 配置 = 59 文件零夹带**（手工 delta 仅 117 行，e083-hand-hunks.log + sidebar spec 单行同步复核）。任务单 AC3/RED 槽已修订，Evaluator 按此口径评审。
 - 2026-10-08: Planner(sprint-083) — **案B 单波豁免用户裁决（问答在案）+ 规模实测登记**：011c 规划实测全量残余 **4748 问题/60 文件**（src-only 240s 完成 exit=1）＝prettier 4536 Error+手工 23 Error+any 171 Warning+attrs-order 18 Warning，远超 082 案A 登记的定向 196 → 单子功能点预估 ≈66 文件**超 6 文件熔断**；严格按目录拆分需 9-11 单纯格式化波（案A，机械性逐单价值极低）。用户裁定**案B**：单波豁免推进，证明链=机械段（≈59 文件单命令）`git diff -w` 空 + 手工段（≈11 文件/23 Error）逐条登记 + test 0 failed|308/build/mvn 三线=基线；豁免边界（>70 文件/非空白 diff/版本升级/真缺陷大改即回报）与 any 171 归 011d 预留随工作单拆分说明在册。卡死根因第一嫌疑=`.eslintrc.cjs` 无 ignorePatterns、`eslint .` 扫 dist 29 bundle/1.9M（R1 待 Generator 对照钉死）。
 - 2026-10-08: Generator(sprint-082) — **AC4 定向 lint 口径裁定（用户案A 问答在案）+ 断言强度登记**：① 原稿 AC4「本单触碰文件 0 问题」系 Planner 仅实测 DefaultLayout 2 处预存之误——实测触碰 4 文件基线 200 预存（DefaultLayout 2/auth-token 2/LoginView 151/IndexView 45）；用户裁定**案A**=本单引入 0 + 点名预存清理（DefaultLayout、auth-token 清零全 0）、LoginView 151/IndexView 45（130 prettier+66 any，script-setup vm 访问无干净类型解、干净解需产品文件 defineExpose 为不动清单所禁）登记归 011c，task AC4 已修订、分治④ 已登记。② 断言改写四条强度不降自查（AC8 1→2、AC6 造数、038e spyOn 真件、余者零删改）已入 task GREEN 槽。
 - 2026-10-08: Generator(sprint-081) — **AC3 口径修订登记（工作单勘误）+ lint 预存登记**：① 冒烟用例数 **61→62**——tdd-workflow 冒烟节「Generator 必须为本次交付能力追加至少一条冒烟用例」强制，本单新增 `web-023-src 移除标签页栏源码层`（组件文件不存在 + 源码 .vue 零 TagsView 引用 + components.d.ts 零声明）；工作单 AC3/门禁表原文「61 不变/52✅」勘误为「62=53✅+7❌+2⏭️」，用例本体零删除（web-021/022 仅删过时「保留右键菜单」断言行并注释登记语义）。② lint 预存两处：`DefaultLayout.spec.ts:72 VueWrapper<any>`（warning）与 `:183` EOF 缺换行（prettier error），`git show HEAD:` 对照实证=HEAD 即有、非本单产生，按 §10 不混入无关格式化原则不动，建议归 web/011 治理。
@@ -42,6 +43,8 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-08: Generator — done sprint-083（web/011c 全量 lint 门禁恢复：R1 钉死 dist 无 ignorePatterns 根因，RED 124/4559/用例体三实证先行，59 文件治理=配置 2 处+机械 50 案A 零夹带+手工 8 逐条（含 canDelete .value 真缺陷修），lint 双 exit 0（4559→0 error/165 warning）、test 308/308（sidebar spec 标记语义同步 1 处）、build ✓、mvn 154 4F+2E=基线、冒烟 64=55✅+7❌+2⏭️ 零回归 web-011c ✅；提交 9e82973 test → ec7bbc4 feat）
+- 2026-10-08: Planner — kickoff sprint-083（web/011c，4 条验收标准，案B 单波豁免用户裁决在案）
 - 2026-09-29: Planner — kickoff sprint-074（web/038e，4 条验收标准，038 组最后一段，历史债口径用户裁定在案）
 - 2026-09-29: Planner — kickoff sprint-070（web/038a，4 条验收标准，设计文档 83b19fb 移交）
 - 2026-09-29: Evaluator — pass sprint-069（modules/002，平均分 9.0/10，基线对照豁免否决项 6）

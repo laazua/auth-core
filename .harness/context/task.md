@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/011c**（由 web/011 行预留独立转正注册；011 行已 ✅ 约束不改） |
 | 功能点名称 | 全量 lint 门禁恢复——dist 忽略解锁卡死 + 全量 Error 4559 清零 |
-| 状态 | PLANNED |
+| 状态 | AWAITING_REVIEW |
 | 创建时间 | 2026-10-08 |
 
 ## 前置依赖
@@ -35,10 +35,10 @@
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — 卡死根因消除：治理前 `npm run lint:check`（`eslint .` 口径）全量 **EXIT=124** 实录入 RED 槽；R1 对照实证钉死根因（dist 扫描 vs 其他，含 `eslint .` vs 忽略 dist 后的对照命令输出）；治理后全量在 300s 内完成运行、exit ∈ {0,1}（**≠124**）且输出零 `dist/` 路径。← 用例 `smoke web-011c lint 全量门禁恢复` + 门禁实测
-- [ ] AC2 — 全量 Error 清零：忽略 dist 后首跑清单入 RED 槽（Error 总数与按文件/规则分布，预期 ≈4559 = 4536 prettier + 23 手工 + 根级增量，以实测钉死）；修复后 `npm run lint:check` **exit 0、Error 0**；Warning 处置口径入册——attrs-order 18 随自动修复清零、any 171 允许残留但逐条登记归 011d。← 用例 `AC2 ← 门禁实测 lint:check exit 0（RED=4559±Error 清单）`
-- [ ] AC3 — 零语义回归：①机械段（自动修复涉及的约 59 文件）**逐文件证明 `工作树版 == prettier(HEAD 版)`（diff 空）——变更恰为 prettier 规范化、零额外改动**【案A 口径修订 2026-10-08 用户问答在案：prettier 含长行拆分等风格改写，原稿「`git diff -w` 空」字面不可达，升级为 prettier 等价证明（更强，可抦截任何夹带）；风格 token（拆行/逗号/引号）允许】；②手工段文件清单与逐处 diff 理由登记入实现说明（预期 ≈11 文件/23 Error）；③`npm run test` **0 failed | 308 passed** 与 `npm run build` ✓ 均不回归（手工段若涉产品文件，每处须论证行为等价并由对应 spec 守护）。← 用例 `AC3 ← prettier 等价逐文件实测 + 门禁两线`
-- [ ] AC4 — 门禁五线与冒烟：`mvn -q verify` 154 用例 4F+2E=基线五类逐条；`bash scripts/smoke.sh` 存量 **63 用例不减不改** + 本单追加 `web-011c` → 64（7❌ 属基线不背锅）；行数债登记——`IndexView.vue`(752)/`IndexView.spec`(1496)/`LoginView.spec`(667) 等 >500 行文件经格式化后的行数变化逐条入册。← 用例 `AC4 ← 门禁五线实测 + 冒烟 64`
+- [x] AC1 — 卡死根因消除：治理前 `npm run lint:check`（`eslint .` 口径）全量 **EXIT=124** 实录入 RED 槽；R1 对照实证钉死根因（dist 扫描 vs 其他，含 `eslint .` vs 忽略 dist 后的对照命令输出）；治理后全量在 300s 内完成运行、exit ∈ {0,1}（**≠124**）且输出零 `dist/` 路径。← 用例 `smoke web-011c lint 全量门禁恢复` + 门禁实测
+- [x] AC2 — 全量 Error 清零：忽略 dist 后首跑清单入 RED 槽（Error 总数与按文件/规则分布，预期 ≈4559 = 4536 prettier + 23 手工 + 根级增量，以实测钉死）；修复后 `npm run lint:check` **exit 0、Error 0**；Warning 处置口径入册——attrs-order 18 随自动修复清零、any 171 允许残留但逐条登记归 011d。← 用例 `AC2 ← 门禁实测 lint:check exit 0（RED=4559±Error 清单）`
+- [x] AC3 — 零语义回归：①机械段（自动修复涉及的约 59 文件）**逐文件证明 `工作树版 == prettier(HEAD 版)`（diff 空）——变更恰为 prettier 规范化、零额外改动**【案A 口径修订 2026-10-08 用户问答在案：prettier 含长行拆分等风格改写，原稿「`git diff -w` 空」字面不可达，升级为 prettier 等价证明（更强，可抦截任何夹带）；风格 token（拆行/逗号/引号）允许】；②手工段文件清单与逐处 diff 理由登记入实现说明（预期 ≈11 文件/23 Error）；③`npm run test` **0 failed | 308 passed** 与 `npm run build` ✓ 均不回归（手工段若涉产品文件，每处须论证行为等价并由对应 spec 守护）。← 用例 `AC3 ← prettier 等价逐文件实测 + 门禁两线`
+- [x] AC4 — 门禁五线与冒烟：`mvn -q verify` 154 用例 4F+2E=基线五类逐条；`bash scripts/smoke.sh` 存量 **63 用例不减不改** + 本单追加 `web-011c` → 64（7❌ 属基线不背锅）；行数债登记——`IndexView.vue`(752)/`IndexView.spec`(1496)/`LoginView.spec`(667) 等 >500 行文件经格式化后的行数变化逐条入册。← 用例 `AC4 ← 门禁五线实测 + 冒烟 64`
 
 ### AC1 — 卡死解除
 > Given 全量 lint:check 124 实录。When R1 判定 dist 根因并施加忽略。Then 完成运行 ≠124 且零 dist 路径。
@@ -65,7 +65,7 @@
 | 1 | 全量 `lint:check` 卡死实录（124）与 R1 对照实证 | AC1 | ✓ RED-1=124 + RED-2 对照 <60s 完成（dist=根因钉死） |
 | 2 | 忽略 dist 后首跑 Error 清单（4559± 分布入册） | AC2 | ✓ RED-2=4748 问题/Error 4559/60 文件，root 0 增量 |
 | 3 | smoke `web-011c` lint 全量门禁恢复（先写后绿） | AC1/AC4 | （待 Generator） |
-| 4 | 门禁五线：lint:check exit 0 / test 0 failed\|308 / build ✓ / mvn=基线 / 冒烟 63 存量+新增 | AC2/AC3/AC4 | （待 Generator） |
+| 4 | 门禁五线：lint:check exit 0 / test 0 failed\|308 / build ✓ / mvn=基线 / 冒烟 63 存量+新增 | AC2/AC3/AC4 | ✓ 五线全过（lint 链 EXIT=0、test 308/308、build 17.75s、mvn 154 4F+2E=基线、冒烟 64=55✅+7❌+2⏭️） |
 
 ## RED 证据
 
@@ -95,7 +95,13 @@ RED3_CASE_EXIT=124 → smoke harness 判 ❌ 失败（lint:check 300s 内零输�
 > 治理后复跑。
 
 ```text
-[GREEN] （待填——lint:check exit 0、test 0 failed|308、build ✓、smoke 64=55✅+7❌+2⏭️ 预期）
+[GREEN] npm run lint:check（2026-10-08 实时，/tmp/opencode/e083-lintcheck2.log、e083-frontend-gates.log）：
+EXIT=0 — ✖ 165 problems (0 errors, 165 warnings)   ← Error 4559→0
+Warning 口径：165 = any 171 − 6（6 处 catch (error:any) 拆壳连带消除）+ attrs-order 18 波内清零；余者全为 no-explicit-any，登记 011d。
+差值链：[RED-1] EXIT=124 → 治理后 <60s 完成；[RED-2] E4559 → [GREEN] E0；[RED-3] 用例体 124 → web-011c ✅。
+案A 等价证明（逐文件 `工作树 == eslintFix(HEAD)`）：**50 机械等价 + 8 手工 + 1 配置 = 59 文件，零夹带**；
+手工段 delta 仅 117 行（/tmp/opencode/e083-hand-hunks.log + sidebar spec 单行同步复核实录）。
+门禁链原文 `npm run lint && npm run test && npm run build` = EXIT 0（308 passed、✓ built 17.75s）。
 ```
 
 ## 门禁与冒烟记录
@@ -104,11 +110,11 @@ RED3_CASE_EXIT=124 → smoke harness 判 ❌ 失败（lint:check 300s 内零输�
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 154 用例 4F+2E（五类，veto-6 豁免） | （待填） | （待填） |
-| `npm run lint:check` 全量 | **EXIT=124 卡死**（5+ 次复现）；src-only 实测 4748 问题/60 文件 | （待填：治后 exit 0） | （待填） |
-| `npm run test` | **0 failed \| 308 passed**（EXIT=0） | （待填） | （待填） |
-| `npm run build` | ✓（~17s） | （待填） | （待填） |
-| `bash scripts/smoke.sh` | **63=54✅+7❌+2⏭️**（7❌ 基线不背锅） | （待填：预期 64=55✅+7❌+2⏭️） | （待填） |
+| 后端 `mvn -q verify` | 154 用例 4F+2E（五类，veto-6 豁免） | **154 用例 Failures 4 + Errors 2**，五类逐条=基线（/tmp/opencode/e083-mvn.log） | ✓ =基线零新增 |
+| `npm run lint:check` 全量 | **EXIT=124 卡死**（5+ 次复现）；RED-2 dist 忽略首跑 4748 问题/60 文件 | **EXIT=0，0 errors / 165 warnings**（Error 4559→0；RED 对照 e083-red1/red2.log、治后 lintcheck2.log） | ✓ 达标（AC1+AC2） |
+| `npm run test` | **0 failed \| 308 passed**（EXIT=0） | **0 failed \| 308 passed (36)** EXIT=0（波后 1 failed→sidebar spec 标记语义同步→复测全绿，e083-test2/gates.log） | ✓ 达标 |
+| `npm run build` | ✓（~17s） | ✓ EXIT=0（17.75s，e083-frontend-gates.log） | ✓ 达标 |
+| `bash scripts/smoke.sh` | **63=54✅+7❌+2⏭️**（7❌ 基线不背锅） | **64=55✅+7❌+2⏭️**（存量 63 不减不改 + 本单 `web-011c` ✅；7❌=基线逐条 model-008/010、roles-001/002、web-013/020/026；e083-smoke.log） | ✓ 零回归（AC4） |
 
 ## 拆分说明
 
@@ -138,7 +144,45 @@ RED3_CASE_EXIT=124 → smoke harness 判 ❌ 失败（lint:check 300s 内零输�
 
 ## 实现说明
 
-（待 Generator：R1-R5 判定结论 + 变更清单 + 提交链 + 断言/行为等价登记）
+**研究项判定（R1-R5 全部闭合）**：
+1. **R1 根因钉死**：`eslint .`（dist 未忽略）300s 零输出超时 vs 同命令 `--ignore-pattern 'dist/**'` **<60s 完成**——根因=构建产物 29 bundle/1.9M 被扫且 prettier 插件逐个重排；`.eslintrc.cjs` 加 `ignorePatterns: ['dist','coverage']` 治本（非 dist 内容问题，忽略即可，产物本体未动）。
+2. **R2 23 手工 Error 逐条**（RED-2 清单全清 → E0）：
+   - `no-unused-vars` 8 处**全是「省略式解构排除不可改/敏感字段」惯用法**（`const { code, ...updateData }` 等）——删变量会把 code/password 带回 update 载荷、破坏「code 不可改」契约 → **改配置 `ignoreRestSiblings: true`**（代码零动，契约语义保留）；
+   - `no-useless-catch` 6 处纯重抛壳（roles/system/users IndexView）→ 拆壳保留原语句序，行为等价（原 catch 无副作用）；
+   - `vue/no-parsing-error` 4 处 = RoleAssignDrawer 模板字面 `<<` 非法标签起始 → `&lt;&lt;` 实体转义（渲染文本相同）；另 1 处（波后 BaseTable:106 新生）= prettier 把模板内联 `as (…)|undefined` 联合类型断言拆行、vue 模板解析器无法解析（RED-2 原为 :101 deprecated-filter 同一行变异）→ **类型断言移入 script**（`toFormatter` 助手，模板只留调用），根除「prettier 换行×模板解析」脆弱面；
+   - `vue/no-dupe-keys` 1 处 = BaseInput props 键 `showPassword` 与 setup 局部 ref 同名（模板绑定歧义风险）→ 局部改名 `passwordVisible`（4 处，props 面未动；现行为 setup 态优先本就取 ref，改名零行为变化）；
+   - `no-ref-as-operand` 1 处 = roles `canDelete &&` ref 直接作操作数（恒真缺陷，波内 --fix 自动补 `.value`，权限判定恢复真实）——**真缺陷修复**，308 用例全绿守护；
+   - `no-useless-escape` 2 处 = profile spec 正则字符类内 `\/` → `/`（零行为）。
+3. **R3 自动修复口径**：`npm run lint`（--fix）单波覆盖 prettier 4536+attrs-order 18；`format:check` 非门禁未纳入；波2 仅对手工改动补格式。
+4. **R4 零语义证明链**：案A 逐文件等价循环（HEAD 副本 → 同配 `eslint --fix` → 与工作树 diff）——**50 机械等价零夹带**；手工 8 文件 delta 逐行登记（hand-hunks.log117 行 + sidebar 单行）；test 308/308 + build ✓ 守护。
+5. **R5 熔断自查**：实际 59 文件 ≤70 熔断线 ✓；无版本升级 ✓；无非空白夹带（等价循环证）✓；真缺陷（dupe-key/ref-as-operand）均为最小修未触发大改回报 ✓；>500 行债文件行数变化（HEAD~1→HEAD，全为 prettier 折行、机械等价证明覆盖）：`system/IndexView.vue` 766→818（+52）、`system/IndexView.spec.ts` 1496→1501（+5）、`LoginView.vue` 640→669（+29）、`LoginView.spec.ts` 667→727（+60，151 处 prettier）；roles/users IndexView 407→428、432→454。四债文件测试数与断言零删改（308/308 守护）。
+
+**波后回归修复登记**：全量 test 曾 1 failed=`sidebar-icon-size.spec#fallbackIconExplicitSize16px`——其源码级标记 `'
+.sidebar__icon'`（零缩进假设）被波的 `vueIndentScriptAndStyle` 顶层缩进打破；**测试侧语义同步**为 `'
+  .sidebar__icon'`（仍断言顶层规则块 width/height 16px，非删除非放宽），复测 308/308 ✓。
+
+**变更清单（三节）**：
+### 新增
+- （无）——smoke `web-011c` 用例追加于既有 `scripts/smoke.sh`（test: 提交内）
+
+### 修改
+- `frontend/.eslintrc.cjs`:3-6,27-29 — `ignorePatterns ['dist','coverage']`（AC1 卡死根因）+ `ignoreRestSiblings: true`（AC2 契约口径，8 处 unused-vars）
+- 机械段 **50 文件** — eslint --fix（prettier 4536 + attrs-order 18），逐文件 `eslintFix(HEAD)≡工作树` 证明零夹带
+- `frontend/src/components/BaseInput.vue`:39-141 — dupe-key 改名 passwordVisible×4
+- `frontend/src/components/BaseTable.vue`:49-52,104 — toFormatter 助手 + 模板调用（模板联合类型断言解析错误根治）
+- `frontend/src/views/roles/IndexView.vue`:214-241 — 2 处无用 catch 拆壳（+波内 canDelete .value 自动真缺陷修）
+- `frontend/src/views/system/IndexView.vue`:389,468 — 2 处无用 catch 拆壳
+- `frontend/src/views/users/IndexView.vue`:246,259 — 2 处无用 catch 拆壳
+- `frontend/src/views/users/RoleAssignDrawer.vue`:232,240 — `<<`→`&lt;&lt;`×2（4 条解析错误）
+- `frontend/src/views/__tests__/profile-view-icon-size.spec.ts`:39 — 正则 `\/`→`/`×2
+- `frontend/src/__tests__/sidebar-icon-size.spec.ts`:45-46 — 源码标记随格式口径语义同步
+- `scripts/smoke.sh`:170-175 — +`web-011c` 用例（test: 提交）
+- 本单文档四件（task/session/iteration/registry）
+
+### 删除
+- （无）——零文件删除、零测试删除、any 171 警告按分治登记未修
+
+**提交链**：`9e82973` test RED（RED-1/2/3 三实证+用例先行+AC3 案A 修订）→ `ec7bbc4` feat GREEN（59 文件治理）。
 
 ## 评审意见
 
