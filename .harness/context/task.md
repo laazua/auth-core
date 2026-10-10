@@ -75,10 +75,10 @@ session-state 原「下一步动作」建议 web/036c2（主推）/web/011d（�
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — 内部点击传播不关闭下拉（竞态修复核心）：挂载真实 BaseSelect（options 2 项，不 mock），打开下拉并 await 渲染使 `.base-select__dropdown` 就位后，**重放同一点击事件传播的后半段**——调用组件注册在 document 上的 click 监听器（`target` = trigger 元素，即组件根内、dropdown 外），断言下拉保持展开（根含 `base-select--open` 且 dropdown 在场）。当前实现该调用会把打开状态关闭 → **RED**。← 用例 `AC1 ← 用例 base-select.spec#组件根内点击传播到达 document 不关闭下拉`；RED 复现与最终断言全文见 RED 槽。
-- [ ] AC2 — 外部点击关闭语义保留（防过度修复）：同 spec，下拉展开后调用同一 document 监听器（`target` = 组件根外的外部元素），断言下拉关闭（根不含 `base-select--open`、dropdown 卸载）。与 AC1 成对钉死「根内不关、根外关」判定边界。← 用例 `AC2 ← 用例 base-select.spec#组件根外点击关闭下拉`（护栏用例，与 AC1 同批）。
-- [ ] AC3 — 报障面冒烟覆盖：追加 **≥1 条**冒烟用例 `web-041`（形态 Generator 按 tdd-workflow 冒烟节定，建议：定向跑组件 spec 断言通过 + 源码级断言四页面 toolbar 均挂 BaseSelect 筛选下拉、修复形态在场），首跑 **RED**（修复前必红）→ 修复后复跑 ✅。← 用例 `AC3 ← 用例 smoke web-041（首跑 RED EXIT=1 → GREEN EXIT=0）`。
-- [ ] AC4 — 门禁与冒烟总账：`npm run lint && npm run test && npm run build` 零新增（test **0 failed**，基线 315+本单新增；lint **0 errors**/165 warnings 基线；build ✓）；`mvn -q verify` **154 用例 4F+2E=基线五类**（本单零后端改动）；`bash scripts/smoke.sh` 总数 **≥67**（66+新增）、**❌ 恰为 4 条**（model-008、model-010、roles-001、roles-002=登记不背面）、零新增失败。← 用例 `AC4 ← 用例 门禁五线实测 + 冒烟全量复跑`。
+- [x] AC1 — 内部点击传播不关闭下拉（竞态修复核心）：挂载真实 BaseSelect（options 2 项，不 mock），打开下拉并 await 渲染使 `.base-select__dropdown` 就位后，**重放同一点击事件传播的后半段**——调用组件注册在 document 上的 click 监听器（`target` = trigger 元素，即组件根内、dropdown 外），断言下拉保持展开（根含 `base-select--open` 且 dropdown 在场）。当前实现该调用会把打开状态关闭 → **RED**。← 用例 `AC1 ← 用例 base-select.spec#组件根内点击传播到达 document 不关闭下拉`；RED 复现与最终断言全文见 RED 槽。
+- [x] AC2 — 外部点击关闭语义保留（防过度修复）：同 spec，下拉展开后调用同一 document 监听器（`target` = 组件根外的外部元素），断言下拉关闭（根不含 `base-select--open`、dropdown 卸载）。与 AC1 成对钉死「根内不关、根外关」判定边界。← 用例 `AC2 ← 用例 base-select.spec#组件根外点击关闭下拉`（护栏用例，与 AC1 同批）。
+- [x] AC3 — 报障面冒烟覆盖：追加 **≥1 条**冒烟用例 `web-041`（形态 Generator 按 tdd-workflow 冒烟节定，建议：定向跑组件 spec 断言通过 + 源码级断言四页面 toolbar 均挂 BaseSelect 筛选下拉、修复形态在场），首跑 **RED**（修复前必红）→ 修复后复跑 ✅。← 用例 `AC3 ← 用例 smoke web-041（首跑 RED EXIT=1 → GREEN EXIT=0）`。
+- [x] AC4 — 门禁与冒烟总账：`npm run lint && npm run test && npm run build` 零新增（test **0 failed**，基线 315+本单新增；lint **0 errors**/165 warnings 基线；build ✓）；`mvn -q verify` **154 用例 4F+2E=基线五类**（本单零后端改动）；`bash scripts/smoke.sh` 总数 **≥67**（66+新增）、**❌ 恰为 4 条**（model-008、model-010、roles-001、roles-002=登记不背面）、零新增失败。← 用例 `AC4 ← 用例 门禁五线实测 + 冒烟全量复跑`。
 
 ### AC1 — 组件根内点击传播不关闭下拉
 > Given 修复前 document outside 监听器在渲染后收到 target=trigger 的 click 会误关下拉（浏览器四采样点实录）。When 判定依据修正（R2）后重放该调用。Then 下拉保持展开。
