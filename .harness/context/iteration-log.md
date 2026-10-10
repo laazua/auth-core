@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-10-10: Generator — done sprint-086（web/041 BaseSelect click-outside 竞态修复，门禁+冒烟通过：RED 双实证=RED-1 spec 首跑 1 failed（重放 target=trigger 后 classes 仅 ['base-select']，与 Chromium D 点 doc-bub 关同语义）+ RED-2 冒烟用例体 stash 首跑 EXIT=1 → GREEN=rootRef 根元素包含性判定（handleClickOutside `!rootRef.contains`）+ 删死引用 dropdownRef，spec 2 passed、用例体 EXIT=0；R3 浏览器实测四页真实点击均 open=true、抽屉对照正常；门禁 lint 0E|165W、test 317/317（315+2）、build ✓18.02s、mvn 154 4F+2E=基线五类逐条，冒烟 **67=61✅+4❌+2⏭️**（❌恰=model-008/010、roles-001/002 零新增、web-041 ✅））→ 移交 Evaluator 评审
+- 2026-10-10: Planner — kickoff sprint-086（web/041，4 条验收标准；四管理页下拉打不开根因实证=BaseSelect click-outside 同事件竞态（Chromium 四采样点 A/B/C 开 D 关、抽屉冒泡中断侥幸可用、jsdom 不复现改同构重放形态）、用户报障直提取代 036c2 建议、≤6 文件不拆分）
 - 2026-10-09: Evaluator — pass sprint-085（web/036c1，平均分 9.5/10）
 - 2026-10-09: Generator — done sprint-085（web/036c1，门禁+冒烟通过：RED 四路实录=三用例天然红+新用例首跑红+旧正则变异 true→GREEN=web-013/026 passed==total 语义化、web-020 对准 DefaultLayout-*.css、profile 精确正则、011b 注释勘误，自检用例两度自指涉修复（措辞+邻接串消字面）；门禁 lint 0E|165W、test 315/315、build ✓17.39s、mvn 154 4F+2E=基线，冒烟 **66=60✅+4❌+2⏭️**（❌7→4 翻绿 013/020/026、恰为登记不背面、新增 web-036c1 ✅）；提交 `7e32938 test` → `66bf809 feat`）→ 移交 Evaluator 评审
 - 2026-10-09: Planner — kickoff sprint-085（web/036c1，4 条验收标准；036c 拆分首切片：7❌ 只读分类实录=web-013/020/026 过期口径归本单、roles×2 基线下游、model×2 子集态归 036c2；profile 弱正则(083③)+web/084 注释(084②) 同波；040c 误荐失效自纠登记）

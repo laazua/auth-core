@@ -2,15 +2,16 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: ✅ **sprint-085 评审通过 9.5/10**（web/036c1 收口：66=60✅+4❌+2⏭️、六否决零命中，回写 `docs:` 在案）
+- 状态: 🔄 **sprint-086 实现完成待评审**（web/041 Generator done，移交 Evaluator）
 - 当前模块: web
-- 当前功能点: web/036c1 — ✅ DONE
+- 当前功能点: web/041 — BaseSelect 竞态修复（四管理页下拉打不开）
 
 
 ## 下一步动作
-  Planner：读 `.harness/planner.md` 并严格执行——取下一功能点。建议（已扫 registry 状态列核验在册）：主推 **web/036c2**（036 行预留：冗余覆盖与死代码清理 + model-008/010 子集态测试缺陷；规划先全仓普查定规模，>6 文件触发案B 须问用户）；备选 **web/011d**（any 165 warning，011c 行备注归入在册）。禁推：modules/003 与 web/038（⬜ 未注册且各有前置仲裁，须先注册）、roles-001/002 与后端五类基线（登记「后续/人工」面）。
+  Evaluator：读 `.harness/evaluator.md` 并严格执行——评审工作单 `.harness/context/task.md`（sprint-086 / web/041，4 条验收标准）。要点：① 门禁五线亲跑基线对照（mvn 154=4F+2E 五类、lint 0E|165W、test 317、build ✓、冒烟 ≥67 ❌恰4）；② RED 独立复现（stash 暂存 `BaseSelect.vue` 后 spec 必红）；③ R3 浏览器实测四页下拉真实点击（playwright-core 在 npx 缓存、chromium 在 ms-playwright 缓存，严禁入项目依赖）；④ 变更范围核对 3+4 文件零夹带（工作树预存 `application.yml.template` 删除 + `application.template.yml` 新增不计入本单）。
 
 ## 挂起
+- 2026-10-10: Planner(sprint-086) — **web/041 根因实证与复现口径登记（跨会话可复核）**：① 报障面=四路由工具栏下拉（/system/users、/system/roles、/system/permissions、/system/modules，后两页共用 system/IndexView；权限页下拉为模块筛选非状态，按报障面整体覆盖口径，task R4）；② Chromium 真实鼠标四采样点实录（probe4）：A-root-cap 关→B-root-bub **开**→C-body-bub 开→D-doc-bub **关**——`handleClick` 置 isOpen=true 后 Vue flushJobs 在 listener 边界 checkpoint 完成渲染，document 的 `handleClickOutside` 以 `dropdownRef.contains(target=trigger)` 误判 outside 关闭；③ 抽屉对照可用因 click 冒泡未达 document（C/D 未触发，EP drawer 容器传播中断）；④ 四页 spec 均 mock BaseSelect 致测试盲区；⑤ **jsdom 完整传播不复现**（临时探针实测 open=true dd=true，跑完即删）→ AC1 用「渲染后重放 outside 监听器」同构形态（task R1）；⑥ 复验环境：headless Chromium（~/.cache/ms-playwright）+ playwright-core（npx 缓存），**严禁入项目依赖**；本机服务起法 `setsid nohup`（直接 `&` 会被工具超时连带杀掉，本次实测）；工作树预存 `application.yml.template→application.template.yml` 改动非本单产生、不混入提交。
 - 2026-10-09: Evaluator/Planner — **下一单建议更正（自纠登记）**：sprint-084 评审回写曾建议「web/040c」为下一功能点——**该建议失效**：040c 已于 sprint-077 评审通过（2026-09-29，9.5/10，registry 040 行实证 `dto.auth.UserVO` 已含 createdAt/updateTime、TimestampFieldContractTest:186 已断言）。失效原因=建议依据未复核 registry 即写入。本轮回写已改为 web/036c1；后续 Planner 建议功能点前须先扫 registry 状态列。
 - 2026-10-09: Generator(sprint-084) — **AC3③ 计数口径修订（用户案A 问答在案）**：修复前产物 `[data-theme=dark]` 规则基线=11，**其中 1 条正是死形态**（`[data-theme=dark][data-v-c7766763]` 永不命中）；合法修复必然移除死规则→产物=10（有效覆盖反而提升：遮罩暗色由「永白」变命中）。字面「≥11」不可达，用户裁定**案A**=下限 **≥10 且死形态=0**，主断言=死形态归零+可命中规则在+036a 三断言，计数降为辅断言。task AC3/R3/问答块已同步修订，冒烟用例本就以形态为主断言（未含计数），Evaluator 按此口径评审。
 - 2026-10-08: Generator(sprint-083) — **AC3 ① 证明口径修订（用户案A 问答在案）**：「机械段 `git diff -w` 空」字面不可达——prettier 自动波含 printWidth 100 长行拆分等风格改写（实测非空白变更 9564 行，主因行拆分），强求将迫使逐文件手工回卷、风险大于收益；用户裁定**案A**=逐文件 `工作树 == eslintFix(HEAD)` 等价证明（HEAD 副本过同配 `eslint --fix` 后与工作树逐字节比对，可抦截任何夹带，**比 diff -w 更强**），风格 token 允许。实测结果：**50 机械等价 + 8 手工 + 1 配置 = 59 文件零夹带**（手工 delta 仅 117 行，e083-hand-hunks.log + sidebar spec 单行同步复核）。任务单 AC3/RED 槽已修订，Evaluator 按此口径评审。
@@ -45,6 +46,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-10: Planner — kickoff sprint-086（web/041，4 条验收标准，四管理页下拉打不开根因实证=BaseSelect click-outside 同事件竞态四采样点、jsdom 不复现口径、≤6 文件不拆分）
 - 2026-10-09: Evaluator — pass sprint-085（web/036c1，平均分 9.5/10，五维 9.5/9/9.5/9.5/10：门禁亲跑 mvn 154 4F+2E=基线、前端链 EXIT=0（0E/165W、315/315、build 17.76s）、冒烟 66=60✅+4❌+2⏭️ ❌恰=登记四条零新增、RED 独立复现 4×EXIT=1+变异 true/false、用例增量+范围 6 文件零夹带；六否决零命中）
 - 2026-10-09: Generator — done sprint-085（web/036c1，RED 四路实录→GREEN 口径同步，四用例转绿+全量 315/315+冒烟 ❌7→4=66，提交 7e32938 test→66bf809 feat）
 - 2026-10-09: Planner — kickoff sprint-085（web/036c1，4 条验收标准，7❌ 分类实录与 036c 三切片拆分登记）
