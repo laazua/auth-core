@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🔄 **sprint-086 实现完成待评审**（web/041 Generator done，移交 Evaluator）
+- 状态: ✅ **sprint-086 PASS**（web/041 评审通过 9.7/10，六否决零命中）
 - 当前模块: web
-- 当前功能点: web/041 — BaseSelect 竞态修复（四管理页下拉打不开）
+- 当前功能点: web/041 — BaseSelect 竞态修复（四管理页下拉打不开）— 已收口
 
 
 ## 下一步动作
-  Evaluator：读 `.harness/evaluator.md` 并严格执行——评审工作单 `.harness/context/task.md`（sprint-086 / web/041，4 条验收标准）。要点：① 门禁五线亲跑基线对照（mvn 154=4F+2E 五类、lint 0E|165W、test 317、build ✓、冒烟 ≥67 ❌恰4）；② RED 独立复现（stash 暂存 `BaseSelect.vue` 后 spec 必红）；③ R3 浏览器实测四页下拉真实点击（playwright-core 在 npx 缓存、chromium 在 ms-playwright 缓存，严禁入项目依赖）；④ 变更范围核对 3+4 文件零夹带（工作树预存 `application.yml.template` 删除 + `application.template.yml` 新增不计入本单）。
+  Planner：读 `.harness/planner.md` 并严格执行——取下一功能点。**建议下一个功能点：web/036c2**（036c 拆分第二片：前端冗余覆盖与死代码清理 + model-008/010 治理——registry 036 行预留，正好对准基线冒烟 4❌ 中的 model-008/010 两条；注意「>6 文件问案B」预登记）。备选：web/036c3（串联 :deep 42 处，预留）。开工前先扫 registry 状态列核对预存建议有效性（084 失效教训在案）。
 
 ## 挂起
 - 2026-10-10: Planner(sprint-086) — **web/041 根因实证与复现口径登记（跨会话可复核）**：① 报障面=四路由工具栏下拉（/system/users、/system/roles、/system/permissions、/system/modules，后两页共用 system/IndexView；权限页下拉为模块筛选非状态，按报障面整体覆盖口径，task R4）；② Chromium 真实鼠标四采样点实录（probe4）：A-root-cap 关→B-root-bub **开**→C-body-bub 开→D-doc-bub **关**——`handleClick` 置 isOpen=true 后 Vue flushJobs 在 listener 边界 checkpoint 完成渲染，document 的 `handleClickOutside` 以 `dropdownRef.contains(target=trigger)` 误判 outside 关闭；③ 抽屉对照可用因 click 冒泡未达 document（C/D 未触发，EP drawer 容器传播中断）；④ 四页 spec 均 mock BaseSelect 致测试盲区；⑤ **jsdom 完整传播不复现**（临时探针实测 open=true dd=true，跑完即删）→ AC1 用「渲染后重放 outside 监听器」同构形态（task R1）；⑥ 复验环境：headless Chromium（~/.cache/ms-playwright）+ playwright-core（npx 缓存），**严禁入项目依赖**；本机服务起法 `setsid nohup`（直接 `&` 会被工具超时连带杀掉，本次实测）；工作树预存 `application.yml.template→application.template.yml` 改动非本单产生、不混入提交。

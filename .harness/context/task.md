@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/041**（新注册） |
 | 功能点名称 | 修复用户/角色/权限/模块四管理页工具栏筛选下拉框点击无法展开——BaseSelect click-outside 同事件竞态 |
-| 状态 | AWAITING_REVIEW |
+| 状态 | DONE |
 | 创建时间 | 2026-10-10 |
 
 ## 前置依赖
@@ -188,4 +188,28 @@ EXIT=1（Test Files 1 failed、Tests 1 failed | 1 passed）——用例体首条
 
 ## 评审意见
 
-（待 Evaluator 填写）
+### 验收标准核对
+- [x] AC1 — 满足（Evaluator 亲跑 spec `2 passed`；独立 RED 复现 `git checkout 4bd759f -- BaseSelect.vue` 后 `1 failed`，AssertionError: expected ['base-select'] to include 'base-select--open'；R3 浏览器四页真实点击 `open=true hasDropdown=true hitRatio=36/36`）
+- [x] AC2 — 满足（同 spec 第 2 例根外点击关闭通过，与 AC1 成对钉死判定边界；修复后保持）
+- [x] AC3 — 满足（`git diff f201550..HEAD -- scripts/smoke.sh` 净 +11 行纯新增零删除；亲跑 web-041 ✅；首跑 RED 有 Generator stash EXIT=1 在案 + 本审独立复现等效）
+- [x] AC4 — 满足（五线亲测全达基线，见下节）
+
+### 门禁与冒烟实测
+mvn -q verify：`Tests run: 154, Failures: 4, Errors: 2, Skipped: 0`（DataSourceConfigBindingTest 2F、RoleControllerTest 1F、SeedDataIntegrationTest 1F、TestLayersSpec 1E、TestUtilsSpec 1E）= 基线五类逐条零新增；前端：lint `0 errors, 165 warnings`（LINT_EXIT=0）、test `Test Files 38 passed, Tests 317 passed (317)`（TEST_EXIT=0）、build `✓ built in 17.44s`（BUILD_EXIT=0）；冒烟 scripts/smoke.sh：`SMOKE FAILED（67 用例）`、61✅+4❌+2⏭️，❌恰=model-008/010、roles-001/002（登记不背面零新增），新增用例 web-041 ✅；FAILED 字样系 4 条登记 ❌ 计数所致，基线豁免口径（同 sprint-083/084/085），本单零后端 diff、smoke 用例区零删除——否决 6 不命中。
+
+### 评分
+| 维度 | 分数 | 证据 |
+|------|------|------|
+| 功能正确性 | 9.5 | 4 AC 亲核全满足；R3 四页浏览器真实点击 open=true、hitRatio 36/36、抽屉对照正常；六路径定向复测 PASS（选中自关+值回填、Escape keydown 能力、toggle 开关、根外关闭）；filterable/clearable 报障面实例未启用=页面配置非缺陷（diff 未触及相应逻辑） |
+| 代码质量 | 9.5 | diff 仅 11 行（+4/−7）：rootRef 根包含性判定单一语义、why 注释符合 standards「注释写 why」、删死引用 dropdownRef 消 TS6133；无重复/无过度设计；lint 0 errors 亲测 |
+| 规范遵守 | 9.5 | §11 清单逐项：script setup ✓、无 any（spec grep=0）✓、AAA Given-When-Then 注释 ✓、断言具体值（toContain/not.toContain）✓、afterEach 清理测试独立 ✓、mock 边界=spyOn 截获组件真实注册（非 mock 被测内部）✓；扣 0.5：spec `wrapper!.element` 非空断言未附注释（standards §7） |
+| TDD 执行度 | 10 | 测试清单 4 项入 task → RED-1/RED-2 双实证 → GREEN 2 passed → 五线回归；提交 `4bd759f test`→`2870511 feat` 顺序物证；RED 独立复现（检出修复前形态 1 failed）；断言有效性高（同构重放与 Chromium 四采样点 D 同语义、成对边界） |
+| 安全性 | 10 | 五查零命中：纯前端 UI 交互判定修复，`git diff f201550..HEAD -- backend/` 为空（零权限判定/数据流变更，RBAC 第 6 节零触碰）、无注入面、无密钥/明文、无新增日志 |
+
+### 决策
+✅ 通过（总分 9.7/10 ≥7，六项一票否决逐一核对零命中；首轮评审）
+
+### 改进建议（可选，不计分）
+1. spec `getOutsideHandler` 取「最后一个 click 监听器」——若测试环境有第三方库同注册 document click 可能取错，建议按注册来源标记。
+2. 报障面页面实例均未启用 filterable/clearable，组件这两条能力在页面层无真实实例覆盖，后续可在实例启用或补组件级用例。
+3. Escape 依赖 trigger 焦点而页面实例无可聚焦 tabindex，键盘可访问性可增强（非本单范围）。

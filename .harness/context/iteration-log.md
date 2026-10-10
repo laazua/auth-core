@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-10: Evaluator — pass sprint-086（web/041，平均分 9.7/10，五维 9.5/9.5/9.5/10/10：4 AC 亲核全满足、RED 独立复现 checkout 4bd759f → 1 failed + 两段式 test→feat 物证、门禁五线亲跑=基线（mvn 154 4F+2E 五类逐条、lint 0E|165W、test 317/317、build ✓17.44s）、冒烟亲跑 67=61✅+4❌+2⏭️ ❌恰=登记四条零新增且 web-041 ✅、R3 四页浏览器 hitRatio 36/36+六路径定向复测 PASS（Escape/toggle 系测试焦点问题定性排除）、变更 7 文件=清单零夹带、六否决零命中）
 - 2026-10-10: Generator — done sprint-086（web/041 BaseSelect click-outside 竞态修复，门禁+冒烟通过：RED 双实证=RED-1 spec 首跑 1 failed（重放 target=trigger 后 classes 仅 ['base-select']，与 Chromium D 点 doc-bub 关同语义）+ RED-2 冒烟用例体 stash 首跑 EXIT=1 → GREEN=rootRef 根元素包含性判定（handleClickOutside `!rootRef.contains`）+ 删死引用 dropdownRef，spec 2 passed、用例体 EXIT=0；R3 浏览器实测四页真实点击均 open=true、抽屉对照正常；门禁 lint 0E|165W、test 317/317（315+2）、build ✓18.02s、mvn 154 4F+2E=基线五类逐条，冒烟 **67=61✅+4❌+2⏭️**（❌恰=model-008/010、roles-001/002 零新增、web-041 ✅））→ 移交 Evaluator 评审
 - 2026-10-10: Planner — kickoff sprint-086（web/041，4 条验收标准；四管理页下拉打不开根因实证=BaseSelect click-outside 同事件竞态（Chromium 四采样点 A/B/C 开 D 关、抽屉冒泡中断侥幸可用、jsdom 不复现改同构重放形态）、用户报障直提取代 036c2 建议、≤6 文件不拆分）
 - 2026-10-09: Evaluator — pass sprint-085（web/036c1，平均分 9.5/10）
