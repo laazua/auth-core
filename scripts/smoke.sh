@@ -485,6 +485,17 @@ smoke_case "web/040c me 面时间字段修复定向测试" mvn -q -f "$APP_DIR/p
 smoke_case "web/040b1 模块域 updateTime 对齐定向测试" mvn -q -f "$APP_DIR/pom.xml" test -Dtest='TimestampFieldContractTest'
 # web/040b2：R1 案A 分页键名勘误残留面终清（grep 零命中=通过；历史计划文档 198 不在扫描面）
 smoke_case "web/040b2 R1分页键名勘误残留面终清" sh -c '! grep -rn "{list,total,page,size}" docs/01-architecture.md backend/src/main/java/com/authcore/controller/'
+# web/041：四管理页工具栏下拉竞态修复（sprint-086 本单追加：组件根内/根外 click-outside 判定边界行为 spec + 报障面四页 BaseSelect 引用在场）
+smoke_case "web-041 四管理页下拉竞态修复定向测试" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  # 组件判定边界行为 spec（根内传播不关闭 + 根外点击关闭；修复前 AC1 必红）
+  npx vitest run src/components/__tests__/base-select.spec.ts >/tmp/smoke-web-041.log 2>&1 || exit 1
+  grep -qE 'Tests  [0-9]+ passed \([0-9]+\)' /tmp/smoke-web-041.log || exit 1
+  # 报障面：四管理页工具栏筛选下拉（BaseSelect 引用）在场
+  grep -q 'BaseSelect' src/views/users/IndexView.vue || exit 1
+  grep -q 'BaseSelect' src/views/roles/IndexView.vue || exit 1
+  grep -q 'BaseSelect' src/views/system/IndexView.vue || exit 1
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

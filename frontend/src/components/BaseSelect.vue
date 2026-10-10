@@ -37,8 +37,8 @@
 
   const isOpen = ref(false);
   const searchQuery = ref('');
+  const rootRef = ref<HTMLDivElement>();
   const inputRef = ref<HTMLInputElement>();
-  const dropdownRef = ref<HTMLDivElement>();
 
   const filteredOptions = computed(() => {
     if (!props.filterable || !searchQuery.value) return props.options;
@@ -131,8 +131,11 @@
     }
   };
 
+  // outside 判定以组件根为界：根内（trigger/label/清除按钮/下拉选项）的点击即使传播到
+  // document 也不得关闭下拉——若以 dropdown 是否包含 target 判定，同一点击事件中
+  // Vue 渲染完成后再到达的 document 监听会把刚打开的下拉立即关闭（web/041 竞态根因）
   const handleClickOutside = (event: MouseEvent) => {
-    if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
+    if (rootRef.value && !rootRef.value.contains(event.target as Node)) {
       isOpen.value = false;
     }
   };
@@ -147,7 +150,7 @@
 </script>
 
 <template>
-  <div :class="wrapperClasses" @click="handleClick">
+  <div ref="rootRef" :class="wrapperClasses" @click="handleClick">
     <label v-if="label" class="base-select__label">{{ label }}</label>
     <div
       class="base-select__trigger"
@@ -195,7 +198,7 @@
         @input="() => {}"
       />
     </div>
-    <div v-if="isOpen" ref="dropdownRef" class="base-select__dropdown">
+    <div v-if="isOpen" class="base-select__dropdown">
       <div v-if="filterable" class="base-select__search-wrapper">
         <input
           ref="inputRef"
