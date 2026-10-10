@@ -167,7 +167,7 @@ class AuthControllerTest {
     /**
      * AC1 (auth/004): 认证用户调用 /me 返回完整信息。
      * Given 有效 JWT，GET /api/v1/auth/me
-     * Then status=200、code=0、data 包含 user、roles、permissions（14 个权限码）
+     * Then status=200、code=0、data 包含 user、roles、permissions（17 个权限码）
      */
     @Test
     @DisplayName("认证用户调用 /me 返回用户、角色、权限")
@@ -216,12 +216,14 @@ class AuthControllerTest {
                 meRoot.path("data").path("permissions"),
                 mapper.getTypeFactory().constructCollectionType(List.class, String.class)
         );
-        assertEquals(16, permissions.size(), "admin 角色应关联 16 个权限");
+        assertTrue(permissions.contains("module:toggle-status"),
+                "admin 权限集合应含 module:toggle-status（web/043 模块页状态切换按钮门禁数据源）");
+        assertEquals(17, permissions.size(), "admin 角色应关联 17 个权限");
     }
 
     /**
      * AC2 (auth/004): 权限码去重正确。
-     * admin 角色关联全部 16 权限，返回的 permissions 列表无重复。
+     * admin 角色关联全部 17 权限，返回的 permissions 列表无重复。
      */
     @Test
     @DisplayName("/me 返回的权限码去重正确")

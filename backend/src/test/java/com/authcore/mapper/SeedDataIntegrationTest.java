@@ -106,9 +106,9 @@ class SeedDataIntegrationTest extends AbstractModelIntegrationTest {
                 "SELECT COUNT(*) FROM sys_role WHERE code = 'ROLE_USER'", Integer.class);
         assertEquals(1, userRoleCount, "ROLE_USER 角色应存在");
 
-        // sys_permission: 16 行（4 模块 × 4 权限）
+        // sys_permission: 17 行（4 模块 × 4 权限 + module:toggle-status）
         Integer permCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM sys_permission", Integer.class);
-        assertEquals(16, permCount, "sys_permission 应含 16 行种子数据");
+        assertEquals(17, permCount, "sys_permission 应含 17 行种子数据");
 
         // 验证每个权限的 module_id 指向有效模块
         Integer orphanPermCount = jdbcTemplate.queryForObject(
@@ -136,13 +136,13 @@ class SeedDataIntegrationTest extends AbstractModelIntegrationTest {
                 Integer.class);
         assertEquals(1, adminUserRoleCount, "admin 用户应关联 ROLE_ADMIN 角色");
 
-        // sys_role_permission: admin_role -> 16 个权限，user_role -> 4 个只读权限
+        // sys_role_permission: admin_role -> 17 个权限，user_role -> 4 个只读权限
         Integer adminRolePermCount = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM sys_role_permission rp " +
                 "JOIN sys_role r ON rp.role_id = r.id " +
                 "WHERE r.code = 'ROLE_ADMIN'",
                 Integer.class);
-        assertEquals(16, adminRolePermCount, "ROLE_ADMIN 应关联全部 16 个权限");
+        assertEquals(17, adminRolePermCount, "ROLE_ADMIN 应关联全部 17 个权限");
 
         Integer userRolePermCount = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM sys_role_permission rp " +
@@ -159,6 +159,50 @@ class SeedDataIntegrationTest extends AbstractModelIntegrationTest {
                 "WHERE r.code = 'ROLE_USER' AND p.code LIKE '%:view'",
                 Integer.class);
         assertEquals(4, userRoleViewPermCount, "ROLE_USER 的 4 个权限应全为 view 类型");
+    }
+
+    /**
+     * web/043 AC1: module:toggle-status 权限种子存在、归属 module_mgmt（§6.1）且 V7 重放幂等。
+     */
+    @Test
+    @DisplayName("模块状态切换权限种子存在且归属module_mgmt")
+    void test_模块状态切换权限种子存在且归属module_mgmt() {
+        Integer toggleCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM sys_permission WHERE code = 'module:toggle-status'",
+                Integer.class);
+        assertEquals(1, toggleCount, "module:toggle-status 权限应恰存在 1 行");
+
+        Integer belongsToModuleMgmt = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM sys_permission p " +
+                "JOIN sys_module m ON p.module_id = m.id " +
+                "WHERE p.code = 'module:toggle-status' AND m.code = 'module_mgmt'",
+                Integer.class);
+        assertEquals(1, belongsToModuleMgmt, "module:toggle-status 必须归属 module_mgmt 模块（§6.1 权限必须归属模块）");
+
+        assertEquals(1, countFlywaySuccess("7"), "V7 应已成功应用一次");
+
+        flyway.migrate();
+
+        Integer toggleCountAfterReplay = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM sys_permission WHERE code = 'module:toggle-status'",
+                Integer.class);
+        assertEquals(1, toggleCountAfterReplay, "V7 重放后权限行不得重复（INSERT IGNORE 幂等）");
+        assertEquals(1, countFlywaySuccess("7"), "V7 重放后不得产生重复版本记录");
+    }
+
+    /**
+     * web/043 AC2: ROLE_ADMIN 已关联 module:toggle-status（me 权限聚合数据源前提）。
+     */
+    @Test
+    @DisplayName("ROLE_ADMIN已关联模块状态切换权限")
+    void test_ROLE_ADMIN已关联模块状态切换权限() {
+        Integer adminToggleCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM sys_role_permission rp " +
+                "JOIN sys_role r ON rp.role_id = r.id " +
+                "JOIN sys_permission p ON rp.permission_id = p.id " +
+                "WHERE r.code = 'ROLE_ADMIN' AND p.code = 'module:toggle-status'",
+                Integer.class);
+        assertEquals(1, adminToggleCount, "ROLE_ADMIN 应关联 module:toggle-status 恰 1 条");
     }
 
     /**
