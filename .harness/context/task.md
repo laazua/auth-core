@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/042**（新注册） |
 | 功能点名称 | 修复权限管理页模块筛选——初始锁死 moduleId=0 空列表、缺「全部模块」选项无法清除筛选 |
-| 状态 | AWAITING_REVIEW |
+| 状态 | DONE |
 | 创建时间 | 2026-10-10 |
 
 ## 前置依赖
@@ -179,4 +179,13 @@
 
 ## 评审意见
 
-（待 Evaluator 填写）
+**sprint-087 评审通过（2026-10-10，平均分 9.7/10，六否决零命中）——REWORK 第 0 次（首轮通过）**
+
+- **AC 逐条**：AC1/AC2/AC3/AC4 全满足（spec 43/43、R3 浏览器四动作实测、smoke web-042 ✅、五线=基线）
+- **RED 独立复现**：`git checkout b7833d6 -- frontend/src/views/system/`（test-first 时点：spec 含新用例+实现未动）→ `Tests 2 failed | 41 passed (43)`，恰为 AC1/AC2 两用例 → 恢复 HEAD 干净
+- **门禁亲跑**：mvn 154 4F+2E 五类逐条=基线零新增；lint 0E|165W、test 320/320（317+3）、build ✓26.75s；冒烟 68 ❌恰=model-008/010、roles-001/002 零新增、`+smoke_case=1` 增量取证、web-042 ✅
+- **R3 浏览器实测**（headless Chromium，登录→/system/permissions）：初始请求 `?page=1&size=10&name=&code=` **无 moduleId**、total=16 非空（缺陷①修复）；选「角色管理」→ `moduleId=2` total=4；选「全部模块」→ 请求回无 moduleId、total=16（缺陷②闭环清除）；路由 `?moduleId=3` → `moduleId=3` total=4（抽屉联动保持）
+- **变更范围**：diff 7 文件=清单 3 业务+4 文档零夹带；三段提交 test `b7833d6`→feat `ecd387e`→docs `4a78d63` 顺序物证；A 面三页/BaseSelect/后端零改动
+- **AC2 口径**：筛选专用 `permissionFilterOptions`（表单 moduleOptions 不污染必选语义）判定实质与 AC2 一致，登记认可
+- **五维**：9.5/9.5/9.5/10/10（评分表见评审报告）
+- 六否决项逐项核对零命中。

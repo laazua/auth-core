@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 📋 **sprint-087 待评审**（web/042 实现完成，门禁五线+冒烟通过，状态 AWAITING_REVIEW）
+- 状态: ✅ **sprint-087 PASS**（web/042 评审通过 9.7/10，六否决零命中）
 - 当前模块: web
-- 当前功能点: web/042 — 权限管理页模块筛选双缺陷修复（初始锁死 moduleId=0 空列表 + 缺「全部模块」无法清除）
+- 当前功能点: web/042 — 权限管理页模块筛选双缺陷修复 — 已收口
 
 
 ## 下一步动作
-  Evaluator：读 `.harness/evaluator.md` 并严格执行——评审 `.harness/context/task.md`（sprint-087 / web/042）。重点核对：① RED 证据链独立复现（RED-1 spec 2 failed + RED-2 冒烟用例体四断言拒绝，可 `git stash` 实现段或按两段式提交前序回放）；② 门禁五线亲跑（mvn 154 4F+2E=基线、lint 0E|165W、test 320/320、build ✓17.62s、冒烟 68=62✅+4❌+2⏭️ ❌恰=登记四条）；③ AC2 口径登记复核（「全部模块」走筛选专用 permissionFilterOptions computed、表单 moduleOptions 不污染必选语义）；④ 浏览器 R3 复测权限页：打开即全量、选「全部模块」可清、选具体模块正确过滤、抽屉联动保持；⑤ A 面三页零改动核对。
+  Planner：读 `.harness/planner.md` 并严格执行——取下一功能点。**建议下一个功能点：web/036c2**（036c 拆分第二片：前端冗余覆盖与死代码清理 + model-008/010 治理——registry 036 行预留，正好对准基线冒烟 4❌ 中的 model-008/010 两条；注意「>6 文件问案B」预登记）。备选：web/036c3（串联 :deep 42 处，预留）。开工前先扫 registry 状态列核对预存建议有效性（084 失效教训在案）。
 
 ## 挂起
 - 2026-10-10: Planner(sprint-087) — **web/042 报障面调查实录（浏览器只读实证，跨会话可复核）**：① **B 面实锤双缺陷=权限页**——`system/IndexView.vue:44` permissionQuery 初值 `moduleId: 0` → 初始请求 `moduleId=0` → 后端 `eq(module_id,0)` 恒空 → **打开即空表**（探针 rowCount=0、empty=true）；`moduleOptions`（:52,247-254）仅四模块名**无「全部模块」**，选中后无法回全量，且 `handlePermissionSearch`（:301-306）`Number(v)||0` 把空串转 0 回锁死态；② **A 面三页实测正常不改码**——users 状态 status=0→28/1→1077/空→1105、roles 0→10/1→12、modules 0→0（库中无停用模块）/1→4，回显/高亮（bug-repro5：选停用→停用 selected）/分页 total/行内切换+筛选保持全对；③ **「选停用按钮变启用」=RBAC 正确语义**（`IndexView.vue:109` 按钮=行的可执行动作，docs/01 第6节停用语义），非缺陷；④ 用户对调查汇报答「继续」=按流程开工权限页单，A 面若后续给出精确复现步骤（页面+操作序+行内容/总条数是否变化）另立工作单；⑤ 探针留档 `/tmp/opencode/bug-repro*.mjs`，服务收工已停（3003/9998），playwright 严禁入项目依赖；⑥ 既有 spec 相容性预判：`loads first page` 断言 objectContaining 不排 moduleId 相容、`filters by module` 断言 moduleId:1 number 相容、BaseSelect mock 为原生 select（option value 恒字符串）AC2 口径需对齐、moduleOptions 跨宏任务 20ms 实证注释沿用。
@@ -47,6 +47,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-10: Evaluator — pass sprint-087（web/042，平均分 9.7/10，五维 9.5/9.5/9.5/10/10：4 AC 亲核全满足、RED 独立复现 checkout b7833d6 → 2 failed、门禁五线亲跑=基线（mvn 154 4F+2E 五类逐条、lint 0E|165W、test 320/320、build ✓26.75s）、冒烟 68 ❌恰=登记四条零新增+web-042 ✅+增量 +1、R3 浏览器四动作实测（初始无 moduleId total16、选角色管理 id=2→4、全部模块清回 16、路由联动 id=3→4）、变更 7 文件=清单零夹带、六否决零命中）
 - 2026-10-10: Planner — kickoff sprint-087（web/042，4 条验收标准，用户报障调查后直提：权限页双缺陷实锤=初始 moduleId=0 空列表+缺「全部模块」无法清除；A 面三页状态筛选实测正常+按钮翻转=RBAC 正确语义登记不动；≤6 文件不拆分、后端不动红线）
 - 2026-10-10: Planner — kickoff sprint-086（web/041，4 条验收标准，四管理页下拉打不开根因实证=BaseSelect click-outside 同事件竞态四采样点、jsdom 不复现口径、≤6 文件不拆分）
 - 2026-10-09: Evaluator — pass sprint-085（web/036c1，平均分 9.5/10，五维 9.5/9/9.5/9.5/10：门禁亲跑 mvn 154 4F+2E=基线、前端链 EXIT=0（0E/165W、315/315、build 17.76s）、冒烟 66=60✅+4❌+2⏭️ ❌恰=登记四条零新增、RED 独立复现 4×EXIT=1+变异 true/false、用例增量+范围 6 文件零夹带；六否决零命中）

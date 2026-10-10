@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-10: Evaluator — pass sprint-087（web/042，平均分 9.7/10，五维 9.5/9.5/9.5/10/10：4 AC 亲核全满足、RED 独立复现 checkout b7833d6 → 2 failed + 两段式 test→feat 物证、门禁五线亲跑=基线（mvn 154 4F+2E 五类逐条、lint 0E|165W、test 320/320、build ✓26.75s）、冒烟亲跑 68 ❌恰=model-008/010、roles-001/002 零新增且 web-042 ✅、增量 +1 smoke_case 取证、R3 浏览器四动作=初始无 moduleId total16/选角色管理 id2→4/全部模块清回16/路由联动 id3→4、变更 7 文件=清单零夹带、六否决零命中）
 - 2026-10-10: Generator — done sprint-087（web/042 权限页模块筛选双缺陷修复，门禁+冒烟通过：RED 双实证=spec 首跑 2 failed（初值 +0 vs undefined、首项 用户管理 vs 全部模块）+ 冒烟用例体四断言全拒绝 → GREEN=删 moduleId:0 初值、permissionFilterOptions 首项「全部模块」（筛选专用不污染表单）、handlePermissionSearch 空串→undefined，spec 43/43 绿、冒烟 web-042 ✅；门禁 lint 0E|165W、test 320/320（317+3）、build ✓17.62s、mvn 154 4F+2E=基线，冒烟 **68=62✅+4❌+2⏭️**（❌恰=model-008/010、roles-001/002 零新增））→ 移交 Evaluator 评审
 - 2026-10-10: Planner — kickoff sprint-087（web/042，4 条验收标准；权限页模块筛选双缺陷实锤=初始 moduleId=0 空列表+缺「全部模块」选项无法清除，A 面三页状态筛选浏览器实测正常+按钮翻转=RBAC 正确语义登记不动，用户报障直提取代 036c2 建议、≤6 文件不拆分、后端不动红线）
 - 2026-10-10: Evaluator — pass sprint-086（web/041，平均分 9.7/10，五维 9.5/9.5/9.5/10/10：4 AC 亲核全满足、RED 独立复现 checkout 4bd759f → 1 failed + 两段式 test→feat 物证、门禁五线亲跑=基线（mvn 154 4F+2E 五类逐条、lint 0E|165W、test 317/317、build ✓17.44s）、冒烟亲跑 67=61✅+4❌+2⏭️ ❌恰=登记四条零新增且 web-041 ✅、R3 四页浏览器 hitRatio 36/36+六路径定向复测 PASS（Escape/toggle 系测试焦点问题定性排除）、变更 7 文件=清单零夹带、六否决零命中）
