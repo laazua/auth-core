@@ -525,6 +525,62 @@ describe('IndexView - 权限/模块管理页', () => {
     });
   });
 
+  describe('sprint-087 web/042 - 权限页模块筛选：初始不过滤 + 全部模块清除', () => {
+    it('初始挂载权限列表查询不带 moduleId 过滤值', async () => {
+      const wrapper = await createWrapper();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      await wrapper.vm.$nextTick();
+
+      const firstCall = mockPermissionApi.list.mock.calls[0]?.[0];
+      expect(firstCall).toBeDefined();
+      expect(firstCall?.moduleId).toBeUndefined();
+    });
+
+    it('筛选下拉首项为全部模块且选中后清除 moduleId 筛选', async () => {
+      const wrapper = await createWrapper();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      await wrapper.vm.$nextTick();
+
+      // 权限面板首个 select 即模块筛选下拉（BaseSelect mock 为原生 select，抽屉未打开不渲染）
+      const filterSelect = wrapper.find('.permission-tab select');
+      expect(filterSelect.exists()).toBe(true);
+      const options = filterSelect.findAll('option');
+      expect(options[0].text()).toBe('全部模块');
+
+      await filterSelect.setValue('');
+      await wrapper.vm.$nextTick();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      const lastCall = mockPermissionApi.list.mock.calls.at(-1)?.[0];
+      expect(lastCall).toBeDefined();
+      expect(lastCall?.moduleId).toBeUndefined();
+    });
+
+    it('选择具体模块后按其 id 过滤（含路由联动路径护栏）', async () => {
+      const wrapper = await createWrapper();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      await wrapper.vm.$nextTick();
+
+      const filterSelect = wrapper.find('.permission-tab select');
+      await filterSelect.setValue('2');
+      await wrapper.vm.$nextTick();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      expect(mockPermissionApi.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({ page: 1, size: 10, moduleId: 2 })
+      );
+
+      // 抽屉「查看权限」联动：路由 query 带模块 id 时按 id 过滤（watch(route.query.moduleId) 路径）
+      const linked = await createWrapper([], '/system/permissions?moduleId=3');
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      await linked.vm.$nextTick();
+
+      expect(mockPermissionApi.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({ moduleId: 3 })
+      );
+    });
+  });
+
   describe('AC2 - 权限创建唯一校验 + 模块必选', () => {
     it('opens create drawer when clicking create button', async () => {
       const wrapper = await createWrapper();
