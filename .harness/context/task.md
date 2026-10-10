@@ -1,215 +1,182 @@
-# Sprint 工作单：sprint-086
+# Sprint 工作单：sprint-087
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-086 |
+| Sprint ID | sprint-087 |
 | 所属模块 | web |
-| 功能点 ID | **web/041**（新注册） |
-| 功能点名称 | 修复用户/角色/权限/模块四管理页工具栏筛选下拉框点击无法展开——BaseSelect click-outside 同事件竞态 |
-| 状态 | DONE |
+| 功能点 ID | **web/042**（新注册） |
+| 功能点名称 | 修复权限管理页模块筛选——初始锁死 moduleId=0 空列表、缺「全部模块」选项无法清除筛选 |
+| 状态 | AWAITING_REVIEW |
 | 创建时间 | 2026-10-10 |
 
 ## 前置依赖
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| web/001 | 前端骨架（BaseSelect 所属组件层） | ✅ sprint-023 |
-| web/004 | 用户管理页（报障页 1/4） | ✅ sprint-026 |
-| web/005 | 角色管理页（报障页 2/4） | ✅ sprint-027 |
-| web/006 | 权限管理页+模块管理页（报障页 3、4/4） | ✅ sprint-028 |
+| web/006 | 权限管理页+模块管理页（报障页） | ✅ sprint-028 |
+| web/030 | 权限页模块下拉选项接口（/modules/permissions/all） | ✅ sprint-080 |
+| web/041 | BaseSelect click-outside 竞态修复（下拉可交互前提） | ✅ sprint-086 |
 | web/011a/b/c | 前端门禁基线（build ✓、test 0 failed、lint 0E/165W） | ✅ sprint-082/083 |
-| sprint-085 | 门禁基线（lint 0E\|165W、test 315、冒烟 66=60✅+4❌+2⏭️、mvn 154 4F+2E） | ✅ PASS 9.5/10 |
+| sprint-086 | 门禁基线（lint 0E\|165W、test 317、冒烟 67=61✅+4❌+2⏭️、mvn 154 4F+2E） | ✅ PASS 9.7/10 |
 
 ## 业务背景
 
-**用户需求（2026-10-10）**：「前端 用户管理，角色管理，权限管理，模块管理 这几个路由页面的全部状态下拉框，不能下拉；按照 harness 系统要求，以 planner 开始依次执行」。
+**用户需求（2026-10-10）**：「你上面的优化，虽然下拉框可以进行选择了，但是没有达到筛选的功能；当选择停用，操作选项第二个按钮变成了启用，选择启用，又变成了停用；请重新优化」；随后用户对调查汇报回复「继续」授权按流程开工。
 
-### 报障面（四路由，只读实证）
+### 报障面调查实录（Planner 只读取证，2026-10-10 浏览器实测）
 
-| 路由 | 页面文件 | 工具栏下拉 |
-|------|---------|-----------|
-| /system/users | `views/users/IndexView.vue:293` | 状态筛选（statusOptions，placeholder=全部状态） |
-| /system/roles | `views/roles/IndexView.vue:267` | 状态筛选（statusOptions，placeholder=全部状态） |
-| /system/permissions | `views/system/IndexView.vue:533` | 模块筛选（moduleOptions，placeholder=全部模块） |
-| /system/modules | `views/system/IndexView.vue:617` | 状态筛选（statusOptions，placeholder=全部状态） |
+| 页面 | 下拉 | 实测结论 |
+|------|------|---------|
+| **权限管理** /system/permissions | 模块筛选 | **❌ 双缺陷实锤**：① 初始请求 `moduleId=0`（permissionQuery 初值 `moduleId: 0`，IndexView.vue:44）→ 后端 `eq(module_id, 0)` 无匹配 → **打开即空表**（rowCount=0、empty=true）；② moduleOptions 仅 `[{name,id}×4]` **无「全部模块」选项** → 选中模块后**无法清除筛选**，且 `Number(permissionQueryForSelect.moduleId) || 0`（IndexView.vue:304）把空串转 0 恒回锁死态 |
+| 用户 /system/users | 状态筛选 | ✅ 正常：status=0→28 条全停用、status=1→1077 条全启用、`status=`（全部）→1105 混合；回显/选中高亮/分页 total 均正确 |
+| 角色 /system/roles | 状态筛选 | ✅ 正常：status=0→10、status=1→12，参数/结果/高亮一致 |
+| 模块 /system/modules | 状态筛选 | ✅ 正常：status=0→0 条（库中无停用模块，非缺陷）、status=1→4 |
 
-> 口径登记（R4）：用户原话「全部状态下拉框」按**报障面整体**理解——四页工具栏筛选下拉（权限页为模块筛选）一并覆盖，均为同一 `BaseSelect` 组件实例。
+**「选停用→操作列按钮变启用」语义判定**：按钮=对行数据可执行的动作（`user.status === 1 ? '停用' : '启用'`，users/IndexView.vue:109），筛选出生用/停用行后按钮必然呈现对侧动作——**RBAC 正确语义**（docs/01-architecture.md 第 6 节第 5 条停用语义），行内切换+筛选保持亦实测正常。故 **A 面（用户/角色/模块三页状态筛选）不纳入本单代码改动**，证据在案；若用户后续提供精确复现步骤另立工作单。
 
-### 根因（Phase 1-3 完成，Chromium 真实鼠标事件四采样点实录，2026-10-10 Planner 只读实测）
+**本单范围 = B 面（权限页模块筛选双缺陷）**：初始不过滤 + 可清除（「全部模块」选项）+ 选中模块过滤护栏。
 
-四页 toolbar 下拉**点击后 `base-select--open=false`、dropdown 不渲染**（探针 repro/probe3）；抽屉表单内同组件对照**可正常展开**。
+## 需求与架构对照
 
-事件传播采样（probe4，LIST 用户管理页）：
-
-```text
-A-root-cap   open=false dd=false   （传播起点）
-B-root-bub   open=true  dd=true    ← Vue @click(handleClick) 置 isOpen=true，listener 边界
-                                   checkpoint 已 flush 渲染，dropdownRef 就位
-C-body-bub   open=true  dd=true    （尚未被关）
-D-doc-bub    open=false dd=false   ← document 的 handleClickOutside 执行：
-                                   dropdownRef 存在且 event.target(=trigger) 不在 dropdown 内
-                                   → 判定「点外面」→ isOpen=false，开→关自相矛盾
-```
-
-**根因机理**：HTML 规范要求每个事件监听器回调结束后执行 microtask checkpoint——根 div 的 `handleClick`（BaseSelect.vue:79）把 `isOpen=true` 后，Vue flushJobs 在同一 click 事件传播到 document **之前**完成渲染；随后 `handleClickOutside`（BaseSelect.vue:134-138）用 `dropdownRef.contains(target)` 判定 outside，而 target 是 trigger（组件内部、dropdown 之外）→ 把刚打开的下拉立即关闭。**四页在普通 DOM 链上（事件直达 document）→ 全部打不开**。
-
-**抽屉对照为何可用**（同探针 DRAWER 段）：抽屉场景 click 冒泡**未达 document**（seq 只有 A、B，C/D 未触发——EP drawer 容器层传播中断）→ outside handler 未执行 → 侥幸正常。同一缺陷、被传播中断掩盖。
-
-**测试盲区**：四页面 spec 均 mock BaseSelect（`base-select-mock`，users:45/roles:45/system:45/UserFormDrawer:45），组件本体无专测 → 全量 315 绿但浏览器坏。
-
-**jsdom 复现边界（Planner 临时探针实测，跑完即删）**：jsdom 下 `dispatchEvent(click bubbles:true)` 完整传播**不复现**竞态（`open=true dd=true` 通过）——jsdom 的 listener 间 checkpoint 与 Chromium 行为差异。**结论：AC1 的 RED 不能靠「jsdom 完整传播」直接复现**，须采用与真实缺陷同构的时序测试（渲染后重放 document outside 调用），见研究项 R1。
-
-### 架构冲突
-
-无。纯前端组件交互修复：不涉 RBAC 业务语义（§6）、不涉 §1 技术栈变更、不动接口契约与数据模型。无需挂起区冲突登记。
-
-### registry 建议与用户输入的取舍（登记）
-
-session-state 原「下一步动作」建议 web/036c2（主推）/web/011d（备选）——用户本次直接给出新报障需求，按 AGENTS.md 优先级（用户输入 > session-state 建议）规划 **web/041**；036c2/036c3/011d 预留不变，不改其状态。
-
-## 需求描述
-
-修复 `BaseSelect` 组件 click-outside 判断依据，使组件根元素内部（trigger/label/清除按钮/下拉选项）的点击传播到达 document 时不再被误判为「点外面」而关闭下拉：四管理页工具栏下拉点击可正常展开、选中、再次点击关闭，抽屉表单内下拉与外部点击关闭语义不回归。组件级测试先行（RED→GREEN），追加至少 1 条冒烟用例，全量门禁零新增失败。
+- module_id 过滤属列表查询能力，不触碰 docs/01-architecture.md 第 6 节 RBAC 硬语义（权限归属/授权路径/删除保护/停用语义均不涉及）；`eq(module_id, 0)` 之 0 非合法模块 ID，属实现层缺陷非架构冲突。
+- 后端 `PermissionServiceImpl` 的 `if (dto.moduleId() != null)` 语义正确（null=不过滤），**本单不动后端**：修前端初值与空值传参即可达成「初始不过滤、空选不过滤」。
 
 ## 验收标准（TDD 驱动）
 
-- [x] AC1 — 内部点击传播不关闭下拉（竞态修复核心）：挂载真实 BaseSelect（options 2 项，不 mock），打开下拉并 await 渲染使 `.base-select__dropdown` 就位后，**重放同一点击事件传播的后半段**——调用组件注册在 document 上的 click 监听器（`target` = trigger 元素，即组件根内、dropdown 外），断言下拉保持展开（根含 `base-select--open` 且 dropdown 在场）。当前实现该调用会把打开状态关闭 → **RED**。← 用例 `AC1 ← 用例 base-select.spec#组件根内点击传播到达 document 不关闭下拉`；RED 复现与最终断言全文见 RED 槽。
-- [x] AC2 — 外部点击关闭语义保留（防过度修复）：同 spec，下拉展开后调用同一 document 监听器（`target` = 组件根外的外部元素），断言下拉关闭（根不含 `base-select--open`、dropdown 卸载）。与 AC1 成对钉死「根内不关、根外关」判定边界。← 用例 `AC2 ← 用例 base-select.spec#组件根外点击关闭下拉`（护栏用例，与 AC1 同批）。
-- [x] AC3 — 报障面冒烟覆盖：追加 **≥1 条**冒烟用例 `web-041`（形态 Generator 按 tdd-workflow 冒烟节定，建议：定向跑组件 spec 断言通过 + 源码级断言四页面 toolbar 均挂 BaseSelect 筛选下拉、修复形态在场），首跑 **RED**（修复前必红）→ 修复后复跑 ✅。← 用例 `AC3 ← 用例 smoke web-041（首跑 RED EXIT=1 → GREEN EXIT=0）`。
-- [x] AC4 — 门禁与冒烟总账：`npm run lint && npm run test && npm run build` 零新增（test **0 failed**，基线 315+本单新增；lint **0 errors**/165 warnings 基线；build ✓）；`mvn -q verify` **154 用例 4F+2E=基线五类**（本单零后端改动）；`bash scripts/smoke.sh` 总数 **≥67**（66+新增）、**❌ 恰为 4 条**（model-008、model-010、roles-001、roles-002=登记不背面）、零新增失败。← 用例 `AC4 ← 用例 门禁五线实测 + 冒烟全量复跑`。
+- [x] AC1 — 权限页初始加载不带 module_id 过滤：挂载权限管理页触发的 `permissionApi.list` 调用参数中 `moduleId` 为 undefined（不产生 `moduleId=0` 过滤值），即实现「打开即全量列表」。← 用例 `AC1 ← 用例 system/IndexView.spec#权限页初始查询不带moduleId过滤值`
+- [x] AC2 — 「全部模块」选项可清除筛选：moduleOptions 首项为 `{ label: '全部模块', value: '' }`（选项列表可在场判定）；选中该项后 `handlePermissionSearch` 发出的 `permissionApi.list` 参数中 `moduleId` 为 undefined（不过滤），列表恢复全量。← 用例 `AC2 ← 用例 system/IndexView.spec#全部模块选项清除moduleId筛选`
+- [x] AC3 — 选具体模块仍按其 id 过滤（护栏，防过度修复）：选「角色管理」（id=2 等）后 `permissionApi.list` 参数 `moduleId` 为该数字 id；抽屉「查看权限」联动（IndexView.vue:503 赋值 `permissionQueryForSelect.moduleId`）后同样按 id 过滤。既有用例 `filters permissions by module`（moduleId:1 断言）须保持绿。← 用例 `AC3 ← 用例 system/IndexView.spec#选择模块后按moduleId过滤（含抽屉联动）`
+- [x] AC4 — 冒烟与门禁：`scripts/smoke.sh` 新增 `web-042` 用例（组件 spec 定向 + 初始无 `moduleId: 0` 锁死形态 + 「全部模块」选项在场源码断言）；门禁五线基线对照（lint 0E|165W、test 317+新增、build ✓、mvn 154=4F+2E 基线、冒烟 ≥68 ❌恰4 零新增）。← 用例 `AC4 ← 用例 门禁五线 + 冒烟全量`
 
-### AC1 — 组件根内点击传播不关闭下拉
-> Given 修复前 document outside 监听器在渲染后收到 target=trigger 的 click 会误关下拉（浏览器四采样点实录）。When 判定依据修正（R2）后重放该调用。Then 下拉保持展开。
-**用例**：`AC1 ← 用例 base-select.spec#组件根内点击传播到达 document 不关闭下拉`
+### AC1 — 权限页初始查询不带 module_id 过滤
 
-### AC2 — 组件根外点击仍关闭
-> Given outside 关闭语义须保留。When target 为组件根外元素时调用同一监听器。Then 下拉关闭。
-**用例**：`AC2 ← 用例 base-select.spec#组件根外点击关闭下拉`
+**前置**：无（默认打开 /system/permissions 或权限 Tab 默认挂载即触发）。
 
-### AC3 — 报障面冒烟追加
-> Given 冒烟增量约定强制。When 追加 web-041 覆盖修复形态与四页引用。Then 首跑红、复跑绿。
-**用例**：`AC3 ← 用例 smoke web-041`
+**步骤与期望**：挂载 IndexView → 等待 onMounted 装载完成 → 断言 `mockPermissionApi.list` 首次调用参数 `moduleId === undefined`（键可存在值为 undefined，axios 序列化丢弃 → 网络请求不含 moduleId → 后端 null 不过滤）。当前实现传 `moduleId: 0` → **RED**。
 
-### AC4 — 门禁与冒烟总账
-> Given 基线对照推进口径。When 五线实测。Then 零新增失败、冒烟 ❌ 恰 4。
+**用例**：`AC1 ← 用例 system/IndexView.spec#权限页初始查询不带 moduleId 过滤值`
+
+### AC2 — 全部模块选项清除筛选
+
+**前置**：权限 Tab 已挂载、moduleOptions 装载完成（既有实证需跨一个宏任务，spec 注释在案）。
+
+**步骤与期望**：① 断言 moduleOptions 首项映射 `{ label: '全部模块', value: '' }`（mock select 首 option 文本「全部模块」）；② select 选值 ''（全部模块）触发 change → `handlePermissionSearch` → 断言 `permissionApi.list` 参数 `moduleId === undefined`。当前无该选项且 `Number('')||0=0` → **RED**。
+
+**用例**：`AC2 ← 用例 system/IndexView.spec#全部模块选项清除 moduleId 筛选`
+
+### AC3 — 选择模块后按 moduleId 过滤（护栏）
+
+**前置**：权限 Tab 挂载、moduleOptions 就绪。
+
+**步骤与期望**：select 选 '2'（角色管理）→ 断言 `permissionApi.list` 最近调用参数 `moduleId: 2`（number）；抽屉联动路径复用既有赋值语义（`permissionQueryForSelect.moduleId = String(id)`）选值后同样过滤。既有 `filters permissions by module`（moduleId:1）须同批保持绿——护栏用例对当前实现即绿，修复后不得回归。
+
+**用例**：`AC3 ← 用例 system/IndexView.spec#选择模块后按 moduleId 过滤（含抽屉联动）`
+
+### AC4 — 冒烟与门禁总账
+
+**步骤与期望**：smoke 新增 web-042 用例并首跑 RED（修复形态缺失）→ GREEN；五线亲跑基线对照（口径见业务背景前置依赖表）。
+
 **用例**：`AC4 ← 用例 门禁五线 + 冒烟全量`
 
 ## 测试清单
 
-> TDD 载体：**组件级新 spec 先于修复写出**（AC1 当前实现必红=天然 RED）；AC2 同批护栏；AC3 冒烟用例首跑红；AC4 基线对照。注意 jsdom 完整传播不复现竞态（业务背景实证）——AC1 须按 R1 同构时序形态构造，禁止以「jsdom 传播绿」冒充修复验证。
+> TDD 载体：**组件级 spec 新增用例先于修复写出**（AC1/AC2 当前实现必红=天然 RED）；AC3 护栏同批（当前即绿）；AC4 冒烟首跑红。
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | base-select.spec 新增：组件根内点击传播到达 document 不关闭下拉（渲染后重放 outside 监听器，target=trigger） | AC1 | ✅ RED-1（修复前 1 failed，见下）→ GREEN 后通过 |
-| 2 | base-select.spec 新增：组件根外点击关闭下拉（target=外部元素） | AC2 | ✅ RED-1 时已通过（护栏基线），GREEN 后保持通过 |
-| 3 | smoke web-041 首跑（修复形态缺失/报障面断言不中 → RED EXIT=1） | AC3 | ✅ RED-2 EXIT=1（stash 复现）→ 恢复后 EXIT=0 |
-| 4 | 门禁五线 + 冒烟全量（≥67、❌恰4、零新增） | AC4 | ✅ 全量实测达基线（见门禁与冒烟记录） |
+| 1 | system/IndexView.spec 新增：权限页初始查询不带 moduleId 过滤值 | AC1 | RED（expected +0 to be undefined）→ GREEN（43/43 绿） |
+| 2 | system/IndexView.spec 新增：全部模块选项在场 + 选中清除筛选 | AC2 | RED（expected '用户管理' to be '全部模块'）→ GREEN |
+| 3 | system/IndexView.spec 新增/复用：选择模块按 moduleId 过滤（含抽屉联动赋值路径） | AC3 | 护栏当场绿 + 修复后保持绿 |
+| 4 | smoke web-042 首跑（修复形态缺失 → RED EXIT=1） | AC4 | RED 四断言全拒绝（G1-G4 FAIL）→ GREEN ✅ |
+| 5 | 门禁五线 + 冒烟全量（≥68、❌恰4、零新增） | AC4 | 五线=基线、冒烟 68=62✅+4❌+2⏭️ web-042 ✅ |
 
 ## RED 证据
 
 > Generator 于任何修改动作前执行测试清单并粘贴实证（AC1/AC2 spec 与 AC3 冒烟首跑日志、修复前失败输出）。
 
 ```text
-[RED-1] base-select.spec 首跑（2026-10-10 实时，修复前）：
+[RED-1] spec 首跑（修复前，npx vitest run src/views/system/IndexView.spec.ts）
  Test Files  1 failed (1)
-      Tests  1 failed | 1 passed (2)
- FAIL  src/components/__tests__/base-select.spec.ts > BaseSelect - click-outside 判定边界 > 组件根内点击传播到达document后下拉保持展开
- AssertionError: expected [ 'base-select' ] to include 'base-select--open'
-  ❯ src/components/__tests__/base-select.spec.ts:64:36
-   62|     await flushPromises();
-   63|
-   64|     expect(wrapperLocal.classes()).toContain('base-select--open');
-解读：重放 document outside 监听器（target=trigger，根内 dropdown 外）后打开状态被关闭
-（classes 只剩 ['base-select']）——与 Chromium 四采样点 D（doc-bub open=false）同一缺陷语义；
-AC2（根外点击关闭）当前通过 = 护栏基线成立。
-[RED-2] smoke web-041 用例体首跑（2026-10-10 实时，git stash 暂存 BaseSelect.vue 修复=修复前基线）：
-EXIT=1（Test Files 1 failed、Tests 1 failed | 1 passed）——用例体首条
-`npx vitest run src/components/__tests__/base-select.spec.ts` 对修复前代码必红（即 AC1 失败），
-四页 BaseSelect 引用 grep 两条在场为常绿前提；恢复 stash 后复跑转绿（GREEN 槽在案）。
+      Tests  2 failed | 41 passed (43)
+ FAIL > sprint-087 web/042 > 初始挂载权限列表查询不带 moduleId 过滤值
+ AssertionError: expected +0 to be undefined   ← permissionQuery 初值 moduleId: 0 锁死
+ FAIL > sprint-087 web/042 > 筛选下拉首项为全部模块且选中后清除 moduleId 筛选
+ AssertionError: expected '用户管理' to be '全部模块'   ← moduleOptions 无「全部模块」首项
+ （AC3 护栏与全部既有用例 41 passed 当场保持绿）
 ```
 
 ```text
-[GREEN]（2026-10-10 实时）
-[GREEN-1] 修复 BaseSelect.vue 后 spec 复跑：
-      Tests  2 passed (2)——AC1 重放 target=trigger 保持 base-select--open、AC2 根外点击关闭；
-      判定变化：重放 document outside 监听器后 classes 含 'base-select--open'（修复前仅 ['base-select']）。
-[GREEN-2] 冒烟 web-041 用例体（恢复 stash=修复在场）：EXIT=0，
-      Tests  2 passed (2)、four-pages-grep-OK（users/roles/system 三 IndexView 均引用 BaseSelect）。
-[GREEN-3] R3 浏览器实测复验（headless Chromium 真实点击）：修复后
-      /system/users、/system/roles、/system/permissions、/system/modules 四页
-      工具栏下拉点击均 open=true, hasDropdown=true；抽屉表单下拉开关对照正常。
-（修复前 Chromium 四采样点 D「doc-bub open=false」竞态语义 = RED-1 重放形态，同构对照成立）
+[RED-2] 冒烟用例体 web-042 首跑（修复前）
+ SPEC-RED-EXIT=1（vitest 定向 2 failed 拒绝）
+ G1-FAIL（Tests passed 正则不中）
+ G2-FAIL（grep "label: '全部模块'" 不中）
+ G3-FAIL（! grep 'moduleId: 0' 取反失败——初值锁死形态在场）
+ G4-FAIL（! grep '|| 0' 取反失败——空值转 0 形态在场）
+→ 四断言全拒绝，用例体 RED
+```
+
+```text
+[GREEN] spec 定向复跑：Tests 43 passed (43)（AC1/AC2 转绿、AC3 护栏+41 既有全绿）
+[GREEN] 冒烟 web-042 用例体：✅ 通过（vitest 定向 + 三形态断言全中）
 ```
 
 ## 门禁与冒烟记录
 
-> Generator 亲测填写，Evaluator 不采信自述须亲跑。基线口径（2026-10-09 sprint-085 评审实测）。
+> Generator 亲测填写，Evaluator 不采信自述须亲跑。基线口径（2026-10-10 sprint-086 评审实测）。
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 154 用例 4F+2E（五类，veto-6 豁免） | 154 用例 4F+2E（DataSourceConfigBindingTest 2F、RoleControllerTest 1F、SeedDataIntegrationTest 1F、TestLayersSpec 1E、TestUtilsSpec 1E） | ✅ 与基线五类逐一相符，零新增 |
-| `npm run lint` | EXIT=0，0 errors / 165 warnings | EXIT=0，0 errors / 165 warnings | ✅ 等于基线 |
-| `npm run test` | 0 failed \| 315 passed (315)+本单新增 | 0 failed \| 317 passed (317)，Test Files 38 passed | ✅ 315+2（AC1/AC2）=317 |
-| `npm run build` | ✓（~18s） | ✓ built in 18.02s | ✅ 等于基线 |
-| `bash scripts/smoke.sh` | 66=60✅+4❌+2⏭️ | **67=61✅+4❌+2⏭️**，❌恰=model-008/010、roles-001/002（零新增），web-041 ✅ 通过；汇总行 `SMOKE FAILED（67 用例）` 系 4 条登记 ❌ 计数所致（基线同口径亦为 FAILED 字样，通过判据=用例数≥67、❌恰4 零新增、新增用例 ✅） | ✅ 达基线口径 |
+| 后端 `mvn -q verify` | 154 用例 4F+2E（五类，veto-6 豁免） | 154 用例 4F+2E（DataSourceConfigBindingTest×2、RoleController 409、SeedData 22、TestLayers+TestUtils Docker 2E） | ✅ 基线逐条一致零新增 |
+| `npm run lint` | EXIT=0，0 errors / 165 warnings | 0 errors / 165 warnings | ✅ 基线一致 |
+| `npm run test` | 0 failed \| 317 passed (317)+本单新增 | 0 failed \| 320 passed (320)（317+3） | ✅ |
+| `npm run build` | ✓（~18s） | ✓ built in 17.62s | ✅ |
+| `bash scripts/smoke.sh` | 67=61✅+4❌+2⏭️ | 68=62✅+4❌+2⏭️（新增 web-042 ✅） | ✅ ❌恰=model-008/010、roles-001/002 零新增 |
 
 ## 拆分说明
 
-预估验收标准 **4 条（=上限）**；预估文件变更 **3**（`components/BaseSelect.vue` 1 + `components/__tests__/base-select.spec.ts` 新增 1 + `scripts/smoke.sh` 1；文档回写 4 不计入）——**≤6 文件不拆分**。
+预估验收标准 **4 条（=上限）**；预估文件变更 **3~4**（`views/system/IndexView.vue` 1 + `views/system/IndexView.spec.ts` 1 + `scripts/smoke.sh` 1 + 可能类型定义 `api/permission.ts` 或 types 1；文档回写 4 不计入）——**≤6 文件不拆分**。
 
 **研究项（Generator 先于动手核实）**：
 
-- **R1 RED 复现形态（关键）**：jsdom 完整传播不复现竞态（Planner 实测）→ AC1 采用同构时序：挂载 → 打开（root click）→ `await` 渲染使 dropdown 就位 → 重放 document outside 监听器（`target`=trigger）。监听器捕获方式建议 `vi.spyOn(document, 'addEventListener')` 挂载前截获，或等效手段。**RED 判据**=修复前该重放调用使下拉关闭（断言失败）；若 Generator 找到更强等效形态可替换，但须同时给出：①修复前红/修复后绿证据；②与 Chromium 四采样点缺陷同一语义的对照说明。
-- **R2 修复方案（推荐，Generator 可论证替代）**：`handleClickOutside` 判定依据由 `dropdownRef.contains(target)` 改为**组件根元素包含性**（加 rootRef，`!rootRef.contains(target)` 才视为 outside）。收益：根内（trigger/label/clear/dropdown 选项）一律不误关、彻底消除「渲染时机竞态」；多选点选项保持展开、单选由 handleSelect 自关、clear 由 handleClear 自关——语义均不变。备选 `handleClick` 中 `event.stopPropagation()` **不推荐**（污染其他 document 级监听、需改 handler 签名）。实现后自查路径：打开/选中/清空/再次点击关闭/键盘 Escape/filterable 搜索、抽屉表单场景。
-- **R3 浏览器实测复验（可选增强）**：修复后可按 Planner 同法复验（本机 headless Chromium 真实点击四页 + 抽屉对照，playwright-core 在 npx 缓存、chromium 在 ms-playwright 缓存）——**严禁将 playwright/依赖写入项目**（package.json 不动）；或移交 Evaluator 按同法亲测。
-- **R4 报障面口径**：权限页 toolbar 为模块筛选（全部模块），其余三页为状态筛选——AC3 断言覆盖四页 toolbar 下拉整体，不按字面只测「状态」。
+- **R1 空值形态与序列化口径（红线：后端不动）**：候选 a) `permissionQuery.moduleId` 初值 `0` → `undefined`，axios 序列化丢弃 undefined → 请求无 moduleId → 后端 null 不过滤；候选 b) 传 `''` 空串 → Spring `@RequestParam(required=false) Integer` 空串转 null（users 页 `status=` 空串先例实测可行，total=1105 验证）。二选一并给出实测证据；同步 `PermissionQuery` 类型（`moduleId?: number` 或等效，TS strict 无 any）；`Number(v) || 0` 语义改为「空值→不过滤、数值→过滤」，注意 `||` 对合法 0 的吞没本单无碍（module_id 无 0）但建议显式判断防误读。
+- **R2 抽屉联动语义保持**：IndexView.vue:503 `permissionQueryForSelect.moduleId = String(newModuleId)`（「查看权限」跳转）修复后仍须按 id 过滤（并入 AC3 断言或独立断言）；503 行所在函数与 handlePermissionSearch 的交互一并自查。
+- **R3 A 面范围锁定**：用户/角色/模块三页状态筛选实测正常（业务背景表），**禁止**「顺手优化」三页任何筛选代码；若实现中发现三页确有缺陷实证，停止回报另立工作单。
+- **R4 既有 spec 相容性预判**（Planner 已核，Generator 复核）：`loads first page by default on mount` 断言 `objectContaining({page,size})` 不含 moduleId 键 → 与 AC1 相容；`filters permissions by module` 断言 `moduleId: 1` number → 与修复后数值过滤相容；BaseSelect 被 mock 为原生 select（option value 恒字符串）→ AC2 选 '' 与真实组件 emit 空串/空值口径需对齐（`Number('')||0` 改动后两条路径同结论）；moduleOptions 装载有「跨宏任务 20ms」既有实证注释须沿用。**若发现既有断言固化 `moduleId:0` 初始锁死语义** → 属过期口径同步情形，先在 task 登记再改（web-013/026 先例）；**若与本次修复无关的既有用例连带失败 → 熔断停止回报**。
 
-**超限熔断**：实际文件 >6、或需动后端（.java/yml）、或修复引发四页面/抽屉既有 spec 连锁失败需改他案断言语义、或发现第 2 类独立缺陷面 → **停止回报，回 Planner 重切分**。
+**超限熔断**：实际文件 >6、或需动后端（.java/yml）、或修复引发既有 spec 连锁失败需改**非过期口径**断言、或发现第 2 类独立缺陷面 → **停止回报，回 Planner 重切分**。
 
-**不动清单**：四页面与抽屉 spec 的 `base-select-mock`（mock 语义不动）；后端全部；冒烟既有用例断言语义与 ❌ 四条（model-008/010、roles-001/002）不修改不删除；web/036c2/036c3、web/011d 预留；any 165；**工作树预存改动 `backend/src/main/resources/application.yml.template` 删除 + `application.template.yml` 新增（非本单产生，不混入本单提交，提交时按范围精确 stage）**。
+**不动清单**：用户/角色/模块三页（IndexView users/roles + system 模块面板筛选逻辑）；后端全部；BaseSelect.vue；冒烟既有用例断言语义与 ❌ 四条（model-008/010、roles-001/002）不修改不删除；web/036c2/036c3、web/011d 预留；any 165；**工作树预存改动 `backend/src/main/resources/application.yml.template` 删除 + `application.template.yml` 新增（非本单产生，不混入本单提交，提交时按范围精确 stage）**。
 
-## 交付物（≈3 文件）
+## 交付物（≈3-4 文件）
 
-1. `frontend/src/components/BaseSelect.vue`：click-outside 判定修正（R2）
-2. `frontend/src/components/__tests__/base-select.spec.ts`：新增组件 spec（AC1+AC2）
-3. `scripts/smoke.sh`：新增冒烟用例 web-041（AC3）
-4. 文档回写：task/session/iteration/registry 四件
+1. `frontend/src/views/system/IndexView.vue`：permissionQuery 初值与空值语义、moduleOptions 增「全部模块」、handlePermissionSearch 空值不过滤
+2. `frontend/src/views/system/IndexView.spec.ts`：新增 AC1/AC2/AC3 用例（先于修复）
+3. `scripts/smoke.sh`：新增冒烟用例 web-042（AC4）
+4. 可能：`frontend/src/api/permission.ts` 或类型定义（PermissionQuery moduleId 可选化）
+5. 文档回写：task/session/iteration/registry 四件
 
 ## 实现说明
 
-**实现要点（R2 落地，3 文件）**：
-- `frontend/src/components/BaseSelect.vue`：① 新增 `rootRef`（组件根 div）；② `handleClickOutside` 判定由 `!dropdownRef.contains(target)` 改为 `!rootRef.contains(target)`——根内（trigger/label/clear/dropdown 选项）一律不误关，彻底消除「根 click 置 isOpen → Vue 渲染 checkpoint → 同 click 冒泡到 document 被误判 outside」竞态；③ 删除死引用 `dropdownRef`（script+模板两处，消除 TS6133）。语义不变：多选点选项保持展开、单选 handleSelect 自关、clear handleClear 自关、根外点击关闭、Escape 关闭。
-- `frontend/src/components/__tests__/base-select.spec.ts`（新增）：AC1 同构时序（挂载→root click 打开→flush→重放截获的 document outside 监听器 target=trigger→断言 `base-select--open` 在场）；AC2 根外点击关闭护栏。
-- `scripts/smoke.sh`：追加 `web-041 四管理页下拉竞态修复定向测试`（spec 全绿 + four-pages-grep 三 IndexView 引用 BaseSelect）。
+**实现要点**：`frontend/src/views/system/IndexView.vue` 三点最小修复——① `permissionQuery` 初值删 `moduleId: 0`（类型 `moduleId?: number` 本就可选，省略=undefined=不产生过滤参数，axios 序列化丢弃该键）；② 新增 `permissionFilterOptions` computed = `[{label:'全部模块', value:''}, ...moduleOptions]` 仅绑筛选下拉（`:options` 换绑，**表单 drawer 的 `moduleOptions` 不动**——AC2 口径登记：task 原文「moduleOptions 首项」指筛选下拉的选项列表，若把「全部」插进 moduleOptions 会污染权限创建表单的必选模块语义，故筛选专用 options 分离，AC 判定实质不变）；③ `handlePermissionSearch` 空串→`undefined`（不过滤）、数值→`Number()`，替代 `|| 0` 的空值转 0。`watch(route.query.moduleId)` 抽屉联动分支（赋数值+String 回显）零改动天然保持。
 
-**变更清单**：同交付物 3 文件（不含文档回写 4 件）；无后端、无既有 spec 断言改动、无 mock 语义改动；工作树预存 `application.yml.template`/`application.template.yml` 改动已排除在提交外。
+### 新增
+（无）
+
+### 修改
+- `frontend/src/views/system/IndexView.spec.ts`:527-579 — 新增 describe「sprint-087 web/042」三用例：AC1 初始查询 `moduleId===undefined`、AC2 筛选下拉首项「全部模块」+ 选 `''` 后清除过滤、AC3 选 `2` 过滤 + 路由 `?moduleId=3` 联动护栏
+- `frontend/src/views/system/IndexView.vue`:40-57 — permissionQuery 删 `moduleId: 0` 初值；新增 `permissionFilterOptions` computed（首项「全部模块」）
+- `frontend/src/views/system/IndexView.vue`:312-319 — `handlePermissionSearch` 空串→undefined、数值→Number，替代 `Number(v)||0`
+- `frontend/src/views/system/IndexView.vue`:545 — 筛选 BaseSelect `:options` 由 `moduleOptions` 换绑 `permissionFilterOptions`
+- `scripts/smoke.sh`:500-510 — 追加冒烟用例 web-042（权限页 spec 定向 + 「全部模块」生成、无 `moduleId: 0`、无 `|| 0` 三形态断言）
+
+### 删除
+（无）
+
+### 变更计数
+业务文件 3（spec/IndexView.vue/smoke.sh）+ 文档回写 4（task/session/iteration/registry），**≤6 达标**；后端零改动、A 面三页零改动、BaseSelect.vue 零改动。
 
 ## 评审意见
 
-### 验收标准核对
-- [x] AC1 — 满足（Evaluator 亲跑 spec `2 passed`；独立 RED 复现 `git checkout 4bd759f -- BaseSelect.vue` 后 `1 failed`，AssertionError: expected ['base-select'] to include 'base-select--open'；R3 浏览器四页真实点击 `open=true hasDropdown=true hitRatio=36/36`）
-- [x] AC2 — 满足（同 spec 第 2 例根外点击关闭通过，与 AC1 成对钉死判定边界；修复后保持）
-- [x] AC3 — 满足（`git diff f201550..HEAD -- scripts/smoke.sh` 净 +11 行纯新增零删除；亲跑 web-041 ✅；首跑 RED 有 Generator stash EXIT=1 在案 + 本审独立复现等效）
-- [x] AC4 — 满足（五线亲测全达基线，见下节）
-
-### 门禁与冒烟实测
-mvn -q verify：`Tests run: 154, Failures: 4, Errors: 2, Skipped: 0`（DataSourceConfigBindingTest 2F、RoleControllerTest 1F、SeedDataIntegrationTest 1F、TestLayersSpec 1E、TestUtilsSpec 1E）= 基线五类逐条零新增；前端：lint `0 errors, 165 warnings`（LINT_EXIT=0）、test `Test Files 38 passed, Tests 317 passed (317)`（TEST_EXIT=0）、build `✓ built in 17.44s`（BUILD_EXIT=0）；冒烟 scripts/smoke.sh：`SMOKE FAILED（67 用例）`、61✅+4❌+2⏭️，❌恰=model-008/010、roles-001/002（登记不背面零新增），新增用例 web-041 ✅；FAILED 字样系 4 条登记 ❌ 计数所致，基线豁免口径（同 sprint-083/084/085），本单零后端 diff、smoke 用例区零删除——否决 6 不命中。
-
-### 评分
-| 维度 | 分数 | 证据 |
-|------|------|------|
-| 功能正确性 | 9.5 | 4 AC 亲核全满足；R3 四页浏览器真实点击 open=true、hitRatio 36/36、抽屉对照正常；六路径定向复测 PASS（选中自关+值回填、Escape keydown 能力、toggle 开关、根外关闭）；filterable/clearable 报障面实例未启用=页面配置非缺陷（diff 未触及相应逻辑） |
-| 代码质量 | 9.5 | diff 仅 11 行（+4/−7）：rootRef 根包含性判定单一语义、why 注释符合 standards「注释写 why」、删死引用 dropdownRef 消 TS6133；无重复/无过度设计；lint 0 errors 亲测 |
-| 规范遵守 | 9.5 | §11 清单逐项：script setup ✓、无 any（spec grep=0）✓、AAA Given-When-Then 注释 ✓、断言具体值（toContain/not.toContain）✓、afterEach 清理测试独立 ✓、mock 边界=spyOn 截获组件真实注册（非 mock 被测内部）✓；扣 0.5：spec `wrapper!.element` 非空断言未附注释（standards §7） |
-| TDD 执行度 | 10 | 测试清单 4 项入 task → RED-1/RED-2 双实证 → GREEN 2 passed → 五线回归；提交 `4bd759f test`→`2870511 feat` 顺序物证；RED 独立复现（检出修复前形态 1 failed）；断言有效性高（同构重放与 Chromium 四采样点 D 同语义、成对边界） |
-| 安全性 | 10 | 五查零命中：纯前端 UI 交互判定修复，`git diff f201550..HEAD -- backend/` 为空（零权限判定/数据流变更，RBAC 第 6 节零触碰）、无注入面、无密钥/明文、无新增日志 |
-
-### 决策
-✅ 通过（总分 9.7/10 ≥7，六项一票否决逐一核对零命中；首轮评审）
-
-### 改进建议（可选，不计分）
-1. spec `getOutsideHandler` 取「最后一个 click 监听器」——若测试环境有第三方库同注册 document click 可能取错，建议按注册来源标记。
-2. 报障面页面实例均未启用 filterable/clearable，组件这两条能力在页面层无真实实例覆盖，后续可在实例启用或补组件级用例。
-3. Escape 依赖 trigger 焦点而页面实例无可聚焦 tabindex，键盘可访问性可增强（非本单范围）。
+（待 Evaluator 填写）

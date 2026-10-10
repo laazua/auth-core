@@ -15,7 +15,7 @@
 | roles | 2 | 0 | 0 | 2 | — |
 | perms | 1 | 0 | 0 | 1 | — |
 | modules | 2 | 2 | 0 | 0 | 模块=外部服务语义；modules/001 ✅、modules/002 ✅（sprint-069 评审通过），拆分预留 modules/003/web/038 见该行备注 |
-| web | 41 | 39 | 1 | 0 | web/036 进行中（036b ✅ sprint-084 评审通过、036c 预留）；web/041 ✅ 收口（2026-10-10 sprint-086 评审通过）；web/011 全系 ✅ 收口（011a/b/c，2026-10-08 sprint-083 评审通过）；web/011 ✅ 收口（2026-10-08 sprint-082 评审通过）；web/022 废弃⚠️；其余 37 项 ✅ |
+| web | 42 | 39 | 2 | 0 | web/036 进行中（036b ✅ sprint-084 评审通过、036c 预留）；web/042 进行中（sprint-087 权限页模块筛选修复）；web/041 ✅ 收口（2026-10-10 sprint-086 评审通过）；web/011 全系 ✅ 收口（011a/b/c，2026-10-08 sprint-083 评审通过）；web/011 ✅ 收口（2026-10-08 sprint-082 评审通过）；web/022 废弃⚠️；其余 37 项 ✅ |
 | integration | 2 | 0 | 0 | 2 | 收尾验证，依赖全部前置就绪 |
 
 ## infra — 基础设施
@@ -130,6 +130,7 @@
 | web/041 | 修复用户/角色/权限/模块四管理页工具栏筛选下拉框点击无法展开——根因：`BaseSelect` click-outside 同事件竞态（根 div `handleClick` 置 isOpen=true 后 Vue flushJobs 在 click 传播到 document 前完成渲染，`handleClickOutside` 以 `dropdownRef.contains(target=trigger)` 误判 outside → 开→关；Chromium 四采样点实录 A/B/C 开、D 关；抽屉因冒泡未达 document 侥幸可用；四页 spec 均 mock 组件故测试盲区；jsdom 完整传播不复现，AC 采用渲染后重放 outside 监听器同构形态） | web/001, web/004, web/005, web/006, web/011 | ✅ | **sprint-086 评审通过（2026-10-10，均分 9.7/10，4 AC 亲核全满足，RED 独立复现 checkout 4bd759f → 1 failed，门禁五线亲跑=基线（mvn 154 4F+2E 五类逐条、lint 0E\|165W、test 317/317、build ✓17.44s），冒烟 67=61✅+4❌+2⏭️ ❌恰=登记四条零新增、web-041 ✅，R3 四页浏览器 hitRatio 36/36+六路径定向复测 PASS，六否决零命中，变更 7 文件=清单零夹带，提交 `4bd759f test`→`2870511 feat`→`0fdb02c docs`）**；Planner 2026-10-10：4 条验收标准，用户报障直提；≤6 文件不拆分；修法=R2 outside 判定改根元素包含性 rootRef.contains + 删死引用 dropdownRef；报障面口径=四页 toolbar 下拉整体含权限页模块筛选，见 task R4 |
 
 
+| web/042 | 修复权限管理页模块筛选——初始锁死 `moduleId=0` 空列表（permissionQuery 初值 0 → 后端 eq(module_id,0) 恒空，打开即空表）+ moduleOptions 缺「全部模块」选项无法清除筛选（`Number(v)||0` 把空串转 0 回锁死）。**范围锁定**：仅权限页；用户/角色/模块三页状态筛选实测正常（「选停用按钮变启用」=行级可执行动作的 RBAC 正确语义），不改码，证据见 task 业务背景表 | web/006, web/030, web/041, web/011 | 🔄 | sprint-087 规划（2026-10-10 Planner，用户报障「筛选没达到功能」直提+调查实锤双缺陷，4 条验收标准，≤6 文件不拆分；修法=初值 undefined/空值不过滤 + moduleOptions 增「全部模块」（R1 序列化口径二选一）、红线后端不动；AC1/AC2 spec 必红、AC3 护栏含抽屉联动 503 行、AC4 冒烟 web-042）；**实现完成待评审**（2026-10-10 Generator done：RED 双实证 spec 2 failed+冒烟四断言拒绝→GREEN 删初值/permissionFilterOptions 首项「全部模块」/空串→undefined，spec 43/43、门禁五线=基线 test 320/320、冒烟 68=62✅+4❌+2⏭️ web-042 ✅，提交按两段式） |
 ## integration — 集成与验收
 
 | ID | 功能点 | 前置依赖 | 状态 | 备注 |
