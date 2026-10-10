@@ -496,6 +496,17 @@ smoke_case "web-041 四管理页下拉竞态修复定向测试" bash -c "
   grep -q 'BaseSelect' src/views/roles/IndexView.vue || exit 1
   grep -q 'BaseSelect' src/views/system/IndexView.vue || exit 1
 "
+# web/042：权限页模块筛选双缺陷修复（sprint-087 本单追加：初始不带 moduleId 过滤 + 「全部模块」清除筛选 spec 定向 + 源码修复形态三断言）
+smoke_case "web-042 权限页模块筛选修复定向测试" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  # 权限页 spec 定向（AC1 初始不过滤、AC2 全部模块清除、AC3 id 过滤护栏；修复前 AC1/AC2 必红）
+  npx vitest run src/views/system/IndexView.spec.ts >/tmp/smoke-web-042.log 2>&1 || exit 1
+  grep -qE 'Tests  [0-9]+ passed \([0-9]+\)' /tmp/smoke-web-042.log || exit 1
+  # 源码修复形态：筛选下拉「全部模块」选项生成 + 无 moduleId:0 初值锁死 + 无空值 ||0 转 0
+  grep -q \"label: '全部模块'\" src/views/system/IndexView.vue || exit 1
+  ! grep -q 'moduleId: 0' src/views/system/IndexView.vue || exit 1
+  ! grep -q '|| 0' src/views/system/IndexView.vue || exit 1
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

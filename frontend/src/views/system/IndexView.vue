@@ -41,7 +41,6 @@
     size: 10,
     name: '',
     code: '',
-    moduleId: 0,
     status: undefined,
   });
 
@@ -50,6 +49,12 @@
   });
 
   const moduleOptions = ref<{ label: string; value: number }[]>([]);
+
+  // 权限列表的模块筛选下拉选项：首项「全部模块」（value='' 表示不过滤），与表单必选用的 moduleOptions 分离
+  const permissionFilterOptions = computed<{ label: string; value: string | number }[]>(() => [
+    { label: '全部模块', value: '' },
+    ...moduleOptions.value,
+  ]);
 
   const permissionColumns: any[] = [
     { prop: 'name', label: '权限名', minWidth: 150 },
@@ -301,7 +306,8 @@
   const handlePermissionSearch = () => {
     permissionPage.value = 1;
     permissionQuery.name = permissionQuery.code;
-    permissionQuery.moduleId = Number(permissionQueryForSelect.moduleId) || 0;
+    const rawModuleId = permissionQueryForSelect.moduleId;
+    permissionQuery.moduleId = rawModuleId === '' ? undefined : Number(rawModuleId);
     fetchPermissionList();
   };
 
@@ -532,7 +538,7 @@
               <div class="permission-toolbar__filter">
                 <BaseSelect
                   v-model="permissionQueryForSelect.moduleId"
-                  :options="moduleOptions"
+                  :options="permissionFilterOptions"
                   placeholder="全部模块"
                   style="width: 160px"
                   @change="handlePermissionSearch"
