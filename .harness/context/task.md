@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/043**（新注册） |
 | 功能点名称 | 修复模块管理页状态切换按钮永不可见——后端种子缺 `module:toggle-status` 权限码 |
-| 状态 | AWAITING_REVIEW（Generator 完成，待 Evaluator） |
+| 状态 | **DONE**（sprint-088 评审通过 9.9/10，2026-10-10） |
 | 创建时间 | 2026-10-10 |
 
 ## 前置依赖
@@ -199,6 +199,16 @@ status-filter-3pages2.mjs 模块管理页 [启用] act="编辑进入查看权限
 
 ### 删除
 （无）
-
 ### 变更计数
+
 业务文件 4（V7 SQL + 两测试类 + smoke.sh）+ 文档回写 4（task/session/iteration/registry），**≤6 达标**；后端 Java 主代码零改动、前端全部零改动、V1-V6 零改动。
+
+## 评审意见
+
+**sprint-088 Evaluator 评审通过（2026-10-10，平均分 9.9/10；五维 10/9.5/10/10/10；六否决零命中）**
+
+- 4 AC 亲核全满足：AC1 种子存在+module_mgmt 归属+V7 幂等（真实库 flyway success=1、uk 唯一键 V4:13/V5:20 亲核）；AC2 ROLE_ADMIN 关联+me 含码（探针 n=17）；AC3 冒烟 +1 用例 web-043 五形态 ✅ 与五线=基线；AC4 探针 13/13（按钮在场 4、停用翻转、筛停用显启用、还原零残留）
+- RED 独立复现（Evaluator 自建 worktree@62ca041 + 独立空库 authcore_eval043）：22 跑 **5 failed**（me contains=false、关联 0、17vs16×2、count=0）四业务红+口径红全复现；RED-3 用例体 V7 缺失 EXIT=1；复现后空库/worktree 已清理
+- 门禁亲跑：mvn 156=4F+2E 基线五类逐条；lint 0E|165W；test 320/320；build ✓17.78s；冒烟亲跑 69=63✅+4❌恰基线+2⏭️（web-043 ✅、增量 +1 smoke_case 取证）
+- 变更范围：`2bbafa7..HEAD` 8 文件=清单零夹带；V1-V6、后端 Java、前端全零改动；预存 application 模板两文件未混入
+- 改进建议（不计分）：① Planner 后续工作单 AC 用例引用应写真实方法名（本单 AC2 占位名与 `meReturnsUserRolesPermissions` 不符，实现说明已如实记载）；② 模块接口后端鉴权粒度如需收紧另立工作单

@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🔄 **sprint-088 IMPLEMENTED**（web/043 Generator 完成，待 Evaluator）
+- 状态: 🔄 **sprint-088 评审通过（9.9/10）**，进入 Sprint 间歇
 - 当前模块: web
-- 当前功能点: web/043 — 修复模块管理页状态切换按钮永不可见（V7 补 module:toggle-status 种子）
+- 当前功能点: web/043 已收口 ✅（模块管理页状态切换按钮权限种子）
 
 
 ## 下一步动作
-  Evaluator：读 `.harness/evaluator.md` 并严格执行——评审 sprint-088（web/043），工作单 `.harness/context/task.md`。核验要点：4 AC 亲核（AC1/AC2 定向测试独立复现、AC3 冒烟 web-043 五形态、AC4 浏览器探针 13 断言）、RED 独立复现建议 checkout `62ca041^`（首跑 5 失败=四红+基线 22≠2）、两段式提交 `62ca041 test → 4e6b419 feat` + `docs`、门禁五线亲跑=基线（mvn 156 4F+2E、lint 0E|165W、test 320/320、build ✓17.42s）、冒烟 69=63✅+4❌+2⏭️ ❌恰基线、变更 4 业务文件零夹带（V7+两测试+smoke.sh；预存 application.yml.template(D)/application.template.yml(??) 不属本单）、V1-V6 未动、后端 Java/前端业务代码零改动。
+  Planner：读 `.harness/planner.md` 并严格执行——取下一功能点。建议 **web/036c2**（冗余覆盖与死代码清理+model-008/010，registry 预留；注意预判 >6 文件须问案B 或再拆分）；备选 modules/003（服务级接入凭证，前置架构 §3 仲裁）、web/011d（any 165 治理预留）。取单前先扫 registry 状态列。
 
 ## 挂起
 - 2026-10-10: Planner(sprint-088) — **状态筛选报障复核与模块按钮根因实录（用户两项裁定在案，跨会话可复核）**：① **原报障收口（用户裁定「接受，原报障已解决」）**——三页状态筛选全量核验（`/tmp/opencode/status-filter-3pages2.mjs`，35 断言 34 过）：users 启用10/10·停用10/10·全部混合、roles 同构，筛选动作期间仅发 `GET ...status=1/0/''` 零 POST/PUT、恢复「全部」数据与筛选前逐字节一致（`dist2.mjs`：筛选前 启用7+停用3 → 停用 10/10 → 恢复 启用7+停用3）；用户确认期望=「状态列显示对应状态、按钮=可执行动作（停用行显示启用）」=当前行为；误判根因=测试数据多行同名「新用户/新昵称」，筛选换批但外观相同，看似同行被改状态（`filter-accuracy-probe.mjs`：筛选前首行「新用户」筛选后首行昵称同名不同人）；② **模块页新缺陷实锤（用户裁定「开单修复（补权限种子）」）**——`system/IndexView.vue:245` 门禁 `module:toggle-status` 后端 V6 16 权限无此码（`grep -r backend/` 零命中）、ROLE_ADMIN 授权亦不含 → 按钮永不可见（探针 [启用] act=`编辑进入查看权限删除`、`module-table__action-status` 0 在场；spec 280/356/1494 mock 注入故单测盲区）；架构无冲突（§6.1 归属 module_mgmt、§6.3 唯一码、无权限码清单）；过期口径三处 16→17（SeedData permCount/adminRolePermCount、AuthControllerTest:219 me size）已入 task R2；AC2 载体=AuthControllerTest 既有 me 断言处；探针留档 `/tmp/opencode/status-filter-3pages2.mjs`、`filter-accuracy-probe.mjs`、`cell-struct.mjs`、`dist2.mjs`；服务 3003/9998 运行中（eval2 起，R3 需重启使 V7 应用真实库）；工作树预存 `application.yml.template`(D)+`application.template.yml`(??) 勿混提交。
@@ -48,6 +48,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-10: Evaluator — pass sprint-088（web/043，平均分 9.9/10，五维 10/9.5/10/10/10：4 AC 亲核全满足、RED 独立复现 worktree@62ca041+空库 authcore_eval043 → 5 failed + RED-3 EXIT=1、门禁五线亲跑=基线（mvn 156 4F+2E 五类逐条、lint 0E|165W、test 320/320、build ✓17.78s）、冒烟亲跑 69 ❌恰=model-008/010、roles-001/002 零新增且 web-043 ✅、增量 +1 smoke_case 取证、AC4 探针 13/13（按钮在场 4=修复前 0、停用翻转、筛停用显启用、还原零残留）、变更 8 文件=清单零夹带、六否决零命中）
 - 2026-10-10: Generator — done sprint-088（web/043，RED 四红实录（种子 count=0×2、me contains=false、17vs16）+AC3 EXIT=1→GREEN 全转绿，V7 幂等迁移+冒烟 web-043 五形态，门禁五线=基线（mvn 156 4F+2E、lint 0E|165W、test 320/320、build ✓17.42s）、冒烟 69=63✅+4❌恰基线+2⏭️，AC4 探针 13/13（按钮在场 4=修复前 0、停用翻转、筛停用显启用、还原零残留），提交 62ca041 test→4e6b419 feat）
 - 2026-10-10: Planner — kickoff sprint-088（web/043 模块页状态切换按钮权限种子缺失，4 条验收标准，状态筛选报障核验派生+用户两项裁定在案：原报障收口、开单补种子；V7 迁移红线/三处 16→17 过期口径/后端 Java 与前端零改动，≤6 文件不拆分）
 - 2026-10-10: Evaluator — pass sprint-087（web/042，平均分 9.7/10，五维 9.5/9.5/9.5/10/10：4 AC 亲核全满足、RED 独立复现 checkout b7833d6 → 2 failed、门禁五线亲跑=基线（mvn 154 4F+2E 五类逐条、lint 0E|165W、test 320/320、build ✓26.75s）、冒烟 68 ❌恰=登记四条零新增+web-042 ✅+增量 +1、R3 浏览器四动作实测（初始无 moduleId total16、选角色管理 id=2→4、全部模块清回 16、路由联动 id=3→4）、变更 7 文件=清单零夹带、六否决零命中）
