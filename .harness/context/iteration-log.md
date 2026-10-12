@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-10-12: Planner — kickoff sprint-090（web/046，4 条验收标准：用户报障「用户与角色绑定、角色与权限绑定、权限与模块绑定的操作没有可以操作的地方」直提，全仓只读探查实锤三域根因分层——用户-角色缺码 user:assign-role+POST/PUT 405+抽屉无回显+UserVO 无 roles、角色-权限 tree 接口缺失+RoleVO 无 permissions+无门禁渲染、权限-模块 moduleId/module_id 契约疑裂口待实测；git 考古零删除=入口从未有后端配套；总修复面 ≥25 文件 >6 熔断强制拆 6 单（046-051 总盘登记挂起区）一次注册首单；本单=数据回显与 PUT 契约暗修 6 文件顶格（UserVO.roles+ServiceImpl 填充+api PUT+双端契约测试+smoke），不放行零恶化（种子/计数/抽屉归 047），045 保留 BaseInput 候选）
+
 - 2026-10-12: Evaluator — pass sprint-089（web/044，平均分 9.8/10，五维 10/9.5/9.5/10/10：4 AC 亲核全满足、RED 独立复现 worktree@fa9aaf2+测试文件 → 4 failed（total=0×4）+两段式 test→feat 物证、门禁五线亲跑=基线（mvn 160 4F+2E 五类逐条、lint 0E|165W、test 320/320、build ✓17.79s）、冒烟亲跑 70=64✅+4❌恰基线（model-008/010、roles-001/002）+2⏭️ 零新增且 web/044 ✅、增量 +1 smoke_case 取证、变更 6 文件=清单零夹带（前端/Controller/DTO/迁移零改动）、六否决零命中，提交链 `8fe16f5 test`→`e142290 feat`）
 
 - 2026-10-12: Generator — done sprint-089（web/044 四域列表查询关键词 OR 语义修复，门禁+冒烟通过：RED 四红实录=契约测试四方法 total=0×4（AND 交集恒空）+冒烟用例体 EXIT=1 → GREEN=四 ServiceImpl 嵌套 OR 组（用户四字段 SFunction appendOrLike 首条件不加连接符、角色/权限/模块 name/code 三分支 OR），status/moduleId 保持 AND 组合护栏；契约测试 4/4 绿、门禁=基线（mvn 160 4F+2E 五类逐条零新增、lint 0E|165W、test 320/320、build ✓17.29s）、冒烟 **70=64✅+4❌+2⏭️**（❌恰=model-008/010、roles-001/002 零新增、web-044 ✅）；提交 `8fe16f5 test`→`e142290 feat`）→ 移交 Evaluator 评审

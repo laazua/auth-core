@@ -532,6 +532,22 @@ smoke_case "web/044 四域列表查询关键词OR语义定向测试" bash -c "
   # G5 契约测试类四方法定向通过（exit 码判定）
   mvn -q -f /opt/codes/auth-core/backend/pom.xml test -Dtest='ListSearchOrSemanticsTest' -DfailIfNoTests=false >/tmp/smoke-web-044.log 2>&1 || exit 1
 "
+# web/046：用户-角色绑定数据回显与提交契约（sprint-090 本单追加：UserVO roles 字段形态 + api/user.ts PUT 对齐 + 双端契约定向通过；修复前 G1-G4 必红）
+smoke_case "web/046 用户角色绑定回显与PUT契约定向测试" bash -c "
+  VO=/opt/codes/auth-core/backend/src/main/java/com/authcore/dto/user/UserVO.java
+  API=/opt/codes/auth-core/frontend/src/api/user.ts
+  # G1 UserVO 存在 roles 回显字段
+  grep -q 'List<RoleVO> roles' \$VO || exit 1
+  # G2 api/user.ts assignRoles 走 http.put 且路径形态在场
+  grep -q 'http.put(`/users/\${id}/roles`' \$API || exit 1
+  grep -q 'http.post(`/users/\${id}/roles`' \$API && exit 1
+  # G3 后端契约测试类定向通过（exit 码判定）
+  mvn -q -f /opt/codes/auth-core/backend/pom.xml test -Dtest='UserRolesEchoContractTest' -DfailIfNoTests=false >/tmp/smoke-web-046.log 2>&1 || exit 1
+  # G4 前端 AC3 契约 spec 定向通过
+  cd /opt/codes/auth-core/frontend || exit 1
+  npx vitest run src/api/user.spec.ts >/tmp/smoke-web-046-fe.log 2>&1 || exit 1
+  grep -qE 'Tests  [0-9]+ passed' /tmp/smoke-web-046-fe.log || exit 1
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
