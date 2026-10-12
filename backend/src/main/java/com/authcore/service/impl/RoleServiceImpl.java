@@ -52,10 +52,14 @@ public class RoleServiceImpl implements RoleService {
         Page<SysRole> page = new Page<>(dto.page(), dto.size());
         LambdaQueryWrapper<SysRole> wrapper = new LambdaQueryWrapper<>();
 
-        if (dto.name() != null && !dto.name().isBlank()) {
+        // 关键词字段任一命中即返回（OR），对齐前端「角色名/编码」搜索占位符语义；status 保持 AND
+        boolean hasName = dto.name() != null && !dto.name().isBlank();
+        boolean hasCode = dto.code() != null && !dto.code().isBlank();
+        if (hasName && hasCode) {
+            wrapper.and(w -> w.like(SysRole::getName, dto.name()).or().like(SysRole::getCode, dto.code()));
+        } else if (hasName) {
             wrapper.like(SysRole::getName, dto.name());
-        }
-        if (dto.code() != null && !dto.code().isBlank()) {
+        } else if (hasCode) {
             wrapper.like(SysRole::getCode, dto.code());
         }
         if (dto.status() != null) {

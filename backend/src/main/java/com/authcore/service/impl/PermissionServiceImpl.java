@@ -48,10 +48,14 @@ public class PermissionServiceImpl implements PermissionService {
         Page<SysPermission> page = new Page<>(dto.page(), dto.size());
         LambdaQueryWrapper<SysPermission> wrapper = new LambdaQueryWrapper<>();
 
-        if (dto.name() != null && !dto.name().isBlank()) {
+        // 关键词字段任一命中即返回（OR），对齐前端「权限名/编码」搜索占位符语义；moduleId 保持 AND
+        boolean hasName = dto.name() != null && !dto.name().isBlank();
+        boolean hasCode = dto.code() != null && !dto.code().isBlank();
+        if (hasName && hasCode) {
+            wrapper.and(w -> w.like(SysPermission::getName, dto.name()).or().like(SysPermission::getCode, dto.code()));
+        } else if (hasName) {
             wrapper.like(SysPermission::getName, dto.name());
-        }
-        if (dto.code() != null && !dto.code().isBlank()) {
+        } else if (hasCode) {
             wrapper.like(SysPermission::getCode, dto.code());
         }
         if (dto.moduleId() != null) {

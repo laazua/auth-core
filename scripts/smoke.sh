@@ -521,6 +521,17 @@ smoke_case "web/043 模块状态切换权限种子形态测试" bash -c "
   # G5 INSERT IGNORE 幂等形态
   grep -q 'INSERT IGNORE' \$MIG/V7__seed_module_toggle_permission.sql || exit 1
 "
+# web/044：四域列表查询关键词 OR 语义（sprint-089 本单追加：四 ServiceImpl 关键词 OR 形态 grep + 契约测试类定向通过；修复前 G1-G5 必红）
+smoke_case "web/044 四域列表查询关键词OR语义定向测试" bash -c "
+  IMPL=/opt/codes/auth-core/backend/src/main/java/com/authcore/service/impl
+  # G1-G4 四个 ServiceImpl 均存在关键词 OR 组形态
+  grep -q '\.or()' \$IMPL/UserServiceImpl.java || exit 1
+  grep -q '\.or()' \$IMPL/RoleServiceImpl.java || exit 1
+  grep -q '\.or()' \$IMPL/PermissionServiceImpl.java || exit 1
+  grep -q '\.or()' \$IMPL/ModuleServiceImpl.java || exit 1
+  # G5 契约测试类四方法定向通过（exit 码判定）
+  mvn -q -f /opt/codes/auth-core/backend/pom.xml test -Dtest='ListSearchOrSemanticsTest' -DfailIfNoTests=false >/tmp/smoke-web-044.log 2>&1 || exit 1
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

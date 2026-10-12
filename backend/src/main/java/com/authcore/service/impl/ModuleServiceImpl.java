@@ -49,10 +49,14 @@ public class ModuleServiceImpl implements ModuleService {
         Page<SysModule> page = new Page<>(dto.page(), dto.size());
         LambdaQueryWrapper<SysModule> wrapper = new LambdaQueryWrapper<>();
 
-        if (dto.name() != null && !dto.name().isBlank()) {
+        // 关键词字段任一命中即返回（OR），对齐前端「模块名/编码」搜索占位符语义；status 保持 AND
+        boolean hasName = dto.name() != null && !dto.name().isBlank();
+        boolean hasCode = dto.code() != null && !dto.code().isBlank();
+        if (hasName && hasCode) {
+            wrapper.and(w -> w.like(SysModule::getName, dto.name()).or().like(SysModule::getCode, dto.code()));
+        } else if (hasName) {
             wrapper.like(SysModule::getName, dto.name());
-        }
-        if (dto.code() != null && !dto.code().isBlank()) {
+        } else if (hasCode) {
             wrapper.like(SysModule::getCode, dto.code());
         }
         if (dto.status() != null) {

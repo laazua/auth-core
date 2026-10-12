@@ -15,6 +15,7 @@ import com.authcore.mapper.SysUserRoleMapper;
 import com.authcore.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,17 +51,16 @@ public class UserServiceImpl implements UserService {
         Page<SysUser> page = new Page<>(dto.page(), dto.size());
         LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
 
-        if (dto.username() != null && !dto.username().isBlank()) {
-            wrapper.like(SysUser::getUsername, dto.username());
-        }
-        if (dto.nickname() != null && !dto.nickname().isBlank()) {
-            wrapper.like(SysUser::getNickname, dto.nickname());
-        }
-        if (dto.email() != null && !dto.email().isBlank()) {
-            wrapper.like(SysUser::getEmail, dto.email());
-        }
-        if (dto.phone() != null && !dto.phone().isBlank()) {
-            wrapper.like(SysUser::getPhone, dto.phone());
+        // 关键词字段任一命中即返回（OR），对齐前端多字段搜索占位符语义；status 保持 AND
+        if (isNotBlank(dto.username()) || isNotBlank(dto.nickname())
+                || isNotBlank(dto.email()) || isNotBlank(dto.phone())) {
+            boolean[] first = {true};
+            wrapper.and(w -> {
+                appendOrLike(w, first, SysUser::getUsername, dto.username());
+                appendOrLike(w, first, SysUser::getNickname, dto.nickname());
+                appendOrLike(w, first, SysUser::getEmail, dto.email());
+                appendOrLike(w, first, SysUser::getPhone, dto.phone());
+            });
         }
         if (dto.status() != null) {
             wrapper.eq(SysUser::getStatus, dto.status());
@@ -70,6 +70,31 @@ public class UserServiceImpl implements UserService {
 
         IPage<SysUser> resultPage = userMapper.selectPage(page, wrapper);
         return resultPage.convert(this::toVO);
+    }
+
+    /**
+     * 向 OR 关键词组追加一个非空 like 条件；首个条件不加 or 连接符，空值跳过。
+     *
+     * @param wrapper 嵌套查询条件
+     * @param first   是否尚未加入任何条件（长度 1 数组用于 lambda 内可变标记）
+     * @param column  匹配列
+     * @param keyword 关键词（空/空白跳过）
+     */
+    private void appendOrLike(LambdaQueryWrapper<SysUser> wrapper, boolean[] first,
+                              SFunction<SysUser, ?> column,
+                              String keyword) {
+        if (!isNotBlank(keyword)) {
+            return;
+        }
+        if (!first[0]) {
+            wrapper.or();
+        }
+        wrapper.like(column, keyword);
+        first[0] = false;
+    }
+
+    private static boolean isNotBlank(String value) {
+        return value != null && !value.isBlank();
     }
 
     @Override
