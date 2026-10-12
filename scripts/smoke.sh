@@ -507,6 +507,20 @@ smoke_case "web-042 权限页模块筛选修复定向测试" bash -c "
   ! grep -q 'moduleId: 0' src/views/system/IndexView.vue || exit 1
   ! grep -q '|| 0' src/views/system/IndexView.vue || exit 1
 "
+# web/043：模块页状态切换按钮权限种子（sprint-088 本单追加：V7 迁移补 module:toggle-status 权限码 + module_mgmt 归属 + ROLE_ADMIN 授权 + INSERT IGNORE 幂等，五形态断言；修复前 G1 必红）
+smoke_case "web/043 模块状态切换权限种子形态测试" bash -c "
+  MIG=/opt/codes/auth-core/backend/src/main/resources/db/migration
+  # G1 V7 迁移文件在场
+  ls \$MIG/V7__*.sql >/dev/null 2>&1 || exit 1
+  # G2 权限码插入形态
+  grep -q 'module:toggle-status' \$MIG/V7__seed_module_toggle_permission.sql || exit 1
+  # G3 归属 module_mgmt 形态（§6.1 权限必须归属模块）
+  grep -q \"code = 'module_mgmt'\" \$MIG/V7__seed_module_toggle_permission.sql || exit 1
+  # G4 ROLE_ADMIN 授权形态
+  grep -q \"r.code = 'ROLE_ADMIN'\" \$MIG/V7__seed_module_toggle_permission.sql || exit 1
+  # G5 INSERT IGNORE 幂等形态
+  grep -q 'INSERT IGNORE' \$MIG/V7__seed_module_toggle_permission.sql || exit 1
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
