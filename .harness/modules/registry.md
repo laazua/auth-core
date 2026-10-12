@@ -15,7 +15,7 @@
 | roles | 2 | 0 | 0 | 2 | — |
 | perms | 1 | 0 | 0 | 1 | — |
 | modules | 2 | 2 | 0 | 0 | 模块=外部服务语义；modules/001 ✅、modules/002 ✅（sprint-069 评审通过），拆分预留 modules/003/web/038 见该行备注 |
-| web | 42 | 40 | 1 | 0 | web/036 进行中（036b ✅ sprint-084 评审通过、036c 预留）；web/042 ✅ 收口（2026-10-10 sprint-087 评审通过 9.7/10）；web/041 ✅ 收口（2026-10-10 sprint-086 评审通过）；web/011 全系 ✅ 收口（011a/b/c，2026-10-08 sprint-083 评审通过）；web/011 ✅ 收口（2026-10-08 sprint-082 评审通过）；web/022 废弃⚠️；其余 37 项 ✅ |
+| web | 43 | 40 | 2 | 0 | web/043 进行中（sprint-088 规划 2026-10-10：模块页切换按钮权限种子缺失）；web/036 进行中（036b ✅ sprint-084 评审通过、036c 预留）；web/042 ✅ 收口（2026-10-10 sprint-087 评审通过 9.7/10）；web/041 ✅ 收口（2026-10-10 sprint-086 评审通过）；web/011 全系 ✅ 收口（011a/b/c，2026-10-08 sprint-083 评审通过）；web/011 ✅ 收口（2026-10-08 sprint-082 评审通过）；web/022 废弃⚠️；其余 37 项 ✅ |
 | integration | 2 | 0 | 0 | 2 | 收尾验证，依赖全部前置就绪 |
 
 ## infra — 基础设施
@@ -131,6 +131,7 @@
 
 
 | web/042 | 修复权限管理页模块筛选——初始锁死 `moduleId=0` 空列表（permissionQuery 初值 0 → 后端 eq(module_id,0) 恒空，打开即空表）+ moduleOptions 缺「全部模块」选项无法清除筛选（`Number(v)||0` 把空串转 0 回锁死）。**范围锁定**：仅权限页；用户/角色/模块三页状态筛选实测正常（「选停用按钮变启用」=行级可执行动作的 RBAC 正确语义），不改码，证据见 task 业务背景表 | web/006, web/030, web/041, web/011 | ✅ | sprint-087 规划（2026-10-10 Planner，用户报障「筛选没达到功能」直提+调查实锤双缺陷，4 条验收标准，≤6 文件不拆分；修法=初值 undefined/空值不过滤 + moduleOptions 增「全部模块」（R1 序列化口径二选一）、红线后端不动；AC1/AC2 spec 必红、AC3 护栏含抽屉联动 503 行、AC4 冒烟 web-042）；**sprint-087 评审通过（2026-10-10，均分 9.7/10，4 AC 亲核全满足，RED 独立复现 checkout b7833d6 → 2 failed，门禁五线亲跑=基线（mvn 154 4F+2E 五类逐条、lint 0E|165W、test 320/320、build ✓26.75s）、冒烟 68 ❌恰=登记四条零新增+web-042 ✅+增量 +1 取证，R3 浏览器四动作=初始无 moduleId total16/选模块 id 过滤/全部模块清回16/路由联动 id3，六否决零命中，提交 `b7833d6 test`→`ecd387e feat`→`4a78d63 docs`）**；Planner 2026-10-10：4 条验收标准，用户报障调查后直提；≤6 文件不拆分、后端不动；AC2 口径=筛选专用 permissionFilterOptions 不污染表单必选语义 |
+| web/043 | 修复模块管理页状态切换按钮永不可见——根因：前端门禁 `canToggleModuleStatus`（system/IndexView.vue:245）检查 `module:toggle-status`，但后端 V6 种子 16 权限无此码（`grep backend/` 零命中）、ROLE_ADMIN 全量授权亦不含 → admin `hasPermission` 恒 false → 按钮 `.module-table__action-status` 永不渲染（headless 实测启用 4 行 0 在场；前端 spec 280/356/1494 mock 注入故单测盲区）。**修法**：V7 迁移补权限（挂 module_mgmt，§6.1）+ ROLE_ADMIN 授权（INSERT IGNORE 幂等，禁改 V6 checksum）；后端 Java 与前端业务代码零改动 | web/006, model/006, auth/004, modules/001, web/011 | 🔄 | sprint-088 规划（2026-10-10 Planner，用户状态筛选报障核验派生：用户/角色页实测=用户确认期望收口，模块页发现按钮永不可见实锤，用户裁定「开单修复（补权限种子）」；4 条验收标准，≤6 文件不拆分；TDD=种子/me 断言先于 V7 天然 RED、三处 16→17 过期口径（SeedData×2/AuthControllerTest）独立方法防 22≠2 基线掩盖、冒烟 web-043 五形态；AC4 R3=按钮在场+点停用翻转+筛停用按钮显启用（用户确认口径），研究项 R1-R7 见 task）；**实现完成待评审**（2026-10-10 Generator done：RED 四红（种子 count=0×2、me contains=false、17vs16）+AC3 EXIT=1→GREEN 全转绿，V7 幂等迁移+冒烟 web-043，门禁五线=基线（mvn 156 4F+2E、lint 0E\|165W、test 320/320、build ✓17.42s）、冒烟 69=63✅+4❌恰基线+2⏭️、AC4 探针 13/13（按钮在场 4=修复前 0、停用翻转、筛停用显启用、还原零残留），提交 `62ca041 test`→`4e6b419 feat`） |
 ## integration — 集成与验收
 
 | ID | 功能点 | 前置依赖 | 状态 | 备注 |
