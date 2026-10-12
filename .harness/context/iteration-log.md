@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-10-12: Evaluator — pass sprint-090（web/046，平均分 9.6/10，五维 9.5/9.5/9.5/10/9.5：4 AC 亲核全满足、RED 独立复现 worktree@f0f128b（补 application.yml）→ 后端 2 failed（$.data.roles 缺失×2）+前端 put calls=0+冒烟 G1 拒绝、门禁五线亲跑=基线（mvn 162 4F+2E 五类逐条、lint 0E|165W、test 321/321、build ✓17.67s）、冒烟亲跑 71=65✅+4❌恰基线（model-008/010、roles-001/002）+2⏭️ 零新增且 web/046 ✅、增量 +1 smoke_case 取证（既有用例零删除）、变更 10 文件=清单零夹带（两段式 `f0f128b test`→`16893bd feat`）、六否决零命中）
+
 - 2026-10-12: Generator — done sprint-090（web/046 用户-角色绑定数据回显与 PUT 契约暗修，门禁+冒烟通过：RED 三红实录=后端契约测试 2 跑 2 失败（$.data.roles 不存在+列表 filter was empty）+前端 put calls=0（现走 post）+冒烟 web-046 用例体 EXIT=1 → GREEN=UserVO 第 9 参 List<RoleVO> roles+UserServiceImpl toVO 双参重载+loadRolesByUserIds 批量填充（列表一次 in 查询防 N+1）+api/user.ts POST→PUT；契约测试 2/2+spec 1/1 绿、门禁=基线（mvn 162 4F+2E 五类逐条、lint 0E|165W、test 321/321、build ✓17.65s）、冒烟整组重跑 **71=65✅+4❌+2⏭️**（❌恰=model-008/010、roles-001/002 零新增、web/046 ✅；首轮 ❌5=用例体反引号解析期命令替换缺陷已转义修复）；提交 `f0f128b test`→`16893bd feat`）→ 移交 Evaluator 评审
 
 - 2026-10-12: Planner — kickoff sprint-090（web/046，4 条验收标准：用户报障「用户与角色绑定、角色与权限绑定、权限与模块绑定的操作没有可以操作的地方」直提，全仓只读探查实锤三域根因分层——用户-角色缺码 user:assign-role+POST/PUT 405+抽屉无回显+UserVO 无 roles、角色-权限 tree 接口缺失+RoleVO 无 permissions+无门禁渲染、权限-模块 moduleId/module_id 契约疑裂口待实测；git 考古零删除=入口从未有后端配套；总修复面 ≥25 文件 >6 熔断强制拆 6 单（046-051 总盘登记挂起区）一次注册首单；本单=数据回显与 PUT 契约暗修 6 文件顶格（UserVO.roles+ServiceImpl 填充+api PUT+双端契约测试+smoke），不放行零恶化（种子/计数/抽屉归 047），045 保留 BaseInput 候选）

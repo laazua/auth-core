@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/046**（新注册） |
 | 功能点名称 | 用户-角色绑定·数据回显与提交契约暗修（三类绑定报障第一单：UserVO 补 roles 回显字段 + 前端 assignRoles POST→PUT 对齐） |
-| 状态 | **AWAITING_REVIEW**（门禁五线+冒烟通过，待 Evaluator 评审） |
+| 状态 | **DONE**（sprint-090 评审通过 9.6/10，2026-10-12） |
 | 创建时间 | 2026-10-12 |
 
 ## 前置依赖
@@ -216,4 +216,21 @@
 
 ## 评审意见
 
-（待 Evaluator 评审）
+**sprint-090 评审：✅ 通过，均分 9.6/10**（Evaluator，2026-10-12）
+
+### 验收标准核对
+- [x] AC1 — 满足：契约类 :84-87 isArray+hasItem("ROLE_ADMIN")+id/name 非空；RED 独立复现 worktree@f0f128b（补 application.yml 后）`Tests run: 2, Failures: 2` + `No value at JSON path "$.data.roles"` ×2 → GREEN 亲跑通过（mvn 162 含该 2 方法）
+- [x] AC2 — 满足：契约类 :108-109 filter `username=='admin'` 行 roles[*].code hasItem("ROLE_ADMIN")；同上 RED/GREEN 实证
+- [x] AC3 — 满足：user.spec.ts:26-27 put calledWith('/users/1/roles',{roleIds:[2]}) + post not called；RED 独立复现 `Number of calls: 0` → GREEN 亲跑 1 passed
+- [x] AC4 — 满足：冒烟亲跑 71=65✅+4❌+2⏭️，web/046 ✅、❌恰=model-008/010、roles-001/002 零新增；增量 +1 取证（smoke.sh f0f128b 段 +16 行，既有用例零删除）；门禁五线亲跑=基线（mvn 162 4F+2E 五类逐条、lint 0E|165W、test 321/321、build ✓17.67s）
+
+### 门禁与冒烟实测（亲跑）
+- `mvn -q verify`：Tests run 162, Failures 4, Errors 2——五类=基线（DataSourceConfigBinding×2、RoleController 409、SeedData 22≠2、TestLayers+TestUtils 2E）
+- 前端：lint 0E|165W ✓；test 39 文件 321/321 ✓；build ✓17.67s
+- 冒烟：71=65✅+4❌+2⏭️（web/046 ✅；出口码非零源于基线四条，「基线对照推进」用户裁定 sprint-064 在案）
+
+### 六否决
+零命中（功能缺失/安全漏洞/明确 Bug/无测试先行/RBAC 偏差/回归冒烟失败均不成立）。
+
+### 评分
+9.5 / 9.5 / 9.5 / 10 / 9.5 → 均分 **9.6**。详细证据见评审报告（本条回写为摘要）。
