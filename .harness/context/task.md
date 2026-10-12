@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/046**（新注册） |
 | 功能点名称 | 用户-角色绑定·数据回显与提交契约暗修（三类绑定报障第一单：UserVO 补 roles 回显字段 + 前端 assignRoles POST→PUT 对齐） |
-| 状态 | **PLANNED** |
+| 状态 | **AWAITING_REVIEW**（门禁五线+冒烟通过，待 Evaluator 评审） |
 | 创建时间 | 2026-10-12 |
 
 ## 前置依赖
@@ -54,10 +54,10 @@
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — 用户详情回显数据源：`GET /api/v1/users/{id}`（id=种子 admin 用户）返回 `code=0` 且 `data.roles` 为非空 JSON 数组，数组元素含 `id`/`name`/`code` 三键，存在元素 `code="ROLE_ADMIN"`；修复前响应**无 `data.roles` 键**（UserVO 8 参）→ RED。← 用例 `UserRolesEchoContractTest#用户详情返回已分配角色且含ROLE_ADMIN`
-- [ ] AC2 — 用户列表回显数据源：`GET /api/v1/users?username=admin&page=1&size=10` 返回 `data.records` 中命中行含 `roles` 非空数组且存在元素 `code="ROLE_ADMIN"`；修复前 records 行无 `roles` 键 → RED。← 用例 `UserRolesEchoContractTest#用户列表命中行返回已分配角色`
-- [ ] AC3 — 前端提交契约 PUT：前端 API 层契约测试调用 `userApi.assignRoles(1, { roleIds: [2] })`，断言底层 `http.put` 以路径 `/users/1/roles` 与载荷 `{ roleIds: [2] }` 被调用、且 `http.post` 未被以该路径调用；修复前为 `http.post('/users/1/roles')` → RED。← 用例 `<AC3 spec 文件>#assignRoles 使用 PUT 方法`（文件名见研究项 R3）
-- [ ] AC4 — 冒烟与门禁：`scripts/smoke.sh` 新增 `web-046` 用例（G1 grep `UserVO.java` 存在 `roles` 字段、G2 grep `api/user.ts` 中 `/users/\${id}/roles` 与 `http.put` 同现、G3 定向跑 `UserRolesEchoContractTest`、G4 前端定向跑 AC3 spec），实现前 G1-G4 全 RED → 实现后 GREEN；冒烟总数 70→71、❌ 恰 4（model-008/010、roles-001/002）零新增；门禁五线基线对照零新增。← 用例 `AC4 ← 用例 门禁五线 + 冒烟全量`
+- [x] AC1 — 用户详情回显数据源：`GET /api/v1/users/{id}`（id=种子 admin 用户）返回 `code=0` 且 `data.roles` 为非空 JSON 数组，数组元素含 `id`/`name`/`code` 三键，存在元素 `code="ROLE_ADMIN"`；修复前响应**无 `data.roles` 键**（UserVO 8 参）→ RED。← 用例 `UserRolesEchoContractTest#用户详情返回已分配角色且含ROLE_ADMIN`
+- [x] AC2 — 用户列表回显数据源：`GET /api/v1/users?username=admin&page=1&size=10` 返回 `data.records` 中命中行含 `roles` 非空数组且存在元素 `code="ROLE_ADMIN"`；修复前 records 行无 `roles` 键 → RED。← 用例 `UserRolesEchoContractTest#用户列表命中行返回已分配角色`
+- [x] AC3 — 前端提交契约 PUT：前端 API 层契约测试调用 `userApi.assignRoles(1, { roleIds: [2] })`，断言底层 `http.put` 以路径 `/users/1/roles` 与载荷 `{ roleIds: [2] }` 被调用、且 `http.post` 未被以该路径调用；修复前为 `http.post('/users/1/roles')` → RED。← 用例 `frontend/src/api/user.spec.ts#assignRoles 使用 PUT 方法`（R3 定案：新建 api 层 spec）
+- [x] AC4 — 冒烟与门禁：`scripts/smoke.sh` 新增 `web-046` 用例（G1 grep `UserVO.java` 存在 `roles` 字段、G2 grep `api/user.ts` 中 `/users/\${id}/roles` 与 `http.put` 同现、G3 定向跑 `UserRolesEchoContractTest`、G4 前端定向跑 AC3 spec），实现前 G1-G4 全 RED → 实现后 GREEN；冒烟总数 70→71、❌ 恰 4（model-008/010、roles-001/002）零新增；门禁五线基线对照零新增。← 用例 `AC4 ← 用例 门禁五线 + 冒烟全量`
 
 ### AC1 — 详情回显（UserVO.roles + 填充）
 
@@ -91,10 +91,10 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | UserRolesEchoContractTest#用户详情返回已分配角色且含ROLE_ADMIN | AC1 | 待 RED→GREEN |
-| 2 | UserRolesEchoContractTest#用户列表命中行返回已分配角色 | AC2 | 待 RED→GREEN |
-| 3 | <AC3 spec 文件>#assignRoles 使用 PUT 方法（文件名 R3 定） | AC3 | 待 RED→GREEN |
-| 4 | smoke web-046 用例体首跑 + 门禁五线 + 冒烟全量 | AC4 | 待 RED EXIT=1→GREEN EXIT=0；冒烟 71=65✅+4❌+2⏭️ |
+| 1 | UserRolesEchoContractTest#用户详情返回已分配角色且含ROLE_ADMIN | AC1 | RED（$.data.roles 不存在）→ GREEN ✅ |
+| 2 | UserRolesEchoContractTest#用户列表命中行返回已分配角色 | AC2 | RED（filter was empty）→ GREEN ✅ |
+| 3 | frontend/src/api/user.spec.ts#assignRoles 使用 PUT 方法（R3 定案新建 api 层 spec） | AC3 | RED（put calls=0）→ GREEN ✅ |
+| 4 | smoke web-046 用例体首跑 + 门禁五线 + 冒烟全量 | AC4 | RED EXIT=1 → GREEN；冒烟 71=65✅+4❌+2⏭️ ❌恰基线、web/046 ✅ |
 
 ## RED 证据
 
@@ -126,7 +126,15 @@
 ```
 
 ```text
-[GREEN] 证据槽 — 待 Generator 填写
+[GREEN] 定向复跑（UserVO.roles+ServiceImpl 填充+api PUT 落地后，2026-10-12）
+ [GREEN-1] mvn -q test -Dtest='UserRolesEchoContractTest'
+  Tests run: 2, Failures: 0, Errors: 0, Skipped: 0（AC1/AC2 双绿；日志实证
+  UserVO[..., roles=[RoleVO[..., code=ROLE_ADMIN, ...]]] 详情返回）
+ [GREEN-2] npx vitest run src/api/user.spec.ts
+  Test Files 1 passed (1) | Tests 1 passed (1)（AC3 put 形态绿）
+ [GREEN-3] 冒烟 web-046 用例体复跑（转义修复后 G1-G2 形态断言 exit=0；
+  首轮全量中 G2 因 bash -c 双引号内裸反引号解析期命令替换损坏 → 用例体
+  失败，修复=反引号转义 \`，全量整组重跑见「门禁与冒烟记录」）
 ```
 
 ## 门禁与冒烟记录
@@ -135,11 +143,11 @@
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 160 用例 4F+2E（五类：DataSourceConfigBinding×2、RoleController 409、SeedData 22≠2、TestLayers+TestUtils 2E，veto-6 豁免） | 待填（预期 162=160+本单 2 方法，4F+2E 五类逐条一致） | 待验 |
-| `npm run lint` | EXIT=0，0 errors / 165 warnings | 待填 | 待验 |
-| `npm run test` | 0 failed \| 320 passed → 本单 +1=321 | 待填 | 待验 |
-| `npm run build` | ✓（~18s） | 待填 | 待验 |
-| `bash scripts/smoke.sh` | 70=64✅+4❌+2⏭️ → 本单 +1=71，❌恰=model-008/010、roles-001/002 零新增 | 待填（预期 71=65✅+4❌+2⏭️，✅含 web-046） | 待验 |
+| 后端 `mvn -q verify` | 160 用例 4F+2E（五类：DataSourceConfigBinding×2、RoleController 409、SeedData 22≠2、TestLayers+TestUtils 2E，veto-6 豁免） | 162 跑 4F+2E：DataSourceConfigBinding×2、RoleController 409、SeedData 22≠2、TestLayers+TestUtils 2E——五类逐条一致（160+本单 2 方法） | ✅ 零新增失败 |
+| `npm run lint` | EXIT=0，0 errors / 165 warnings | EXIT=0，0 errors / 165 warnings（lint --fix 后复核） | ✅ =基线 |
+| `npm run test` | 0 failed \| 320 passed → 本单 +1 | 39 文件 321/321 passed（320+user.spec.ts） | ✅ 零新增失败 |
+| `npm run build` | ✓（~18s） | ✓ built in 17.65s | ✅ =基线 |
+| `bash scripts/smoke.sh` | 70=64✅+4❌+2⏭️ → 本单 +1=71，❌恰=model-008/010、roles-001/002 零新增 | 首轮 ❌5（web/046 用例体反引号解析期命令替换缺陷）→ 转义修复后整组重跑：**71=65✅+4❌+2⏭️**，✅ 含 web/046，❌恰=model-008/010、roles-001/002（基线四条零新增），⏭️=infra-004、model-006（留档 /tmp/opencode/smoke-s090-r2.log；出口码非零源于基线四条预存失败，基线对照口径） | ✅ 增量 +1=65✅ |
 
 ## 拆分说明
 
