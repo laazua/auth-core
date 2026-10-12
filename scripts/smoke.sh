@@ -538,9 +538,9 @@ smoke_case "web/046 用户角色绑定回显与PUT契约定向测试" bash -c "
   API=/opt/codes/auth-core/frontend/src/api/user.ts
   # G1 UserVO 存在 roles 回显字段
   grep -q 'List<RoleVO> roles' \$VO || exit 1
-  # G2 api/user.ts assignRoles 走 http.put 且路径形态在场
-  grep -q 'http.put(`/users/\${id}/roles`' \$API || exit 1
-  grep -q 'http.post(`/users/\${id}/roles`' \$API && exit 1
+  # G2 api/user.ts assignRoles 走 http.put 且路径形态在场（\` 转义防解析期命令替换）
+  grep -q 'http.put(\`/users/\${id}/roles\`' \$API || exit 1
+  grep -q 'http.post(\`/users/\${id}/roles\`' \$API && exit 1
   # G3 后端契约测试类定向通过（exit 码判定）
   mvn -q -f /opt/codes/auth-core/backend/pom.xml test -Dtest='UserRolesEchoContractTest' -DfailIfNoTests=false >/tmp/smoke-web-046.log 2>&1 || exit 1
   # G4 前端 AC3 契约 spec 定向通过

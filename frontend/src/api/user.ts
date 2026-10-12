@@ -39,7 +39,7 @@ export const userApi = {
   },
 
   assignRoles(id: number, data: AssignRolesRequest): Promise<Result<void>> {
-    return http.post(`/users/${id}/roles`, data);
+    return http.put(`/users/${id}/roles`, data);
   },
 
   changePassword(data: ChangePasswordRequest): Promise<Result<void>> {

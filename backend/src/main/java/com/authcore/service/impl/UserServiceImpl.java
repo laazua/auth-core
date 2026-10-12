@@ -1,6 +1,7 @@
 package com.authcore.service.impl;
 
 import com.authcore.common.BusinessException;
+import com.authcore.dto.role.RoleVO;
 import com.authcore.dto.user.UserCreateDTO;
 import com.authcore.dto.user.UserQueryDTO;
 import com.authcore.dto.user.UserStatusDTO;
@@ -21,8 +22,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 用户业务服务实现（users/001）。
@@ -69,7 +74,14 @@ public class UserServiceImpl implements UserService {
         wrapper.orderByDesc(SysUser::getCreatedAt);
 
         IPage<SysUser> resultPage = userMapper.selectPage(page, wrapper);
-        return resultPage.convert(this::toVO);
+        List<Long> userIds = resultPage.getRecords().stream().map(SysUser::getId).toList();
+        Map<Long, List<RoleVO>> rolesByUser = loadRolesByUserIds(userIds);
+
+        Page<UserVO> voPage = new Page<>(resultPage.getCurrent(), resultPage.getSize(), resultPage.getTotal());
+        voPage.setRecords(resultPage.getRecords().stream()
+                .map(user -> toVO(user, rolesByUser.getOrDefault(user.getId(), List.of())))
+                .toList());
+        return voPage;
     }
 
     /**
@@ -238,6 +250,11 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserVO toVO(SysUser user) {
+        return toVO(user, loadRolesByUserIds(List.of(user.getId()))
+                .getOrDefault(user.getId(), List.of()));
+    }
+
+    private UserVO toVO(SysUser user, List<RoleVO> roles) {
         return new UserVO(
                 user.getId(),
                 user.getUsername(),
@@ -246,7 +263,49 @@ public class UserServiceImpl implements UserService {
                 user.getPhone(),
                 user.getStatus(),
                 user.getCreatedAt(),
-                user.getUpdatedAt()
+                user.getUpdatedAt(),
+                roles
+        );
+    }
+
+    /**
+     * 按用户 ID 集合批量加载已分配角色（web/046 回显数据源）。
+     *
+     * @param userIds 用户 ID 列表（空列表直接返回空映射）
+     * @return userId → 已分配角色列表（无绑定的用户不在映射中）
+     */
+    private Map<Long, List<RoleVO>> loadRolesByUserIds(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Map.of();
+        }
+        List<SysUserRole> links = userRoleMapper.selectList(new LambdaQueryWrapper<SysUserRole>()
+                .in(SysUserRole::getUserId, userIds));
+        if (links.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Long> roleIds = links.stream().map(SysUserRole::getRoleId).distinct().toList();
+        Map<Long, SysRole> roleById = roleMapper.selectBatchIds(roleIds).stream()
+                .collect(Collectors.toMap(SysRole::getId, Function.identity()));
+
+        Map<Long, List<RoleVO>> grouped = new HashMap<>();
+        for (SysUserRole link : links) {
+            SysRole role = roleById.get(link.getRoleId());
+            if (role != null) {
+                grouped.computeIfAbsent(link.getUserId(), key -> new ArrayList<>()).add(toRoleVO(role));
+            }
+        }
+        return grouped;
+    }
+
+    private RoleVO toRoleVO(SysRole role) {
+        return new RoleVO(
+                role.getId(),
+                role.getName(),
+                role.getCode(),
+                role.getStatus(),
+                role.getCreatedAt(),
+                role.getUpdatedAt()
         );
     }
 }
