@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/048b**（web/048 拆分第二段——角色-权限回显；048a ✅ sprint-092 已收口） |
 | 功能点名称 | 角色-权限绑定·回显数据源暗修（RoleVO.permissions 批量填充，修抽屉「已分配权限不回显」） |
-| 状态 | **PLANNED** |
+| 状态 | **AWAITING_REVIEW**（Generator 九步完成 2026-10-13，移交 Evaluator） |
 | 创建时间 | 2026-10-13 |
 
 ## 前置依赖
@@ -47,10 +47,10 @@
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — 角色权限回显：`GET /api/v1/roles/{id}`（登录 admin，种子 `ROLE_ADMIN` id=1）返回 HTTP 200、`code=0`，`$.data.permissions` 为 JSON **数组**，数组元素含 `code="user:view"` 且元素含 `id`/`code`/`children` 键（PermissionVO 完整形态）；修复前该路径 `$.data.permissions` 键缺失 → RED。← 用例 `RolePermissionsEchoContractTest#角色详情返回已分配权限回显`
-- [ ] AC2 — 零回归护栏：`GET /api/v1/roles?page=1&size=10` 返回 `code=0`、`data.records` 数组、命中行既有键（id/name/code/status/createTime/updateTime）不变（`permissions` 新增键对分页消费者非破坏）；`POST /api/v1/roles` 创建再清理链路仍 `code=0`（toVO 改动不破坏既有路径）。← 用例 `RolePermissionsEchoContractTest#既有分页与新建角色接口保持可用`
-- [ ] AC3 — 空授权角色回显为**空数组**：分页取一条 `code != "ROLE_ADMIN"` 的种子角色（V1 之后角色均无 `sys_role_permission` 授权），`GET /api/v1/roles/{id}` 返回 `$.data.permissions` 为数组且 `size=0`（空数组而非 null/缺失，前端 `?.length` 判断安全）。← 用例 `RolePermissionsEchoContractTest#无授权角色回显空权限数组`
-- [ ] AC4 — 冒烟与门禁：`scripts/smoke.sh` 新增 `web-048b` 用例（G1 grep `RoleVO.java` 存在 `List<PermissionVO> permissions` 形态、G2 grep `RoleServiceImpl.java` 存在批量填充形态（`selectBatchIds` 或 `in(...)` 一批）、G3 定向跑 `RolePermissionsEchoContractTest`、G4 grep `PermissionAssignDrawer.vue` 消费 `role.permissions` 形态在场=零前端改动护栏），实现前 G1-G3 RED；冒烟总数 72→73、❌ 恰 4（model-008/010、roles-001/002）零新增；门禁五线基线对照零新增（mvn 165→≈167=+2 契约方法、前端三线=基线零前端改动）。← 用例 `AC4 ← 用例 门禁五线 + 冒烟全量`
+- [x] AC1 — 角色权限回显：`GET /api/v1/roles/{id}`（登录 admin，种子 `ROLE_ADMIN` id=1）返回 HTTP 200、`code=0`，`$.data.permissions` 为 JSON **数组**，数组元素含 `code="user:view"` 且元素含 `id`/`code`/`children` 键（PermissionVO 完整形态）；修复前该路径 `$.data.permissions` 键缺失 → RED。← 用例 `RolePermissionsEchoContractTest#角色详情返回已分配权限回显`
+- [x] AC2 — 零回归护栏：`GET /api/v1/roles?page=1&size=10` 返回 `code=0`、`data.records` 数组、命中行既有键（id/name/code/status/createTime/updateTime）不变（`permissions` 新增键对分页消费者非破坏）；`POST /api/v1/roles` 创建再清理链路仍 `code=0`（toVO 改动不破坏既有路径）。← 用例 `RolePermissionsEchoContractTest#既有分页与新建角色接口保持可用`
+- [x] AC3 — 空授权角色回显为**空数组**：自建临时角色（`ROLE_REGRESSION_TMP`，必无 `sys_role_permission` 授权；测试库存在其它测试给非 ADMIN/USER 角色授权的污染，种子依赖不稳，故用自建确定性角色）`GET /api/v1/roles/{id}` 返回 `$.data.permissions` 为数组且 `size=0`（空数组而非 null/缺失，前端 `?.length` 判断安全），测试尾部 DELETE 清理。← 用例 `RolePermissionsEchoContractTest#无授权角色回显空权限数组`
+- [x] AC4 — 冒烟与门禁：`scripts/smoke.sh` 新增 `web-048b` 用例（G1 grep `RoleVO.java` 存在 `List<PermissionVO> permissions` 形态、G2 grep `RoleServiceImpl.java` 存在批量填充形态（`selectBatchIds` 或 `in(...)` 一批）、G3 定向跑 `RolePermissionsEchoContractTest`、G4 grep `PermissionAssignDrawer.vue` 消费 `role.permissions` 形态在场=零前端改动护栏），实现前 G1-G3 RED；冒烟总数 72→73、❌ 恰 4（model-008/010、roles-001/002）零新增；门禁五线基线对照零新增（mvn 165→≈167=+2 契约方法、前端三线=基线零前端改动）。← 用例 `AC4 ← 用例 门禁五线 + 冒烟全量`
 
 ### AC1 — 角色详情权限回显
 
@@ -68,7 +68,7 @@
 
 ### AC3 — 无授权角色空数组
 
-**步骤与期望**：独立方法：分页查询过滤 `code` 不含 ROLE_ADMIN 的角色（Java 断言从 records 取 `code != "ROLE_ADMIN"` 首条 id），`GET /api/v1/roles/{id}` → `$.code=0`、`$.data.permissions` isArray 且 `$.data.permissions` size=0。
+**步骤与期望**：独立方法：幂等清理后 POST 建临时角色 `ROLE_REGRESSION_TMP`（必无授权；种子角色因测试库存在其它测试给非 ADMIN/USER 角色授权的污染不稳），`GET /api/v1/roles/{newId}` → `$.code=0`、`$.data.permissions` isArray 且 size=0，finally DELETE 清理。
 
 **用例**：`AC3 ← 用例 RolePermissionsEchoContractTest#无授权角色回显空权限数组`
 
@@ -84,10 +84,10 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | RolePermissionsEchoContractTest#角色详情返回已分配权限回显 | AC1 | 待 RED→GREEN |
-| 2 | RolePermissionsEchoContractTest#既有分页与新建角色接口保持可用 | AC2 | 基线护栏（实现前后皆绿） |
-| 3 | RolePermissionsEchoContractTest#无授权角色回显空权限数组 | AC3 | 待 RED→GREEN |
-| 4 | smoke web-048b 用例体首跑 + 门禁五线 + 冒烟全量 | AC4 | 待 RED EXIT=1→GREEN；冒烟 73=67✅+4❌+2⏭️ |
+| 1 | RolePermissionsEchoContractTest#角色详情返回已分配权限回显 | AC1 | ✅ RED(No value)→GREEN 3/3 |
+| 2 | RolePermissionsEchoContractTest#既有分页与新建角色接口保持可用 | AC2 | ✅ 绿（实现前后皆绿） |
+| 3 | RolePermissionsEchoContractTest#无授权角色回显空权限数组 | AC3 | ✅ RED(No value)→GREEN 3/3 |
+| 4 | smoke web-048b 用例体首跑 + 门禁五线 + 冒烟全量 | AC4 | ✅ RED(EXIT=1)→GREEN 73=67✅+4❌+2⏭️ |
 
 ## RED 证据
 
@@ -104,6 +104,12 @@
 [RED] 冒烟 web-048b 用例体首跑（G1 后短路，EXIT=1）：
   G1 FAIL (预期 RED) ← RoleVO 无 List<PermissionVO> permissions
   （G2 loadPermissionsByRoleIds 不存在同红；G4 PermissionAssignDrawer res.data.permissions 在场=绿护栏）
+[GREEN] 契约类定向（mvn -q -Dtest=RolePermissionsEchoContractTest test，2026-10-13）：Tests run: 3, Failures: 0, Errors: 0
+  （AC1 ROLE_ADMIN 详情 permissions 含 user:view+id/children；AC2 分页六键+POST/DELETE 链路；AC3 自建临时角色 permissions=[]）
+[GREEN] 冒烟 web-048b 用例体（G1 RoleVO permissions + G2 loadPermissionsByRoleIds+selectBatchIds 批量形态 + G3 定向 + G4 抽屉消费契约）：✅
+GREEN 期间两处测试口径修正（实现行为不变）：
+  ① AC1 filter 后 .id[0] Jayway 语法不支持 → 改 Java 断言遍历节点断言 id/children；
+  ② AC3 种子依赖被测试库污染（其它测试给非 ADMIN/USER 角色授权过 user:view）→ 改自建临时角色 ROLE_REGRESSION_TMP 确定性断言空数组，免迁移种子面漂移。
 ```
 
 ## 门禁与冒烟记录
@@ -112,11 +118,11 @@
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 165 用例 4F+2E（五类：DataSourceConfigBinding×2、RoleController 409、SeedData 22≠2、TestLayers+TestUtils 2E，veto-6 豁免） | 待填（预期 ≈167=165+本单 2 方法，4F+2E 五类逐条一致） | 待验 |
-| `npm run lint` | EXIT=0，0 errors / 165 warnings | 待填（本单零前端代码预期=基线） | 待验 |
-| `npm run test` | 39 文件 321/321 | 待填（零前端改动预期=321/321） | 待验 |
-| `npm run build` | ✓（~17.5s） | 待填 | 待验 |
-| `bash scripts/smoke.sh` | 72=66✅+4❌+2⏭️ → 本单 +1=73，❌恰=model-008/010、roles-001/002 零新增 | 待填（预期 73=67✅+4❌+2⏭️，✅含 web-048b） | 待验 |
+| 后端 `mvn -q verify` | 165 用例 4F+2E（五类：DataSourceConfigBinding×2、RoleController 409、SeedData 22≠2、TestLayers+TestUtils 2E，veto-6 豁免） | 168=165+3；4F+2E 五类逐条一致（DataSourceConfigBinding×2、RoleController 409、SeedData 22≠2、TestLayers+TestUtils 2E），零新增 | ✅ |
+| `npm run lint` | EXIT=0，0 errors / 165 warnings | 0 errors / 165 warnings | ✅ |
+| `npm run test` | 39 文件 321/321 | 39 文件 321/321 | ✅ |
+| `npm run build` | ✓（~17.5s） | ✓ built in 17.51s | ✅ |
+| `bash scripts/smoke.sh` | 72=66✅+4❌+2⏭️ → 本单 +1=73，❌恰=model-008/010、roles-001/002 零新增 | 73=67✅+4❌+2⏭️；❌恰=model-008/010、roles-001/002 与基线逐一吻合，✅含 web-048b | ✅ |
 
 ## 实现说明
 
