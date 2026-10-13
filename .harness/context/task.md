@@ -1,155 +1,146 @@
-# Sprint 工作单：sprint-093
+# Sprint 工作单：sprint-094
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-093 |
+| Sprint ID | sprint-094 |
 | 所属模块 | web |
-| 功能点 ID | **web/048b**（web/048 拆分第二段——角色-权限回显；048a ✅ sprint-092 已收口） |
-| 功能点名称 | 角色-权限绑定·回显数据源暗修（RoleVO.permissions 批量填充，修抽屉「已分配权限不回显」） |
-| 状态 | **DONE**（sprint-093 评审通过 8.5/10，2026-10-13） |
+| 功能点 ID | **web/047**（用户-角色放行闭环；三绑定拆分总盘后续①，sprint-090 登记，本次注册立项） |
+| 功能点名称 | 用户-角色绑定·放行与回显闭环（V8 补 `user:assign-role` 种子+授权，RoleAssignDrawer 按 userId 回显已分配角色） |
+| 状态 | **PLANNED** |
 | 创建时间 | 2026-10-13 |
 
 ## 前置依赖
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| web/048a | GET /permissions/tree 平铺数据源（抽屉树数据源） | ✅ sprint-092 PASS 8.4/10 |
-| web/005 | 角色管理页与 PermissionAssignDrawer（消费侧在场 :102-115 读 `role.permissions`） | ✅ sprint-027 |
-| perms/001 | 权限 CRUD 与 PermissionVO | ✅ sprint-021 |
-| roles/001 | 角色 CRUD 与 RoleVO | ✅ sprint-017 |
-| web/046 | 批量填充防 N+1 先例（loadRolesByUserIds 模式）与 UserVO.roles 同 sprint 先例 | ✅ sprint-090 PASS 9.6/10 |
+| web/046 | UserVO.roles 数据源+PUT 契约（抽屉回显消费源） | ✅ sprint-090 PASS 9.6/10 |
+| users/001 | 用户 CRUD 与 UserController（PUT /users/{id}/roles） | ✅ |
+| users/002 | 用户管理页与 RoleAssignDrawer（按钮门禁 :123、抽屉组件） | ✅ |
+| web/044 | 用户列表搜索（IndexView 既有形态参考） | ✅ sprint-089 |
+| perms/001 | 权限种子与 sys_permission 计数基线（17→18 联动） | ✅ |
 
 ## 业务背景
 
-**用户需求（2026-10-12）**：「角色 权限分配接口报错」排查实录（sprint-090，session-state 挂起区②）之回显断点——`PermissionAssignDrawer.vue:102-115` 打开时读 `role.permissions` 渲染已分配勾选，但 `RoleVO` 无 `permissions` 字段 → 恒 `undefined` → **已分配权限不回显**；配合 049 的提交语义（全量替换），存在「看不见既有授权、一提交就清掉」的数据风险。
+**用户需求（2026-10-12 报障排查实录①，session-state 挂起区在案）**：「用户与角色绑定的操作没有可以操作的地方」——三断点中 046 已修数据源与 PUT 契约，**剩余两断点本单收口**：
 
-### 现状与断点实证（sprint-091/092 取证在案）
+### 断点实锤（sprint-090 只读取证）
 
 | 断点 | 实证 |
 |------|------|
-| **RoleVO 无 permissions** | `RoleVO.java` record 8 参（id/name/code/status/createTime/updateTime…）无 permissions；抽屉 :102-115 `role.permissions` 恒 undefined |
-| **消费侧已就位** | `PermissionAssignDrawer.vue:73` 已调 `getTree()`（048a 已修通）、:102-115 读 `role.permissions` 初始化勾选——**前端契约只等后端补字段** |
-| **树数据源已通** | 048a 收口：`GET /permissions/tree` 200 平铺 `children=[]`（sprint-092 PASS） |
+| **按钮永不可见** | `users/IndexView.vue:123` 门禁 `user:assign-role`；V6/V7 种子 17 码零含此码、ROLE_ADMIN 未授权 → `/me` 恒不含 → 按钮恒隐藏（与 module:toggle-status 缺码同型，043 已修先例） |
+| **抽屉无回显** | `RoleAssignDrawer.vue:141` watch 打开时 `assignedRoleIds.value = []` 硬编码，无按 userId 拉已分配；配合 PUT 全量替换语义，提交会**清空**已有角色（如 admin→ROLE_ADMIN 被清掉） |
+| **消费源已就位** | 046 交付 `UserVO.roles`（`api/user.ts:17-18` getById 已返回）——抽屉只需调 `userApi.getById(userId)` 读 `data.roles` |
 
-### 本单定位（暗修不放行）
+### 本单定位（放行闭环，非暗修）
 
-- **修什么**：`RoleVO` 增 `List<PermissionVO> permissions`；`RoleServiceImpl.toVO` 经 `sys_role_permission` 批量填充（列表路径防 N+1，镜像 046 `loadRolesByUserIds` 模式）。
-- **不修什么**：不动 `api/role.ts`（POST→PUT 归 049）；不动 `PermissionAssignDrawer.vue`（消费侧已备好，零前端改动）；不动 `roles/IndexView.vue` 按钮门禁（归 050）；不动 `GET /permissions/tree` 与既有 `/roles` 五映射。**用户侧变化**：抽屉打开能看到已分配勾选（配 048a 的树）；**提交仍 405（049）、按钮无门禁（050）属预期**。
+- **修什么**：① `V8` 迁移补 `user:assign-role`（挂 user_mgmt 模块，镜像 V7 形态）+ROLE_ADMIN 幂等授权+两处计数断言 17→18；② `RoleAssignDrawer` 打开时按 userId 回显已分配角色（消费 046 数据源）+Vitest spec。
+- **不修什么**：不动 `IndexView.vue`（门禁逻辑已有，码到位即放行）；不动 `api/user.ts`/`UserController`（046 已通）；不动 V1-V7 与既有 17 码；不动 `api/role.ts`（归 049）。**用户侧变化**：角色分配按钮对 admin 可见、抽屉打开能看到已分配、提交链路 046 已通——**用户-角色绑定操作端到端可完成**。
 
 ## 需求与架构对照
 
-- §6.2 用户/角色授权链路：角色挂权限为标准语义，本单仅补**读侧回显**数据源，不引入绕过角色的直接授权 → **不冲突**。
-- §3 实体表零变更（RoleVO 加字段 = 046 UserVO.roles、048a PermissionVO.children 双先例）。
-- §4 禁止 N+1：`sys_role_permission` 关联查询列表路径必须批量（`in roleId` 一批 + `permissionMapper.selectBatchIds` 一批），单条详情路径允许一次按 id 查询；代码须有可 grep 的批量形态（冒烟 G2 护栏）。
-- 新增读字段与既有 `/roles` 五映射并存互不替代 → **无架构冲突，无需仲裁**。
+- §6.2 用户获得权限唯一路径=角色 → 绑定可操作性是该语义的核心支撑（报障主诉）→ **强化非冲突**。
+- §3 V8 新增迁移文件零实体表变更；权限码=字典数据。
+- §4 计数断言随种子演进更新（V7 16→17 先例；本次 17→18）。
+- §6 所有管理接口需要认证+授权判定以数据库权限码为准 → 本单补齐缺失权限码，**恰是规范要求的收口**。
+- 无架构冲突，无需仲裁。
 
 ## 验收标准（TDD 驱动）
 
-- [x] AC1 — 角色权限回显：`GET /api/v1/roles/{id}`（登录 admin，种子 `ROLE_ADMIN` id=1）返回 HTTP 200、`code=0`，`$.data.permissions` 为 JSON **数组**，数组元素含 `code="user:view"` 且元素含 `id`/`code`/`children` 键（PermissionVO 完整形态）；修复前该路径 `$.data.permissions` 键缺失 → RED。← 用例 `RolePermissionsEchoContractTest#角色详情返回已分配权限回显`
-- [x] AC2 — 零回归护栏：`GET /api/v1/roles?page=1&size=10` 返回 `code=0`、`data.records` 数组、命中行既有键（id/name/code/status/createTime/updateTime）不变（`permissions` 新增键对分页消费者非破坏）；`POST /api/v1/roles` 创建再清理链路仍 `code=0`（toVO 改动不破坏既有路径）。← 用例 `RolePermissionsEchoContractTest#既有分页与新建角色接口保持可用`
-- [x] AC3 — 空授权角色回显为**空数组**：自建临时角色（`ROLE_REGRESSION_TMP`，必无 `sys_role_permission` 授权；测试库存在其它测试给非 ADMIN/USER 角色授权的污染，种子依赖不稳，故用自建确定性角色）`GET /api/v1/roles/{id}` 返回 `$.data.permissions` 为数组且 `size=0`（空数组而非 null/缺失，前端 `?.length` 判断安全），测试尾部 DELETE 清理。← 用例 `RolePermissionsEchoContractTest#无授权角色回显空权限数组`
-- [x] AC4 — 冒烟与门禁：`scripts/smoke.sh` 新增 `web-048b` 用例（G1 grep `RoleVO.java` 存在 `List<PermissionVO> permissions` 形态、G2 grep `RoleServiceImpl.java` 存在批量填充形态（`selectBatchIds` 或 `in(...)` 一批）、G3 定向跑 `RolePermissionsEchoContractTest`、G4 grep `PermissionAssignDrawer.vue` 消费 `role.permissions` 形态在场=零前端改动护栏），实现前 G1-G3 RED；冒烟总数 72→73、❌ 恰 4（model-008/010、roles-001/002）零新增；门禁五线基线对照零新增（mvn 165→≈167=+2 契约方法、前端三线=基线零前端改动）。← 用例 `AC4 ← 用例 门禁五线 + 冒烟全量`
+- [ ] AC1 — 种子迁移与计数：`V8__seed_user_assign_role_permission.sql` 存在且含 `user:assign-role`、归属 `user_mgmt`、`ROLE_ADMIN` 幂等授权（`INSERT IGNORE`）形态；`SeedDataIntegrationTest` 计数断言更新为 `sys_permission` **18** 行且 `ROLE_ADMIN` 关联 **18** 权限——修复前断言 17 → RED（`expected: <18> but was: <17>`）。迁移应用后该方法内计数断言全过（方法整体仍因预存 22≠2 失败属 veto-6 基线豁免，GREEN 判定=fail 信息收敛至仅 `sys_role 2 行 ==> expected: <2> but was: <22>`）。← 用例 `SeedDataIntegrationTest#核心实体数据存在且字段正确`（断言更新）
+- [ ] AC2 — me 放行面：`AuthControllerTest#meReturnsUserRolesPermissions` 断言更新为 admin 权限集合 **18** 个且 `contains("user:assign-role")`——修复前 17 → RED；GREEN 后该测试全绿（me 端点真实返回新码=按钮门禁 `hasPermission('user:assign-role')` 的放行数据源）。← 用例 `AuthControllerTest#meReturnsUserRolesPermissions`
+- [ ] AC3 — 抽屉回显：`RoleAssignDrawer.spec.ts` 断言打开（`visible=true`+`userId=1`）后调用 `userApi.getById(1)` 且 `assignedRoleIds` 初始化为返回角色的 id 列表（如 mock `roles=[{id:2,...}]` → `[2]`）——修复前 watch 硬编码 `[]` 不调 getById → RED。← 用例 `RoleAssignDrawer.spec.ts#打开抽屉时按userId回显已分配角色`
+- [ ] AC4 — 冒烟与门禁：`scripts/smoke.sh` 新增 `web-047` 用例（G1 grep V8 迁移 `user:assign-role`+`user_mgmt` 形态、G2 grep `RoleAssignDrawer.vue` 存在 `userApi.getById` 回显形态、G3 定向跑 `AuthControllerTest#meReturnsUserRolesPermissions`、G4 定向跑 `RoleAssignDrawer.spec.ts` vitest），实现前 G1-G3 RED；冒烟总数 73→74、❌ 恰 4（model-008/010、roles-001/002）零新增；门禁五线基线对照零新增（mvn 168 用例数不变=计数断言修改不加方法、前端 test 文件 39→40 且新增 spec 通过）。← 用例 `AC4 ← 用例 门禁五线 + 冒烟全量`
 
-### AC1 — 角色详情权限回显
+### AC1 — V8 迁移与计数断言
 
-**前置**：种子 ROLE_ADMIN id=1 已被 V6/V7 幂等授权 17 权限码。
+**步骤与期望**：Generator 先改 `SeedDataIntegrationTest` 两处断言 17→18（:111 permCount、:145 adminRolePermCount）+注释同步 → 定向跑 RED（`expected: <18> but was: <17>`）；实现=V8 迁移（`INSERT IGNORE` 权限+授权，幂等可重复）；迁移在测试库应用后断言过（方法整体仍 22≠2 基线红）。
 
-**步骤与期望**：契约测试 MockMvc 登录 admin，`GET /api/v1/roles/1` → HTTP 200、`$.code=0`、`$.data.permissions` isArray、`$.data.permissions[?(@.code=='user:view')]` 非空、命中元素含 id/code/children 键。修复前 jsonPath 取 `$.data.permissions` 抛 `No value at JSON path` → **RED**。
+**用例**：`AC1 ← 用例 SeedDataIntegrationTest#核心实体数据存在且字段正确`
 
-**用例**：`AC1 ← 用例 RolePermissionsEchoContractTest#角色详情返回已分配权限回显`
+### AC2 — me 端点含新码
 
-### AC2 — 既有角色接口零回归
+**步骤与期望**：先改 `AuthControllerTest#meReturnsUserRolesPermissions`（size 17→18+`contains("user:assign-role")`+注释）→ RED；V8 应用后 me 返回 18 码含新码 → 绿。
 
-**步骤与期望**：独立方法：分页 `GET /api/v1/roles?page=1&size=10` → `$.code=0`、records isArray、首行既有六键在场；幂等清理（`GET /api/v1/roles?code=ROLE_REGRESSION_TMP` 有残留则先 DELETE）后 `POST /api/v1/roles` `{name:"回归临时角色", code:"ROLE_REGRESSION_TMP", status:1}` → `code=0` 且返回 data 含新 id（本方法不断言 `permissions` 键，保持实现前后皆绿的纯护栏），测试尾部经 `DELETE /api/v1/roles/{id}` 清理。基线护栏（实现前后皆绿）。
+**用例**：`AC2 ← 用例 AuthControllerTest#meReturnsUserRolesPermissions`
 
-**用例**：`AC2 ← 用例 RolePermissionsEchoContractTest#既有分页与新建角色接口保持可用`
+### AC3 — 抽屉按 userId 回显
 
-### AC3 — 无授权角色空数组
+**步骤与期望**：新建 `RoleAssignDrawer.spec.ts`（mock `@/api/user` 与 `@/api/role`），mount 设 `userId=1`+`visible=true`，flush 后断言 `userApi.getById` 被调用且已分配区含 mock 角色 id；修复前（watch 仅 `assignedRoleIds=[]`+fetchRoles）getById 未被调 → RED。
 
-**步骤与期望**：独立方法：幂等清理后 POST 建临时角色 `ROLE_REGRESSION_TMP`（必无授权；种子角色因测试库存在其它测试给非 ADMIN/USER 角色授权的污染不稳），`GET /api/v1/roles/{newId}` → `$.code=0`、`$.data.permissions` isArray 且 size=0，finally DELETE 清理。
+**用例**：`AC3 ← 用例 RoleAssignDrawer.spec.ts#打开抽屉时按userId回显已分配角色`
 
-**用例**：`AC3 ← 用例 RolePermissionsEchoContractTest#无授权角色回显空权限数组`
+### AC4 — 冒烟 web-047 与门禁总账
 
-### AC4 — 冒烟 web-048b 与门禁总账
-
-**步骤与期望**：smoke 新增 web-048b（G1-G4 以 Generator 实际写法钉死）；实现前 G1/G2/G3 RED。五线亲跑基线对照。
+**步骤与期望**：smoke 新增 web-047（G1-G4）；实现前 G1/G2/G3 RED。五线亲跑基线对照。
 
 **用例**：`AC4 ← 用例 门禁五线 + 冒烟全量`
 
 ## 测试清单
 
-> TDD 载体：契约测试类先于产品改动写出（AC1/AC3 无 `$.data.permissions` 键天然 RED）；冒烟用例体首跑 RED。
+> TDD 载体：计数断言与 me 断言先改先 RED；spec 先于组件改动写出 RED；冒烟用例体首跑 RED。
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | RolePermissionsEchoContractTest#角色详情返回已分配权限回显 | AC1 | ✅ RED(No value)→GREEN 3/3 |
-| 2 | RolePermissionsEchoContractTest#既有分页与新建角色接口保持可用 | AC2 | ✅ 绿（实现前后皆绿） |
-| 3 | RolePermissionsEchoContractTest#无授权角色回显空权限数组 | AC3 | ✅ RED(No value)→GREEN 3/3 |
-| 4 | smoke web-048b 用例体首跑 + 门禁五线 + 冒烟全量 | AC4 | ✅ RED(EXIT=1)→GREEN 73=67✅+4❌+2⏭️ |
+| 1 | SeedDataIntegrationTest#核心实体数据存在且字段正确（断言 17→18） | AC1 | 待 RED→GREEN（方法整体 22≠2 基线红豁免，计数断言须过） |
+| 2 | AuthControllerTest#meReturnsUserRolesPermissions（18+contains 新码） | AC2 | 待 RED→GREEN |
+| 3 | RoleAssignDrawer.spec.ts#打开抽屉时按userId回显已分配角色 | AC3 | 待 RED→GREEN |
+| 4 | smoke web-047 用例体首跑 + 门禁五线 + 冒烟全量 | AC4 | 待 RED EXIT=1→GREEN；冒烟 74=68✅+4❌+2⏭️ |
 
 ## RED 证据
 
-> Generator 于任何修改动作前执行测试清单并粘贴实证（契约类首跑、冒烟 web-048b 用例体首跑）。
+> Generator 于任何修改动作前执行测试清单并粘贴实证。
 
 ```text
-[RED] 契约类首跑（mvn -q -Dtest=RolePermissionsEchoContractTest test，2026-10-13）：
-  Tests run: 3, Failures: 2, Errors: 0, Skipped: 0
-  [ERROR] RolePermissionsEchoContractTest.roleDetailReturnsAssignedPermissionsEcho:93
-          java.lang.AssertionError: No value at JSON path "$.data.permissions"   ← AC1 RED（ROLE_ADMIN 详情无 permissions 键）
-  [ERROR] RolePermissionsEchoContractTest.roleWithoutGrantEchoesEmptyPermissionsArray:201
-          java.lang.AssertionError: No value at JSON path "$.data.permissions"   ← AC3 RED（无授权角色同）
-  AC2 existingPagedAndCreateRoleEndpointsRemainAvailable 过（基线护栏，实现前后皆绿）
-[RED] 冒烟 web-048b 用例体首跑（G1 后短路，EXIT=1）：
-  G1 FAIL (预期 RED) ← RoleVO 无 List<PermissionVO> permissions
-  （G2 loadPermissionsByRoleIds 不存在同红；G4 PermissionAssignDrawer res.data.permissions 在场=绿护栏）
-[GREEN] 契约类定向（mvn -q -Dtest=RolePermissionsEchoContractTest test，2026-10-13）：Tests run: 3, Failures: 0, Errors: 0
-  （AC1 ROLE_ADMIN 详情 permissions 含 user:view+id/children；AC2 分页六键+POST/DELETE 链路；AC3 自建临时角色 permissions=[]）
-[GREEN] 冒烟 web-048b 用例体（G1 RoleVO permissions + G2 loadPermissionsByRoleIds+selectBatchIds 批量形态 + G3 定向 + G4 抽屉消费契约）：✅
-GREEN 期间两处测试口径修正（实现行为不变）：
-  ① AC1 filter 后 .id[0] Jayway 语法不支持 → 改 Java 断言遍历节点断言 id/children；
-  ② AC3 种子依赖被测试库污染（其它测试给非 ADMIN/USER 角色授权过 user:view）→ 改自建临时角色 ROLE_REGRESSION_TMP 确定性断言空数组，免迁移种子面漂移。
+[RED] 证据槽 — 待 Generator 填写
 ```
 
 ## 门禁与冒烟记录
 
-> Generator 亲测填写，Evaluator 不采信自述须亲跑。基线口径（2026-10-13 sprint-092 评审实测）。
+> Generator 亲测填写，Evaluator 不采信自述须亲跑。基线口径（2026-10-13 sprint-093 评审实测）。
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 165 用例 4F+2E（五类：DataSourceConfigBinding×2、RoleController 409、SeedData 22≠2、TestLayers+TestUtils 2E，veto-6 豁免） | 168=165+3；4F+2E 五类逐条一致（DataSourceConfigBinding×2、RoleController 409、SeedData 22≠2、TestLayers+TestUtils 2E），零新增 | ✅ |
-| `npm run lint` | EXIT=0，0 errors / 165 warnings | 0 errors / 165 warnings | ✅ |
-| `npm run test` | 39 文件 321/321 | 39 文件 321/321 | ✅ |
-| `npm run build` | ✓（~17.5s） | ✓ built in 17.51s | ✅ |
-| `bash scripts/smoke.sh` | 72=66✅+4❌+2⏭️ → 本单 +1=73，❌恰=model-008/010、roles-001/002 零新增 | 73=67✅+4❌+2⏭️；❌恰=model-008/010、roles-001/002 与基线逐一吻合，✅含 web-048b | ✅ |
+| 后端 `mvn -q verify` | 168 用例 4F+2E（五类 veto-6 豁免） | 待填（本单计数断言修改不加方法→预期 168 不变、4F+2E 逐条一致） | 待验 |
+| `npm run lint` | EXIT=0，0 errors / 165 warnings | 待填 | 待验 |
+| `npm run test` | 39 文件 321/321 | 待填（预期 40 文件=321+新增 spec） | 待验 |
+| `npm run build` | ✓（~17.6s） | 待填 | 待验 |
+| `bash scripts/smoke.sh` | 73=67✅+4❌+2⏭️ → 本单 +1=74，❌恰零新增 | 待填（预期 74=68✅+4❌+2⏭️，✅含 web-047） | 待验 |
 
 ## 实现说明
 
-**实现要点**：先写契约测试类三方法（AC1/AC3 天然 RED、AC2 护栏）+ smoke 用例体留 RED 实证；后端 `RoleVO` 加 `List<PermissionVO> permissions`（注意 import com.authcore.dto.permission.PermissionVO——跨包 dto 引用，046 UserVO 引 RoleVO 同款先例）；`RoleServiceImpl` 组装：
-- **单条路径**（getRoleById/createRole/updateRole）：按 roleId 查 `sys_role_permission` 一批 + `permissionMapper.selectBatchIds` 一批，或一次 join/两次批量；
-- **列表路径**（queryRoles convert）：先收集页内 roleIds → `rolePermissionMapper.selectList(in roleId 一批)` → `permissionMapper.selectBatchIds(permIds 一批)` → 内存组装 map → toVO 带参；
-- 可与 046 `loadRolesByUserIds`（UserServiceImpl）对照同构；空授权 → `List.of()`（空数组非 null）。
-- **分工提醒**：G2 批量形态可 grep `selectBatchIds`（RoleServiceImpl）；若实现选择其它批量 API（如一次 selectList in 查询后仅两次总查询），G2 以实际形态钉死但必须能区分「批量」与「循环单查」。
+**实现要点**：
+1. **先改断言留 RED**：SeedDataIntegrationTest 两处 17→18+注释；AuthControllerTest :221 17→18+`contains("user:assign-role")` 断言+:170/:226 注释同步；定向跑留证。
+2. **V8 迁移**（镜像 V7 形态）：`INSERT IGNORE INTO sys_permission (module_id, name, code, description)` 子查询挂 `user_mgmt` 模块 + `INSERT IGNORE INTO sys_role_permission` 子查询挂 `ROLE_ADMIN`；注释注明用户报障 web/047 与幂等性。
+3. **抽屉回显**：`import { userApi } from '@/api/user'`；新增 `fetchAssignedRoles()`（getById→`assignedRoleIds = data.roles?.map(r=>r.id) ?? []`）；watch visible 分支在 `fetchRoles()` 前后调用（顺序无硬依赖，建议先回显后列表）；`availableRoles` 过滤逻辑已兼容 assigned 在列表中的展示（filteredAssignedRoles 读 assignedRoleIds ∩ availableRoles）——回显后已分配区即渲染，**无需改 computed**。
+4. **spec**：`vi.mock('@/api/user')`+`vi.mock('@/api/role')`，mount + `props:{visible:true, userId:1}`，`await flushPromises`，断言 getById 调用与勾选初始值。
+5. G3 注意：`AuthControllerTest#meReturnsUserRolesPermissions` 需登录态（测试类内自洽）；G4 vitest 定向 `npx vitest run src/views/users/RoleAssignDrawer.spec.ts`。
 
-**超限熔断**：实际业务文件 >6、需改迁移/Drawer/IndexView/api/role.ts/门禁/既有 `/roles` 五映射、非过期断言连锁失败 → 停止回报回 Planner。
+**readOnly 遗留（连续两单扣分警示）**：`RoleServiceImpl`/`PermissionService` 查询方法 `readOnly=true` 补标不在本单（文件数 6 顶格，且与放行闭环主题无关）；挂起区已登记，**049 规划时显式列入交付物**（049 预估重核）。
 
-**不动清单**：V1-V7 迁移与计数断言（V8 归 047、V9 归 050）；`api/role.ts`（归 049）；`PermissionAssignDrawer.vue`、`roles/IndexView.vue`（归 049/050）；`GET /permissions/tree` 与 `/roles` 既有五映射；`types/` 前端类型；冒烟既有用例与 ❌ 四条；web/045/047/049/050/051 预留；any 165；预存 application 模板两文件（D/?? 重命名非本单动作，不混提交）。
+**超限熔断**：实际业务文件 >6、需改 IndexView/api/user.ts/UserController/既有 V1-V7/其它 Spec 计数类、me 测试 GREEN 后仍红 → 停止回报回 Planner。
 
-## 交付物（4 业务文件）
+**不动清单**：`users/IndexView.vue`（门禁已有，:123 canAssignRole 逻辑零改）；`api/user.ts`/`UserController`（046 已通）；`V1-V7` 迁移；`api/role.ts`/`PermissionAssignDrawer`/`roles/*`（归 049/050）；`RoleServiceImpl` readOnly（挂起区，归 049）；冒烟既有用例与 ❌ 四条；web/045/049/050/051 预留；any 165；工作区预存 application 模板变更（用户手工 `a4bf05b` 及未提交 D 态，不混提交）。
 
-1. `backend/src/main/java/com/authcore/dto/role/RoleVO.java` — +`List<PermissionVO> permissions`
-2. `backend/src/main/java/com/authcore/service/impl/RoleServiceImpl.java` — toVO 批量填充（列表批量/单条按需）
-3. `backend/src/test/java/com/authcore/controller/RolePermissionsEchoContractTest.java` — AC1/AC2/AC3 三方法
-4. `scripts/smoke.sh` — 新增 web-048b 用例（AC4）
-5. 文档回写：task/session/iteration/registry 四件
+## 交付物（6 业务文件）
+
+1. `backend/src/main/resources/db/migration/V8__seed_user_assign_role_permission.sql` — 新迁移（码+授权）
+2. `backend/src/test/java/com/authcore/mapper/SeedDataIntegrationTest.java` — 计数 17→18×2+注释
+3. `backend/src/test/java/com/authcore/controller/AuthControllerTest.java` — me 18+contains 新码+注释
+4. `frontend/src/views/users/RoleAssignDrawer.vue` — +fetchAssignedRoles 回显
+5. `frontend/src/views/users/RoleAssignDrawer.spec.ts` — 回显 spec（新）
+6. `scripts/smoke.sh` — +web-047 用例
+7. 文档回写：task/session/iteration/registry 四件（registry **新建 web/047 行** ⬜→🔄）
 
 ### 新增
-- `backend/src/test/java/com/authcore/controller/RolePermissionsEchoContractTest.java`
+- `backend/src/main/resources/db/migration/V8__seed_user_assign_role_permission.sql`
+- `frontend/src/views/users/RoleAssignDrawer.spec.ts`
 
 ### 修改
-- `backend/src/main/java/com/authcore/dto/role/RoleVO.java`
-- `backend/src/main/java/com/authcore/service/impl/RoleServiceImpl.java`
+- `backend/src/test/java/com/authcore/mapper/SeedDataIntegrationTest.java`
+- `backend/src/test/java/com/authcore/controller/AuthControllerTest.java`
+- `frontend/src/views/users/RoleAssignDrawer.vue`
 - `scripts/smoke.sh`
 
 ### 删除
@@ -157,16 +148,8 @@ GREEN 期间两处测试口径修正（实现行为不变）：
 
 ### 变更计数
 
-业务文件 **4 顶格**；前端（含 Drawer/IndexView/api/role.ts）、迁移、`GET /permissions/tree`、`/roles` 既有五映射零改动。
+业务文件 **6 顶格**；后端主代码零改动（纯迁移+测试断言+前端）；IndexView/api/UserController/V1-V7/RoleServiceImpl 零改动。
 
 ## 评审意见
 
-### 第 1 轮评审（sprint-093，2026-10-13）：✅ 通过 8.5/10
-
-- **验收标准**：AC1-4 亲核全满足（契约类 3/3、冒烟 73=67✅+4❌+2⏭️ ❌恰=基线四条、五线亲测达标）。
-- **一票否决**：六项零命中（mvn 168=4F+2E 五类 veto-6 豁免基线；前端 0E|165W/321/321/✓17.59s；冒烟增量 +15 行 web-048b 无删除；提交序 `3b0a75c test`→`34d3d35 feat` 物证先行）。
-- **评分**：功能正确性 9、代码质量 8、规范遵守 8、TDD 执行度 8.5、安全性 9，均分 **8.5**。
-- **失分点（不退回，入改进建议）**：① 新增查询路径未标 `@Transactional(readOnly=true)`（§3，与 048a 同款且改进建议登记后本单未修——**重复性失分**）；② `createRole` 新建后调 `loadPermissionsByRoleIds` 必空两查（微优化）；③ `/roles/{id}` 缺未认证/无权限契约用例（同 048a 四类覆盖口径）。
-- **范围**：Generator 交付 8 文件=变更清单如实；`a4bf05b`（application.template.yml）为**用户手工提交**（laazua 15:09 独立 message），非 Generator 夹带、不计清单失实；该文件非 Spring 加载名→门禁零影响。
-- **亮点**：`loadPermissionsByRoleIds` 批量两查防 N+1（吸取 048a 扣分教训，G2 可 grep）；RoleVO 6 参重载跨 auth/user 域 3 构造点零连锁；AC3 自建临时角色解决测试库授权污染（实证果断）。
-- **暗修口径执行**：提交 405 归 049、按钮门禁归 050 未判缺陷。
+（待 Evaluator 评审）
