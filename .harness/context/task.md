@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/048**（新注册，拆分总盘后续②提前——用户报障直提） |
 | 功能点名称 | 角色-权限绑定·数据源暗修（GET /permissions/tree 新增 + RoleVO.permissions 回显字段） |
-| 状态 | **PLANNED** |
+| 状态 | **BLOCKED**（Generator 超限熔断 2026-10-12：实际 8 文件 >6，Planner 预估漏算 Service 层两文件与 PermissionVO children 载体；重切分建议 048a=tree 数据源 6 文件顶格 / 048b=RoleVO 回显 4 文件，见 session-state 挂起区；R1 平铺方案定夺在案） |
 | 创建时间 | 2026-10-12 |
 
 ## 前置依赖
