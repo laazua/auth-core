@@ -577,6 +577,24 @@ smoke_case "web/048b 角色权限回显与批量填充契约定向测试" bash -
   # G4 抽屉消费侧 role.permissions 契约在场（零前端改动护栏）
   grep -q 'res.data.permissions' \$DRAWER || exit 1
 "
+# web/047：用户-角色放行闭环（sprint-094 本单追加：V8 user:assign-role 形态 + 抽屉 getById 回显 + me 契约定向 + 回显 spec 定向；修复前 G1-G3 必红）
+smoke_case "web/047 用户角色放行闭环与回显契约定向测试" bash -c "
+  V8=/opt/codes/auth-core/backend/src/main/resources/db/migration/V8__seed_user_assign_role_permission.sql
+  DRAWER=/opt/codes/auth-core/frontend/src/views/users/RoleAssignDrawer.vue
+  # G1 V8 迁移存在且含 user:assign-role 挂 user_mgmt 与 ROLE_ADMIN 授权形态
+  grep -q 'user:assign-role' \$V8 || exit 1
+  grep -q \"code = 'user_mgmt'\" \$V8 || exit 1
+  grep -q \"r.code = 'ROLE_ADMIN'\" \$V8 || exit 1
+  grep -q 'INSERT IGNORE' \$V8 || exit 1
+  # G2 抽屉存在 userApi.getById 回显形态
+  grep -q 'userApi.getById' \$DRAWER || exit 1
+  # G3 me 端点含 user:assign-role 定向通过（exit 码判定）
+  mvn -q -f /opt/codes/auth-core/backend/pom.xml test -Dtest='AuthControllerTest#meReturnsUserRolesPermissions' -DfailIfNoTests=false >/tmp/smoke-web-047.log 2>&1 || exit 1
+  # G4 抽屉回显 spec 定向通过
+  cd /opt/codes/auth-core/frontend || exit 1
+  npx vitest run src/views/users/RoleAssignDrawer.spec.ts >/tmp/smoke-web-047-fe.log 2>&1 || exit 1
+  grep -qE 'Tests  [0-9]+ passed' /tmp/smoke-web-047-fe.log || exit 1
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

@@ -167,7 +167,7 @@ class AuthControllerTest {
     /**
      * AC1 (auth/004): 认证用户调用 /me 返回完整信息。
      * Given 有效 JWT，GET /api/v1/auth/me
-     * Then status=200、code=0、data 包含 user、roles、permissions（17 个权限码）
+     * Then status=200、code=0、data 包含 user、roles、permissions（18 个权限码，含 user:assign-role）
      */
     @Test
     @DisplayName("认证用户调用 /me 返回用户、角色、权限")
@@ -210,7 +210,7 @@ class AuthControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        // 验证权限数量为 16 个（admin 角色关联全部权限：4模块×4权限）
+        // 验证权限数量为 18 个（admin 角色关联全部权限：4模块×4权限+module:toggle-status+user:assign-role）
         var meRoot = mapper.readTree(meResponse);
         List<String> permissions = mapper.convertValue(
                 meRoot.path("data").path("permissions"),
@@ -218,7 +218,9 @@ class AuthControllerTest {
         );
         assertTrue(permissions.contains("module:toggle-status"),
                 "admin 权限集合应含 module:toggle-status（web/043 模块页状态切换按钮门禁数据源）");
-        assertEquals(17, permissions.size(), "admin 角色应关联 17 个权限");
+        assertTrue(permissions.contains("user:assign-role"),
+                "admin 权限集合应含 user:assign-role（web/047 角色分配按钮门禁数据源）");
+        assertEquals(18, permissions.size(), "admin 角色应关联 18 个权限");
     }
 
     /**
