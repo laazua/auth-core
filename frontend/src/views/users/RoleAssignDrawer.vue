@@ -2,6 +2,7 @@
   import { ref, computed, watch } from 'vue';
   import { ElMessage } from 'element-plus';
   import { roleApi } from '@/api/role';
+  import { userApi } from '@/api/user';
   import type { RoleVO } from '@/types/role';
   import BaseButton from '@/components/BaseButton.vue';
   import BaseInput from '@/components/BaseInput.vue';
@@ -53,6 +54,20 @@
         (r.name.toLowerCase().includes(query) || r.code.toLowerCase().includes(query))
     );
   });
+
+  const fetchAssignedRoles = async () => {
+    if (!props.userId) return;
+    try {
+      const res = await userApi.getById(props.userId);
+      if (res.code === 0) {
+        assignedRoleIds.value = (res.data.roles ?? []).map((r) => r.id);
+      } else {
+        ElMessage.error(res.message || '获取已分配角色失败');
+      }
+    } catch (error: any) {
+      ElMessage.error(error.message || '获取已分配角色失败');
+    }
+  };
 
   const fetchRoles = async () => {
     if (!props.userId) return;
@@ -141,6 +156,7 @@
         assignedRoleIds.value = [];
         searchQuery.value = '';
         allSelected.value = false;
+        await fetchAssignedRoles();
         await fetchRoles();
       }
     },
