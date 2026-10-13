@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-10-12: Planner — kickoff sprint-092（web/048a，4 条验收标准：web/048 超限熔断重切第一段=tree 数据源（用户 400/500 主诉），6 文件顶格（Controller+PermissionService 接口+Impl+PermissionVO(+children)+契约类三方法+smoke）；R1 平铺定夺在案（模块父节点 id 值域重叠+check-change 父 id 污染 049 两硬伤）、children 元素类型=List<PermissionVO> 自引用不新建节点 VO 保 6 口径；048b=RoleVO 回显 4 文件预留；回显空/提交 405/门禁归 048b/049/050，前端零改动）
+
 - 2026-10-12: Planner — kickoff sprint-091（web/048，4 条验收标准：用户报障「角色 权限分配接口报错」+9998 日志直提（`GET /permissions/tree` 落 `/{id}` MethodArgumentTypeMismatchException("tree") 500）；取证=tree 500 复现+`/grouped` 返回 Map<ModuleVO.toString,List> 对象键串不可被 PermissionTreeNode 消费+RoleVO 无 permissions+前端消费侧已就位（api/permission.ts:15-16+PermissionAssignDrawer.vue:73）=046 同构暗修模式；**048 提前于 047 顺延**（不同链路无依赖，登记挂起区）；6 文件顶格不拆分（Controller+RoleVO+RoleServiceImpl+两契约类+smoke）、前端零改动（R4），提交 405 归 049、role:assign-permission 门禁+@PreAuthorize 归 050；R1 tree 形态（模块父+权限 children vs 纯权限平铺）由 Generator 读抽屉 filterNode 钉死）
 
 - 2026-10-12: Evaluator — pass sprint-090（web/046，平均分 9.6/10，五维 9.5/9.5/9.5/10/9.5：4 AC 亲核全满足、RED 独立复现 worktree@f0f128b（补 application.yml）→ 后端 2 failed（$.data.roles 缺失×2）+前端 put calls=0+冒烟 G1 拒绝、门禁五线亲跑=基线（mvn 162 4F+2E 五类逐条、lint 0E|165W、test 321/321、build ✓17.67s）、冒烟亲跑 71=65✅+4❌恰基线（model-008/010、roles-001/002）+2⏭️ 零新增且 web/046 ✅、增量 +1 smoke_case 取证（既有用例零删除）、变更 10 文件=清单零夹带（两段式 `f0f128b test`→`16893bd feat`）、六否决零命中）
