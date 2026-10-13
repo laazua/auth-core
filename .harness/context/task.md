@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/048a**（web/048 拆分第一段——超限熔断重切，登记见 session-state 挂起区 2026-10-12 Generator 条） |
 | 功能点名称 | 角色-权限绑定·tree 数据源暗修（GET /permissions/tree 新增，修「角色 权限分配接口报错」主诉 400/500） |
-| 状态 | **PLANNED** |
+| 状态 | **AWAITING_REVIEW**（Generator 九步完成 2026-10-13，移交 Evaluator） |
 | 创建时间 | 2026-10-12 |
 
 ## 前置依赖
@@ -56,10 +56,10 @@
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — tree 接口数据源：`GET /api/v1/permissions/tree`（登录 admin）返回 HTTP 200、`code=0` 且 `data` 为 JSON 数组，数组元素含 `id`/`code`/`children` 三键（`children` 为数组），存在元素 `code="user:view"` 且其 `moduleId` 非空；修复前该路径 500（落 `/{id}` Long 转换失败）→ RED。← 用例 `PermissionTreeContractTest#树接口返回可消费结构且含种子权限`
-- [ ] AC2 — 零回归护栏：`GET /api/v1/permissions?page=1&size=10` 返回 `code=0`、`data.records` 数组、命中行含 `code="user:view"` 且既有键（id/moduleId/name/code/description/createTime/updateTime）不变（`children` 新增键对分页消费者非破坏）；`GET /api/v1/permissions/grouped` 返回 `code=0` 且为对象结构。← 用例 `PermissionTreeContractTest#既有分页与grouped接口保持可用`
-- [ ] AC3 — 平铺结构契约：`data` 数组长度=种子权限总数（≥17）、全部节点 `children` 均为空数组、`id` 全局唯一（防模块父节点方案的 id 值域重叠缺陷回归）；节点按 `moduleId,id` 升序排列。← 用例 `PermissionTreeContractTest#树为权限平铺且children为空与id唯一`
-- [ ] AC4 — 冒烟与门禁：`scripts/smoke.sh` 新增 `web-048a` 用例（G1 grep `PermissionController.java` 存在 `/tree` 映射形态、G2 grep `PermissionVO.java` 存在 `children` 字段形态、G3 定向跑 `PermissionTreeContractTest`、G4 grep `api/permission.ts` getTree 形态在场），实现前 G1-G3 RED；冒烟总数 71→72、❌ 恰 4（model-008/010、roles-001/002）零新增；门禁五线基线对照零新增（mvn 162→165 量级、前端三线=基线零前端改动）。← 用例 `AC4 ← 用例 门禁五线 + 冒烟全量`
+- [x] AC1 — tree 接口数据源：`GET /api/v1/permissions/tree`（登录 admin）返回 HTTP 200、`code=0` 且 `data` 为 JSON 数组，数组元素含 `id`/`code`/`children` 三键（`children` 为数组），存在元素 `code="user:view"` 且其 `moduleId` 非空；修复前该路径 500（落 `/{id}` Long 转换失败）→ RED。← 用例 `PermissionTreeContractTest#树接口返回可消费结构且含种子权限`
+- [x] AC2 — 零回归护栏：`GET /api/v1/permissions?page=1&size=10` 返回 `code=0`、`data.records` 数组、命中行含 `code="user:view"` 且既有键（id/moduleId/name/code/description/createTime/updateTime）不变（`children` 新增键对分页消费者非破坏）；`GET /api/v1/permissions/grouped` 返回 `code=0` 且为对象结构。← 用例 `PermissionTreeContractTest#既有分页与grouped接口保持可用`
+- [x] AC3 — 平铺结构契约：`data` 数组长度=种子权限总数（≥17）、全部节点 `children` 均为空数组、`id` 全局唯一（防模块父节点方案的 id 值域重叠缺陷回归）；节点按 `moduleId,id` 升序排列。← 用例 `PermissionTreeContractTest#树为权限平铺且children为空与id唯一`
+- [x] AC4 — 冒烟与门禁：`scripts/smoke.sh` 新增 `web-048a` 用例（G1 grep `PermissionController.java` 存在 `/tree` 映射形态、G2 grep `PermissionVO.java` 存在 `children` 字段形态、G3 定向跑 `PermissionTreeContractTest`、G4 grep `api/permission.ts` getTree 形态在场），实现前 G1-G3 RED；冒烟总数 71→72、❌ 恰 4（model-008/010、roles-001/002）零新增；门禁五线基线对照零新增（mvn 162→165 量级、前端三线=基线零前端改动）。← 用例 `AC4 ← 用例 门禁五线 + 冒烟全量`
 
 ### AC1 — GET /permissions/tree
 
@@ -93,10 +93,10 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | PermissionTreeContractTest#树接口返回可消费结构且含种子权限 | AC1 | 待 RED→GREEN |
-| 2 | PermissionTreeContractTest#既有分页与grouped接口保持可用 | AC2 | 基线护栏（实现前后皆绿） |
-| 3 | PermissionTreeContractTest#树为权限平铺且children为空与id唯一 | AC3 | 待 RED→GREEN |
-| 4 | smoke web-048a 用例体首跑 + 门禁五线 + 冒烟全量 | AC4 | 待 RED EXIT=1→GREEN；冒烟 72=66✅+4❌+2⏭️ |
+| 1 | PermissionTreeContractTest#树接口返回可消费结构且含种子权限 | AC1 | ✅ RED(500)→GREEN 3/3 |
+| 2 | PermissionTreeContractTest#既有分页与grouped接口保持可用 | AC2 | ✅ 绿（实现前后皆绿） |
+| 3 | PermissionTreeContractTest#树为权限平铺且children为空与id唯一 | AC3 | ✅ RED(500)→GREEN 3/3 |
+| 4 | smoke web-048a 用例体首跑 + 门禁五线 + 冒烟全量 | AC4 | ✅ RED(EXIT=1)→GREEN 72=66✅+4❌+2⏭️ |
 
 ## RED 证据
 
@@ -115,17 +115,27 @@
   （G2 PermissionVO 无 children、G3 契约 2F 同红；G4 前端 api/permission.ts permissions/tree 在场=绿护栏）
 ```
 
+## GREEN 证据
+
+```text
+[GREEN] 契约类定向（mvn -q -Dtest=PermissionTreeContractTest test，2026-10-13）：EXIT=0，3/3 通过
+  （AC1 tree 200+data 数组+user:view 命中、AC2 分页七键+grouped 对象、AC3 平铺 ≥17/children 空/id 唯一/排序）
+[GREEN] 冒烟 web-048a 用例体（G1 /tree 映射 + G2 children 字段 + G3 定向 + G4 前端契约）：✅
+[GREEN] model-009 体（PermissionServiceInterfaceSpec 计数 6→7 同步后）：11/11 通过
+说明：PermissionServiceInterfaceSpec 为既有结构计数断言，随 Planner 交付物 #2 接口正当扩展过期，同步 7+listAllForTree 属计数口径更新（非业务语义破坏）；PermissionVO 用 8 参重载构造零连锁（ModuleServiceImpl:199 构造点零改动，守住域边界）。
+```
+
 ## 门禁与冒烟记录
 
 > Generator 亲测填写，Evaluator 不采信自述须亲跑。基线口径（2026-10-12 sprint-090 评审实测）。
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 162 用例 4F+2E（五类：DataSourceConfigBinding×2、RoleController 409、SeedData 22≠2、TestLayers+TestUtils 2E，veto-6 豁免） | 待填（预期 165=162+本单 3 方法，4F+2E 五类逐条一致） | 待验 |
-| `npm run lint` | EXIT=0，0 errors / 165 warnings | 待填（本单零前端代码预期=基线） | 待验 |
-| `npm run test` | 39 文件 321/321 | 待填（零前端改动预期=321/321） | 待验 |
-| `npm run build` | ✓（~18s） | 待填 | 待验 |
-| `bash scripts/smoke.sh` | 71=65✅+4❌+2⏭️ → 本单 +1=72，❌恰=model-008/010、roles-001/002 零新增 | 待填（预期 72=66✅+4❌+2⏭️，✅含 web-048a） | 待验 |
+| 后端 `mvn -q verify` | 162 用例 4F+2E（五类：DataSourceConfigBinding×2、RoleController 409、SeedData 22≠2、TestLayers+TestUtils 2E，veto-6 豁免） | 165=162+3；4F+2E 五类逐条一致（DataSourceConfigBinding×2、RoleController 409、SeedData 22≠2、TestLayers+TestUtils 2E），零新增 | ✅ |
+| `npm run lint` | EXIT=0，0 errors / 165 warnings | 0 errors / 165 warnings | ✅ |
+| `npm run test` | 39 文件 321/321 | 39 文件 321/321 | ✅ |
+| `npm run build` | ✓（~18s） | ✓ built in 17.10s | ✅ |
+| `bash scripts/smoke.sh` | 71=65✅+4❌+2⏭️ → 本单 +1=72，❌恰=model-008/010、roles-001/002 零新增 | 72=66✅+4❌+2⏭️；❌恰=model-008/010、roles-001/002 与基线逐一吻合，✅含 web-048a | ✅ |
 
 ## 拆分说明
 

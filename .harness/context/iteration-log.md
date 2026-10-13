@@ -4,6 +4,8 @@
 
 ## 记录
 
+- 2026-10-13: Generator — sprint-092/web-048a 实现完成（TDD：PermissionTreeContractTest 三方法 RED 2F=500 复现用户报障根因 + AC2 护栏绿 + 冒烟 web-048a G1 RED→GREEN 3/3；实现=PermissionVO children 自引用+8 参重载（ModuleServiceImpl:199 零连锁）+ PermissionService.listAllForTree 分层 + Controller GET /tree 委托不动既有五映射；过期断言同步 PermissionServiceInterfaceSpec 6→7；门禁五线 mvn 165/lint 0E|165W/test 321/build ✓/冒烟 72=66✅+4❌(基线吻合)+2⏭️；提交 test:`fdaef61` feat:`f25e532`，移交 Evaluator）
+
 - 2026-10-12: Planner — kickoff sprint-092（web/048a，4 条验收标准：web/048 超限熔断重切第一段=tree 数据源（用户 400/500 主诉），6 文件顶格（Controller+PermissionService 接口+Impl+PermissionVO(+children)+契约类三方法+smoke）；R1 平铺定夺在案（模块父节点 id 值域重叠+check-change 父 id 污染 049 两硬伤）、children 元素类型=List<PermissionVO> 自引用不新建节点 VO 保 6 口径；048b=RoleVO 回显 4 文件预留；回显空/提交 405/门禁归 048b/049/050，前端零改动）
 
 - 2026-10-12: Planner — kickoff sprint-091（web/048，4 条验收标准：用户报障「角色 权限分配接口报错」+9998 日志直提（`GET /permissions/tree` 落 `/{id}` MethodArgumentTypeMismatchException("tree") 500）；取证=tree 500 复现+`/grouped` 返回 Map<ModuleVO.toString,List> 对象键串不可被 PermissionTreeNode 消费+RoleVO 无 permissions+前端消费侧已就位（api/permission.ts:15-16+PermissionAssignDrawer.vue:73）=046 同构暗修模式；**048 提前于 047 顺延**（不同链路无依赖，登记挂起区）；6 文件顶格不拆分（Controller+RoleVO+RoleServiceImpl+两契约类+smoke）、前端零改动（R4），提交 405 归 049、role:assign-permission 门禁+@PreAuthorize 归 050；R1 tree 形态（模块父+权限 children vs 纯权限平铺）由 Generator 读抽屉 filterNode 钉死）

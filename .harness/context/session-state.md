@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🔄 **sprint-092 规划完成（PLANNED，web/048 超限熔断重切 048a）**，移交 Generator
+- 状态: 🟡 **sprint-092 / web/048a 实现完成（AWAITING_REVIEW）**，移交 Evaluator
 - 当前模块: web
 - 当前功能点: web/048a 角色-权限·tree 数据源暗修（用户 400/500 主诉；048b 角色回显预留）
 
 
 ## 下一步动作
-  Generator：读 `.harness/generator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-092 / web/048a）。首个实现要点：先写 `PermissionTreeContractTest` 三方法（AC1 tree 500 天然 RED、AC2 分页+grouped 基线护栏、AC3 平铺结构 RED），留证后实现——`PermissionVO` 加 `List<PermissionVO> children`（自引用不新建节点 VO，保 6 文件口径）+ `PermissionService.listAllForTree()` 接口方法 + `PermissionServiceImpl` 平铺实现（按 moduleId,id 升序、字典小数据 ≤1000 豁免分页注释）+ `PermissionController` 委托 `GET /tree`（§3 三件事，不动既有五映射）；R1 平铺方案定夺在案（禁模块父节点——id 值域重叠+049 提交污染）；严守 R4 前端零改动与不动清单（RoleVO/RoleServiceImpl 归 048b、api/role.ts 归 049、迁移/计数/预存 application 模板两文件）；完成后按门禁五线基线（mvn 162 4F+2E 五类/lint 0E|165W/test 321/321/build ✓/冒烟 71=65✅+4❌+2⏭️，本单 mvn +3=165、前端三线=基线、冒烟 +1=72）自检后置 AWAITING_REVIEW 移交 Evaluator。
+  Evaluator：读 `.harness/evaluator.md` 并严格执行——评审 `.harness/context/task.md`（sprint-092 / web/048a）。**亲跑三项**：① `mvn -q -Dtest=PermissionTreeContractTest test`（3/3 须绿）；② `bash scripts/smoke.sh`（须 72=66✅+4❌+2⏭️，❌恰=model-008/010、roles-001/002 与基线逐一吻合，✅含 web-048a）；③ `mvn -q verify`（165=162+3、4F+2E 五类逐条一致）。暗修口径：回显空归 048b、提交 405 归 049、按钮门禁归 050 勿判缺陷；PermissionServiceInterfaceSpec 6→7 属过期结构计数同步（Planner 交付物 #2 授权接口扩展）非连锁破坏；PermissionVO 8 参重载构造零连锁（ModuleServiceImpl 零改动）。注意 mvn verify 不收 `*Spec` 类（pom 无 surefire include，smoke 用 -Dtest 强拉）。
 
 ## 挂起
 - 2026-10-12: Generator(sprint-091) — **web/048 超限熔断（8 文件 >6，停止回报回 Planner 重切分，零业务代码写入）**：Planner 预估 6 漏算两块——① 分层硬性需 `PermissionService` 接口+`PermissionServiceImpl` 新增 tree 方法（controller 组装违反 §3 三件事）；② AC1 断言 `children` 键需 `PermissionVO` 扩展（PermissionTreeNodeVO 同型且新文件更超）。实际面=Controller+Service接口+ServiceImpl+PermissionVO+RoleVO+RoleServiceImpl+契约类+smoke=**8**。**重切分建议（Planner 执行）**：**048a**（用户主诉 tree 400 先修）=Controller+PermissionService+PermissionServiceImpl+PermissionVO(+children)+PermissionTreeContractTest(AC1+AC3)+smoke=**6 顶格**，AC1/AC3/AC4；**048b**（角色回显）=RoleVO+RoleServiceImpl+RolePermissionsEchoContractTest(AC2)+smoke=**4**，AC2+冒烟。R1 定夺已在案（平铺方案：模块父节点会致 sys_module.id 与 sys_permission.id 值域重叠的 el-tree key 冲突+check-change 回传父 id 污染 049 提交载荷，纯权限平铺 children=[] 按 moduleId,id 排序零冲突）；R2 填充镜像 046 loadRolesByUserIds 模式。048a 前置 046 ✅、048b 前置 048a（无硬依赖可并行但建议序）。
@@ -53,6 +53,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-13: Generator — sprint-092/web-048a 实现完成（RED 2F(500)+冒烟 G1 RED→GREEN 3/3+五线达标：mvn 165=162+3 4F+2E 逐条一致、lint 0E|165W、test 321/321、build ✓17.10s、冒烟 72=66✅+4❌+2⏭️ 基线吻合；PermissionVO 8 参重载零连锁、Spec 计数 6→7 过期同步；提交 test:`fdaef61` feat:`f25e532`；application 模板重命名 D/?? 未混入）
 - 2026-10-12: Planner — kickoff sprint-092（web/048a 角色-权限·tree 数据源暗修，4 条验收标准，048 超限熔断重切（048a=tree 6 顶格/048b=RoleVO 回显 4 预留），R1 平铺定夺与 children 自引用定夺在案，6 文件顶格，前端零改动，回显 048b/提交 405 归 049/门禁归 050）
 - 2026-10-12: Generator — 熔断 sprint-091（web/048，超限 8>6 零业务写入，Planner 预估漏算 PermissionService 接口+Impl 与 PermissionVO children 载体，task 置 BLOCKED，重切分建议 048a/048b 登记挂起区 `6b4b52e`）
 - 2026-10-12: Planner — kickoff sprint-091（web/048 角色-权限绑定·数据源暗修，4 条验收标准，用户报障「角色 权限分配接口报错」+9998 日志直提（tree 500/grouped 对象键不可消费/RoleVO 无 permissions/前端消费侧已就位），048 提前于 047 顺延登记挂起区，6 文件顶格不拆分，前端零改动，提交 405 归 049、门禁归 050）
