@@ -103,7 +103,16 @@
 > Generator 于任何修改动作前执行测试清单并粘贴实证（契约类首跑、冒烟 web-048a 用例体首跑）。
 
 ```text
-[RED] 证据槽 — 待 Generator 填写
+[RED] 契约类首跑（mvn -q -Dtest=PermissionTreeContractTest test，2026-10-12）：
+  Tests run: 3, Failures: 2, Errors: 0, Skipped: 0
+  [ERROR] PermissionTreeContractTest.treeIsFlatPermissionsWithEmptyChildrenAndUniqueIds:133
+          Status expected:<200> but was:<500>   ← AC1 tree 落 /{id} 500 复现（用户报障根因）
+  [ERROR] PermissionTreeContractTest.treeReturnsConsumableStructureWithSeedPermission:79
+          Status expected:<200> but was:<500>   ← AC3 同路径 RED
+  AC2 existingPagedAndGroupedEndpointsRemainAvailable 过（基线护栏，实现前后皆绿）
+[RED] 冒烟 web-048a 用例体首跑（G1 后短路，EXIT=1）：
+  G1 FAIL (预期 RED) ← PermissionController 无 "/tree" 映射
+  （G2 PermissionVO 无 children、G3 契约 2F 同红；G4 前端 api/permission.ts permissions/tree 在场=绿护栏）
 ```
 
 ## 门禁与冒烟记录

@@ -548,6 +548,20 @@ smoke_case "web/046 用户角色绑定回显与PUT契约定向测试" bash -c "
   npx vitest run src/api/user.spec.ts >/tmp/smoke-web-046-fe.log 2>&1 || exit 1
   grep -qE 'Tests  [0-9]+ passed' /tmp/smoke-web-046-fe.log || exit 1
 "
+# web/048a：权限树数据源暗修（sprint-092 本单追加：GET /tree 映射形态 + PermissionVO children 字段 + 契约定向通过 + 前端消费侧契约在场；修复前 G1-G3 必红）
+smoke_case "web/048a 权限树数据源与children契约定向测试" bash -c "
+  CTRL=/opt/codes/auth-core/backend/src/main/java/com/authcore/controller/PermissionController.java
+  VO=/opt/codes/auth-core/backend/src/main/java/com/authcore/dto/permission/PermissionVO.java
+  API=/opt/codes/auth-core/frontend/src/api/permission.ts
+  # G1 PermissionController 存在 GET /tree 映射形态
+  grep -q '\"/tree\"' \$CTRL || exit 1
+  # G2 PermissionVO 存在 children 回显字段
+  grep -q 'List<PermissionVO> children' \$VO || exit 1
+  # G3 后端契约测试类定向通过（exit 码判定）
+  mvn -q -f /opt/codes/auth-core/backend/pom.xml test -Dtest='PermissionTreeContractTest' -DfailIfNoTests=false >/tmp/smoke-web-048a.log 2>&1 || exit 1
+  # G4 前端消费侧 getTree 契约在场（零改动护栏）
+  grep -q 'permissions/tree' \$API || exit 1
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then
