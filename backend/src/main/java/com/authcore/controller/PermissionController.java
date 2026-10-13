@@ -67,6 +67,20 @@ public class PermissionController {
     }
 
     /**
+     * 权限树数据源：全量平铺查询（web/048a）。
+     *
+     * <p>每节点 {@code children} 为空数组（平铺形态）；供角色分配抽屉
+     * {@code PermissionTreeNode[]} 消费。</p>
+     *
+     * @return 平铺权限数组，按 moduleId,id 升序
+     */
+    @Operation(summary = "权限树数据源（全量平铺）")
+    @GetMapping("/tree")
+    public Result<List<PermissionVO>> listPermissionsTree() {
+        return Result.ok(permissionService.listAllForTree());
+    }
+
+    /**
      * 获取权限详情。
      *
      * @param id 权限 ID

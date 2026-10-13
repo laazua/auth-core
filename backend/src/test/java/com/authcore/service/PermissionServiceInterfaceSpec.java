@@ -18,10 +18,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class PermissionServiceInterfaceSpec {
 
     @Test
-    @DisplayName("接口声明了全部 6 个公共方法")
+    @DisplayName("接口声明了全部 7 个公共方法")
     void permissionServiceInterfaceHasAllMethods() {
         Method[] methods = PermissionService.class.getDeclaredMethods();
-        assertEquals(6, methods.length, "接口应声明 6 个公共方法");
+        assertEquals(7, methods.length, "接口应声明 7 个公共方法");
 
         Set<String> methodNames = Stream.of(methods)
                 .map(Method::getName)
@@ -29,6 +29,7 @@ class PermissionServiceInterfaceSpec {
 
         assertTrue(methodNames.contains("queryPermissions"), "应包含 queryPermissions 方法");
         assertTrue(methodNames.contains("queryPermissionsGroupedByModule"), "应包含 queryPermissionsGroupedByModule 方法");
+        assertTrue(methodNames.contains("listAllForTree"), "应包含 listAllForTree 方法（web/048a tree 数据源）");
         assertTrue(methodNames.contains("getPermissionById"), "应包含 getPermissionById 方法");
         assertTrue(methodNames.contains("createPermission"), "应包含 createPermission 方法");
         assertTrue(methodNames.contains("updatePermission"), "应包含 updatePermission 方法");

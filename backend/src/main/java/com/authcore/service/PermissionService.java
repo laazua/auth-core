@@ -32,6 +32,16 @@ public interface PermissionService {
     Map<ModuleVO, List<PermissionVO>> queryPermissionsGroupedByModule();
 
     /**
+     * 全量平铺查询权限（tree 数据源，web/048a）。
+     *
+     * <p>按 moduleId,id 升序；字典类小数据（种子 17，预期 ≤1000）豁免分页（§4）。
+     * 每节点 children 为空数组（平铺形态，防模块父节点 id 值域重叠与提交污染）。</p>
+     *
+     * @return 全量权限平铺列表
+     */
+    List<PermissionVO> listAllForTree();
+
+    /**
      * 根据 ID 查询权限详情。
      *
      * @param id 权限 ID

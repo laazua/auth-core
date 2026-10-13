@@ -95,6 +95,17 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
+    public List<PermissionVO> listAllForTree() {
+        // 字典类小数据（种子 17，预期 ≤1000）豁免分页（§4）；平铺按 moduleId,id 升序
+        return permissionMapper.selectList(
+                        new LambdaQueryWrapper<SysPermission>()
+                                .orderByAsc(SysPermission::getModuleId, SysPermission::getId))
+                .stream()
+                .map(this::toVO)
+                .toList();
+    }
+
+    @Override
     public PermissionVO getPermissionById(Long id) {
         SysPermission permission = permissionMapper.selectById(id);
         if (permission == null) {
