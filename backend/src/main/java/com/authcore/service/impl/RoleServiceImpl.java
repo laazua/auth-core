@@ -2,6 +2,7 @@ package com.authcore.service.impl;
 
 import com.authcore.common.BusinessException;
 import com.authcore.dto.permission.PermissionSimpleVO;
+import com.authcore.dto.permission.PermissionVO;
 import com.authcore.dto.role.RoleCreateDTO;
 import com.authcore.dto.role.RoleQueryDTO;
 import com.authcore.dto.role.RoleUpdateDTO;
@@ -21,7 +22,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -69,7 +73,10 @@ public class RoleServiceImpl implements RoleService {
         wrapper.orderByDesc(SysRole::getCreatedAt);
 
         IPage<SysRole> resultPage = roleMapper.selectPage(page, wrapper);
-        return resultPage.convert(this::toVO);
+        Map<Long, List<PermissionVO>> permsByRole = loadPermissionsByRoleIds(
+                resultPage.getRecords().stream().map(SysRole::getId).toList());
+        return resultPage.convert(role ->
+                toVO(role, permsByRole.getOrDefault(role.getId(), List.of())));
     }
 
     @Override
@@ -78,7 +85,7 @@ public class RoleServiceImpl implements RoleService {
         if (role == null) {
             throw new BusinessException(1001, "角色不存在");
         }
-        return toVO(role);
+        return toVO(role, loadPermissionsByRoleIds(List.of(role.getId())).getOrDefault(role.getId(), List.of()));
     }
 
     @Override
@@ -103,7 +110,7 @@ public class RoleServiceImpl implements RoleService {
         role.setStatus(dto.status());
 
         roleMapper.insert(role);
-        return toVO(role);
+        return toVO(role, loadPermissionsByRoleIds(List.of(role.getId())).getOrDefault(role.getId(), List.of()));
     }
 
     @Override
@@ -131,7 +138,7 @@ public class RoleServiceImpl implements RoleService {
             }
 
         roleMapper.updateById(role);
-        return toVO(role);
+        return toVO(role, loadPermissionsByRoleIds(List.of(role.getId())).getOrDefault(role.getId(), List.of()));
     }
 
     @Override
@@ -185,14 +192,62 @@ public class RoleServiceImpl implements RoleService {
         }
     }
 
-    private RoleVO toVO(SysRole role) {
+    private RoleVO toVO(SysRole role, List<PermissionVO> permissions) {
         return new RoleVO(
                 role.getId(),
                 role.getName(),
                 role.getCode(),
                 role.getStatus(),
                 role.getCreatedAt(),
-                role.getUpdatedAt()
+                role.getUpdatedAt(),
+                permissions
+        );
+    }
+
+    /**
+     * 批量加载角色已分配权限（web/048b，防 N+1：关联表 in 一批 + 权限表 selectBatchIds 一批）。
+     *
+     * @param roleIds 角色 ID 列表
+     * @return Map&lt;roleId, List&lt;PermissionVO&gt;&gt;，无授权角色不出现在结果中
+     */
+    private Map<Long, List<PermissionVO>> loadPermissionsByRoleIds(List<Long> roleIds) {
+        if (roleIds == null || roleIds.isEmpty()) {
+            return Map.of();
+        }
+        List<SysRolePermission> links = rolePermissionMapper.selectList(
+                new LambdaQueryWrapper<SysRolePermission>()
+                        .in(SysRolePermission::getRoleId, roleIds));
+        if (links.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Long> permissionIds = links.stream()
+                .map(SysRolePermission::getPermissionId)
+                .distinct()
+                .toList();
+        Map<Long, PermissionVO> permissionById = permissionMapper.selectBatchIds(permissionIds).stream()
+                .collect(Collectors.toMap(SysPermission::getId, this::toPermissionVO));
+
+        Map<Long, List<PermissionVO>> result = new HashMap<>();
+        for (SysRolePermission link : links) {
+            PermissionVO vo = permissionById.get(link.getPermissionId());
+            if (vo != null) {
+                result.computeIfAbsent(link.getRoleId(), k -> new ArrayList<>()).add(vo);
+            }
+        }
+        return result;
+    }
+
+    private PermissionVO toPermissionVO(SysPermission permission) {
+        return new PermissionVO(
+                permission.getId(),
+                permission.getModuleId(),
+                "", // 回显消费仅读 id/code/children（PermissionAssignDrawer），moduleName 按需再补
+                permission.getName(),
+                permission.getCode(),
+                permission.getDescription(),
+                permission.getCreatedAt(),
+                permission.getUpdatedAt()
         );
     }
 

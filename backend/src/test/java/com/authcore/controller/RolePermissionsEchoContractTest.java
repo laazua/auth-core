@@ -86,15 +86,27 @@ class RolePermissionsEchoContractTest {
         String token = getAdminToken();
         long roleId = findRoleIdByCode(token, "ROLE_ADMIN");
 
-        mockMvc.perform(get("/api/v1/roles/" + roleId)
+        MvcResult result = mockMvc.perform(get("/api/v1/roles/" + roleId)
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
                 .andExpect(jsonPath("$.data.permissions").isArray())
                 .andExpect(jsonPath("$.data.permissions[?(@.code == 'user:view')]",
                         Matchers.hasSize(1)))
-                .andExpect(jsonPath("$.data.permissions[?(@.code == 'user:view')].id[0]").isNumber())
-                .andExpect(jsonPath("$.data.permissions[?(@.code == 'user:view')].children").isArray());
+                .andReturn();
+
+        JsonNode permissions = new ObjectMapper()
+                .readTree(result.getResponse().getContentAsString())
+                .path("data").path("permissions");
+        boolean found = false;
+        for (JsonNode permission : permissions) {
+            if ("user:view".equals(permission.path("code").asText())) {
+                assertTrue(permission.path("id").isNumber(), "user:view 节点应含数值 id");
+                assertTrue(permission.path("children").isArray(), "user:view 节点应含 children 数组");
+                found = true;
+            }
+        }
+        assertTrue(found, "应命中 code=user:view 节点");
     }
 
     /**
@@ -165,7 +177,7 @@ class RolePermissionsEchoContractTest {
 
     /**
      * AC3: 无授权角色回显空数组。
-     * Given 除 ROLE_ADMIN 外种子角色无 sys_role_permission 授权
+     * Given 自建临时角色（必无 sys_role_permission 授权，免种子污染）
      * When GET /api/v1/roles/{id}
      * Then data.permissions 为空数组（非 null/缺失）
      */
@@ -174,31 +186,52 @@ class RolePermissionsEchoContractTest {
     void roleWithoutGrantEchoesEmptyPermissionsArray() throws Exception {
         String token = getAdminToken();
 
-        MvcResult page = mockMvc.perform(get("/api/v1/roles")
+        // 幂等：清理上轮失败残留后创建
+        MvcResult residual = mockMvc.perform(get("/api/v1/roles")
                         .header("Authorization", "Bearer " + token)
+                        .param("code", TMP_CODE)
                         .param("page", "1")
-                        .param("size", "100"))
+                        .param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(0))
                 .andReturn();
-        JsonNode records = new ObjectMapper()
-                .readTree(page.getResponse().getContentAsString())
+        JsonNode residualRecords = new ObjectMapper()
+                .readTree(residual.getResponse().getContentAsString())
                 .path("data").path("records");
-
-        long targetId = -1;
-        for (JsonNode row : records) {
-            if (!"ROLE_ADMIN".equals(row.path("code").asText())) {
-                targetId = row.path("id").asLong();
-                break;
-            }
+        if (residualRecords.size() > 0) {
+            mockMvc.perform(delete("/api/v1/roles/" + residualRecords.get(0).path("id").asLong())
+                            .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk());
         }
-        assertTrue(targetId > 0, "应存在非 ROLE_ADMIN 的种子角色");
 
-        mockMvc.perform(get("/api/v1/roles/" + targetId)
-                        .header("Authorization", "Bearer " + token))
+        String createBody = """
+                {
+                    "name": "空授权临时角色",
+                    "code": "ROLE_REGRESSION_TMP",
+                    "status": 1
+                }
+                """;
+        String created = mockMvc.perform(post("/api/v1/roles")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
-                .andExpect(jsonPath("$.data.permissions").isArray())
-                .andExpect(jsonPath("$.data.permissions").isEmpty());
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        long newId = new ObjectMapper().readTree(created).path("data").path("id").asLong();
+
+        try {
+            mockMvc.perform(get("/api/v1/roles/" + newId)
+                            .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value(0))
+                    .andExpect(jsonPath("$.data.permissions").isArray())
+                    .andExpect(jsonPath("$.data.permissions").isEmpty());
+        } finally {
+            mockMvc.perform(delete("/api/v1/roles/" + newId)
+                            .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk());
+        }
     }
 }
