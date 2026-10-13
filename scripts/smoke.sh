@@ -562,6 +562,21 @@ smoke_case "web/048a 权限树数据源与children契约定向测试" bash -c "
   # G4 前端消费侧 getTree 契约在场（零改动护栏）
   grep -q 'permissions/tree' \$API || exit 1
 "
+# web/048b：角色-权限回显数据源（sprint-093 本单追加：RoleVO permissions 字段 + RoleServiceImpl 批量填充形态 + 契约定向通过 + 抽屉消费侧契约在场；修复前 G1-G3 必红）
+smoke_case "web/048b 角色权限回显与批量填充契约定向测试" bash -c "
+  VO=/opt/codes/auth-core/backend/src/main/java/com/authcore/dto/role/RoleVO.java
+  IMPL=/opt/codes/auth-core/backend/src/main/java/com/authcore/service/impl/RoleServiceImpl.java
+  DRAWER=/opt/codes/auth-core/frontend/src/views/roles/PermissionAssignDrawer.vue
+  # G1 RoleVO 存在 permissions 回显字段
+  grep -q 'List<PermissionVO> permissions' \$VO || exit 1
+  # G2 RoleServiceImpl 存在批量填充形态（防 N+1，区分循环单查）
+  grep -q 'loadPermissionsByRoleIds' \$IMPL || exit 1
+  grep -q 'selectBatchIds' \$IMPL || exit 1
+  # G3 后端契约测试类定向通过（exit 码判定）
+  mvn -q -f /opt/codes/auth-core/backend/pom.xml test -Dtest='RolePermissionsEchoContractTest' -DfailIfNoTests=false >/tmp/smoke-web-048b.log 2>&1 || exit 1
+  # G4 抽屉消费侧 role.permissions 契约在场（零前端改动护栏）
+  grep -q 'res.data.permissions' \$DRAWER || exit 1
+"
 # ====================================================================================
 
 if [ "$FAIL" -eq 0 ]; then

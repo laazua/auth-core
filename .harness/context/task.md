@@ -62,7 +62,7 @@
 
 ### AC2 — 既有角色接口零回归
 
-**步骤与期望**：独立方法：分页 `GET /api/v1/roles?page=1&size=10` → `$.code=0`、records isArray、首行既有六键在场；`POST /api/v1/roles` `{name:"回归临时角色", code:"ROLE_REGRESSION_TMP"}` → `code=0` 且返回 data 含新 id（permissions 为 `[]`），测试尾部经 `DELETE /api/v1/roles/{id}` 清理。基线护栏（实现前后皆绿）。
+**步骤与期望**：独立方法：分页 `GET /api/v1/roles?page=1&size=10` → `$.code=0`、records isArray、首行既有六键在场；幂等清理（`GET /api/v1/roles?code=ROLE_REGRESSION_TMP` 有残留则先 DELETE）后 `POST /api/v1/roles` `{name:"回归临时角色", code:"ROLE_REGRESSION_TMP", status:1}` → `code=0` 且返回 data 含新 id（本方法不断言 `permissions` 键，保持实现前后皆绿的纯护栏），测试尾部经 `DELETE /api/v1/roles/{id}` 清理。基线护栏（实现前后皆绿）。
 
 **用例**：`AC2 ← 用例 RolePermissionsEchoContractTest#既有分页与新建角色接口保持可用`
 
@@ -94,7 +94,16 @@
 > Generator 于任何修改动作前执行测试清单并粘贴实证（契约类首跑、冒烟 web-048b 用例体首跑）。
 
 ```text
-[RED] 证据槽 — 待 Generator 填写
+[RED] 契约类首跑（mvn -q -Dtest=RolePermissionsEchoContractTest test，2026-10-13）：
+  Tests run: 3, Failures: 2, Errors: 0, Skipped: 0
+  [ERROR] RolePermissionsEchoContractTest.roleDetailReturnsAssignedPermissionsEcho:93
+          java.lang.AssertionError: No value at JSON path "$.data.permissions"   ← AC1 RED（ROLE_ADMIN 详情无 permissions 键）
+  [ERROR] RolePermissionsEchoContractTest.roleWithoutGrantEchoesEmptyPermissionsArray:201
+          java.lang.AssertionError: No value at JSON path "$.data.permissions"   ← AC3 RED（无授权角色同）
+  AC2 existingPagedAndCreateRoleEndpointsRemainAvailable 过（基线护栏，实现前后皆绿）
+[RED] 冒烟 web-048b 用例体首跑（G1 后短路，EXIT=1）：
+  G1 FAIL (预期 RED) ← RoleVO 无 List<PermissionVO> permissions
+  （G2 loadPermissionsByRoleIds 不存在同红；G4 PermissionAssignDrawer res.data.permissions 在场=绿护栏）
 ```
 
 ## 门禁与冒烟记录
