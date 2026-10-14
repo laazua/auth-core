@@ -577,6 +577,22 @@ smoke_case "web/048b 角色权限回显与批量填充契约定向测试" bash -
   # G4 抽屉消费侧 role.permissions 契约在场（零前端改动护栏）
   grep -q 'res.data.permissions' \$DRAWER || exit 1
 "
+# web/049：角色-权限提交契约与 readOnly 收口（sprint-095 本单追加：api put 形态+spec+后端 PUT 契约定向+readOnly 形态；修复前 G1/G2/G4 必红）
+smoke_case "web/049 角色权限提交契约PUT对齐与readOnly形态测试" bash -c "
+  ROLE_TS=/opt/codes/auth-core/frontend/src/api/role.ts
+  ROLE_SPEC=/opt/codes/auth-core/frontend/src/api/role.spec.ts
+  ROLE_IMPL=/opt/codes/auth-core/backend/src/main/java/com/authcore/service/impl/RoleServiceImpl.java
+  PERM_IMPL=/opt/codes/auth-core/backend/src/main/java/com/authcore/service/impl/PermissionServiceImpl.java
+  # G1 api/role.ts assignPermissions 用 http.put 形态（\${id} 转义）
+  grep -q 'http.put(\`/roles/\${id}/permissions\`' \$ROLE_TS || exit 1
+  # G2 spec 在场且断言 PUT 方法
+  grep -q 'assignPermissions 使用 PUT 方法' \$ROLE_SPEC || exit 1
+  # G3 后端 PUT 契约在位（exit 码判定）
+  mvn -q -f /opt/codes/auth-core/backend/pom.xml test -Dtest='RoleControllerTest#assignPermissionsBatchReplace' -DfailIfNoTests=false >/tmp/smoke-web-049.log 2>&1 || exit 1
+  # G4 两 ServiceImpl readOnly 形态
+  grep -q 'readOnly = true' \$ROLE_IMPL || exit 1
+  grep -q 'readOnly = true' \$PERM_IMPL || exit 1
+"
 # web/047：用户-角色放行闭环（sprint-094 本单追加：V8 user:assign-role 形态 + 抽屉 getById 回显 + me 契约定向 + 回显 spec 定向；修复前 G1-G3 必红）
 smoke_case "web/047 用户角色放行闭环与回显契约定向测试" bash -c "
   V8=/opt/codes/auth-core/backend/src/main/resources/db/migration/V8__seed_user_assign_role_permission.sql
