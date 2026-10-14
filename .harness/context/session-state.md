@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: ✅ **sprint-098 / web/036c2a 评审通过 9.3/10（DONE）**，移交 Planner
+- 状态: 🔄 **sprint-099 规划完成（PLANNED，web/053 冒烟改进方案 A）**，移交 Generator
 - 当前模块: web
-- 当前功能点: web/036c2a 计数同步收口；冒烟 ❌ 基线降为 2（roles-001/002）
+- 当前功能点: web/053 smoke.sh 过滤参数（1 文件；全量 77 基线零影响）
 
 
 ## 下一步动作
-  Planner：读 `.harness/planner.md` 并严格执行——**下一单必选冒烟改进方案 A（smoke.sh 单用例参数，用户已确认）**：`bash scripts/smoke.sh [用例名前缀]` 支持匹配过滤跑，不带参=全量 77 不变（基线口径零影响）；1 文件小改+冒烟回归（全量仍 77=75✅+2❌+2⏭）；可登记为 hyg/web 新行。其余候选（036c2b 冗余覆盖 >6 问案B、036c3 串联 :deep 42 处、web/045）排后。先只读探查 smoke.sh 结构再定 AC。
+  Generator：读 `.harness/generator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-099 / web/053）。首个实现要点：smoke.sh 头部 `FILTER="${1:-}"`+两函数开头过滤（name 不含 FILTER 则 return 0 不计数）+RAN 计数+无匹配 exit 2+用法注释；三行为定向断言（web-052 单跑=1 用例、roles 子串、zzz-not-exist EXIT≠0）；全量 77 复跑=基线 75✅+2❌+2⏭；严守不动清单（用例区既有行零动、tdd-workflow 语义零动）；修复前红态=当前脚本不认参数仍全量跑。完成后置 AWAITING_REVIEW 移交 Evaluator。
 
 ## 挂起
 - [卫生项 2026-10-14] 死文件清理：`views/system/PermissionView.vue`（21 行占位，/system/permissions 路由指向 system/IndexView.vue 非它）与 `views/system/ModuleView.vue`（21 行占位，/system/modules 同款）——零功能影响，待 Planner 立卫生小单删除
@@ -55,6 +55,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-14: Planner — kickoff sprint-099（web/053，4 条验收标准：单用例过滤/子串匹配/无匹配防呆/全量基线零影响，1 文件 smoke.sh；方案 A 立项、方案 B 裁决不做）
 - 2026-10-14: Evaluator — pass sprint-098（web/036c2a，平均分 9.3/10：4 AC 亲核全满足、五线=基线+冒烟 ❌ 4→2、六否决零命中；扣分=红态未自身复现-0.5、roles 保留注记-0.2）；冒烟改进方案 A 确认登记
 - 2026-10-14: Generator — sprint-098/web/036c2a 交付（AWAITING_REVIEW）：`6a6bf16 test`（两 Spec 计数 6→7/6→8+方法名断言同步，048a 同款先例）；两 Spec 定向绿、五线=基线、冒烟 77=75✅+2❌+2⏭（❌ 由 4 降为 2）；待 Evaluator
 - 2026-10-14: Planner — kickoff sprint-098（web/036c2a，4 条验收标准，model-008/010 ❌ 根因两 Spec 过期计数 6→7/6→8 同步，2 文件小单冒烟 ❌ 4→2；036c2b 冗余覆盖另案；048a 同款先例）

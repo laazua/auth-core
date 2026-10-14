@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-14: Planner — kickoff sprint-099（web/053，4 条验收标准：smoke.sh 单用例过滤参数，1 文件，全量 77 基线零影响；方案 A 用户确认立项、方案 B 暂不做）
 - 2026-10-14: Evaluator — pass sprint-098（web/036c2a，平均分 9.3/10，4 AC 亲核全满足：两 Spec 定向绿+五线=基线+冒烟 77=75✅+2❌+2⏭ ❌ 由 4 降为 2，六否决零命中；扣分=红态未自身复现-0.5、roles-001/002 保留注记-0.2）；冒烟改进方案 A（单用例参数）用户确认登记挂起区
 - 2026-10-14: Generator — sprint-098/web/036c2a 交付：`6a6bf16 test`（RoleServiceInterfaceSpec 6→7+listAllPermissions、ModuleServiceInterfaceSpec 6→8+listAllPermissions/listAccessibles，过期计数同步 048a 先例）；两 Spec 定向绿、mvn 168=4F+2E 基线、lint 0E|166W、test 324/324、build ✓17.35s、冒烟 77=75✅+2❌+2⏭（❌ 由 4 降为 2）；待 Evaluator
 - 2026-10-14: Planner — kickoff sprint-098（web/036c2a，4 条验收标准：RoleSpec 6→7/ModuleSpec 6→8 过期计数同步/冒烟 ❌ 4→2/门禁基线；model-008/010 ❌ 根因实测=listAllPermissions+listAccessibles 漏同步，048a 同款先例；2 文件无需问案B；036c2b 冗余覆盖另案）
