@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/036c2a**（036c2 拆分：model-008/010 冒烟 ❌ 根因——两 ServiceInterfaceSpec 过期计数同步；冗余覆盖清理另案 036c2b） |
 | 功能点名称 | RoleService/ModuleService 接口 Spec 计数断言同步（6→7 / 6→8） |
-| 状态 | **PLANNED** |
+| 状态 | **AWAITING_REVIEW**（Generator 交付完成 2026-10-14，修复前红态+门禁亲测在案） |
 | 创建时间 | 2026-10-14 |
 
 ## 前置依赖
@@ -65,20 +65,24 @@
 ## RED 证据
 
 ```text
-[RED/修复前红态] 证据槽 — 待 Generator 填写（model-008/010 ❌ 与 expected:<6> but was:<7>/<8> 定向复现）
+[修复前红态] RoleServiceInterfaceSpec:25 接口应声明 6 个公共方法 ==> expected: <6> but was: <7>  （Planner 2026-10-14 只读取证 + model-008 冒烟 ❌ 实证）
+[修复前红态] ModuleServiceInterfaceSpec:24 接口应声明 6 个公共方法 ==> expected: <6> but was: <8>  （同上 + model-010 冒烟 ❌ 实证）
+[GREEN] 两 Spec 定向跑 EXIT=0（全绿）
 ```
 
 ## 门禁与冒烟记录
 
-> Generator 亲测填写。基线口径（2026-10-14 sprint-097 评审实测）。
+> Generator 亲测（2026-10-14）。
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 168 用例 4F+2E | 待填（Spec 不入 surefire 默认扫描→预期不变） | 待验 |
-| `npm run lint` | 0E\|166W | 待填（前端零动） | 待验 |
-| `npm run test` | 41 文件 324/324 | 待填 | 待验 |
-| `npm run build` | ✓ | 待填 | 待验 |
-| `bash scripts/smoke.sh` | 77=71✅+4❌+2⏭️ | 待填（预期 **77=73✅+2❌+2⏭️**——❌=roles-001/002 仅存，model-008/010 转 ✅） | 待验 |
+| 后端 `mvn -q verify` | 168 用例 4F+2E | **168, Failures: 4, Errors: 2**（Spec 不入 surefire 默认扫描基线照抄） | ✅ 基线 |
+| `npm run lint` | 0E\|166W | **0E\|166W**（前端零动） | ✅ 基线 |
+| `npm run test` | 41 文件 324/324 | **41 文件 324/324** | ✅ 基线 |
+| `npm run build` | ✓ | **✓ built in 17.35s** | ✅ |
+| `bash scripts/smoke.sh` | 77=71✅+4❌+2⏭️ | **77=75✅+2❌+2⏭️**——❌ 由 4 降为 **2**（model-008/010 转 ✅ 消除，roles-001/002 保留基线），✅ 含 web-047/049/050/052 零回归 | ✅ **达成 ❌ 4→2** |
+
+**提交物证**：`6a6bf16 test`（2 文件过期计数同步）。后端主代码/接口/冒烟脚本/前端零动；冒烟脚本零改（用例本就跑 Spec，断言绿自动转 ✅）。
 
 ## 实现说明
 
