@@ -611,6 +611,20 @@ smoke_case "web/050 角色权限按钮门禁放行与计数契约定向测试" b
   npx vitest run src/views/roles/IndexView.spec.ts >/tmp/smoke-web-050-fe.log 2>&1 || exit 1
   grep -qE 'Tests  [0-9]+ passed' /tmp/smoke-web-050-fe.log || exit 1
 "
+# web/052：系统管理死文件卫生清理（sprint-097 本单追加：四占位文件不存在+路由护栏；删除前 G1 必红）
+smoke_case "web/052 系统管理死文件清理与路由护栏测试" bash -c "
+  SYS=/opt/codes/auth-core/frontend/src/views/system
+  ROUTES=/opt/codes/auth-core/frontend/src/router/routes.ts
+  # G1 四死文件均不存在
+  test ! -f \$SYS/PermissionView.vue || exit 1
+  test ! -f \$SYS/ModuleView.vue || exit 1
+  test ! -f \$SYS/RoleView.vue || exit 1
+  test ! -f \$SYS/UserView.vue || exit 1
+  # G2 路由护栏：四路由仍指向真实实现
+  grep -q \"system/IndexView.vue'\" \$ROUTES || exit 1
+  grep -q \"users/IndexView.vue'\" \$ROUTES || exit 1
+  grep -q \"roles/IndexView.vue'\" \$ROUTES || exit 1
+"
 # web/047：用户-角色放行闭环（sprint-094 本单追加：V8 user:assign-role 形态 + 抽屉 getById 回显 + me 契约定向 + 回显 spec 定向；修复前 G1-G3 必红）
 smoke_case "web/047 用户角色放行闭环与回显契约定向测试" bash -c "
   V8=/opt/codes/auth-core/backend/src/main/resources/db/migration/V8__seed_user_assign_role_permission.sql

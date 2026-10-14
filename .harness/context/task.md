@@ -57,7 +57,7 @@
 ## RED 证据
 
 ```text
-[RED] 证据槽 — 待 Generator 填写
+[RED] AC1 smoke web-052 G1: test ! -f 四文件组合 EXIT=1（PermissionView/ModuleView/RoleView/UserView 均存在于文件系统）
 ```
 
 ## 门禁与冒烟记录
