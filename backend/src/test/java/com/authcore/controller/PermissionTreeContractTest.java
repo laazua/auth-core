@@ -98,7 +98,8 @@ class PermissionTreeContractTest {
         mockMvc.perform(get("/api/v1/permissions")
                         .header("Authorization", "Bearer " + token)
                         .param("page", "1")
-                        .param("size", "10"))
+                        .param("size", "10")
+                        .param("code", "user:view"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
                 .andExpect(jsonPath("$.data.records").isArray())
@@ -106,7 +107,7 @@ class PermissionTreeContractTest {
                 .andExpect(jsonPath("$.data.records[0].moduleId").exists())
                 .andExpect(jsonPath("$.data.records[0].moduleName").exists())
                 .andExpect(jsonPath("$.data.records[0].name").exists())
-                .andExpect(jsonPath("$.data.records[0].code").exists())
+                .andExpect(jsonPath("$.data.records[0].code").value("user:view"))
                 .andExpect(jsonPath("$.data.records[0].createTime").exists())
                 .andExpect(jsonPath("$.data.records[0].updateTime").exists())
                 .andExpect(jsonPath("$.data.records[?(@.code == 'user:view')]").value(Matchers.hasSize(1)));

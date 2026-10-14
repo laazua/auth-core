@@ -106,9 +106,9 @@ class SeedDataIntegrationTest extends AbstractModelIntegrationTest {
                 "SELECT COUNT(*) FROM sys_role WHERE code = 'ROLE_USER'", Integer.class);
         assertEquals(1, userRoleCount, "ROLE_USER 角色应存在");
 
-        // sys_permission: 18 行（4 模块 × 4 权限 + module:toggle-status + user:assign-role）
+        // sys_permission: 19 行（4 模块 × 4 权限 + module:toggle-status + user:assign-role + role:assign-permission）
         Integer permCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM sys_permission", Integer.class);
-        assertEquals(18, permCount, "sys_permission 应含 18 行种子数据");
+        assertEquals(19, permCount, "sys_permission 应含 19 行种子数据");
 
         // 验证每个权限的 module_id 指向有效模块
         Integer orphanPermCount = jdbcTemplate.queryForObject(
@@ -136,13 +136,13 @@ class SeedDataIntegrationTest extends AbstractModelIntegrationTest {
                 Integer.class);
         assertEquals(1, adminUserRoleCount, "admin 用户应关联 ROLE_ADMIN 角色");
 
-        // sys_role_permission: admin_role -> 18 个权限，user_role -> 4 个只读权限
+        // sys_role_permission: admin_role -> 19 个权限，user_role -> 4 个只读权限
         Integer adminRolePermCount = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM sys_role_permission rp " +
                 "JOIN sys_role r ON rp.role_id = r.id " +
                 "WHERE r.code = 'ROLE_ADMIN'",
                 Integer.class);
-        assertEquals(18, adminRolePermCount, "ROLE_ADMIN 应关联全部 18 个权限");
+        assertEquals(19, adminRolePermCount, "ROLE_ADMIN 应关联全部 19 个权限");
 
         Integer userRolePermCount = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM sys_role_permission rp " +

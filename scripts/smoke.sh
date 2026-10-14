@@ -593,6 +593,24 @@ smoke_case "web/049 角色权限提交契约PUT对齐与readOnly形态测试" ba
   grep -q 'readOnly = true' \$ROLE_IMPL || exit 1
   grep -q 'readOnly = true' \$PERM_IMPL || exit 1
 "
+# web/050：角色-权限按钮门禁收口（sprint-096 本单追加：V9 形态+消费点护栏+me 契约+门禁 spec；修复前 G1/G3/G4 必红）
+smoke_case "web/050 角色权限按钮门禁放行与计数契约定向测试" bash -c "
+  V9=/opt/codes/auth-core/backend/src/main/resources/db/migration/V9__seed_role_assign_permission_permission.sql
+  ROLES_VIEW=/opt/codes/auth-core/frontend/src/views/roles/IndexView.vue
+  # G1 V9 迁移存在且含 role:assign-permission 挂 role_mgmt 与 ROLE_ADMIN 授权形态
+  grep -q 'role:assign-permission' \$V9 || exit 1
+  grep -q \"code = 'role_mgmt'\" \$V9 || exit 1
+  grep -q \"r.code = 'ROLE_ADMIN'\" \$V9 || exit 1
+  grep -q 'INSERT IGNORE' \$V9 || exit 1
+  # G2 消费点护栏：IndexView.vue 门禁码在场（零界面改动）
+  grep -q \"hasPermission('role:assign-permission')\" \$ROLES_VIEW || exit 1
+  # G3 me 端点含 role:assign-permission 定向通过
+  mvn -q -f /opt/codes/auth-core/backend/pom.xml test -Dtest='AuthControllerTest#meReturnsUserRolesPermissions' -DfailIfNoTests=false >/tmp/smoke-web-050.log 2>&1 || exit 1
+  # G4 门禁 spec 定向通过
+  cd /opt/codes/auth-core/frontend || exit 1
+  npx vitest run src/views/roles/IndexView.spec.ts >/tmp/smoke-web-050-fe.log 2>&1 || exit 1
+  grep -qE 'Tests  [0-9]+ passed' /tmp/smoke-web-050-fe.log || exit 1
+"
 # web/047：用户-角色放行闭环（sprint-094 本单追加：V8 user:assign-role 形态 + 抽屉 getById 回显 + me 契约定向 + 回显 spec 定向；修复前 G1-G3 必红）
 smoke_case "web/047 用户角色放行闭环与回显契约定向测试" bash -c "
   V8=/opt/codes/auth-core/backend/src/main/resources/db/migration/V8__seed_user_assign_role_permission.sql

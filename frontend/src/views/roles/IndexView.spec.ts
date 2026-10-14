@@ -1179,6 +1179,20 @@ describe('IndexView - 角色管理页', () => {
 
       expect(wrapper.vm.canAssignPermission).toBe(false);
     });
+
+    it('canAssignPermission 受 role:assign-permission 门禁控制', async () => {
+      const wrapper = createWrapper([
+        'role:view',
+        'role:create',
+        'role:update',
+        'role:delete',
+        'role:assign-permission',
+      ]);
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.vm.canAssignPermission).toBe(true);
+    });
   });
 
   describe('Responsive Design', () => {
