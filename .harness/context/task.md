@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/049**（角色-权限绑定·提交契约与 readOnly 收口；三绑定拆分总盘后续②，sprint-090 登记，本次注册立项） |
 | 功能点名称 | 角色-权限绑定·前端提交契约 PUT 对齐与 Service readOnly 补标（api/role.ts POST→PUT + 两 ServiceImpl 查询方法 @Transactional(readOnly=true)） |
-| 状态 | **PLANNED** |
+| 状态 | **AWAITING_REVIEW**（Generator 交付完成 2026-10-14，RED 证据+门禁亲测在案） |
 | 创建时间 | 2026-10-13 |
 
 ## 前置依赖
@@ -89,20 +89,24 @@
 ## RED 证据
 
 ```text
-[RED] 证据槽 — 待 Generator 填写
+[RED] AC1 role.spec.ts#assignPermissions 使用 PUT 方法:
+  expected "spy" to be called with arguments: [ '/roles/1/permissions', …(1) ] / Number of calls: 0  （现 http.post，put 未被调）
+[RED] AC4 smoke web-049 G1/G2/G4 组合首跑: EXIT=1（api/role.ts 无 put 形态——G1 fail 即整体红）
 ```
 
 ## 门禁与冒烟记录
 
-> Generator 亲测填写。基线口径（2026-10-13 sprint-094 评审实测）。
+> Generator 亲测（2026-10-14）。
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 168 用例 4F+2E（五类 veto-6 豁免） | 待填（纯注解零行为→预期 168 五类逐条不变） | 待验 |
-| `npm run lint` | EXIT=0，0 errors / 166 warnings | 待填 | 待验 |
-| `npm run test` | 40 文件 322/322 | 待填（预期 41 文件=322+1 spec） | 待验 |
-| `npm run build` | ✓（17.2s） | 待填 | 待验 |
-| `bash scripts/smoke.sh` | 74=68✅+4❌+2⏭️ → 本单 +1=75 | 待填（预期 75=69✅+4❌+2⏭️ 含 web-049） | 待验 |
+| 后端 `mvn -q verify` | 168 用例 4F+2E（五类 veto-6 豁免） | **Tests run: 168, Failures: 4, Errors: 2**——DataSourceConfigBinding×2、RoleController:466 400but409、SeedData 22≠2、TestLayers/TestUtils Docker 2E，五类逐条一致（readOnly 纯注解零行为变更实证） | ✅ 基线 |
+| `npm run lint` | EXIT=0，0 errors / 166 warnings | **EXIT=0，0 errors / 166 warnings** | ✅ 基线 |
+| `npm run test` | 40 文件 322/322 | **41 文件 323 passed (323)**（+1 spec ✓） | ✅ 基线+1 |
+| `npm run build` | ✓（17.2s） | **✓ built in 17.75s** | ✅ |
+| `bash scripts/smoke.sh` | 74=68✅+4❌+2⏭️ → 本单 +1=75 | **75 用例=69✅+4❌+2⏭️**——❌恰=model-008/010、roles-001/002，⏭=infra-004/model-006，✅含 `web/049 角色权限提交契约PUT对齐与readOnly形态测试 ✅` | ✅ 零新增 |
+
+**提交物证**：`98b5ddc test`（spec+smoke RED 先行）→ `b307b94 feat`（api 一行+7 处 readOnly）。业务文件 5=清单零夹带；工作区预存 `application.yml.template` D 态未混入。
 
 ## 实现说明
 
