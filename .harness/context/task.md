@@ -1,162 +1,113 @@
-# Sprint 工作单：sprint-096
+# Sprint 工作单：sprint-097
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-096 |
+| Sprint ID | sprint-097 |
 | 所属模块 | web |
-| 功能点 ID | **web/050**（角色-权限绑定·门禁收口；三绑定拆分总盘后续③，sprint-090 登记，本次注册立项） |
-| 功能点名称 | 角色-权限绑定·按钮门禁放行（V9 补 `role:assign-permission` 种子+计数 19+IndexView 门禁 spec） |
-| 状态 | **DONE**（sprint-096 评审通过 9.0/10+计划外文件测试修复豁免，2026-10-14） |
+| 功能点 ID | **web/052**（系统管理死文件卫生清理；051 实测登记卫生项升格执行） |
+| 功能点名称 | 删除四个无路由引用的占位死文件（PermissionView/ModuleView/RoleView/UserView） |
+| 状态 | **PLANNED** |
 | 创建时间 | 2026-10-14 |
 
 ## 前置依赖
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| web/047 | V8 计数基线 18+user:assign-role 同构先例（V9 镜像 V8） | ✅ sprint-094 |
-| web/048a/048b/049 | 角色-权限数据源+回显+提交契约三断点已闭合 | ✅ |
-| roles/001 | 后端 PUT /roles/{id}/permissions 契约 | ✅ |
-| perms/001 | sys_permission 计数断言基线（18→19 联动） | ✅ |
+| web/051 | 只读实测登记卫生项（PermissionView/ModuleView 两死文件） | ✅ 实测关单 |
+| 本次 Planner 补充实测 | **RoleView/UserView 同款死文件**（各 21 行占位、零引用） | ✅ 2026-10-14 取证 |
 
 ## 业务背景
 
-**用户报障「角色 权限分配接口报错」收尾断点**（048a/048b/049 已修数据源/回显/提交 405；本单=按钮门禁放行闭环收尾）：
+**卫生项实测（零功能影响，纯代码健康）**：
 
-### 断点实锤
+| 文件 | 行数 | 实测证据 |
+|------|------|---------|
+| `views/system/PermissionView.vue` | 21 | 占位「待实现」；`/system/permissions` 路由指向 `system/IndexView.vue`（824 行已实现）非它；全仓 import/路由零引用 |
+| `views/system/ModuleView.vue` | 21 | 同款；`/system/modules` 也指向 `system/IndexView.vue` |
+| `views/system/RoleView.vue` | 21 | 同款占位；`/system/roles` 指向 `roles/IndexView.vue` |
+| `views/system/UserView.vue` | 21 | 同款占位；`/system/users` 指向 `users/IndexView.vue` |
 
-| 断点 | 实证 |
-|------|------|
-| **按钮永不可见** | `roles/IndexView.vue:120` `canAssignPermission = authStore.hasPermission('role:assign-permission')`；V6 role_mgmt 仅 4 码（view/create/update/delete）+V7/V8 补码均不在此模块 → `/me` 恒不含 `role:assign-permission` → 分配按钮永隐藏（与 043 module:toggle-status、047 user:assign-role 完全同型） |
-| **消费侧已就位** | `:249` canAssignPermission 已进 defineExpose/模板门禁、PermissionAssignDrawer 回显（048b）+提交（049）已通——**零界面改动**，码到位即放行 |
-| **spec 载体已备** | `IndexView.spec.ts` 有 `createWrapper(permissions)` mock 模式（:1163 canCreate 断言先例）——扩 canAssignPermission 断言即 RED |
-
-### 本单定位
-
-- **修什么**：① `V9` 迁移补 `role:assign-permission`（挂 role_mgmt，镜像 V8/V7 形态）+ROLE_ADMIN 幂等授权；② 计数断言 18→19×2（SeedData）+me 18→19+contains（AuthControllerTest）；③ `IndexView.spec.ts` 扩 canAssignPermission 有码/无码断言；④ smoke web-050。
-- **不修什么**：不动 IndexView.vue/Drawer（门禁与消费逻辑已有）、不动后端业务代码（纯种子迁移）、不动 V1-V8、不动其它 spec。**用户侧变化**：角色-权限分配按钮对 admin 可见——报障四断点（048a/048b/049/050）**全部闭合**，分配链路端到端可完成。
-
-## 需求与架构对照
-
-- §6 绑定操作需授权判定 → 补齐缺失权限码=规范收口（043/047 同型先例两单）。
-- §3 V9 新迁移零表结构变更；§4 计数断言随种子演进（V7 16→17、V8 17→18 先例，本次 18→19）。
-- 无架构冲突，无需仲裁。
+早期占位遗留（四页实现早已迁移到各自 IndexView），保留易误导（占位文案与真实实现并存）。**删除即收口**。
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — V9 迁移与计数：`V9__seed_role_assign_permission_permission.sql` 存在且含 `role:assign-permission`、挂 `role_mgmt`、`ROLE_ADMIN` `INSERT IGNORE` 幂等；`SeedDataIntegrationTest` 计数 18→19×2——修复前 18 → RED（`expected: <19> but was: <18>`）。方法整体仍 22≠2 基线红豁免（GREEN 判定=fail 收敛至仅该条，同 047 先例）。← 用例 `SeedDataIntegrationTest#test_关联数据正确+test_核心实体数据存在且字段正确`（断言更新）
-- [ ] AC2 — me 放行面：`AuthControllerTest#meReturnsUserRolesPermissions` 断言 19+`contains("role:assign-permission")`——修复前 → RED；GREEN 后 me 真实返回新码（按钮门禁数据源）。← 用例 `AuthControllerTest#meReturnsUserRolesPermissions`
-- [ ] AC3 — 门禁 spec：`IndexView.spec.ts` 扩断言——含 `role:assign-permission` 的权限集合下 `canAssignPermission===true`——**注意：门禁逻辑 `:120` 既有，spec 断言=新增护栏非行为修复，加入即绿无红-绿行为差（与 047 AC3 fetch 行为 RED 不同型）；RED 主载体=AC1/AC2（种子缺失 me 无码）**。← 用例 `IndexView.spec.ts#canAssignPermission 受 role:assign-permission 门禁控制`
-- [ ] AC4 — 冒烟与门禁：`scripts/smoke.sh` 新增 `web-050`（G1 grep V9 形态、G2 grep IndexView.vue 门禁码在场护栏、G3 定向 mvn `AuthControllerTest#meReturnsUserRolesPermissions`、G4 定向 vitest `IndexView.spec.ts` canAssignPermission 用例），实现前 G1/G3/G4 RED；冒烟 75→76、❌ 恰 4 零新增；五线基线（mvn 168 不变、前端 test 41 文件 323+1=324）。← 用例 `AC4 ← 用例 门禁五线 + 冒烟全量`
+- [ ] AC1 — 死文件删除且零引用：四文件从工作区删除；`grep -rn "system/PermissionView\|system/ModuleView\|system/RoleView\|system/UserView" frontend/src` 零命中（import/路由）；lint/test/build 三线绿=编译期零依赖证明。← 用例 `AC1 ← 用例 前端三线 + 引用 grep`
+- [ ] AC2 — 冒烟与门禁：`scripts/smoke.sh` 新增 `web-052` 用例（G1 grep 四文件均不存在于文件系统、G2 grep 路由 routes.ts 四路由仍指向各自真实 IndexView——防误删路由护栏）；冒烟 76→77、❌ 恰 4 零新增；mvn verify 基线不变（后端零动）。← 用例 `AC2 ← 用例 冒烟全量 + mvn 基线`
 
-### AC1 — V9 与计数断言
+### AC1 — 删除与三线
 
-**步骤与期望**：先改 SeedData 两处 18→19+注释 → RED；实现 V9（镜像 V8：INSERT IGNORE 双段）；迁移应用后计数断言过（方法整体仍 22≠2）。
+**步骤与期望**：先写 smoke web-052 用例体首跑（G1 因文件存在而红）→ 删四文件 → G1 绿+三线绿。
 
-**用例**：`AC1 ← 用例 SeedDataIntegrationTest（断言更新）`
+**用例**：`AC1 ← 用例 前端三线 + 引用 grep`
 
-### AC2 — me 含新码
+### AC2 — 冒烟
 
-**步骤与期望**：先改 AuthControllerTest me（19+contains）→ RED；V9 应用后绿。
-
-**用例**：`AC2 ← 用例 AuthControllerTest#meReturnsUserRolesPermissions`
-
-### AC3 — canAssignPermission 门禁 spec
-
-**步骤与期望**：扩 `IndexView.spec.ts`（createWrapper 先例模式）：`createWrapper(['role:view', ..., 'role:assign-permission'])` → `wrapper.vm.canAssignPermission===true`；不含码 → false。
-
-**用例**：`AC3 ← 用例 IndexView.spec.ts#canAssignPermission 受 role:assign-permission 门禁控制`
-
-### AC4 — 冒烟 web-050 与门禁总账
-
-**用例**：`AC4 ← 用例 门禁五线 + 冒烟全量`
+**用例**：`AC2 ← 用例 冒烟全量`
 
 ## 测试清单
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | SeedDataIntegrationTest（18→19×2） | AC1 | 待 RED→GREEN（整体 22≠2 豁免，收敛判定） |
-| 2 | AuthControllerTest#meReturnsUserRolesPermissions（19+contains） | AC2 | 待 RED→GREEN |
-| 3 | IndexView.spec.ts#canAssignPermission 门禁 | AC3 | 待 RED→GREEN |
-| 4 | smoke web-050 + 门禁五线 + 冒烟全量 | AC4 | 待 RED→GREEN；冒烟 76=70✅+4❌+2⏭ |
+| 1 | smoke web-052 用例体首跑（G1 红）+ 删除后绿 | AC1 | 待 RED→GREEN |
+| 2 | 前端三线（lint/test/build） | AC1 | 待亲测 |
+| 3 | 冒烟全量 77 + mvn 基线 | AC2 | 待亲测 |
 
 ## RED 证据
 
 ```text
-[RED] AC1 SeedDataIntegrationTest#test_关联数据正确:
-  ROLE_ADMIN 应关联全部 19 个权限 ==> expected: <19> but was: <18>  （:145）
-[RED] AC2 AuthControllerTest#meReturnsUserRolesPermissions:
-  admin 权限集合应含 role:assign-permission ==> expected: <true> but was: <false>  （:223）
-[RED] AC4 smoke web-049 G1: V9 文件不存在（grep exit=2）
-[NOTE] AC3 IndexView.spec 门禁断言=新增护栏，:120 逻辑既有加入即绿（task 已注明，无红-绿行为差）
+[RED] 证据槽 — 待 Generator 填写
 ```
 
 ## 门禁与冒烟记录
 
-> Generator 亲测（2026-10-14）。
+> Generator 亲测填写。基线口径（2026-10-14 sprint-096 评审实测）。
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 168 用例 4F+2E（五类 veto-6 豁免） | **168, Failures: 4, Errors: 2**（TreeContract 修复后回归基线；V9 触发暴露的第 5 Failure 已由测试修复消除） | ✅ 基线回归 |
-| `npm run lint` | EXIT=0，0 errors / 166 warnings | **0 errors / 166 warnings** | ✅ 基线 |
-| `npm run test` | 41 文件 323/323 | **41 文件 324 passed**（+1 用例扩不加文件 ✓） | ✅ 基线+1 |
-| `npm run build` | ✓（17.7s） | **✓ built in 17.62s** | ✅ |
-| `bash scripts/smoke.sh` | 75=69✅+4❌+2⏭️ → 本单 +1=76 | **76=70✅+4❌+2⏭️**——❌恰=model-008/010、roles-001/002，✅含 `web/050 ✅` | ✅ 零新增 |
-
-**提交物证**：`62092dd test`（RED+TreeContract 修复）→ `99690d3 feat`（V9）。业务文件 6 顶格；**计划外文件主动上报**（PermissionTreeContractTest，详见交付物披露节）。
+| 后端 `mvn -q verify` | 168 用例 4F+2E（五类 veto-6） | 待填（后端零动） | 待验 |
+| `npm run lint` | EXIT=0，0 errors / 166 warnings | 待填（删除文件或降 warning 数——死文件若贡献 warning 则预期 ≤166） | 待验 |
+| `npm run test` | 41 文件 324/324 | 待填（死文件无 spec→预期不变） | 待验 |
+| `npm run build` | ✓ | 待填 | 待验 |
+| `bash scripts/smoke.sh` | 76=70✅+4❌+2⏭️ → 本单 +1=77 | 待填（预期 77=71✅+4❌+2⏭️ 含 web-052） | 待验 |
 
 ## 实现说明
 
 **实现要点**：
-1. 先改 SeedData（:111/:145 18→19+注释）+AuthControllerTest me（:221 18→19+contains role:assign-permission+注释）→ 定向 RED；再扩 IndexView.spec.ts（canAssignPermission true/false 两断言或一用例两断言，createWrapper 模式）→ vitest RED。
-2. V9 迁移镜像 V8：`INSERT IGNORE INTO sys_permission ... FROM sys_module WHERE code = 'role_mgmt'` + `INSERT IGNORE INTO sys_role_permission`（ROLE_ADMIN）；文件名 `V9__seed_role_assign_permission_permission.sql`。
-3. smoke web-050：G1 grep V9（`role:assign-permission`+`role_mgmt`+`INSERT IGNORE`）、G2 grep IndexView.vue `role:assign-permission`（消费点护栏）、G3 mvn me 定向 exit 码、G4 vitest IndexView.spec 定向（grep 通过数）。
-4. spec 扩用例注意：createWrapper(permissions) mock 已有 canCreate/canDelete 断言先例（:1163-1176）——同文件追加 canAssignPermission 用例。
+1. 先写 smoke web-052（G1 `test ! -f` 四文件取反 grep 不存在判定、G2 grep routes.ts 四 component 路径在场）→ 用例体首跑 G1 红（文件在）。
+2. `git rm` 四死文件 → G1 绿+lint/test/build 绿。
+3. 后端零动（mvn 基线照抄预期不变）。
 
-**超限熔断**：业务文件 >6、需改 IndexView.vue/Drawer/后端业务逻辑/其它 spec、计数类外测试受影响 → 停止回报。
+**超限熔断**：需改 routes.ts/IndexView/其它业务文件、三线任一红、mvn 基线漂移 → 停止回报。
 
-**不动清单**：`roles/IndexView.vue`、`PermissionAssignDrawer.vue`（消费侧已就位）；后端业务代码；V1-V8；`ModuleServiceImpl`/readOnly（049 已收口）；冒烟既有用例与 ❌ 四条；web/051/045/036c 预留；any 166；工作区预存 `application.yml.template` D 态。
+**不动清单**：routes.ts（零改——路由本就指向真实实现）；system/IndexView.vue；四 FormDrawer；users/roles IndexView；冒烟既有用例与 ❌ 四条；web/036c/045/051 挂起区；工作区预存 `application.yml.template` D 态。
 
-## 交付物（6 业务文件，含预存脆弱断言修复）
+## 交付物（5 操作，净文件 -4）
 
-1. `backend/src/main/resources/db/migration/V9__seed_role_assign_permission_permission.sql` — 新迁移
-2. `backend/src/test/java/com/authcore/mapper/SeedDataIntegrationTest.java` — 计数 18→19×2+注释
-3. `backend/src/test/java/com/authcore/controller/AuthControllerTest.java` — me 19+contains+注释
-4. `backend/src/test/java/com/authcore/controller/PermissionTreeContractTest.java` — **预存脆弱断言修复**（V9 触发暴露：`orderByDesc(createdAt)`+测试库污染致第一页不含 `user:view`，`hasSize(1)` filter 0 条——改按 `code=user:view` 参数过滤，端点回归护栏语义不变且更稳）
-5. `frontend/src/views/roles/IndexView.spec.ts` — canAssignPermission 门禁断言
-6. `scripts/smoke.sh` — +web-050 用例
-7. 文档回写：task/session/iteration/registry 四件（registry **新建 web/050 行** ⬜→🔄）
+1. `frontend/src/views/system/PermissionView.vue` — **删除**
+2. `frontend/src/views/system/ModuleView.vue` — **删除**
+3. `frontend/src/views/system/RoleView.vue` — **删除**
+4. `frontend/src/views/system/UserView.vue` — **删除**
+5. `scripts/smoke.sh` — +web-052 用例
+6. 文档回写：task/session/iteration/registry 四件
 
 ### 新增
-- `backend/src/main/resources/db/migration/V9__seed_role_assign_permission_permission.sql`
+（无）
 
 ### 修改
-- `backend/src/test/java/com/authcore/mapper/SeedDataIntegrationTest.java`
-- `backend/src/test/java/com/authcore/controller/AuthControllerTest.java`
-- `backend/src/test/java/com/authcore/controller/PermissionTreeContractTest.java`（测试修复）
-- `frontend/src/views/roles/IndexView.spec.ts`
 - `scripts/smoke.sh`
 
 ### 删除
-（无）
+- `frontend/src/views/system/PermissionView.vue`
+- `frontend/src/views/system/ModuleView.vue`
+- `frontend/src/views/system/RoleView.vue`
+- `frontend/src/views/system/UserView.vue`
 
 ### 变更计数
 
-业务文件 **6 顶格**；后端主代码零改动（纯迁移+测试）；IndexView.vue/Drawer/V1-V8 零改动。**计划外文件披露**：PermissionTreeContractTest 为计划外测试修复（断言过强非逻辑缺陷），Generator 主动上报 Evaluator 裁决——评审须判定其为「测试修复豁免」或「回 Planner」。
+净 **-4 文件**；routes.ts/IndexView/FormDrawer/后端零改动。
 
 ## 评审意见
 
-### 第 1 轮评审（sprint-096 / web/050，2026-10-14 Evaluator）
-
-**评审结论**：✅ **通过，均分 9.0/10**（功能 9 / 质量 9 / 规范 9.5 / TDD 8.5 / 安全 9），六项一票否决零命中；**计划外文件 PermissionTreeContractTest 测试修复豁免成立**（预存脆弱断言+V9 触发暴露非引入、修法最小、护栏增强、上报流程正确）。
-
-**验收标准核对**：AC1 满足（V9 镜像 V8 亲核+SeedData 收敛至仅 22≠2）；AC2 满足（me 19+contains 亲跑绿+IndexView:120 同码放行链路闭合）；AC3 满足（正向断言在场，诚实披露前态即绿采信）；AC4 满足（冒烟 76=70✅+4❌恰基线+2⏭ 含 web/050 ✅）。
-
-**门禁实测**：mvn 168=4F+2E 回归、lint 0E|166W、test 41文件324、build ✓20.17s、冒烟零新增。提交序 `62092dd test`→`99690d3 feat`。6 顶格（含豁免文件）。
-
-**亮点**：Generator 主动上报计划外文件（红线遵守教科书式）；TreeContract 修法精准（+code 参数过滤反而增强 044 OR 语义回归）；AC3 前态即绿诚实注明。
-
-**改进建议**：① 契约测试避免对分页第一页内容做排序相关强假设（051 实测时顺带核查同类）；② 计数演进单「收敛判定」口径沿用（047/050 两单验证成熟）。
-
-**用户报障闭环**：「角色 权限分配接口报错」四断点——048a tree 500 / 048b 回显 / 049 提交 405 / **050 按钮门禁**全部闭合，角色-权限分配端到端可用；三绑定拆分总盘 046/047/048a/048b/049/050 **六单全收口**。
+（待 Evaluator 评审）

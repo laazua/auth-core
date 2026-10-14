@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-14: Planner — kickoff sprint-097（web/052，2 条验收标准：四死文件删除与三线零引用/冒烟 76→77；补充实测 RoleView/UserView 同款死文件；净 -4 文件零功能影响）
 - 2026-10-14: Planner — web/051 只读实测关单（无 Sprint）：怀疑「权限-模块 moduleId 契约错」不成立——契约层完整+权限管理界面已实现在 system/IndexView.vue（824 行 CRUD+双 tab+FormDrawer 接线+路由门禁 perm:view）；发现死文件 PermissionView.vue/ModuleView.vue（21 行占位无路由引用）登记卫生项；三绑定拆分总盘（046/047/048a/048b/049/050/051）七项全部完结
 - 2026-10-14: Evaluator — pass sprint-096（web/050，平均分 9.0/10+计划外文件测试修复豁免）：4 AC 亲核全满足（V9 镜像 V8、SeedData 收敛至仅 22≠2、me 19+contains、spec 正向断言、冒烟 76 ❌恰4+web-050 ✅）、五线亲测=基线回归（mvn 168 4F+2E、lint 0E|166W、test 324、build ✓20.17s）、六否决零命中；提交 `62092dd test`→`99690d3 feat`；TreeContract 豁免裁决=预存脆弱断言 V9 触发暴露、修法最小、护栏增强、上报流程正确；用户报障四断点全闭合、三绑定总盘六单全收口；建议 051 只读实测
 - 2026-10-14: Generator — sprint-096/web/050 交付：RED=`62092dd test`（SeedData expected 19但18、me contains false、IndexView.spec 门禁断言、smoke 用例体）+**计划外文件上报**=PermissionTreeContractTest 测试修复（V9 暴露预存脆弱断言：orderByDesc createdAt+测试库污染致第一页无 user:view）→ GREEN=`99690d3 feat`（V9 镜像 V8）；verify 回归 168=4F+2E、lint 0E|166W、test 324/324、build ✓17.62s、冒烟 76=70✅+4❌恰基线+2⏭ 含 web-050 ✅；待 Evaluator（重点裁决计划外文件）

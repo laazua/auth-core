@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🔄 **web/051 只读实测关单（断点不存在）**，三绑定拆分总盘**七项全部完结**，移交 Planner
+- 状态: 🔄 **sprint-097 规划完成（PLANNED，web/052 卫生清理）**，移交 Generator
 - 当前模块: web
-- 当前功能点: （无进行中——总盘完结，待选下一功能点）
+- 当前功能点: web/052 系统管理死文件卫生清理（四占位删除，净 -4）
 
 
 ## 下一步动作
-  Planner：读 `.harness/planner.md` 并严格执行——**建议按优先级选一**：① **卫生清理小单（推荐先做，2 文件删除+门禁验证≈1-2 文件）**：删除死文件 `views/system/PermissionView.vue` 与 `views/system/ModuleView.vue`（实测无路由引用零功能影响，051 实测登记）——预估冒烟+verify 即可，半 sprint 规模；② web/036c 预留（036 系列收尾）；③ web/045 BaseInput 候选；④ 新发现候选（挂起区）：web/052 权限管理页深度完善——实测 IndexView 已实现基础 CRUD，深度完善（树形/批量操作等）非报障暂不立项。规划后更新 registry 行与 session-state。
+  Generator：读 `.harness/generator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-097 / web/052）。首个实现要点：先写 smoke web-052 用例体（G1 grep `test ! -f` 四文件均不存在、G2 grep routes.ts 四 component 路径在场）首跑 G1 红（文件在）→ `git rm` 四死文件（PermissionView/ModuleView/RoleView/UserView）→ 三线绿+冒烟全量；严守不动清单（routes.ts/IndexView/FormDrawer/后端零改）；基线（2026-10-14 sprint-096）：mvn 168=4F+2E、lint 0E|166W、test 41文件324、build ✓、冒烟 76=70✅+4❌+2⏭——本单后端零动、lint warning 数或因删死文件微降（≤166 达标）、冒烟 +1=77；完成后置 AWAITING_REVIEW 移交 Evaluator。
 
 ## 挂起
 - [卫生项 2026-10-14] 死文件清理：`views/system/PermissionView.vue`（21 行占位，/system/permissions 路由指向 system/IndexView.vue 非它）与 `views/system/ModuleView.vue`（21 行占位，/system/modules 同款）——零功能影响，待 Planner 立卫生小单删除
@@ -55,6 +55,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-14: Planner — kickoff sprint-097（web/052 卫生清理，2 条验收标准，四死文件删除净 -4；051 登记+补充实测 RoleView/UserView；routes/IndexView/FormDrawer/后端零改）
 - 2026-10-14: Planner — web/051 只读实测关单：moduleId 契约断点不存在（types/DTO/Service/IndexView:347 全通、/system/permissions 指向已实现的 system/IndexView.vue 824 行）；三绑定总盘七项完结；登记死文件卫生项（PermissionView/ModuleView）；无 Sprint 开启
 - 2026-10-14: Evaluator — sprint-096/web/050 评审通过 9.0/10+计划外文件测试修复豁免（4 AC 亲核全满足、五线=基线回归、冒烟 76 ❌恰4 零新增含 web-050 ✅、六否决零命中；用户报障四断点全闭合、三绑定总盘六单全收口）；回写四件
 - 2026-10-14: Generator — sprint-096/web/050 交付（AWAITING_REVIEW）：RED=`62092dd test`（SeedData 18→19、me contains false、spec+smoke）→ GREEN=`99690d3 feat`（V9）；**计划外文件上报**=PermissionTreeContractTest 预存脆弱断言修复（V9 触发暴露 orderByDesc+污染第一页无 user:view）；verify 回归 168=4F+2E、冒烟 76=70✅+4❌恰基线+2⏭ 含 web-050 ✅
