@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-14: Generator — sprint-096/web/050 交付：RED=`62092dd test`（SeedData expected 19但18、me contains false、IndexView.spec 门禁断言、smoke 用例体）+**计划外文件上报**=PermissionTreeContractTest 测试修复（V9 暴露预存脆弱断言：orderByDesc createdAt+测试库污染致第一页无 user:view）→ GREEN=`99690d3 feat`（V9 镜像 V8）；verify 回归 168=4F+2E、lint 0E|166W、test 324/324、build ✓17.62s、冒烟 76=70✅+4❌恰基线+2⏭ 含 web-050 ✅；待 Evaluator（重点裁决计划外文件）
 - 2026-10-14: Planner — kickoff sprint-096（web/050，4 条验收标准：V9 与计数 19/me contains 新码/门禁 spec/冒烟 75→76；V9 镜像 V8 计数演进；零界面改动；报障四断点 048a/048b/049/050 全闭合目标）
 - 2026-10-14: Evaluator — pass sprint-095（web/049，平均分 9.1/10）：4 AC 亲核全满足（api spec put 绿、diff 恰 7 处 readOnly 零外溢、G3 后端契约绿、冒烟 75 ❌恰4+web-049 ✅）、五线亲测=基线（mvn 168 4F+2E 五类、lint 0E|166W、test 323、build ✓17.68s）、六否决零命中；提交 `98b5ddc test`→`b307b94 feat`；用户报障角色-权限三断点全闭合；readOnly 挂起清偿+防再犯登记；建议 050（role:assign-permission 门禁收口）
 - 2026-10-14: Generator — sprint-095/web/049 交付：RED=`98b5ddc test`（role.spec put 0 调、smoke G1/G2/G4 组合红）→ GREEN=`b307b94 feat`（api/role.ts POST→PUT+RoleServiceImpl 3 处/PermissionServiceImpl 4 处 readOnly）；门禁五线亲测（mvn 168=4F+2E 五类逐条、lint 0E|166W、test 323/323、build ✓17.75s、冒烟 75=69✅+4❌恰基线+2⏭ 含 web-049 ✅）；待 Evaluator
