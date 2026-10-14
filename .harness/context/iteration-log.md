@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-14: Planner — kickoff sprint-098（web/036c2a，4 条验收标准：RoleSpec 6→7/ModuleSpec 6→8 过期计数同步/冒烟 ❌ 4→2/门禁基线；model-008/010 ❌ 根因实测=listAllPermissions+listAccessibles 漏同步，048a 同款先例；2 文件无需问案B；036c2b 冗余覆盖另案）
 - 2026-10-14: Evaluator — pass sprint-097（web/052，平均分 9.0/10）：2 AC 亲核全满足（四文件删除零引用三线绿、冒烟 77 ❌恰4+web-052 ✅）、五线亲测=基线（mvn 168 4F+2E、lint 0E|166W 持平、test 324、build ✓24.34s）、六否决零命中；提交 `5846586 test`→`8050a8a feat`；过程披露处置合规；建议 036c 或 045
 - 2026-10-14: Generator — sprint-097/web/052 交付：RED=`5846586 test`（smoke web-052 G1 四文件在场红 EXIT=1）→ GREEN=`8050a8a feat`（git rm 四占位死文件净 -4）；门禁五线亲测（mvn 168=4F+2E、lint 0E|166W、test 324/324、build ✓17.55s、冒烟 77=71✅+4❌恰基线+2⏭ 含 web-052 ✅）；过程披露=首次提交误合并两段本地 reset --soft 重做恢复 test→feat 序；待 Evaluator
 - 2026-10-14: Planner — kickoff sprint-097（web/052，2 条验收标准：四死文件删除与三线零引用/冒烟 76→77；补充实测 RoleView/UserView 同款死文件；净 -4 文件零功能影响）

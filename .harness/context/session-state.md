@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🔄 **sprint-097 / web/052 评审通过（9.0/10 PASS）**，移交 Planner
+- 状态: 🔄 **sprint-098 规划完成（PLANNED，web/036c2a 计数同步）**，移交 Generator
 - 当前模块: web
-- 当前功能点: web/052 卫生清理收口（四死文件清零）
+- 当前功能点: web/036c2a RoleService/ModuleService Spec 过期计数同步（model-008/010 ❌ 根因，2 文件）
 
 
 ## 下一步动作
-  Planner：读 `.harness/planner.md` 并严格执行——**web 域剩余候选**：① web/036c（036 系列收尾，036b ✅ sprint-084）；② web/045 BaseInput 候选。选一建新工作单（先只读探查断点与规模再定 AC 与文件账）；或若用户有新报障/新需求以用户输入优先。规划后更新 registry 行与 session-state。卫生清理与三绑定总盘均已完结，无挂起强制项。
+  Generator：读 `.harness/generator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-098 / web/036c2a）。首个实现要点：两 Spec 计数断言同步（RoleServiceInterfaceSpec 6→7+补 listAllPermissions、ModuleServiceInterfaceSpec 6→8+补 listAllPermissions/listAccessibles——镜像 048a PermissionService 同步先例）→ 定向跑绿；过期修复型无红-绿行为差，「修复前红态」证据=model-008/010 冒烟 ❌ 与 expected:<6> but was:<7>/<8> 实测（Planner 2026-10-14 取证在案）；冒烟脚本零改（修后自动转 ✅）；严守不动清单（接口/Impl/冒烟脚本/前端零动）；基线（2026-10-14 sprint-097）：mvn 168=4F+2E（Spec 不入 surefire 默认扫描预期不变）、lint 0E|166W、test 324、build ✓、冒烟 77=71✅+4❌+2⏭——本单预期 **冒烟 77=73✅+2❌+2⏭（❌=roles-001/002 仅存）**；完成后置 AWAITING_REVIEW 移交 Evaluator。
 
 ## 挂起
 - [卫生项 2026-10-14] 死文件清理：`views/system/PermissionView.vue`（21 行占位，/system/permissions 路由指向 system/IndexView.vue 非它）与 `views/system/ModuleView.vue`（21 行占位，/system/modules 同款）——零功能影响，待 Planner 立卫生小单删除
@@ -55,6 +55,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-14: Planner — kickoff sprint-098（web/036c2a，4 条验收标准，model-008/010 ❌ 根因两 Spec 过期计数 6→7/6→8 同步，2 文件小单冒烟 ❌ 4→2；036c2b 冗余覆盖另案；048a 同款先例）
 - 2026-10-14: Evaluator — sprint-097/web/052 评审通过 9.0/10（2 AC 亲核全满足、五线=基线、冒烟 77 ❌恰4 零新增含 web-052 ✅、六否决零命中；四死文件清零；失分=误合并操作瑕疵+删除类无运行时用例）；回写四件
 - 2026-10-14: Generator — sprint-097/web/052 交付（AWAITING_REVIEW）：RED=`5846586 test`（G1 四文件在场红）→ GREEN=`8050a8a feat`（git rm 四死文件）；五线亲测=mvn 168 4F+2E/lint 0E|166W/test 324/build ✓17.55s/冒烟 77=71✅+4❌恰基线+2⏭ 含 web-052 ✅；过程披露=首次误合并两段本地 reset --soft 重做恢复物证
 - 2026-10-14: Planner — kickoff sprint-097（web/052 卫生清理，2 条验收标准，四死文件删除净 -4；051 登记+补充实测 RoleView/UserView；routes/IndexView/FormDrawer/后端零改）

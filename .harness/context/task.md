@@ -1,129 +1,116 @@
-# Sprint 工作单：sprint-097
+# Sprint 工作单：sprint-098
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-097 |
+| Sprint ID | sprint-098 |
 | 所属模块 | web |
-| 功能点 ID | **web/052**（系统管理死文件卫生清理；051 实测登记卫生项升格执行） |
-| 功能点名称 | 删除四个无路由引用的占位死文件（PermissionView/ModuleView/RoleView/UserView） |
-| 状态 | **DONE**（sprint-097 评审通过 9.0/10，2026-10-14） |
+| 功能点 ID | **web/036c2a**（036c2 拆分：model-008/010 冒烟 ❌ 根因——两 ServiceInterfaceSpec 过期计数同步；冗余覆盖清理另案 036c2b） |
+| 功能点名称 | RoleService/ModuleService 接口 Spec 计数断言同步（6→7 / 6→8） |
+| 状态 | **PLANNED** |
 | 创建时间 | 2026-10-14 |
 
 ## 前置依赖
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| web/051 | 只读实测登记卫生项（PermissionView/ModuleView 两死文件） | ✅ 实测关单 |
-| 本次 Planner 补充实测 | **RoleView/UserView 同款死文件**（各 21 行占位、零引用） | ✅ 2026-10-14 取证 |
+| roles/001 | RoleService 接口（listAllPermissions 后续演进新增） | ✅ |
+| modules/001 | ModuleService 接口（listAllPermissions+listAccessibles web/038b 新增） | ✅ |
+| 048a 先例 | PermissionServiceInterfaceSpec 6→7 同款同步已做，本单=同型漏改补做 | ✅ |
 
 ## 业务背景
 
-**卫生项实测（零功能影响，纯代码健康）**：
+**冒烟 ❌ 四条之二（model-008/010）根因实测（2026-10-14 只读取证）**：
 
-| 文件 | 行数 | 实测证据 |
-|------|------|---------|
-| `views/system/PermissionView.vue` | 21 | 占位「待实现」；`/system/permissions` 路由指向 `system/IndexView.vue`（824 行已实现）非它；全仓 import/路由零引用 |
-| `views/system/ModuleView.vue` | 21 | 同款；`/system/modules` 也指向 `system/IndexView.vue` |
-| `views/system/RoleView.vue` | 21 | 同款占位；`/system/roles` 指向 `roles/IndexView.vue` |
-| `views/system/UserView.vue` | 21 | 同款占位；`/system/users` 指向 `users/IndexView.vue` |
+| 冒烟 ❌ | 失败断言 | 实际接口 |
+|--------|---------|---------|
+| model-008 | `RoleServiceInterfaceSpec:25 接口应声明 6 个公共方法 ==> expected: <6> but was: <7>` | RoleService 7 方法（+`listAllPermissions`） |
+| model-010 | `ModuleServiceInterfaceSpec:24 接口应声明 6 个公共方法 ==> expected: <6> but was: <8>` | ModuleService 8 方法（+`listAllPermissions`+`listAccessibles`） |
 
-早期占位遗留（四页实现早已迁移到各自 IndexView），保留易误导（占位文案与真实实现并存）。**删除即收口**。
+**根因**：接口演进新增方法时 Spec 计数断言未同步（048a PermissionService 同款已同步，这两处漏改）。**修复=过期断言同步**（纯测试修复，零业务代码）；修后冒烟 model-008/010 自动转 ✅——❌ 四条降为 2 条（roles-001/002 保留基线）。
+
+**036c2 拆分登记**：原 036c2「冗余覆盖与死代码清理+model-008/010（>6 问案B）」——实测拆出计数同步仅 2 文件，无需问案B；冗余覆盖清理另案 036c2b（预估另核）。
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — 死文件删除且零引用：四文件从工作区删除；`grep -rn "system/PermissionView\|system/ModuleView\|system/RoleView\|system/UserView" frontend/src` 零命中（import/路由）；lint/test/build 三线绿=编译期零依赖证明。← 用例 `AC1 ← 用例 前端三线 + 引用 grep`
-- [ ] AC2 — 冒烟与门禁：`scripts/smoke.sh` 新增 `web-052` 用例（G1 grep 四文件均不存在于文件系统、G2 grep 路由 routes.ts 四路由仍指向各自真实 IndexView——防误删路由护栏）；冒烟 76→77、❌ 恰 4 零新增；mvn verify 基线不变（后端零动）。← 用例 `AC2 ← 用例 冒烟全量 + mvn 基线`
+- [ ] AC1 — RoleSpec 计数同步：`RoleServiceInterfaceSpec` 计数断言 6→7+补 `listAllPermissions` 方法名断言——修复前 6→GREEN（接口已 7，过期断言修复无红-绿行为差，「修复前红态」=model-008 冒烟 ❌ 证据在案）；修后该 Spec 全绿。← 用例 `RoleServiceInterfaceSpec#roleServiceInterfaceHasAllMethods`
+- [ ] AC2 — ModuleSpec 计数同步：`ModuleServiceInterfaceSpec` 6→8+补 `listAllPermissions`/`listAccessibles` 断言——同上。← 用例 `ModuleServiceInterfaceSpec#moduleServiceInterfaceHasAllMethods`
+- [ ] AC3 — 冒烟 ❌ 消除：冒烟 `model-008`/`model-010` 用例由 ❌ 转 **✅**（定向跑两 Spec 绿）；冒烟总数 77 不变、❌ 由 4 降为 **2**（roles-001/002 保留）；web-052 等既有 ✅ 零回归。← 用例 `AC3 ← 用例 冒烟全量（model-008/010 转 ✅ 断言）`
+- [ ] AC4 — 门禁：mvn verify 168 用例 Failures 由 4 降为 **2**（RoleServiceInterfaceSpec/ModuleServiceInterfaceSpec 两红消除，剩 DataSourceConfigBinding×2+RoleController 400but409+SeedData 22≠2=**需核对**——实际 verify 4F 中含此两 Spec？否——verify 基线 4F=DataSourceConfigBinding×2+RoleController+SeedData，Spec 是 `*Spec` 不入 surefire 默认扫描（pom 无 include）→ **verify 168 用例数与 4F+2E 不变**（Spec 仅冒烟 `-Dtest` 拉入）；前端三线不变；lint/test/build 零动。← 用例 `AC4 ← 用例 门禁五线`
 
-### AC1 — 删除与三线
+### AC1/AC2 — 过期断言同步（过期修复型）
 
-**步骤与期望**：先写 smoke web-052 用例体首跑（G1 因文件存在而红）→ 删四文件 → G1 绿+三线绿。
+**步骤与期望**：改两 Spec 计数+方法名断言 → 定向跑绿；「修复前红态」证据=smoke model-008/010 ❌ 与 `expected:<6> but was:<7>/<8>` 实测（2026-10-14 Planner 取证在案）。
 
-**用例**：`AC1 ← 用例 前端三线 + 引用 grep`
+**用例**：`AC1/AC2 ← 用例 两 Spec 定向跑`
 
-### AC2 — 冒烟
+### AC3 — 冒烟 ❌ 消除
 
-**用例**：`AC2 ← 用例 冒烟全量`
+**用例**：`AC3 ← 用例 冒烟全量（77 用例 ❌=2）`
+
+### AC4 — 门禁基线
+
+**用例**：`AC4 ← 用例 mvn 168=4F+2E + 前端三线（零动照抄）`
 
 ## 测试清单
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | smoke web-052 用例体首跑（G1 红）+ 删除后绿 | AC1 | 待 RED→GREEN |
-| 2 | 前端三线（lint/test/build） | AC1 | 待亲测 |
-| 3 | 冒烟全量 77 + mvn 基线 | AC2 | 待亲测 |
+| 1 | RoleServiceInterfaceSpec（6→7+listAllPermissions） | AC1 | 待绿（过期同步） |
+| 2 | ModuleServiceInterfaceSpec（6→8+两方法断言） | AC2 | 待绿（过期同步） |
+| 3 | 冒烟全量 77（model-008/010 ✅、❌=2） | AC3 | 待亲测 |
+| 4 | 门禁五线（mvn 168 不变+前端三线） | AC4 | 待亲测 |
 
 ## RED 证据
 
 ```text
-[RED] AC1 smoke web-052 G1: test ! -f 四文件组合 EXIT=1（PermissionView/ModuleView/RoleView/UserView 均存在于文件系统）
+[RED/修复前红态] 证据槽 — 待 Generator 填写（model-008/010 ❌ 与 expected:<6> but was:<7>/<8> 定向复现）
 ```
 
 ## 门禁与冒烟记录
 
-> Generator 亲测（2026-10-14）。
+> Generator 亲测填写。基线口径（2026-10-14 sprint-097 评审实测）。
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 168 用例 4F+2E（五类 veto-6） | **168, Failures: 4, Errors: 2**（后端零动基线照抄） | ✅ 基线 |
-| `npm run lint` | EXIT=0，0 errors / 166 warnings | **0 errors / 166 warnings**（死文件未贡献 warning，持平达标） | ✅ |
-| `npm run test` | 41 文件 324/324 | **41 文件 324/324**（死文件无 spec 预期不变 ✓） | ✅ 基线 |
-| `npm run build` | ✓ | **✓ built in 17.55s** | ✅ |
-| `bash scripts/smoke.sh` | 76=70✅+4❌+2⏭️ → 本单 +1=77 | **77=71✅+4❌+2⏭️**——❌恰=model-008/010、roles-001/002，✅含 `web/052 ✅` | ✅ 零新增 |
-
-**提交物证**：`5846586 test`（smoke 用例体+task RED 证据）→ `8050a8a feat`（四死文件删除）。净 **-4 文件**；routes.ts/IndexView/FormDrawer/后端零动。**过程披露**：首次提交时 git rm 已 staged 致四删除误混入 test 段——本地未推送，`reset --soft` 后重做两段物证（禁 amend 规则遵守，reset 非 amend；已恢复正确 test→feat 序）。
+| 后端 `mvn -q verify` | 168 用例 4F+2E | 待填（Spec 不入 surefire 默认扫描→预期不变） | 待验 |
+| `npm run lint` | 0E\|166W | 待填（前端零动） | 待验 |
+| `npm run test` | 41 文件 324/324 | 待填 | 待验 |
+| `npm run build` | ✓ | 待填 | 待验 |
+| `bash scripts/smoke.sh` | 77=71✅+4❌+2⏭️ | 待填（预期 **77=73✅+2❌+2⏭️**——❌=roles-001/002 仅存，model-008/010 转 ✅） | 待验 |
 
 ## 实现说明
 
 **实现要点**：
-1. 先写 smoke web-052（G1 `test ! -f` 四文件取反 grep 不存在判定、G2 grep routes.ts 四 component 路径在场）→ 用例体首跑 G1 红（文件在）。
-2. `git rm` 四死文件 → G1 绿+lint/test/build 绿。
-3. 后端零动（mvn 基线照抄预期不变）。
+1. 两 Spec 计数断言 6→7/6→8+补方法名 `assertTrue`（RoleService+`listAllPermissions`；ModuleService+`listAllPermissions`/`listAccessibles`）——镜像 048a PermissionService 同步先例。
+2. 定向跑两 Spec 绿；冒烟全量复核 model-008/010 转 ✅、❌=2。
+3. 冒烟脚本零改（用例本就跑 Spec，断言绿即 ✅）。
 
-**超限熔断**：需改 routes.ts/IndexView/其它业务文件、三线任一红、mvn 基线漂移 → 停止回报。
+**超限熔断**：需改业务接口/ServiceImpl/冒烟脚本、mvn verify 基线漂移、前端三线动 → 停止回报。
 
-**不动清单**：routes.ts（零改——路由本就指向真实实现）；system/IndexView.vue；四 FormDrawer；users/roles IndexView；冒烟既有用例与 ❌ 四条；web/036c/045/051 挂起区；工作区预存 `application.yml.template` D 态。
+**不动清单**：RoleService/ModuleService 接口与 Impl（零业务动——过期的是 Spec 非接口）；冒烟脚本；其余 Spec/测试；web/036c2b 冗余覆盖清理另案；web/045/036c3 预留；工作区预存 `application.yml.template` D 态。
 
-## 交付物（5 操作，净文件 -4）
+## 交付物（2 业务文件）
 
-1. `frontend/src/views/system/PermissionView.vue` — **删除**
-2. `frontend/src/views/system/ModuleView.vue` — **删除**
-3. `frontend/src/views/system/RoleView.vue` — **删除**
-4. `frontend/src/views/system/UserView.vue` — **删除**
-5. `scripts/smoke.sh` — +web-052 用例
-6. 文档回写：task/session/iteration/registry 四件
+1. `backend/src/test/java/com/authcore/service/RoleServiceInterfaceSpec.java` — 计数 6→7+断言
+2. `backend/src/test/java/com/authcore/service/ModuleServiceInterfaceSpec.java` — 计数 6→8+断言
+3. 文档回写：task/session/iteration/registry 四件
 
 ### 新增
 （无）
 
 ### 修改
-- `scripts/smoke.sh`
+- `backend/src/test/java/com/authcore/service/RoleServiceInterfaceSpec.java`
+- `backend/src/test/java/com/authcore/service/ModuleServiceInterfaceSpec.java`
 
 ### 删除
-- `frontend/src/views/system/PermissionView.vue`
-- `frontend/src/views/system/ModuleView.vue`
-- `frontend/src/views/system/RoleView.vue`
-- `frontend/src/views/system/UserView.vue`
+（无）
 
 ### 变更计数
 
-净 **-4 文件**；routes.ts/IndexView/FormDrawer/后端零改动。
+业务文件 **2**；后端主代码/接口/冒烟脚本/前端零改动；冒烟 ❌ 由 4 降为 2（model-008/010 消除）。
 
 ## 评审意见
 
-### 第 1 轮评审（sprint-097 / web/052，2026-10-14 Evaluator）
-
-**评审结论**：✅ **通过，均分 9.0/10**（功能 9 / 质量 9 / 规范 8.5 / TDD 8.5 / 安全 10），六项一票否决零命中。
-
-**验收标准核对**：AC1 满足（四文件已删+全仓 grep 零引用+三线绿=编译期零依赖）；AC2 满足（冒烟 77=71✅+4❌恰基线+2⏭ 含 web/052 ✅+G2 路由护栏）。
-
-**门禁实测**：mvn 168=4F+2E、lint 0E|166W 持平、test 324/324、build ✓24.34s、冒烟零新增。RED 物证=提交序 `5846586 test`→`8050a8a feat`。
-
-**亮点**：G 设计精准（G1 存在性+G2 路由护栏防误删）；净 -4 文件零外溢；过程披露（误合并 reset 恢复）诚实且处置合规。
-
-**失分**：首次提交误合并操作瑕疵（-0.5 规范）；删除类无运行时回归用例（间接证明充分，轻扣）。
-
-**改进建议**：Generator 提交前确认 staged 面（git rm 后立即提交或先 unstage）。
-
-**卫生收口**：系统管理四占位死文件（PermissionView/ModuleView/RoleView/UserView）清零，views/system 仅剩真实实现（IndexView+两 FormDrawer+spec）。
+（待 Evaluator 评审）
