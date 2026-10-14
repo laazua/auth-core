@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-13: Planner — kickoff sprint-095（web/049，4 条验收标准：api/role.spec.ts RED→PUT 对齐/readOnly 形态+diff 亲核/后端契约护栏/冒烟 74→75；5 文件零界面改动；readOnly 7 处强制列入=连续三单挂起升格；用户报障角色-权限分配 405 剩余断点）
 - 2026-10-13: Evaluator — pass sprint-094（web/047，平均分 8.6/10）：4 AC 亲核全满足（V8 镜像 V7、SeedData 收敛至仅 22≠2、me 18+contains、抽屉 getById 回显 spec 绿）、五线亲测=基线（mvn 168 4F+2E 五类、lint 0E|166W、test 322、build ✓17.15s、冒烟 74=68✅+4❌恰基线+2⏭ 含 web-047 ✅）、六否决零命中；提交 `5a615c8 test`→`e23191b feat`；用户报障绑定链路端到端三闭环收口；建议 049（提交契约+readOnly 强制列入）
 - 2026-10-13: Generator — sprint-094/web/047 交付：RED=`5a615c8 test`（SeedData 计数 17→18×2 expected18但17、me contains user:assign-role false、spec getById 0调、smoke G1-G2 文件缺失）→ GREEN=`e23191b feat`（V8__seed_user_assign_role_permission.sql INSERT IGNORE+RoleAssignDrawer fetchAssignedRoles）；门禁五线亲测（mvn 168=4F+2E 五类逐条、lint 0E|166W、test 322/322、build ✓30.69s、冒烟 74=68✅+4❌恰基线+2⏭ 含 web-047 ✅）；待 Evaluator
 - 2026-10-13: Planner — kickoff sprint-094（web/047，4 条验收标准：用户-角色放行闭环（按钮永不可见+抽屉无回显两断点），V8 迁移+两计数类 17→18+抽屉 fetchAssignedRoles+spec+smoke=6 顶格，后端主代码零改动；AC1 V8 与计数/AC2 me contains 新码/AC3 回显 spec/AC4 冒烟 73→74；048 组已收口前置齐，readOnly 归 049）
