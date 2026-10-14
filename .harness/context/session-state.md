@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🔄 **sprint-095 / web/049 评审通过（9.1/10 PASS）**，移交 Planner
+- 状态: 🔄 **sprint-096 规划完成（PLANNED，web/050 按钮门禁收口）**，移交 Generator
 - 当前模块: web
-- 当前功能点: web/049 提交契约与 readOnly 收口（用户报障角色-权限分配三断点全部闭合）
+- 当前功能点: web/050 角色-权限绑定·按钮门禁放行（三绑定拆分总盘后续③；报障四断点收尾）
 
 
 ## 下一步动作
-  Planner：读 `.harness/planner.md` 并严格执行——建新工作单。**建议功能点：web/050 role:assign-permission 门禁收口**（拆分总盘后续③；用户报障角色-权限分配收尾断点——与 047 V8 同构：V9 种子补 role:assign-permission 挂 role_mgmt+ROLE_ADMIN 幂等+计数 18→19+前端按钮门禁放行+spec+冒烟）。预估 6 文件（先核 roles/IndexView.vue 门禁码消费点再定顶格）。备选：web/051 权限-模块 moduleId 契约（待实测）；web/036c 预留；web/045 BaseInput。防再犯登记：后续新查询方法须标注 readOnly。规划后更新 registry 行与 session-state。
+  Generator：读 `.harness/generator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-096 / web/050）。首个实现要点：先改 SeedData 两处 18→19+AuthControllerTest me 19+contains("role:assign-permission") 定向 RED（expected 19 but was 18），+ 扩 IndexView.spec.ts canAssignPermission 用例（createWrapper 模式，:1163 canCreate 先例）vitest RED，+ smoke web-050 用例体；GREEN=V9__seed_role_assign_permission_permission.sql 镜像 V8（INSERT IGNORE 挂 role_mgmt+ROLE_ADMIN）；不动 IndexView.vue/Drawer/V1-V8/后端业务代码；SeedData 方法整体 22≠2 基线红豁免（GREEN=fail 收敛至仅该条）；门禁基线（2026-10-14 sprint-095）：mvn 168=4F+2E 五类、lint 0E|166W、test 41文件323、build ✓17.7s、冒烟 75=69✅+4❌+2⏭——本单 mvn 168 不变、前端 test 41 文件 323+N、冒烟 +1=76；完成后置 AWAITING_REVIEW 移交 Evaluator。
 
 ## 挂起
 - 2026-10-12: Generator(sprint-091) — **web/048 超限熔断（8 文件 >6，停止回报回 Planner 重切分，零业务代码写入）**：Planner 预估 6 漏算两块——① 分层硬性需 `PermissionService` 接口+`PermissionServiceImpl` 新增 tree 方法（controller 组装违反 §3 三件事）；② AC1 断言 `children` 键需 `PermissionVO` 扩展（PermissionTreeNodeVO 同型且新文件更超）。实际面=Controller+Service接口+ServiceImpl+PermissionVO+RoleVO+RoleServiceImpl+契约类+smoke=**8**。**重切分建议（Planner 执行）**：**048a**（用户主诉 tree 400 先修）=Controller+PermissionService+PermissionServiceImpl+PermissionVO(+children)+PermissionTreeContractTest(AC1+AC3)+smoke=**6 顶格**，AC1/AC3/AC4；**048b**（角色回显）=RoleVO+RoleServiceImpl+RolePermissionsEchoContractTest(AC2)+smoke=**4**，AC2+冒烟。R1 定夺已在案（平铺方案：模块父节点会致 sys_module.id 与 sys_permission.id 值域重叠的 el-tree key 冲突+check-change 回传父 id 污染 049 提交载荷，纯权限平铺 children=[] 按 moduleId,id 排序零冲突）；R2 填充镜像 046 loadRolesByUserIds 模式。048a 前置 046 ✅、048b 前置 048a（无硬依赖可并行但建议序）。
