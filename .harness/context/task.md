@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/049**（角色-权限绑定·提交契约与 readOnly 收口；三绑定拆分总盘后续②，sprint-090 登记，本次注册立项） |
 | 功能点名称 | 角色-权限绑定·前端提交契约 PUT 对齐与 Service readOnly 补标（api/role.ts POST→PUT + 两 ServiceImpl 查询方法 @Transactional(readOnly=true)） |
-| 状态 | **AWAITING_REVIEW**（Generator 交付完成 2026-10-14，RED 证据+门禁亲测在案） |
+| 状态 | **DONE**（sprint-095 评审通过 9.1/10，2026-10-14） |
 | 创建时间 | 2026-10-13 |
 
 ## 前置依赖
@@ -150,4 +150,18 @@
 
 ## 评审意见
 
-（待 Evaluator 评审）
+### 第 1 轮评审（sprint-095 / web/049，2026-10-14 Evaluator）
+
+**评审结论**：✅ **通过，均分 9.1/10**（功能 9 / 质量 9 / 规范 10 / TDD 8.5 / 安全 9），六项一票否决零命中。
+
+**验收标准核对**：AC1 满足（role.spec put 断言+post 未调 1/1 绿；api 一行 diff 实证 -post+put）；AC2 满足（diff 亲核=恰 7 处 readOnly，RoleServiceImpl×3+PermissionServiceImpl×4，写方法/类级/私有 helper 零外溢；mvn 168 行为零变化=纯注解实证）；AC3 满足（G3 PUT 契约定向绿）；AC4 满足（冒烟 75=69✅+4❌恰基线+2⏭ 含 web-049 ✅）。
+
+**门禁实测**：mvn 168=4F+2E 五类 veto-6 逐条一致；lint 0E|166W=基线；test 41 文件 323/323；build ✓17.68s；冒烟零新增。RED 物证=提交序 `98b5ddc test`→`b307b94 feat`。5 文件=清单零夹带。
+
+**亮点**：1 行契约修复（046 users 侧同型先例复用）；readOnly 7 处范围零外溢+G3 零行为变更双重实证；连续三单挂起规范清偿。
+
+**失分**：提交链路无组件级 spec（046 同款形态先例，轻扣 0.5）；readOnly 无红-绿行为差（形态护栏按设计可接受）。
+
+**改进建议**：① 后续新增查询方法须同步标注 readOnly（防再犯登记）；② 前端可选补 Drawer 提交链路组件级 spec（非缺陷）。
+
+**用户报障闭环**：「角色 权限分配接口报错」三断点——048a tree 500+048b 回显+049 提交 405 **全部闭合**，角色-权限分配端到端可用。
