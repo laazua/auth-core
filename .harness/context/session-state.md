@@ -53,6 +53,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-14: Planner — kickoff sprint-096（web/050 按钮门禁收口，4 条验收标准，三绑定拆分总盘后续③；V9 镜像 V8+计数 18→19+spec 扩用例+smoke 76=5 文件零界面改动；报障四断点全闭合目标）
 - 2026-10-14: Evaluator — sprint-095/web/049 评审通过 9.1/10（4 AC 亲核全满足、五线=基线、冒烟 75 ❌恰4 零新增含 web-049 ✅、六否决零命中；用户报障角色-权限分配三断点全部闭合；readOnly 连续三单挂起清偿）；回写四件
 - 2026-10-14: Generator — sprint-095/web/049 交付（AWAITING_REVIEW）：RED=`98b5ddc test`（spec put 0 调+smoke G1/G2/G4 红）→ GREEN=`b307b94 feat`（api POST→PUT+7 处 readOnly）；门禁五线亲测=mvn 168 4F+2E 逐条/lint 0E|166W/test 41文件323/build ✓17.75s/冒烟 75=69✅+4❌恰基线+2⏭ 含 web-049 ✅
 - 2026-10-13: Planner — kickoff sprint-095（web/049 提交契约+readOnly 收口，4 条验收标准，拆分总盘后续②；api 一行 POST→PUT+spec RED+7 处 readOnly 形态护栏+smoke 75；零界面改动；readOnly 连续三单挂起升格强制列入）
