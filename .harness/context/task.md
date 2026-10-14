@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/047**（用户-角色放行闭环；三绑定拆分总盘后续①，sprint-090 登记，本次注册立项） |
 | 功能点名称 | 用户-角色绑定·放行与回显闭环（V8 补 `user:assign-role` 种子+授权，RoleAssignDrawer 按 userId 回显已分配角色） |
-| 状态 | **AWAITING_REVIEW**（Generator 交付完成 2026-10-13，RED 证据+门禁亲测在案） |
+| 状态 | **DONE**（sprint-094 评审通过 8.6/10，2026-10-13） |
 | 创建时间 | 2026-10-13 |
 
 ## 前置依赖
@@ -161,4 +161,18 @@
 
 ## 评审意见
 
-（待 Evaluator 评审）
+### 第 1 轮评审（sprint-094 / web/047，2026-10-13 Evaluator）
+
+**评审结论**：✅ **通过，均分 8.6/10**（功能 9 / 质量 8 / 规范 9 / TDD 8 / 安全 9），六项一票否决零命中。
+
+**验收标准核对**：AC1 满足（V8 镜像 V7 INSERT IGNORE 双段挂 user_mgmt+ROLE_ADMIN；亲跑 SeedData=Failures:1 仅剩 sys_role 22≠2 预存红，perm 18 与关联 18 断言全过=收敛判定达成）；AC2 满足（me 绿+contains+size18；IndexView:123 hasPermission 同码消费，放行链路端到端闭合）；AC3 满足（fetchAssignedRoles 按 userId 回显+?? [] 兜底；spec 1/1 绿）；AC4 满足（冒烟 74=68✅+4❌恰基线+2⏭ 含 web-047 ✅）。
+
+**门禁实测**：mvn 168=4F+2E 五类 veto-6 逐条一致；lint 0E|166W（+1 新 spec 达标）；test 40 文件 322/322；build ✓17.15s；冒烟零新增。RED 物证=提交序 `5a615c8 test`→`e23191b feat`+断言 diff 先行。6 文件=清单零夹带；D 态模板未混入。
+
+**亮点**：V8 幂等形态镜像 V7；`?? []` 空数据兜底；computed 零改最小侵动；SeedData 基线红豁免的 GREEN 收敛判定清晰（Failures:1=仅 22≠2）。
+
+**失分**：spec 仅 happy path（code!=0/异常分支未覆盖）；watch 内两请求串行可 Promise.all 并行（微）。
+
+**改进建议**：① **readOnly 补标连续三单挂起——049 规划时显式列入交付物**；② fetchAssignedRoles 与 fetchRoles 并行；③ spec 补异常分支。
+
+**用户报障闭环**：「用户与角色绑定的操作没有可以操作的地方」——按钮可见（V8 码→me→:123）+抽屉回显（046 数据源消费）+PUT 提交（046 已通）三闭环，**用户-角色绑定端到端可完成**。

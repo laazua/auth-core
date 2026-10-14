@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🔄 **sprint-094 / web/047 Generator 交付完成（AWAITING_REVIEW）**，移交 Evaluator
+- 状态: 🔄 **sprint-094 / web/047 评审通过（8.6/10 PASS）**，移交 Planner
 - 当前模块: web
-- 当前功能点: web/047 用户-角色放行闭环（V8 user:assign-role+抽屉回显，6 文件，RED→GREEN 两段提交 `5a615c8`→`e23191b`）
+- 当前功能点: web/047 用户-角色放行闭环已收口（用户报障绑定链路端到端三闭环）
 
 
 ## 下一步动作
-  Evaluator：读 `.harness/evaluator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-094 / web/047）。亲跑 mvn verify（基线 168=4F+2E 五类 veto-6：DataSourceConfigBinding×2、RoleController 400but409、SeedData 22≠2、TestLayers/TestUtils Docker 2E）、lint（0E|166W，+1=新 spec）、test（39→40 文件 321→322）、build、冒烟（73→74=68✅+4❌恰 model-008/010、roles-001/002+2⏭，✅含 web-047）。AC1=SeedData 计数 18（方法整体 22≠2 基线红豁免，判定=fail 收敛至仅该条——GREEN 时 Test run 2 Failures 1 即证）、AC2=me contains user:assign-role+size18、AC3=RoleAssignDrawer.spec getById 回显、AC4=冒烟 web-047。核 RED 物证（commit `5a615c8` 测试先于 `e23191b` 实现）。注意：lint 166W（基线 165+1 新 spec）、build 30.69s（负载）非缺陷。通过后回写四件+输出报告。
+  Planner：读 `.harness/planner.md` 并严格执行——建新工作单。**建议功能点：web/049 角色-权限提交契约与 readOnly 收口**（拆分总盘后续②；用户报障「角色 权限分配接口报错」剩余断点）：① api/role.ts assignPermissions POST→PUT（048 后端契约 PUT 通，前端 405 残留）；② PermissionAssignDrawer 提交链路消费验证；③ **readOnly 补标强制列入交付物**（RoleServiceImpl/PermissionService 查询方法 @Transactional(readOnly=true)，连续三单扣分警示已升格——建议 Planner 核实 RoleServiceImpl+PermissionServiceImpl+PermissionService 接口文件数后定顶格）；④ spec/冒烟 web-049。预估 5-6 文件（api/role.ts、Drawer 提交路径若有改、RoleServiceImpl、PermissionServiceImpl、spec、smoke）。备选：web/050 role:assign-permission 门禁收口（V9）；web/036c 预留。挂起区「web/045 保留 BaseInput 候选」不变。规划后更新 registry 行与 session-state。
 
 ## 挂起
 - 2026-10-12: Generator(sprint-091) — **web/048 超限熔断（8 文件 >6，停止回报回 Planner 重切分，零业务代码写入）**：Planner 预估 6 漏算两块——① 分层硬性需 `PermissionService` 接口+`PermissionServiceImpl` 新增 tree 方法（controller 组装违反 §3 三件事）；② AC1 断言 `children` 键需 `PermissionVO` 扩展（PermissionTreeNodeVO 同型且新文件更超）。实际面=Controller+Service接口+ServiceImpl+PermissionVO+RoleVO+RoleServiceImpl+契约类+smoke=**8**。**重切分建议（Planner 执行）**：**048a**（用户主诉 tree 400 先修）=Controller+PermissionService+PermissionServiceImpl+PermissionVO(+children)+PermissionTreeContractTest(AC1+AC3)+smoke=**6 顶格**，AC1/AC3/AC4；**048b**（角色回显）=RoleVO+RoleServiceImpl+RolePermissionsEchoContractTest(AC2)+smoke=**4**，AC2+冒烟。R1 定夺已在案（平铺方案：模块父节点会致 sys_module.id 与 sys_permission.id 值域重叠的 el-tree key 冲突+check-change 回传父 id 污染 049 提交载荷，纯权限平铺 children=[] 按 moduleId,id 排序零冲突）；R2 填充镜像 046 loadRolesByUserIds 模式。048a 前置 046 ✅、048b 前置 048a（无硬依赖可并行但建议序）。
@@ -53,6 +53,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-13: Evaluator — sprint-094/web/047 评审通过 8.6/10（4 AC 亲核全满足、五线亲测=基线、冒烟 74 ❌恰4 零新增含 web-047 ✅、六否决零命中；用户报障绑定链路端到端三闭环收口；失分=spec happy path+串行微优化；readOnly 连续三单挂起 049 必列）；回写四件
 - 2026-10-13: Generator — sprint-094/web/047 交付（AWAITING_REVIEW）：RED=`5a615c8 test`（SeedData 17→18、me contains 新码、spec getById 0调、smoke 用例体）→ GREEN=`e23191b feat`（V8 INSERT IGNORE 挂 user_mgmt+ROLE_ADMIN+抽屉 fetchAssignedRoles 回显）；门禁五线亲测=mvn 168 4F+2E 逐条/lint 0E|166W/test 40文件322/build ✓30.69s/冒烟 74=68✅+4❌恰基线+2⏭ 含 web-047 ✅；SeedData GREEN 判定=fail 收敛至仅 sys_role 22≠2
 - 2026-10-13: Planner — kickoff sprint-094（web/047 用户-角色放行闭环，4 条验收标准，三绑定拆分总盘后续①；V8 补 user:assign-role 计数 17→18+抽屉回显 spec+smoke=6 顶格后端主代码零改动；放行非暗修=按钮门禁已有码到位即通；readOnly 归 049；用户报障+用户主动询问「用户如何跟角色绑定」双重信号直提）
 - 2026-10-13: Evaluator — sprint-093/web-048b 评审通过 8.5/10（4 AC 亲核全满足、五线亲测=基线 mvn 168 4F+2E/lint 0E|165W/test 321/build ✓/冒烟 73=67✅+4❌+2⏭️ ❌恰=基线、六否决零命中；失分=readOnly 重复性未修+createRole 冗余两查+缺两类用例入改进建议；a4bf05b 判定用户手工提交非夹带；web/048 组全收口；下一步 Planner 建议 047）
