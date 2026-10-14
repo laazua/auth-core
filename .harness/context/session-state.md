@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🔄 **sprint-095 / web/049 Generator 交付完成（AWAITING_REVIEW）**，移交 Evaluator
+- 状态: 🔄 **sprint-095 / web/049 评审通过（9.1/10 PASS）**，移交 Planner
 - 当前模块: web
-- 当前功能点: web/049 角色-权限提交契约与 readOnly 收口（5 文件零界面改动，RED→GREEN 两段 `98b5ddc`→`b307b94`）
+- 当前功能点: web/049 提交契约与 readOnly 收口（用户报障角色-权限分配三断点全部闭合）
 
 
 ## 下一步动作
-  Evaluator：读 `.harness/evaluator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-095 / web/049）。亲跑 mvn verify（基线 168=4F+2E 五类 veto-6）、lint（0E|166W）、test（40→41 文件 322→323）、build、冒烟（74→75=69✅+4❌恰 model-008/010、roles-001/002+2⏭ 含 web-049 ✅）。AC1=api/role.spec.ts put 断言、AC2=7 处 readOnly diff 亲核（RoleServiceImpl 3+PermissionServiceImpl 4，写方法与类级注解与私有 helper 零外溢）、AC3=G3 后端 PUT 契约绿（G3 随本单新增首跑）、AC4=冒烟。核 RED 物证（`98b5ddc test` 先于 `b307b94 feat`）。通过后回写四件+输出报告。
+  Planner：读 `.harness/planner.md` 并严格执行——建新工作单。**建议功能点：web/050 role:assign-permission 门禁收口**（拆分总盘后续③；用户报障角色-权限分配收尾断点——与 047 V8 同构：V9 种子补 role:assign-permission 挂 role_mgmt+ROLE_ADMIN 幂等+计数 18→19+前端按钮门禁放行+spec+冒烟）。预估 6 文件（先核 roles/IndexView.vue 门禁码消费点再定顶格）。备选：web/051 权限-模块 moduleId 契约（待实测）；web/036c 预留；web/045 BaseInput。防再犯登记：后续新查询方法须标注 readOnly。规划后更新 registry 行与 session-state。
 
 ## 挂起
 - 2026-10-12: Generator(sprint-091) — **web/048 超限熔断（8 文件 >6，停止回报回 Planner 重切分，零业务代码写入）**：Planner 预估 6 漏算两块——① 分层硬性需 `PermissionService` 接口+`PermissionServiceImpl` 新增 tree 方法（controller 组装违反 §3 三件事）；② AC1 断言 `children` 键需 `PermissionVO` 扩展（PermissionTreeNodeVO 同型且新文件更超）。实际面=Controller+Service接口+ServiceImpl+PermissionVO+RoleVO+RoleServiceImpl+契约类+smoke=**8**。**重切分建议（Planner 执行）**：**048a**（用户主诉 tree 400 先修）=Controller+PermissionService+PermissionServiceImpl+PermissionVO(+children)+PermissionTreeContractTest(AC1+AC3)+smoke=**6 顶格**，AC1/AC3/AC4；**048b**（角色回显）=RoleVO+RoleServiceImpl+RolePermissionsEchoContractTest(AC2)+smoke=**4**，AC2+冒烟。R1 定夺已在案（平铺方案：模块父节点会致 sys_module.id 与 sys_permission.id 值域重叠的 el-tree key 冲突+check-change 回传父 id 污染 049 提交载荷，纯权限平铺 children=[] 按 moduleId,id 排序零冲突）；R2 填充镜像 046 loadRolesByUserIds 模式。048a 前置 046 ✅、048b 前置 048a（无硬依赖可并行但建议序）。
@@ -53,6 +53,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-14: Evaluator — sprint-095/web/049 评审通过 9.1/10（4 AC 亲核全满足、五线=基线、冒烟 75 ❌恰4 零新增含 web-049 ✅、六否决零命中；用户报障角色-权限分配三断点全部闭合；readOnly 连续三单挂起清偿）；回写四件
 - 2026-10-14: Generator — sprint-095/web/049 交付（AWAITING_REVIEW）：RED=`98b5ddc test`（spec put 0 调+smoke G1/G2/G4 红）→ GREEN=`b307b94 feat`（api POST→PUT+7 处 readOnly）；门禁五线亲测=mvn 168 4F+2E 逐条/lint 0E|166W/test 41文件323/build ✓17.75s/冒烟 75=69✅+4❌恰基线+2⏭ 含 web-049 ✅
 - 2026-10-13: Planner — kickoff sprint-095（web/049 提交契约+readOnly 收口，4 条验收标准，拆分总盘后续②；api 一行 POST→PUT+spec RED+7 处 readOnly 形态护栏+smoke 75；零界面改动；readOnly 连续三单挂起升格强制列入）
 - 2026-10-13: Evaluator — sprint-094/web/047 评审通过 8.6/10（4 AC 亲核全满足、五线亲测=基线、冒烟 74 ❌恰4 零新增含 web-047 ✅、六否决零命中；用户报障绑定链路端到端三闭环收口；失分=spec happy path+串行微优化；readOnly 连续三单挂起 049 必列）；回写四件
