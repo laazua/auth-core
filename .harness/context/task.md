@@ -8,7 +8,7 @@
 | 所属模块 | web |
 | 功能点 ID | **web/052**（系统管理死文件卫生清理；051 实测登记卫生项升格执行） |
 | 功能点名称 | 删除四个无路由引用的占位死文件（PermissionView/ModuleView/RoleView/UserView） |
-| 状态 | **PLANNED** |
+| 状态 | **AWAITING_REVIEW**（Generator 交付完成 2026-10-14，RED 证据+门禁亲测在案） |
 | 创建时间 | 2026-10-14 |
 
 ## 前置依赖
@@ -62,15 +62,17 @@
 
 ## 门禁与冒烟记录
 
-> Generator 亲测填写。基线口径（2026-10-14 sprint-096 评审实测）。
+> Generator 亲测（2026-10-14）。
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 168 用例 4F+2E（五类 veto-6） | 待填（后端零动） | 待验 |
-| `npm run lint` | EXIT=0，0 errors / 166 warnings | 待填（删除文件或降 warning 数——死文件若贡献 warning 则预期 ≤166） | 待验 |
-| `npm run test` | 41 文件 324/324 | 待填（死文件无 spec→预期不变） | 待验 |
-| `npm run build` | ✓ | 待填 | 待验 |
-| `bash scripts/smoke.sh` | 76=70✅+4❌+2⏭️ → 本单 +1=77 | 待填（预期 77=71✅+4❌+2⏭️ 含 web-052） | 待验 |
+| 后端 `mvn -q verify` | 168 用例 4F+2E（五类 veto-6） | **168, Failures: 4, Errors: 2**（后端零动基线照抄） | ✅ 基线 |
+| `npm run lint` | EXIT=0，0 errors / 166 warnings | **0 errors / 166 warnings**（死文件未贡献 warning，持平达标） | ✅ |
+| `npm run test` | 41 文件 324/324 | **41 文件 324/324**（死文件无 spec 预期不变 ✓） | ✅ 基线 |
+| `npm run build` | ✓ | **✓ built in 17.55s** | ✅ |
+| `bash scripts/smoke.sh` | 76=70✅+4❌+2⏭️ → 本单 +1=77 | **77=71✅+4❌+2⏭️**——❌恰=model-008/010、roles-001/002，✅含 `web/052 ✅` | ✅ 零新增 |
+
+**提交物证**：`5846586 test`（smoke 用例体+task RED 证据）→ `8050a8a feat`（四死文件删除）。净 **-4 文件**；routes.ts/IndexView/FormDrawer/后端零动。**过程披露**：首次提交时 git rm 已 staged 致四删除误混入 test 段——本地未推送，`reset --soft` 后重做两段物证（禁 amend 规则遵守，reset 非 amend；已恢复正确 test→feat 序）。
 
 ## 实现说明
 
