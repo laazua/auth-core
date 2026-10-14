@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-14: Evaluator — pass sprint-097（web/052，平均分 9.0/10）：2 AC 亲核全满足（四文件删除零引用三线绿、冒烟 77 ❌恰4+web-052 ✅）、五线亲测=基线（mvn 168 4F+2E、lint 0E|166W 持平、test 324、build ✓24.34s）、六否决零命中；提交 `5846586 test`→`8050a8a feat`；过程披露处置合规；建议 036c 或 045
 - 2026-10-14: Generator — sprint-097/web/052 交付：RED=`5846586 test`（smoke web-052 G1 四文件在场红 EXIT=1）→ GREEN=`8050a8a feat`（git rm 四占位死文件净 -4）；门禁五线亲测（mvn 168=4F+2E、lint 0E|166W、test 324/324、build ✓17.55s、冒烟 77=71✅+4❌恰基线+2⏭ 含 web-052 ✅）；过程披露=首次提交误合并两段本地 reset --soft 重做恢复 test→feat 序；待 Evaluator
 - 2026-10-14: Planner — kickoff sprint-097（web/052，2 条验收标准：四死文件删除与三线零引用/冒烟 76→77；补充实测 RoleView/UserView 同款死文件；净 -4 文件零功能影响）
 - 2026-10-14: Planner — web/051 只读实测关单（无 Sprint）：怀疑「权限-模块 moduleId 契约错」不成立——契约层完整+权限管理界面已实现在 system/IndexView.vue（824 行 CRUD+双 tab+FormDrawer 接线+路由门禁 perm:view）；发现死文件 PermissionView.vue/ModuleView.vue（21 行占位无路由引用）登记卫生项；三绑定拆分总盘（046/047/048a/048b/049/050/051）七项全部完结

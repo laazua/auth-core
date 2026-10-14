@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🔄 **sprint-097 / web/052 Generator 交付完成（AWAITING_REVIEW）**，移交 Evaluator
+- 状态: 🔄 **sprint-097 / web/052 评审通过（9.0/10 PASS）**，移交 Planner
 - 当前模块: web
-- 当前功能点: web/052 卫生清理（四占位死文件删除净 -4；`5846586 test`→`8050a8a feat`）
+- 当前功能点: web/052 卫生清理收口（四死文件清零）
 
 
 ## 下一步动作
-  Evaluator：读 `.harness/evaluator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-097 / web/052）。亲跑五线（基线：mvn 168=4F+2E、lint 0E|166W、test 41文件324、build ✓17.5s、冒烟 77=71✅+4❌恰基线+2⏭ 含 web-052 ✅）。AC1=四文件删除且零引用（lint/test/build 三线绿=编译期零依赖+grep 引用零命中）、AC2=冒烟。核 RED 物证（`5846586 test`→`8050a8a feat`）。**评审注意**：① 计划外过程披露=首次提交误合并两段，本地未推送 reset --soft 重做已恢复 test→feat 序——须判定该处置合规性；② lint warning 持平 166（死文件未贡献 warning，符合预期）。通过后回写四件+输出报告。
+  Planner：读 `.harness/planner.md` 并严格执行——**web 域剩余候选**：① web/036c（036 系列收尾，036b ✅ sprint-084）；② web/045 BaseInput 候选。选一建新工作单（先只读探查断点与规模再定 AC 与文件账）；或若用户有新报障/新需求以用户输入优先。规划后更新 registry 行与 session-state。卫生清理与三绑定总盘均已完结，无挂起强制项。
 
 ## 挂起
 - [卫生项 2026-10-14] 死文件清理：`views/system/PermissionView.vue`（21 行占位，/system/permissions 路由指向 system/IndexView.vue 非它）与 `views/system/ModuleView.vue`（21 行占位，/system/modules 同款）——零功能影响，待 Planner 立卫生小单删除
@@ -55,6 +55,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-14: Evaluator — sprint-097/web/052 评审通过 9.0/10（2 AC 亲核全满足、五线=基线、冒烟 77 ❌恰4 零新增含 web-052 ✅、六否决零命中；四死文件清零；失分=误合并操作瑕疵+删除类无运行时用例）；回写四件
 - 2026-10-14: Generator — sprint-097/web/052 交付（AWAITING_REVIEW）：RED=`5846586 test`（G1 四文件在场红）→ GREEN=`8050a8a feat`（git rm 四死文件）；五线亲测=mvn 168 4F+2E/lint 0E|166W/test 324/build ✓17.55s/冒烟 77=71✅+4❌恰基线+2⏭ 含 web-052 ✅；过程披露=首次误合并两段本地 reset --soft 重做恢复物证
 - 2026-10-14: Planner — kickoff sprint-097（web/052 卫生清理，2 条验收标准，四死文件删除净 -4；051 登记+补充实测 RoleView/UserView；routes/IndexView/FormDrawer/后端零改）
 - 2026-10-14: Planner — web/051 只读实测关单：moduleId 契约断点不存在（types/DTO/Service/IndexView:347 全通、/system/permissions 指向已实现的 system/IndexView.vue 824 行）；三绑定总盘七项完结；登记死文件卫生项（PermissionView/ModuleView）；无 Sprint 开启
