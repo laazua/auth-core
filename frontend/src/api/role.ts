@@ -29,7 +29,7 @@ export const roleApi = {
   },
 
   assignPermissions(id: number, data: AssignPermissionsRequest): Promise<Result<void>> {
-    return http.post(`/roles/${id}/permissions`, data);
+    return http.put(`/roles/${id}/permissions`, data);
   },
 
   getAllPermissions(): Promise<Result<{ id: number; code: string; name: string }[]>> {

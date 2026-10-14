@@ -44,6 +44,7 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public IPage<PermissionVO> queryPermissions(PermissionQueryDTO dto) {
         Page<SysPermission> page = new Page<>(dto.page(), dto.size());
         LambdaQueryWrapper<SysPermission> wrapper = new LambdaQueryWrapper<>();
@@ -69,6 +70,7 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Map<ModuleVO, List<PermissionVO>> queryPermissionsGroupedByModule() {
         List<SysModule> modules = moduleMapper.selectList(
                 new LambdaQueryWrapper<SysModule>().orderByAsc(SysModule::getId)
@@ -95,6 +97,7 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<PermissionVO> listAllForTree() {
         // 字典类小数据（种子 17，预期 ≤1000）豁免分页（§4）；平铺按 moduleId,id 升序
         return permissionMapper.selectList(
@@ -106,6 +109,7 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PermissionVO getPermissionById(Long id) {
         SysPermission permission = permissionMapper.selectById(id);
         if (permission == null) {

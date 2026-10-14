@@ -52,6 +52,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public IPage<RoleVO> queryRoles(RoleQueryDTO dto) {
         Page<SysRole> page = new Page<>(dto.page(), dto.size());
         LambdaQueryWrapper<SysRole> wrapper = new LambdaQueryWrapper<>();
@@ -80,6 +81,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RoleVO getRoleById(Long id) {
         SysRole role = roleMapper.selectById(id);
         if (role == null) {
@@ -252,6 +254,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<PermissionSimpleVO> listAllPermissions() {
         List<SysPermission> permissions = permissionMapper.selectList(
                 new LambdaQueryWrapper<SysPermission>()
