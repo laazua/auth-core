@@ -19,10 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class RoleServiceInterfaceSpec {
 
     @Test
-    @DisplayName("接口声明了全部 6 个公共方法")
+    @DisplayName("接口声明了全部 7 个公共方法")
     void roleServiceInterfaceHasAllMethods() {
         Method[] methods = RoleService.class.getDeclaredMethods();
-        assertEquals(6, methods.length, "接口应声明 6 个公共方法");
+        assertEquals(7, methods.length, "接口应声明 7 个公共方法");
 
         Set<String> methodNames = Stream.of(methods)
                 .map(Method::getName)
@@ -34,6 +34,7 @@ class RoleServiceInterfaceSpec {
         assertTrue(methodNames.contains("updateRole"), "应包含 updateRole 方法");
         assertTrue(methodNames.contains("deleteRole"), "应包含 deleteRole 方法");
         assertTrue(methodNames.contains("assignPermissions"), "应包含 assignPermissions 方法");
+        assertTrue(methodNames.contains("listAllPermissions"), "应包含 listAllPermissions 方法");
     }
 
     @Test
