@@ -1,123 +1,116 @@
-# Sprint 工作单：sprint-099
+# Sprint 工作单：sprint-100
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-099 |
-| 所属模块 | **hyg**（流程卫生/工程化改进） |
-| 功能点 ID | **web/053**（冒烟改进方案 A：单用例/前缀过滤参数，用户 2026-10-14 已确认） |
-| 功能点名称 | smoke.sh 过滤参数支持（日常单点验证提速；全量基线口径零影响） |
-| 状态 | **DONE** |
-| 创建时间 | 2026-10-14 |
+| Sprint ID | sprint-100 |
+| 所属模块 | **roles** |
+| 功能点 ID | **roles/003** |
+| 功能点名称 | 角色分配权限「权限不存在」错误码撞车修复（冒烟仅剩 2 ❌ 的根因清偿） |
+| 状态 | **PLANNED** |
+| 创建时间 | 2026-10-15 |
 
 ## 前置依赖
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| tdd-workflow「冒烟测试」节 | smoke.sh 为强制门禁脚本，禁止删除既有用例 | ✅ |
-| 用户确认 | 方案 A（单用例参数）确认、方案 B（批次合并）暂不做 | ✅ |
+| roles/002 | 角色-权限分配 API（本单修复其 AC2 错误码口径缺陷） | ✅ |
 
 ## 业务背景
 
-**根因（sprint-098 会话分析）**：冒烟 77 用例中 25+ 个各自起一个 `mvn -Dtest` 定向调用——每次 mvn 都重启 JVM+加载 Spring 上下文（约 8-15s），串行累计占全量冒烟约 80% 时间。日常开发「只验证本单新用例」也被迫全量跑 ~15 分钟。
+**根因（Planner 2026-10-15 只读取证）**：`RoleServiceImpl:182` 用 `BusinessException(1201, "权限不存在")`，但 1201 在 Permission 域=「权限名已存在」（PermissionControllerTest 锁定 409+1201 三条断言）；`GlobalExceptionHandler` 按 code 映射 → 1201→**409 CONFLICT**。而 roles/002 当期 AC2 契约=「权限不存在返回 **400**」（`RoleControllerTest:466` `status().isBadRequest()+code 1201`）→ 400 vs 409 恒红。
 
-**方案 A（本单，已确认）**：`bash scripts/smoke.sh [匹配串]`——首位置参数为用例名**子串过滤**；不带参数=全量 77 用例（**基线口径零影响**，所有既有「基线 77=…」对照照抄）；无匹配时非零退出防误过滤假 PASS。
+**冒烟影响**：roles-001（RoleControllerTest,RoleServiceTest）与 roles-002（assignPermissions 四方法）**❌ 同根**——均为 466 这一条断言。修复后冒烟 **❌ 由 2 降 0（首次全绿 SMOKE PASSED）**，mvn 基线 **4F+2E→3F+2E**（RoleController 项移出豁免清单）。
 
-**方案 B（批次合并）不做**：需重定义用例数/❌ 统计粒度，基线口径成本高，用户已裁决暂不做。
+**Planner 定夺（handler 注释明示「通用错误码口径 Planner 定夺登记于工作单」）**：**保 HTTP 400、错误码 1201→400**——理由：
+1. AC2 原契约（400）是 roles/002 当期登记的需求，本单修的是「错误码撞车」不是「状态码契约」；
+2. 先例=PermissionServiceImpl 两处 `BusinessException(400, "module_id 不存在")`（关联引用非法=参数校验失败→400，与 handler 口径注释「参数校验失败 400、不侵占资源段」一致）；权限分配传入不存在的 permissionId 同属「请求体引用非法」；
+3. 否决案 A（对齐 1001→404）：改 HTTP 契约（400→404）+须改方法名 Returns400→404 + 连带改 smoke roles-002 引用——动静大且无消费方依赖支撑；否决案 C（新造 1204→默认 400）：无 AC 依据凭空造码。
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — 单用例过滤：`bash scripts/smoke.sh web-052` 仅执行 1 条用例（输出仅含 web-052 行、`SMOKE PASSED（1 用例）`、EXIT=0）——修复前行为=无参全量跑（红态=当前脚本不认参数仍全量 77）；修后定向绿。← 用例 `AC1 ← 用例 bash scripts/smoke.sh web-052 行为断言`
-- [ ] AC2 — 子串匹配多用例：`bash scripts/smoke.sh roles` 匹配 roles-001/002 及名中含 roles 的用例（计数=匹配数、EXIT=1 因 roles-001/002 既有基线 ❌——断言=输出用例数=匹配数且仅 ❌=roles-001/002）；`bash scripts/smoke.sh web-0` 匹配 web 系全量。← 用例 `AC2 ← 用例 bash scripts/smoke.sh roles 行为断言`
-- [ ] AC3 — 无匹配防呆：`bash scripts/smoke.sh zzz-not-exist` 非零退出+提示「无匹配用例」（防误过滤把全跳过当 PASS）。← 用例 `AC3 ← 用例 bash scripts/smoke.sh zzz-not-exist EXIT≠0`
-- [ ] AC4 — 全量基线零影响：不带参 `bash scripts/smoke.sh` 仍跑 **77 用例=75✅+2❌+2⏭**（❌=roles-001/002、⏭=infra-004/model-006），与既有基线口径逐字一致；过滤逻辑不得跳过/删除任何既有用例定义。← 用例 `AC4 ← 用例 冒烟全量 77`
+- [ ] AC1 — 测试先行 RED：`RoleControllerTest` AC2 段（:441-466）`$.code` 断言 1201→**400**（status 400 保留、方法名 `assignPermissionsInvalidPermissionReturns400` 保留→smoke roles-002 引用零改）→ 定向跑 **必红**：旧实现 1201→409，`Status expected:<400> but was:<409>`。← 用例 `AC1 ← 用例 mvn -Dtest='RoleControllerTest#assignPermissionsInvalidPermissionReturns400' 红`
+- [ ] AC2 — 实现 GREEN：`RoleServiceImpl:182` `BusinessException(1201, "权限不存在")`→`BusinessException(400, "权限不存在")` + `RoleService.java:71` javadoc `code=1201 权限不存在`→`code=400 权限不存在`（引用非法）→ 定向绿：`RoleControllerTest,RoleServiceTest` 15 用例 0 失败、`assignPermissions*` 四方法全绿。← 用例 `AC2 ← 用例 mvn -Dtest='RoleControllerTest,RoleServiceTest' 绿`
+- [ ] AC3 — 门禁基线更新：`mvn -q verify` 新基线 **168=3F+2E**（四类豁免=DataSourceConfigBinding×2、SeedData `sys_role 22≠2`、TestLayersSpec/TestUtilsSpec Docker 2E；**RoleController:466 项移出豁免清单**）；前端三线=基线（lint 0E|166W、test 324/324、build ✓）——前端零动零回归（frontend 无 1201/409 角色分配依赖，已 grep 实证）。← 用例 `AC3 ← 用例 五线基线对照`
+- [ ] AC4 — 冒烟全绿：`bash scripts/smoke.sh` → **0❌**（roles-001/002 ❌→✅），`SMOKE PASSED（77 用例）`、⏭=infra-004/model-006 不变、✅ 计数=75（77-2⏭，用 `grep -c "✅ 通过"` 精确取证）。← 用例 `AC4 ← 用例 bash scripts/smoke.sh 首次 SMOKE PASSED`
 
-### AC1/AC2/AC3 — 过滤行为（过期/新增能力型）
+### AC1 — 测试先行（RED）
 
-**步骤与期望**：改 `smoke_case`/`smoke_case_cond` 开头加过滤（首参数 FILTER，name 不含 FILTER 则 return 0 不计数不输出；函数区后记录 MATCHED 计数）；脚本尾部无匹配检测非零退出。修复前红态=当前脚本无过滤能力（`bash scripts/smoke.sh web-052` 会全量跑——Planner 2026-10-14 只读取证在案）。
+**步骤与期望**：改 :461 断言 `.andExpect(jsonPath("$.code").value(1201))` → `value(400)`；javadoc「Then status=400、code=1201」→「code=400」。跑 `mvn -q test -Dtest='RoleControllerTest#assignPermissionsInvalidPermissionReturns400'` 期望失败（当前 impl 409/1201）。
 
-**用例**：`AC1/AC2/AC3 ← 用例 三行为定向断言`
+**用例**：`AC1 ← 用例 定向红`
 
-### AC4 — 全量基线
+### AC2 — 实现（GREEN）
 
-**用例**：`AC4 ← 用例 bash scripts/smoke.sh EXIT=1+77 用例+75✅+2❌+2⏭`
+**步骤与期望**：impl :182 code 1201→400、RoleService javadoc 同步；定向跑 15 用例全绿。
+
+**用例**：`AC2 ← 用例 定向绿`
+
+### AC3/AC4 — 门禁与冒烟
+
+**用例**：`AC3/AC4 ← 用例 五线+全量冒烟`
 
 ## 测试清单
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | `bash scripts/smoke.sh "web/052"`（1 用例 ✅） | AC1 | **✅ EXIT=0 `SMOKE PASSED（1 用例）`**（口径注记：该用例名为斜杠 `web/052`，web 系均斜杠、其余横杠，过滤为通用子串两者皆可） |
-| 2 | `bash scripts/smoke.sh roles`（仅 roles-001/002 两用例、❌=2） | AC2 | **✅ 恰匹配 2 条**（`SMOKE FAILED（2 用例）`=既有基线 ❌，过滤计数正确） |
-| 3 | `bash scripts/smoke.sh zzz-not-exist`（EXIT≠0） | AC3 | **✅ EXIT=2** `无匹配用例: zzz-not-exist` |
-| 4 | `bash scripts/smoke.sh` 全量 77=75✅+2❌+2⏭ | AC4 | **✅ `SMOKE FAILED（77 用例）`**：❌=roles-001/002、⏭=infra-004/model-006，与基线逐字一致 |
+| 1 | `RoleControllerTest#assignPermissionsInvalidPermissionReturns400` 定向红（改断言后、改 impl 前） | AC1 | 待红 |
+| 2 | `mvn -q test -Dtest='RoleControllerTest,RoleServiceTest'` 15/15 绿 | AC2 | 待绿 |
+| 3 | `mvn -q verify` 168=3F+2E（新豁免四类） | AC3 | 待亲测 |
+| 4 | 前端三线 0E\|166W / 324 / ✓ | AC3 | 待亲测 |
+| 5 | `bash scripts/smoke.sh` 0❌ SMOKE PASSED（77） | AC4 | 待亲测 |
 
 ## RED 证据
 
 ```text
-[修复前红态 2026-10-14 结构取证] git show HEAD:scripts/smoke.sh | grep -c FILTER → 0（旧脚本无 FILTER 变量、不认任何参数，
-带匹配串=仍全量 77 串行跑 ~15 分钟——sprint-098 全量亲测在案）；修后三行为断言转绿（AC1/AC2/AC3 定向 EXIT=0/2/2 恰符合）
+[修复前红态] 证据槽 — 待 Generator 填写（AC1 断言改 400 后定向跑：expected:<400> but was:<409>）
 ```
 
 ## 门禁与冒烟记录
 
-> Generator 亲测填写。基线口径（2026-10-14 sprint-098 评审实测）。
+> Generator 亲测填写。历史基线：mvn 168=4F+2E（本单目标 3F+2E）、冒烟 77=73✅+2❌+2⏭（本单目标 0❌）。
 
-| 门禁项 | 基线口径 | 实测 | 结论 |
+| 门禁项 | 本单后基线 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 168 用例 4F+2E | 4F+2E=基线五类豁免文件（DataSourceConfigBinding/RoleController/SeedData/TestLayersSpec/TestUtilsSpec） | ✅=基线 |
-| `npm run lint` | 0E\|166W | 0E\|166W | ✅=基线 |
-| `npm run test` | 41 文件 324/324 | 41/324 全绿 | ✅=基线 |
-| `npm run build` | ✓ | ✓ 16.60s | ✅=基线 |
-| `bash scripts/smoke.sh`（全量） | 77=75✅+2❌+2⏭️ | 77=75✅+2❌(roles-001/002)+2⏭️(infra-004/model-006) | ✅=基线逐字一致 |
-| 过滤行为三断言（AC1-3） | — | 单跑 1✅/子串 2 条/无匹配 exit 2 | ✅ 全绿 |
+| 后端 `mvn -q verify` | 168=**3F**+2E（RoleController 项移出） | 待填 | 待验 |
+| `npm run lint` | 0E\|166W | 待填（零动） | 待验 |
+| `npm run test` | 41 文件 324/324 | 待填（零动） | 待验 |
+| `npm run build` | ✓ | 待填（零动） | 待验 |
+| `bash scripts/smoke.sh` | **0❌**（77 用例、⏭=2、SMOKE PASSED） | 待填 | 待验 |
 
 ## 实现说明
 
-**提交物证**：单段 `d2340c9 feat`（无 test 段可拆：行为断言=跑脚本本体无独立测试文件，用例区按 AC4 零动不新增——单段理由同 036c2a 过期修复型，Generator 主动披露供 Evaluator 裁决）。
-
 **实现要点**：
-1. 脚本头部加 `FILTER="${1:-}"`（set -u 下安全默认空）；`smoke_case`/`smoke_case_cond` 函数开头：`if [ -n "$FILTER" ] && [[ "$name" != *"$FILTER"* ]]; then return 0; fi`。
-2. 匹配计数 `RAN`（实际执行数）与尾部检测：`if [ -n "$FILTER" ] && [ "$RAN" -eq 0 ]; then echo "无匹配用例: $FILTER"; exit 2; fi`。
-3. 头部注释补一行用法说明（`bash scripts/smoke.sh [用例名子串]`）。
-4. 三行为定向断言跑绿；全量 77 复跑=基线。
+1. test 段：RoleControllerTest :461 断言 1201→400 + javadoc → 定向红（物证）。
+2. feat 段：RoleServiceImpl:182 code 1201→400；RoleService.java:71 javadoc 同步 → 定向绿 → 五线 → 全量冒烟 0❌。
+3. 基线口径迁移：后续所有单的 mvn 基线=168=3F+2E、冒烟基线=0❌（Evaluator 回写时在 session-state 最近更新登记新口径）。
 
-**超限熔断**：改动 >1 文件（仅 smoke.sh）、既有用例被删除/改名、全量基线漂移 → 停止回报。
+**超限熔断**：改动 >3 业务文件、动 `GlobalExceptionHandler` 映射表、动 PermissionControllerTest、动 smoke.sh 用例区、改方法名（破坏 smoke roles-002 引用）→ 停止回报。
 
-**不动清单**：用例区任何既有 `smoke_case*` 行（禁止删除/改名/改命令）；tdd-workflow.md 规则语义；mvn/前端三线基线；application.yml.template D 态。
+**不动清单**：`GlobalExceptionHandler` 1201→409 映射（Permission 域锁定）；PermissionServiceImpl 1001/400 语义；smoke.sh 用例区（roles-002 引用方法名不变）；application.yml.template D 态（永不入提交）；前端全部。
 
-## 交付物（1 业务文件）
+## 交付物（3 业务文件）
 
-1. `scripts/smoke.sh` — FILTER 参数+RAN 计数+无匹配非零退出+用法注释
-2. 文档回写：task/session/iteration/registry 四件
+1. `backend/src/test/java/com/authcore/controller/RoleControllerTest.java` — AC2 段断言 code 1201→400 + javadoc
+2. `backend/src/main/java/com/authcore/service/impl/RoleServiceImpl.java` — :182 code 1201→400
+3. `backend/src/main/java/com/authcore/service/RoleService.java` — :71 javadoc 同步
 
 ### 新增
 （无）
 
 ### 修改
-- `scripts/smoke.sh`
+- `backend/src/test/java/com/authcore/controller/RoleControllerTest.java`
+- `backend/src/main/java/com/authcore/service/impl/RoleServiceImpl.java`
+- `backend/src/main/java/com/authcore/service/RoleService.java`
 
 ### 删除
 （无）
 
 ### 变更计数
 
-业务文件 **1**；用例区零动（全量 77 用例与基线口径逐字一致）；后端/前端零动。
+业务文件 **3**；smoke/前端/handler 零动；mvn 豁免五类→四类、冒烟 ❌ 2→0。
 
 ## 评审意见
 
-**sprint-099 评审通过 — 均分 9.2/10**（2026-10-15 Evaluator）
-
-| 维度 | 分 | 依据 |
-|------|----|------|
-| 需求符合 | 9.5 | 4 AC 亲核全满足：AC1 `smoke.sh "web/052"`=1 用例 ✅ EXIT=0、AC2 `roles`=恰 2 条（既有 ❌ 计数正确）、AC3 `zzz-not-exist`=EXIT=2、AC4 全量 77=75✅+2❌+2⏭ 逐字=基线 |
-| 设计/实现 | 9.5 | FILTER 首参数+双入口过滤+RAN 计数+exit 2 防呆，+18 行纯增零删；不带参路径逻辑上完全不受影响（`FILTER=""` 短路全部过滤分支）；1 文件最小集 |
-| 门禁/回归 | 10 | Evaluator 亲跑：mvn 4F+2E=基线五类豁免文件（EXIT=1 即基线红）、lint 0E\|166W、test 41/324、build ✓16.80s、全量冒烟=基线；`git show d2340c9` 实证 18 insertions/0 deletions 既有用例 |
-| 证据/物证 | 8.5 | RED=结构取证（旧脚本 `grep -c FILTER`→0，全量跑红态引 sprint-098 亲测）+修后三断言定向绿在案；扣分=红态未做可执行复现（-1.0，过滤能力先天约束，同 036c2a 类型但本次连定向旧脚本对照都未跑） |
-| 沟通/流程 | 9 | task 四 AC 结果/门禁表/单段 feat 披露完整；docs `c8d5003`；过程零计划外文件；扣分=AC1 口径笔误（`web-052` 实为 `web/052`，Generator 实测中纠正并注记，规划期应先核对用例名 -0.5) |
-
-**六一票否决**：零命中（无夹带、无跳门禁、无 force push、无跳 Evaluator、无基线漂移、无文档缺失）。
-
-**扣分项（-0.8）**：① 红态仅结构取证未跑可执行对照（-1.0→综合 -0.5）；② AC1 用例名口径笔误实测纠正（-0.2）；③ 单段 feat 无 test 段——裁决**合规**：行为断言=跑脚本本体无独立测试文件、用例区 AC4 零动不新增，与 036c2a 单段先例同构（-0.1）。
-
-**结论**：PASS。web/053 收口——冒烟改进方案 A 落地，日常单点验证从全量 ~15 分钟降到秒级（`bash scripts/smoke.sh <子串>`），全量 77 基线口径逐字不变。后续候选：036c2b 冗余覆盖清理（>6 问案B）、036c3 串联 :deep 42 处、web/045 BaseInput、roles-001/002 基线 ❌（现存冒烟仅剩 2 ❌ 的根因治理）。
+（待 Evaluator 评审）

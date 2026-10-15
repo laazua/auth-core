@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: ✅ **sprint-099 / web/053 评审通过 9.2/10（DONE）**，移交 Planner
-- 当前模块: web
-- 当前功能点: web/053 冒烟改进方案 A 收口；冒烟全量基线 77=75✅+2❌+2⏭ 不变
+- 状态: 🔄 **sprint-100 规划完成（PLANNED，roles/003 错误码撞车修复）**，移交 Generator
+- 当前模块: roles
+- 当前功能点: roles/003 RoleServiceImpl:182 1201→400（3 文件；冒烟 ❌ 2→0、mvn 4F+2E→3F+2E）
 
 
 ## 下一步动作
-  Planner：读 `.harness/planner.md` 并严格执行——先只读探查候选再定单。候选：① **roles-001/002 基线 ❌ 根因治理**（冒烟现存仅 2 ❌，先只读跑定向看根因是否同 036c2a 过期断言型——若是则小单清零冒烟）；② web/036c2b 冗余覆盖清理（预估 >6 文件问案B，需用户裁决拆分）；③ web/036c3 串联 :deep 42 处；④ web/045 BaseInput。用户带新报障/新需求则以其优先。
+  Generator：读 `.harness/generator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-100 / roles/003）。TDD 两段式：test 段=RoleControllerTest:461 断言 code 1201→400（定向红 expected:<400> but was:<409>）→ feat 段=RoleServiceImpl:182+RoleService javadoc 1201→400（定向绿 15/15）→ 五线（mvn 新基线 168=3F+2E）→ 全量冒烟预期 **0❌ SMOKE PASSED（77）**。严守不动清单（handler 映射表/PermissionControllerTest/smoke 用例区/前端/application.yml.template）；>3 文件熔断回报。完成后置 AWAITING_REVIEW 移交 Evaluator。
 
 ## 挂起
 - [卫生项 2026-10-14] 死文件清理：`views/system/PermissionView.vue`（21 行占位，/system/permissions 路由指向 system/IndexView.vue 非它）与 `views/system/ModuleView.vue`（21 行占位，/system/modules 同款）——零功能影响，待 Planner 立卫生小单删除
@@ -55,6 +55,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-15: Planner — kickoff sprint-100（roles/003，4 条验收标准：RoleServiceImpl:182 错误码撞车 1201→400 保 HTTP 400（AC2 原契约+module_id 400 先例；否决 1001→404 与新造 1204）；3 文件；目标=冒烟 ❌ 2→0 首次 SMOKE PASSED+mvn 豁免五类→四类）
 - 2026-10-15: Evaluator — pass sprint-099（web/053，平均分 9.2/10：4 AC 亲核全满足+五线=基线亲测+diff 18 行纯增零删，六否决零命中；扣分=红态结构取证-0.5、AC1 口径笔误-0.2、单段 feat -0.1 合规；冒烟改进方案 A 收口）
 - 2026-10-14: Generator — sprint-099/web/053 交付（`d2340c9 feat` 单段 FILTER 过滤参数+RAN 计数+exit 2 防呆；四 AC 亲测全绿：单跑 1✅/子串 2 条/无匹配 exit 2/全量 77 逐字=基线；五线=基线；单段理由已披露移交 Evaluator 裁决）
 - 2026-10-14: Planner — kickoff sprint-099（web/053，4 条验收标准：单用例过滤/子串匹配/无匹配防呆/全量基线零影响，1 文件 smoke.sh；方案 A 立项、方案 B 裁决不做）
