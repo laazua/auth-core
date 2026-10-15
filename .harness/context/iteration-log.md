@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-15: Planner — kickoff sprint-101（web/036c2b，4 条验收标准：死代码清理——Layout.vue 103 行+styles/index.ts 4 行删除+components/index.ts 坏导出行；只读实测 4 文件 ≤6 无需问案B（sprint-067「>6」预估证伪）；smoke 用例 77→78 护栏先行；barrel 整体移除另案预留）
 - 2026-10-15: Evaluator — pass sprint-100（roles/003，平均分 9.6/10：4 AC 亲核全满足（定向红 409 实证→15/15 绿、mvn 新基线 3F+2E、冒烟**首次 SMOKE PASSED 77 用例 0❌**、前端=基线），diff 恰 3 文件 5+/5-、不动清单 0 行、六否决零命中；扣分=mvn 计数双口径未澄清-0.25+冒烟 stderr 噪声-0.15；新基线口径生效）
 - 2026-10-15: Generator — sprint-100/roles/003 交付 `250ffea test`→`b3f0e33 feat`（RoleControllerTest 断言 1201→400 定向红 409→RoleServiceImpl:182 code 400+javadoc 15/15 绿；四 AC 全绿=冒烟**首次 SMOKE PASSED 77 用例 0❌**+mvn 新基线 3F+2E+前端三线=基线；3 文件零越界）
 - 2026-10-15: Planner — kickoff sprint-100（roles/003，4 条验收标准：角色分配权限「权限不存在」错误码撞车修复（1201→400 保 HTTP 400，3 文件）；根因=1201 权限名已存在/权限不存在语义撞车致 409 vs AC2 契约 400，冒烟 roles-001/002 ❌ 同根；目标冒烟首次 0❌ 全绿）
