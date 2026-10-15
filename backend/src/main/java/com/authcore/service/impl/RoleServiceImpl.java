@@ -179,7 +179,7 @@ public class RoleServiceImpl implements RoleService {
         if (permissionIds != null && !permissionIds.isEmpty()) {
             List<SysPermission> perms = permissionMapper.selectBatchIds(permissionIds);
             if (perms.size() != permissionIds.size()) {
-                throw new BusinessException(1201, "权限不存在");
+                throw new BusinessException(400, "权限不存在");
             }
         }
 

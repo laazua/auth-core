@@ -68,7 +68,7 @@ public interface RoleService {
      *
      * @param roleId      角色 ID
      * @param permissionIds 权限 ID 列表
-     * @throws BusinessException code=1001 角色不存在；code=1201 权限不存在
+     * @throws BusinessException code=1001 角色不存在；code=400 权限不存在（引用非法=参数校验失败）
      */
     void assignPermissions(Long roleId, List<Long> permissionIds);
 
