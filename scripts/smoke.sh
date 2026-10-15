@@ -656,6 +656,17 @@ smoke_case "web/047 用户角色放行闭环与回显契约定向测试" bash -c
   npx vitest run src/views/users/RoleAssignDrawer.spec.ts >/tmp/smoke-web-047-fe.log 2>&1 || exit 1
   grep -qE 'Tests  [0-9]+ passed' /tmp/smoke-web-047-fe.log || exit 1
 "
+# web/036c2b：死代码清理与护栏（sprint-101 本单追加：G1 死代码已删+坏导出行已删，G2 零引用护栏；修复前首跑 G1 三断言均 false 必红）
+smoke_case "web-036c2b 死代码清理与护栏" bash -c "
+  FE=/opt/codes/auth-core/frontend
+  # G1 三死代码断言：两文件已删+components/index.ts 坏导出行已删
+  test ! -f \$FE/src/layouts/Layout.vue || exit 1
+  test ! -f \$FE/src/styles/index.ts || exit 1
+  ! grep -q \"from './Layout.vue'\" \$FE/src/components/index.ts || exit 1
+  # G2 零引用护栏：死文件路径全仓零命中（排除测试目录——tags-view 护栏 spec 字符串引用属正常）
+  test -z \"\$(grep -rl 'layouts/Layout.vue' \$FE/src --include='*.vue' --include='*.ts')\" || exit 1
+  test -z \"\$(grep -rl 'styles/index' \$FE/src --include='*.vue' --include='*.ts')\" || exit 1
+"
 # ====================================================================================
 
 if [ -n "$FILTER" ] && [ "$RAN" -eq 0 ]; then
