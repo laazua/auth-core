@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: 🔄 **sprint-101 规划完成（PLANNED，web/036c2b 死代码清理）**，移交 Generator
+- 状态: ✅ **sprint-101 / web/036c2b Generator 交付完成（AWAITING_REVIEW，`a8da1ef test`→`d9c3831 feat`）**，移交 Evaluator
 - 当前模块: web
-- 当前功能点: web/036c2b Layout.vue+styles/index.ts 删除+坏导出行（4 文件；smoke 77→78）
+- 当前功能点: web/036c2b 死代码清理——四 AC 全绿（护栏红→绿、四线=基线、冒烟 78=76✅+2⏭ 0❌）
 
 
 ## 下一步动作
-  Generator：读 `.harness/generator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-101 / web/036c2b）。TDD 两段式：test 段=smoke 追加 web-036c2b 护栏用例首跑红（三文件在场）→ feat 段=git rm 两死文件+components/index.ts 删坏导出行→护栏绿→前端四线（lint/vitest 324 不变/build/vue-tsc）→全量冒烟预期 78=76✅+2⏭ 0❌。严守不动清单（smoke 既有 77 用例/DefaultLayout/components.d.ts/tags-view 护栏 spec/后端）；>4 文件熔断。组件 barrel 整体移除=另案预留不得夹带。完成后置 AWAITING_REVIEW 移交 Evaluator。
+  Evaluator：读 `.harness/evaluator.md` 并严格执行——评审 sprint-101/web/036c2b（工作单 `.harness/context/task.md`）。亲跑重点：① `bash scripts/smoke.sh web-036c2b` 绿；② 全量冒烟复跑 78=76✅+2⏭ 0❌ SMOKE PASSED；③ 前端四线=基线；④ diff 实证=4 文件（2 删+1 改+smoke）、不动清单零动（DefaultLayout/components.d.ts/tags-view 护栏 spec/后端/smoke 既有 77 用例）；⑤ RED 物证复核（a8da1ef 首跑红）+过程披露裁决（首版护栏 G2 引号转义语法错误，未提交前修正）。完成后五维评分+回写四件。
 
 ## 挂起
 - [卫生项 2026-10-14] 死文件清理：`views/system/PermissionView.vue`（21 行占位，/system/permissions 路由指向 system/IndexView.vue 非它）与 `views/system/ModuleView.vue`（21 行占位，/system/modules 同款）——零功能影响，待 Planner 立卫生小单删除
@@ -55,6 +55,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-15: Generator — sprint-101/web/036c2b 交付（`a8da1ef test` 护栏首跑红→`d9c3831 feat` 删 Layout.vue 103 行+styles/index.ts+坏导出行净 -108 行；四 AC 全绿=护栏红→绿+四线=基线+全量冒烟 78=76✅+2⏭ 0❌ SMOKE PASSED；过程披露=首版护栏 G2 引号转义语法错误未提交前修正；移交 Evaluator）
 - 2026-10-15: Planner — kickoff sprint-101（web/036c2b，4 条验收标准：死代码清理 4 文件（Layout.vue 103 行+styles/index.ts+坏导出行+smoke），实测 ≤6 无需问案B（sprint-067 预估「>6」证伪）；smoke 77→78；护栏先行 G1/G2）
 - 2026-10-15: Evaluator — pass sprint-100（roles/003，平均分 9.6/10：4 AC 亲核全满足——真红绿+mvn 新基线 3F+2E+冒烟首次 SMOKE PASSED 77 用例 0❌+前端=基线，diff 恰 3 文件、不动清单 0 行、六否决零命中；扣分=mvn 计数双口径-0.25+stderr 噪声-0.15；新基线口径生效）
 - 2026-10-15: Generator — sprint-100/roles/003 交付（`250ffea test` 断言先行定向红 expected:<400> but was:<409> → `b3f0e33 feat` impl 1201→400+javadoc 15/15 绿；四 AC 亲测全绿：**冒烟首次 SMOKE PASSED（77 用例 ✅=75/❌=0/⏭=2）**、mvn 新基线 3F+2E（RoleControllerTest 移出）、前端三线=基线；3 文件零越界，移交 Evaluator）

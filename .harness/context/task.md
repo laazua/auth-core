@@ -8,7 +8,7 @@
 | 所属模块 | **web** |
 | 功能点 ID | **web/036c2b**（036c2 拆分第二支，前支 036c2a ✅ sprint-098） |
 | 功能点名称 | 死代码清理：Layout.vue + styles/index.ts + components/index.ts 坏导出行 |
-| 状态 | **PLANNED** |
+| 状态 | **AWAITING_REVIEW**（Generator 交付完成 2026-10-15，四 AC 亲测+门禁在案） |
 | 创建时间 | 2026-10-15 |
 
 ## 前置依赖
@@ -55,15 +55,17 @@ TagsView.vue 已先行移除（tags-view-*-removed.spec 护栏在场），不在
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | `bash scripts/smoke.sh web-036c2b` 首跑红（三文件在场） | AC1 | 待红 |
-| 2 | 同上转绿（三文件已删+坏导出行已删） | AC2 | 待绿 |
-| 3 | lint / vitest / build / vue-tsc 四线 | AC3 | 待亲测 |
-| 4 | `bash scripts/smoke.sh` 全量 78=76✅+2⏭ 0❌ | AC4 | 待亲测 |
+| 1 | `bash scripts/smoke.sh web-036c2b` 首跑红（三文件在场） | AC1 | **✅ 红**：`SMOKE FAILED（1 用例）` EXIT=1（G1 三断言 false） |
+| 2 | 同上转绿（三文件已删+坏导出行已删） | AC2 | **✅ 绿**：`SMOKE PASSED（1 用例）` EXIT=0 |
+| 3 | lint / vitest / build / vue-tsc 四线 | AC3 | **✅ 0E\|166W（不变）/ 41 文件 324/324 / ✓ 17.11s / vue-tsc EXIT=0** |
+| 4 | `bash scripts/smoke.sh` 全量 78=76✅+2⏭ 0❌ | AC4 | **✅ `SMOKE PASSED（78 用例）`**：✅=76、❌=0、⏭=2（精确计数） |
 
 ## RED 证据
 
 ```text
-[修复前红态] 证据槽 — 待 Generator 填写（smoke web-036c2b 首跑：G1 三条 test ! -f 均 false → EXIT=1）
+[修复前红态 2026-10-15] smoke web-036c2b 首跑（a8da1ef test 段，三文件在场）→ SMOKE FAILED（1 用例）EXIT=1（G1 三断言 false）
+[GREEN] git rm 两文件+删坏导出行（d9c3831）→ smoke web-036c2b SMOKE PASSED（1 用例）EXIT=0；全量 78=76✅+0❌+2⏭
+[过程披露] 首版护栏用例 G2 内层双引号未转义致 smoke.sh 语法错误（bash -c 外层引号提前闭合）——未提交前发现并修正（bash -n 预检后才首跑红）；红线未破（语法错误非业务红态，修正后正常取得 RED 物证）
 ```
 
 ## 门禁与冒烟记录
@@ -72,11 +74,11 @@ TagsView.vue 已先行移除（tags-view-*-removed.spec 护栏在场），不在
 
 | 门禁项 | 本单后预期 | 实测 | 结论 |
 |--------|---------|------|------|
-| `npm run lint` | 0E（W≤166，死文件删除后实测登记） | 待填 | 待验 |
-| `npm run test` | 41 文件 324/324（不变） | 待填 | 待验 |
-| `npm run build` | ✓ | 待填 | 待验 |
-| `vue-tsc --noEmit` | 零错 | 待填 | 待验 |
-| `bash scripts/smoke.sh` | **78=76✅+2⏭ 0❌**（+1 用例） | 待填 | 待验 |
+| `npm run lint` | 0E（W≤166，死文件删除后实测登记） | 0E\|166W（死文件本就零警告，W 不变） | ✅=基线 |
+| `npm run test` | 41 文件 324/324（不变） | 41/324 全绿 | ✅=基线 |
+| `npm run build` | ✓ | ✓ 17.11s | ✅=基线 |
+| `vue-tsc --noEmit` | 零错 | EXIT=0 零输出 | ✅ |
+| `bash scripts/smoke.sh` | **78=76✅+2⏭ 0❌**（+1 用例） | `SMOKE PASSED（78 用例）`：76/0/2 | ✅ |
 | 后端 | 零动（mvn 不跑，回归面无后端文件） | — | 零动 |
 
 ## 实现说明
