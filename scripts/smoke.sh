@@ -6,11 +6,16 @@
 #     bash scripts/smoke.sh，必须全部通过，并把用例数与结果记入 task.md 的「冒烟记录」槽位。
 #   - Evaluator：必须亲自复跑本脚本（不采信 Generator 自述），结果贴入报告「### 门禁与冒烟实测」节。
 #
+# 用法：bash scripts/smoke.sh [用例名子串] —— 不带参数=全量 77 用例（基线口径）；
+#       带匹配串=仅执行用例名含该子串的用例（日常单点验证提速）；无匹配时非零退出防误过滤假 PASS。
+#
 # 用例要求：幂等、可重复执行；任何一条失败即整体失败（非零退出）。
 set -u
 
 FAIL=0
 CASES=0
+RAN=0
+FILTER="${1:-}"
 
 # 检查 Docker 是否可用（用于 infra-004 Testcontainers 测试）
 docker_available() {
@@ -22,7 +27,11 @@ smoke_case_cond() { # smoke_case_cond <用例名> <条件命令> <测试命令..
   local name="$1"
   local cond_cmd="$2"
   shift 2
+  if [ -n "$FILTER" ] && [[ "$name" != *"$FILTER"* ]]; then
+    return 0
+  fi
   CASES=$((CASES + 1))
+  RAN=$((RAN + 1))
   echo "--- 冒烟用例: $name"
   if eval "$cond_cmd"; then
     if "$@"; then
@@ -39,7 +48,11 @@ smoke_case_cond() { # smoke_case_cond <用例名> <条件命令> <测试命令..
 smoke_case() { # smoke_case <用例名> <命令...>
   local name="$1"
   shift
+  if [ -n "$FILTER" ] && [[ "$name" != *"$FILTER"* ]]; then
+    return 0
+  fi
   CASES=$((CASES + 1))
+  RAN=$((RAN + 1))
   echo "--- 冒烟用例: $name"
   if "$@"; then
     echo "    ✅ 通过"
@@ -644,6 +657,11 @@ smoke_case "web/047 用户角色放行闭环与回显契约定向测试" bash -c
   grep -qE 'Tests  [0-9]+ passed' /tmp/smoke-web-047-fe.log || exit 1
 "
 # ====================================================================================
+
+if [ -n "$FILTER" ] && [ "$RAN" -eq 0 ]; then
+  echo "无匹配用例: $FILTER（用例名子串过滤，可用 bash scripts/smoke.sh 查看全部用例）"
+  exit 2
+fi
 
 if [ "$FAIL" -eq 0 ]; then
   echo "SMOKE PASSED（$CASES 用例）"
