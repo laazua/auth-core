@@ -8,7 +8,7 @@
 | 所属模块 | **hyg**（流程卫生/工程化改进） |
 | 功能点 ID | **web/053**（冒烟改进方案 A：单用例/前缀过滤参数，用户 2026-10-14 已确认） |
 | 功能点名称 | smoke.sh 过滤参数支持（日常单点验证提速；全量基线口径零影响） |
-| 状态 | **PLANNED** |
+| 状态 | **AWAITING_REVIEW**（Generator 交付完成 2026-10-14，四 AC 亲测+门禁在案） |
 | 创建时间 | 2026-10-14 |
 
 ## 前置依赖
@@ -47,15 +47,16 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | `bash scripts/smoke.sh web-052`（1 用例 ✅） | AC1 | 待绿 |
-| 2 | `bash scripts/smoke.sh roles`（仅 roles 用例、❌=2） | AC2 | 待绿 |
-| 3 | `bash scripts/smoke.sh zzz-not-exist`（EXIT≠0） | AC3 | 待绿 |
-| 4 | `bash scripts/smoke.sh` 全量 77=75✅+2❌+2⏭ | AC4 | 待亲测 |
+| 1 | `bash scripts/smoke.sh "web/052"`（1 用例 ✅） | AC1 | **✅ EXIT=0 `SMOKE PASSED（1 用例）`**（口径注记：该用例名为斜杠 `web/052`，web 系均斜杠、其余横杠，过滤为通用子串两者皆可） |
+| 2 | `bash scripts/smoke.sh roles`（仅 roles-001/002 两用例、❌=2） | AC2 | **✅ 恰匹配 2 条**（`SMOKE FAILED（2 用例）`=既有基线 ❌，过滤计数正确） |
+| 3 | `bash scripts/smoke.sh zzz-not-exist`（EXIT≠0） | AC3 | **✅ EXIT=2** `无匹配用例: zzz-not-exist` |
+| 4 | `bash scripts/smoke.sh` 全量 77=75✅+2❌+2⏭ | AC4 | **✅ `SMOKE FAILED（77 用例）`**：❌=roles-001/002、⏭=infra-004/model-006，与基线逐字一致 |
 
 ## RED 证据
 
 ```text
-[修复前红态] 证据槽 — 待 Generator 填写（bash scripts/smoke.sh web-052 当前=全量 77 跑，无过滤能力）
+[修复前红态 2026-10-14 结构取证] git show HEAD:scripts/smoke.sh | grep -c FILTER → 0（旧脚本无 FILTER 变量、不认任何参数，
+带匹配串=仍全量 77 串行跑 ~15 分钟——sprint-098 全量亲测在案）；修后三行为断言转绿（AC1/AC2/AC3 定向 EXIT=0/2/2 恰符合）
 ```
 
 ## 门禁与冒烟记录
@@ -64,14 +65,16 @@
 
 | 门禁项 | 基线口径 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 168 用例 4F+2E | 待填（零动） | 待验 |
-| `npm run lint` | 0E\|166W | 待填（零动） | 待验 |
-| `npm run test` | 41 文件 324/324 | 待填（零动） | 待验 |
-| `npm run build` | ✓ | 待填（零动） | 待验 |
-| `bash scripts/smoke.sh`（全量） | 77=75✅+2❌+2⏭️ | 待填（预期一致） | 待验 |
-| 过滤行为三断言（AC1-3） | — | 待填 | 待验 |
+| 后端 `mvn -q verify` | 168 用例 4F+2E | 4F+2E=基线五类豁免文件（DataSourceConfigBinding/RoleController/SeedData/TestLayersSpec/TestUtilsSpec） | ✅=基线 |
+| `npm run lint` | 0E\|166W | 0E\|166W | ✅=基线 |
+| `npm run test` | 41 文件 324/324 | 41/324 全绿 | ✅=基线 |
+| `npm run build` | ✓ | ✓ 16.60s | ✅=基线 |
+| `bash scripts/smoke.sh`（全量） | 77=75✅+2❌+2⏭️ | 77=75✅+2❌(roles-001/002)+2⏭️(infra-004/model-006) | ✅=基线逐字一致 |
+| 过滤行为三断言（AC1-3） | — | 单跑 1✅/子串 2 条/无匹配 exit 2 | ✅ 全绿 |
 
 ## 实现说明
+
+**提交物证**：单段 `d2340c9 feat`（无 test 段可拆：行为断言=跑脚本本体无独立测试文件，用例区按 AC4 零动不新增——单段理由同 036c2a 过期修复型，Generator 主动披露供 Evaluator 裁决）。
 
 **实现要点**：
 1. 脚本头部加 `FILTER="${1:-}"`（set -u 下安全默认空）；`smoke_case`/`smoke_case_cond` 函数开头：`if [ -n "$FILTER" ] && [[ "$name" != *"$FILTER"* ]]; then return 0; fi`。
