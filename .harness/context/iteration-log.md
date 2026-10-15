@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-15: Generator — sprint-100/roles/003 交付 `250ffea test`→`b3f0e33 feat`（RoleControllerTest 断言 1201→400 定向红 409→RoleServiceImpl:182 code 400+javadoc 15/15 绿；四 AC 全绿=冒烟**首次 SMOKE PASSED 77 用例 0❌**+mvn 新基线 3F+2E+前端三线=基线；3 文件零越界）
 - 2026-10-15: Planner — kickoff sprint-100（roles/003，4 条验收标准：角色分配权限「权限不存在」错误码撞车修复（1201→400 保 HTTP 400，3 文件）；根因=1201 权限名已存在/权限不存在语义撞车致 409 vs AC2 契约 400，冒烟 roles-001/002 ❌ 同根；目标冒烟首次 0❌ 全绿）
 - 2026-10-15: Evaluator — pass sprint-099（web/053，平均分 9.2/10：4 AC 亲核全满足（单跑 1✅/子串恰 2 条/exit 2/全量 77 逐字=基线）+五线=基线亲测+diff 18 行纯增零删，六否决零命中；扣分=红态仅结构取证-0.5、AC1 口径笔误-0.2、单段 feat -0.1 裁决合规；冒烟改进方案 A 收口，单点验证秒级）
 - 2026-10-14: Generator — sprint-099/web/053 交付 `d2340c9 feat`（smoke.sh 单段 FILTER 过滤参数；四 AC 亲测全绿、五线=基线、全量冒烟 77=75✅+2❌+2⏭ 逐字=基线；单段理由=无独立测试文件+用例区零动，披露待 Evaluator 裁决）

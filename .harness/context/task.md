@@ -8,7 +8,7 @@
 | 所属模块 | **roles** |
 | 功能点 ID | **roles/003** |
 | 功能点名称 | 角色分配权限「权限不存在」错误码撞车修复（冒烟仅剩 2 ❌ 的根因清偿） |
-| 状态 | **PLANNED** |
+| 状态 | **AWAITING_REVIEW**（Generator 交付完成 2026-10-15，四 AC 亲测+门禁在案） |
 | 创建时间 | 2026-10-15 |
 
 ## 前置依赖
@@ -55,16 +55,18 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | `RoleControllerTest#assignPermissionsInvalidPermissionReturns400` 定向红（改断言后、改 impl 前） | AC1 | 待红 |
-| 2 | `mvn -q test -Dtest='RoleControllerTest,RoleServiceTest'` 15/15 绿 | AC2 | 待绿 |
-| 3 | `mvn -q verify` 168=3F+2E（新豁免四类） | AC3 | 待亲测 |
-| 4 | 前端三线 0E\|166W / 324 / ✓ | AC3 | 待亲测 |
-| 5 | `bash scripts/smoke.sh` 0❌ SMOKE PASSED（77） | AC4 | 待亲测 |
+| 1 | `RoleControllerTest#assignPermissionsInvalidPermissionReturns400` 定向红（改断言后、改 impl 前） | AC1 | **✅ 红**：`Status expected:<400> but was:<409>`（1 用例 1 失败） |
+| 2 | `mvn -q test -Dtest='RoleControllerTest,RoleServiceTest'` 15/15 绿 | AC2 | **✅ 15/15**（9+6，0 失败 0 错误，surefire 报告实证） |
+| 3 | `mvn -q verify` 168=3F+2E（新豁免四类） | AC3 | **✅ failures=3+errors=2**：F=DataSourceConfigBinding×2+SeedData、E=TestLayers/TestUtils；**RoleControllerTest 移出失败清单** |
+| 4 | 前端三线 0E\|166W / 324 / ✓ | AC3 | **✅ 0E\|166W / 41 文件 324/324 / ✓ 17.10s**（零动=基线） |
+| 5 | `bash scripts/smoke.sh` 0❌ SMOKE PASSED（77） | AC4 | **✅ 首次全绿 `SMOKE PASSED（77 用例）`**：精确计数 ✅=75、❌=0、⏭=2（infra-004/model-006） |
 
 ## RED 证据
 
 ```text
-[修复前红态] 证据槽 — 待 Generator 填写（AC1 断言改 400 后定向跑：expected:<400> but was:<409>）
+[修复前红态 2026-10-15] AC1 断言 1201→400 后、impl 未改：mvn -Dtest='RoleControllerTest#assignPermissionsInvalidPermissionReturns400'
+→ Tests run: 1, Failures: 1 —— java.lang.AssertionError: Status expected:<400> but was:<409>（旧实现 code1201→409 撞车实证）
+[GREEN] impl 1201→400 后：RoleControllerTest 9/9 + RoleServiceTest 6/6 = 15 用例 0 失败 0 错误（surefire XML 实证）
 ```
 
 ## 门禁与冒烟记录
@@ -73,11 +75,11 @@
 
 | 门禁项 | 本单后基线 | 实测 | 结论 |
 |--------|---------|------|------|
-| 后端 `mvn -q verify` | 168=**3F**+2E（RoleController 项移出） | 待填 | 待验 |
-| `npm run lint` | 0E\|166W | 待填（零动） | 待验 |
-| `npm run test` | 41 文件 324/324 | 待填（零动） | 待验 |
-| `npm run build` | ✓ | 待填（零动） | 待验 |
-| `bash scripts/smoke.sh` | **0❌**（77 用例、⏭=2、SMOKE PASSED） | 待填 | 待验 |
+| 后端 `mvn -q verify` | 168=**3F**+2E（RoleController 项移出） | 3F=DataSourceConfigBinding×2+SeedData、2E=TestLayers/TestUtils | ✅ 新基线达成 |
+| `npm run lint` | 0E\|166W | 0E\|166W | ✅=基线 |
+| `npm run test` | 41 文件 324/324 | 41/324 全绿 | ✅=基线 |
+| `npm run build` | ✓ | ✓ 17.10s | ✅=基线 |
+| `bash scripts/smoke.sh` | **0❌**（77 用例、⏭=2、SMOKE PASSED） | `SMOKE PASSED（77 用例）`：✅=75、❌=0、⏭=2 | ✅ **首次全绿** |
 
 ## 实现说明
 
@@ -114,3 +116,5 @@
 ## 评审意见
 
 （待 Evaluator 评审）
+
+**过程物证**：两段式 `250ffea test`（断言先行定向红）→ `b3f0e33 feat`（impl+javadoc 15/15 绿）；零计划外文件；smoke 用例区/前端/handler 映射表零动。
