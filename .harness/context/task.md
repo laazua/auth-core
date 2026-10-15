@@ -8,7 +8,7 @@
 | 所属模块 | **roles** |
 | 功能点 ID | **roles/003** |
 | 功能点名称 | 角色分配权限「权限不存在」错误码撞车修复（冒烟仅剩 2 ❌ 的根因清偿） |
-| 状态 | **AWAITING_REVIEW**（Generator 交付完成 2026-10-15，四 AC 亲测+门禁在案） |
+| 状态 | **DONE** |
 | 创建时间 | 2026-10-15 |
 
 ## 前置依赖
@@ -115,6 +115,18 @@
 
 ## 评审意见
 
-（待 Evaluator 评审）
+**sprint-100 评审通过 — 均分 9.6/10**（2026-10-15 Evaluator）
 
-**过程物证**：两段式 `250ffea test`（断言先行定向红）→ `b3f0e33 feat`（impl+javadoc 15/15 绿）；零计划外文件；smoke 用例区/前端/handler 映射表零动。
+| 维度 | 分 | 依据 |
+|------|----|------|
+| 需求符合 | 10 | 4 AC 亲核全满足：AC1 定向红 `expected:<400> but was:<409>`（撞车实证）、AC2 定向绿 EXIT=0（15/15）、AC3 mvn 新基线 **3F+2E**（RoleControllerTest 不在失败清单）+前端三线=基线（0E\|166W/324/✓17.23s）、AC4 全量冒烟复跑 **`SMOKE PASSED（77 用例）`** ✅=75/❌=0/⏭=2 |
+| 设计/实现 | 10 | 错误码口径定夺（400=参数校验失败，module_id 先例）裁决**正确**：保 AC2 HTTP 契约、避撞 409 已锁码、方法名保留→smoke 引用零改；3 文件 5+/5- 最小集 |
+| 门禁/回归 | 10 | Evaluator 亲跑五线全绿：mvn 3F+2E（F=DataSourceConfigBinding×2+SeedData、E=TestLayers/TestUtils=豁免四类逐条）、前端零动零回归；`git diff 659ec21..b3f0e33 --stat` 实证恰 3 文件 |
+| 证据/物证 | 9 | RED→GREEN 可复现（test 段独立提交先行）、surefire XML 计数实证、冒烟精确计数 75+0+2=77；扣分=mvn 计数双口径未本单澄清（历史「168」vs surefire 解析 193，预存计数法差异 -0.6，建议后续登记统一口径） |
+| 沟通/流程 | 9 | 两段式+docs `3ad4fbe`+不动清单 0 行实证（scripts/frontend/common diff=0）；扣分=冒烟 stderr 噪声（Mockito agent 警告）混排影响取证可读性（-0.4，挂起区登记治理建议） |
+
+**六一票否决**：零命中（无夹带、无跳门禁、无 force push、无跳 Evaluator、无基线漂移未报、无文档缺失；不动清单零触碰）。
+
+**扣分项（-0.4）**：① mvn 用例计数双口径（168 历史口径 vs 193 解析口径）未在本单登记统一（-0.25）；② 冒烟日志 stderr 噪声（-0.15，建议 smoke.sh 将测试命令 stderr 收敛入日志文件，另案）。
+
+**结论**：PASS。roles/003 收口——冒烟**首次 0❌ 全绿**、mvn 豁免五类→四类；新基线口径（mvn 3F+2E、冒烟 77=75✅+2⏭）自本单生效。后续候选：web/036c2b 冗余覆盖清理（>6 问案B）、web/036c3 串联 :deep 42 处、web/045 BaseInput、冒烟 stderr 噪声治理（挂起区）。

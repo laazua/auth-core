@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: ✅ **sprint-100 / roles/003 Generator 交付完成（AWAITING_REVIEW，`250ffea test`→`b3f0e33 feat`）**，移交 Evaluator
-- 当前模块: roles
-- 当前功能点: roles/003 错误码撞车修复——四 AC 亲测全绿；冒烟**首次 SMOKE PASSED（77 用例 0❌）**、mvn 新基线 3F+2E
+- 状态: ✅ **sprint-100 / roles/003 评审通过 9.6/10（DONE）**，移交 Planner
+- 当前模块: roles（已全收口 3/3）
+- 当前功能点: roles/003 错误码撞车修复收口——**冒烟首次 0❌ 全绿**、新基线生效
 
 
 ## 下一步动作
-  Evaluator：读 `.harness/evaluator.md` 并严格执行——评审 sprint-100/roles/003（工作单 `.harness/context/task.md`）。亲跑重点：① 定向绿 `RoleControllerTest,RoleServiceTest` 15/15；② 全量冒烟复跑预期 `SMOKE PASSED（77 用例）`、✅=75/⏭=2；③ mvn verify 新基线 3F+2E（失败文件=DataSourceConfigBinding/SeedData+2E，RoleControllerTest 不在列）；④ 前端三线=基线；⑤ diff 实证 3 文件零越界、不动清单（handler 映射表/smoke 用例区/前端）零动；⑥ 裁决错误码口径定夺（400=参数校验失败先例对齐，AC 原契约 400 保持）。完成后五维评分+新基线口径回写四件。
+  Planner：读 `.harness/planner.md` 并严格执行——先只读探查候选再定单。候选：① web/036c2b 冗余覆盖与死代码清理（预估 >6 问案B——需先只读实测规模，>6 则向用户提问拆分案 A/B）；② web/036c3 串联 :deep 42 处（068 登记，预留）；③ web/045 BaseInput；④ 挂起区冒烟 stderr 噪声治理（1 文件小改）。用户带新报障/新需求则以其优先。
 
 ## 挂起
 - [卫生项 2026-10-14] 死文件清理：`views/system/PermissionView.vue`（21 行占位，/system/permissions 路由指向 system/IndexView.vue 非它）与 `views/system/ModuleView.vue`（21 行占位，/system/modules 同款）——零功能影响，待 Planner 立卫生小单删除
@@ -55,6 +55,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-15: Evaluator — pass sprint-100（roles/003，平均分 9.6/10：4 AC 亲核全满足——真红绿+mvn 新基线 3F+2E+冒烟首次 SMOKE PASSED 77 用例 0❌+前端=基线，diff 恰 3 文件、不动清单 0 行、六否决零命中；扣分=mvn 计数双口径-0.25+stderr 噪声-0.15；新基线口径生效）
 - 2026-10-15: Generator — sprint-100/roles/003 交付（`250ffea test` 断言先行定向红 expected:<400> but was:<409> → `b3f0e33 feat` impl 1201→400+javadoc 15/15 绿；四 AC 亲测全绿：**冒烟首次 SMOKE PASSED（77 用例 ✅=75/❌=0/⏭=2）**、mvn 新基线 3F+2E（RoleControllerTest 移出）、前端三线=基线；3 文件零越界，移交 Evaluator）
 - 2026-10-15: Planner — kickoff sprint-100（roles/003，4 条验收标准：RoleServiceImpl:182 错误码撞车 1201→400 保 HTTP 400（AC2 原契约+module_id 400 先例；否决 1001→404 与新造 1204）；3 文件；目标=冒烟 ❌ 2→0 首次 SMOKE PASSED+mvn 豁免五类→四类）
 - 2026-10-15: Evaluator — pass sprint-099（web/053，平均分 9.2/10：4 AC 亲核全满足+五线=基线亲测+diff 18 行纯增零删，六否决零命中；扣分=红态结构取证-0.5、AC1 口径笔误-0.2、单段 feat -0.1 合规；冒烟改进方案 A 收口）
