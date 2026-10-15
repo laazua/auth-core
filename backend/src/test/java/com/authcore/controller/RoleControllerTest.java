@@ -439,10 +439,10 @@ class RoleControllerTest {
      * AC2: 权限不存在返回 400。
      * Given 不存在的 permissionId
      * When PUT /api/v1/roles/{id}/permissions {permissionIds:[999]}
-     * Then status=400、code=1201
+     * Then status=400、code=400（引用非法=参数校验失败口径，先例 module_id 不存在→400）
      */
     @Test
-    @DisplayName("权限不存在返回 400 code=1201")
+    @DisplayName("权限不存在返回 400 code=400")
     void assignPermissionsInvalidPermissionReturns400() throws Exception {
         String token = getAdminToken();
 
@@ -464,7 +464,7 @@ class RoleControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(1201))
+                .andExpect(jsonPath("$.code").value(400))
                 .andExpect(jsonPath("$.message").exists());
     }
 
