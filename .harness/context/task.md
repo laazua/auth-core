@@ -8,7 +8,7 @@
 | 所属模块 | **web** |
 | 功能点 ID | **web/036c2b**（036c2 拆分第二支，前支 036c2a ✅ sprint-098） |
 | 功能点名称 | 死代码清理：Layout.vue + styles/index.ts + components/index.ts 坏导出行 |
-| 状态 | **AWAITING_REVIEW**（Generator 交付完成 2026-10-15，四 AC 亲测+门禁在案） |
+| 状态 | **DONE** |
 | 创建时间 | 2026-10-15 |
 
 ## 前置依赖
@@ -116,4 +116,20 @@ TagsView.vue 已先行移除（tags-view-*-removed.spec 护栏在场），不在
 
 ## 评审意见
 
-（待 Evaluator 评审）
+**sprint-101 评审通过 — 均分 9.3/10**（2026-10-16 Evaluator）
+
+| 维度 | 分 | 依据 |
+|------|----|------|
+| 需求符合 | 9.5 | 4 AC 亲核全满足：AC1 首跑红 `SMOKE FAILED（1 用例）` EXIT=1、AC2 转绿 EXIT=0、AC3 四线=基线（0E\|166W、41/324、✓16.74s、vue-tsc EXIT=0）、AC4 全量 `SMOKE PASSED（78 用例）` ✅=76/❌=0/⏭=2 |
+| 设计/实现 | 9 | 最小集精确：diff 恰 4 文件 11+/108-（2 删+1 行改+smoke +11）；扣分=G2 护栏注释称「排除测试目录」但实现无排除逻辑（仅因 pattern 与 tags-view 护栏 spec 字符串不撞而侥幸成立——脆弱，未来若有 spec 引用 `layouts/Layout.vue` 字面即误红 -0.5）；另 components/index.ts 整体 barrel 零消费疑似全死未在本单处置（已另案登记，不计分） |
+| 门禁/回归 | 10 | Evaluator 亲跑：前端四线=基线、全量冒烟 78=76✅+0❌+2⏭、不动清单 0 行（`git diff 1fcedb6..d9c3831 -- DefaultLayout.vue components.d.ts backend/ scripts/ ':!scripts/smoke.sh'` = 0）、smoke.sh diff 0 删除（既有 77 用例零动）；净 -108 行 |
+| 证据/物证 | 9 | RED/GREEN 独立复现（首跑红 EXIT=1→绿 EXIT=0）、两段式 `a8da1ef`→`d9c3831`、冒烟精确计数 76+0+2=78；扣分=首版护栏 G2 内层引号未转义致 smoke.sh 语法错误（未提交前自纠并披露 -0.5，过程透明不隐瞒） |
+| 沟通/流程 | 9.5 | task 双段物证/RED 槽/披露完整；扣分=task AC1 文字自相矛盾（「G1 `test -f` 在场才通过」与「G1 改为三断言 `test ! -f`」并存，措辞混乱 -0.25，Planner 侧改进项） |
+
+**六一票否决**：零命中（无夹带、无跳门禁、无 force push、无跳 Evaluator、无基线漂移、无文档缺失；barrel 整体移除未夹带）。
+
+**扣分项（-0.7）**：① G2 注释与实现不符（无测试目录排除逻辑，侥幸成立 -0.5）；② 首版护栏引号转义语法错误（未提交前自纠+已披露 -0.5→综合 -0.25）；③ task AC1 措辞自相矛盾（-0.25，Planner 侧）。
+
+**结论**：PASS。web/036c2b 收口——死代码净 -108 行清零、护栏用例落地（77→78）。后续候选：web/036c3 串联 :deep 42 处（**>6 文件须问案B**）、web/045 BaseInput、挂起区（barrel 整体移除探明/冒烟 stderr 噪声治理/mvn 计数口径统一）。
+
+**改进项（供后续单）**：G2 护栏若需真排除测试目录，应显式 `--exclude='*.spec.ts'`，勿靠 pattern 侥幸。

@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-16: Evaluator — pass sprint-101（web/036c2b，平均分 9.3/10：4 AC 亲核全满足（护栏首跑红 EXIT=1→绿 EXIT=0、前端四线=基线、全量冒烟 SMOKE PASSED 78 用例 76✅+2⏭ 0❌），diff 恰 4 文件 11+/108-、smoke 既有 77 用例零动、不动清单 0 行、六否决零命中；扣分=G2 注释与实现不符-0.5+首版引号转义语法错误未提交自纠-0.25+AC1 措辞自相矛盾-0.25）
 - 2026-10-15: Generator — sprint-101/web/036c2b 交付 `a8da1ef test`→`d9c3831 feat`（护栏首跑红→删 Layout.vue 103 行+styles/index.ts+components/index.ts 坏导出行净 -108 行；四 AC 全绿：四线=基线+全量冒烟 78=76✅+2⏭ 0❌ SMOKE PASSED；披露=首版护栏 G2 引号转义语法错误未提交前修正）
 - 2026-10-15: Planner — kickoff sprint-101（web/036c2b，4 条验收标准：死代码清理——Layout.vue 103 行+styles/index.ts 4 行删除+components/index.ts 坏导出行；只读实测 4 文件 ≤6 无需问案B（sprint-067「>6」预估证伪）；smoke 用例 77→78 护栏先行；barrel 整体移除另案预留）
 - 2026-10-15: Evaluator — pass sprint-100（roles/003，平均分 9.6/10：4 AC 亲核全满足（定向红 409 实证→15/15 绿、mvn 新基线 3F+2E、冒烟**首次 SMOKE PASSED 77 用例 0❌**、前端=基线），diff 恰 3 文件 5+/5-、不动清单 0 行、六否决零命中；扣分=mvn 计数双口径未澄清-0.25+冒烟 stderr 噪声-0.15；新基线口径生效）
