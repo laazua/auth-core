@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: ✅ **sprint-101 / web/036c2b 评审通过 9.3/10（DONE）**，移交 Planner
+- 状态: 🔄 **sprint-102 规划完成（PLANNED，web/054 冒烟输出收敛）**，移交 Generator
 - 当前模块: web
-- 当前功能点: web/036c2b 死代码清理收口（净 -108 行）；冒烟 78=76✅+2⏭ 0❌
+- 当前功能点: web/054 per-case 日志+成功静默+失败回放（1 文件；用例区零动 78 口径不变）
 
 
 ## 下一步动作
-  Planner：读 `.harness/planner.md` 并严格执行——**下一单若选 web/036c3（串联 :deep 42 处）必须先只读实测文件数并向用户问案B**（拆分方式）；若选 web/045 BaseInput 或挂起区小项（barrel 整体移除探明/冒烟 stderr 噪声治理）则按常规建单。候选优先级建议：① 挂起区冒烟 stderr 噪声治理（1 文件小改、评审已两度建议、直接提升取证可读性）；② web/045 BaseInput；③ web/036c3（问案B）。用户带新报障/新需求则以其优先。
+  Generator：读 `.harness/generator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-102 / web/054）。TDD：test 段=合成用例护栏断言（source 函数块+合成失败用例）首跑红（SYNTHETIC_NOISE 泄漏 stdout）→ feat 段=两函数输出收敛（per-case 日志/成功静默/失败 tail -40 入 stderr）→ 三断言+计数器绿 → FILTER 回归（web-052=1 用例、zzz=exit 2）→ 全量冒烟 78=76✅+2⏭ 0❌+噪声计数 0。严守不动清单（用例区 78 条、尾部汇总格式、FILTER 语义、内部自写日志）；>1 文件熔断。完成后置 AWAITING_REVIEW 移交 Evaluator。
 
 ## 挂起
 - [卫生项 2026-10-14] 死文件清理：`views/system/PermissionView.vue`（21 行占位，/system/permissions 路由指向 system/IndexView.vue 非它）与 `views/system/ModuleView.vue`（21 行占位，/system/modules 同款）——零功能影响，待 Planner 立卫生小单删除
@@ -55,6 +55,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-16: Planner — kickoff sprint-102（web/054，4 条验收标准：冒烟用例输出收敛——per-case 日志+成功静默+失败回放末 40 行，噪声归零；1 文件、用例区零动；清偿 sprint-100/101 两轮评审噪声扣分）
 - 2026-10-16: Evaluator — pass sprint-101（web/036c2b，平均分 9.3/10：4 AC 亲核全满足（首跑红→绿、四线=基线、全量冒烟 SMOKE PASSED 78 用例 0❌），diff 恰 4 文件 11+/108-、不动清单 0 行、六否决零命中；扣分=G2 注释与实现不符-0.5+首版引号语法错误自纠-0.25+AC1 措辞矛盾-0.25）
 - 2026-10-15: Generator — sprint-101/web/036c2b 交付（`a8da1ef test` 护栏首跑红→`d9c3831 feat` 删 Layout.vue 103 行+styles/index.ts+坏导出行净 -108 行；四 AC 全绿=护栏红→绿+四线=基线+全量冒烟 78=76✅+2⏭ 0❌ SMOKE PASSED；过程披露=首版护栏 G2 引号转义语法错误未提交前修正；移交 Evaluator）
 - 2026-10-15: Planner — kickoff sprint-101（web/036c2b，4 条验收标准：死代码清理 4 文件（Layout.vue 103 行+styles/index.ts+坏导出行+smoke），实测 ≤6 无需问案B（sprint-067 预估「>6」证伪）；smoke 77→78；护栏先行 G1/G2）

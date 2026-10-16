@@ -1,135 +1,104 @@
-# Sprint 工作单：sprint-101
+# Sprint 工作单：sprint-102
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-101 |
+| Sprint ID | sprint-102 |
 | 所属模块 | **web** |
-| 功能点 ID | **web/036c2b**（036c2 拆分第二支，前支 036c2a ✅ sprint-098） |
-| 功能点名称 | 死代码清理：Layout.vue + styles/index.ts + components/index.ts 坏导出行 |
-| 状态 | **DONE** |
-| 创建时间 | 2026-10-15 |
+| 功能点 ID | **web/054** |
+| 功能点名称 | 冒烟用例输出收敛（stderr/stdout 噪声治理，取证可读性） |
+| 状态 | **PLANNED** |
+| 创建时间 | 2026-10-16 |
 
 ## 前置依赖
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| web/036 | 暗色模式治理（036c2 拆分：036c2a ✅、036c2b 本次、036c3 预留） | 🔄 |
-| web/052 | 死文件清理先例（四占位 View 删除+smoke G1/G2 护栏，sprint-097 PASS 9.0） | ✅ |
+| web/053 | smoke.sh FILTER 过滤参数（本单沿用其计数/过滤语义，不回归） | ✅ |
+| sprint-100 评审意见 | 扣分项② 冒烟 stderr 噪声（本单清偿） | — |
+| sprint-101 评审意见 | 同上再度建议（本单清偿） | — |
 
 ## 业务背景
 
-**Planner 2026-10-15 只读实测**（sprint-067 拆分时预估 036c2b「>6 问案B」，实测证伪——恰 4 文件 ≤6 顶格，**无需问案B**）：
+**根因（Planner 2026-10-16 只读实测）**：`smoke_case`/`smoke_case_cond` 直接 `"$@"` 执行，用例输出（stdout+stderr）全部泄入终端——实测 `model-001` 一条即产生：stdout 侧 Spring banner+INFO 数十行、stderr 侧 Mockito self-attaching/Java agent/`--enable-native-access` 警告。全量 78 用例累计噪声淹没 `✅/❌` 结论行，评审取证与人工阅读体验差（连续两轮评审判罚扣分）。
 
-| 死代码 | 规模 | 实证 |
-|--------|------|------|
-| `src/layouts/Layout.vue` | 103 行 | 全仓 grep 零 import（路由用 DefaultLayout；`layouts/Layout` 命中=0） |
-| `src/styles/index.ts` | 4 行 | 零引用（main.ts 直接 `import '@/styles/global.css'`；scss/css 经 TS `export *` 本就不可导出） |
-| `src/components/index.ts:6` | 1 行 | `export { default as Layout } from './Layout.vue'` 指向**不存在**的 `components/Layout.vue`（坏导出）；该 barrel 零消费方（`from '@/components'` 全仓命中=0，组件经 unplugin 自动导入） |
-
-TagsView.vue 已先行移除（tags-view-*-removed.spec 护栏在场），不在本单。smoke web-015/016/017 当前全绿且断言指向真实产物，**不动**。components/index.ts 整体 barrel 零消费=疑似全死，但拆分登记范围仅「Layout.vue/TagsView.vue/styles.index.ts」三件——本次**只删坏导出行**（最小集），barrel 整体移除另案预留（避免与 unplugin 生成物 components.d.ts 交互风险未探明时扩大动作）。
+**修法**：每条用例输出合并重定向到 per-case 日志文件，成功=静默（仅 `✅ 通过`）；失败=仅回放日志**末 40 行**到 stderr（保留排障信息）+打印日志路径。计数/过滤/退出码语义零变。
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — RED（护栏先行）：新增冒烟用例 `web-036c2b 死代码清理与护栏`——G1 `test -f src/layouts/Layout.vue && test -f src/styles/index.ts`（在场才通过→删除后转绿语义相反：G1 改为**三断言** `test ! -f` Layout.vue、`test ! -f` styles/index.ts、`! grep -q "from './Layout.vue'" components/index.ts`）；G2 护栏=`grep -rn "layouts/Layout\|styles/index" src/ --include=*.vue --include=*.ts` 零命中（排除测试）。**首跑红**=三文件均在场（G1 三条 `test ! -f` 均 false）。← 用例 `AC1 ← 用例 bash scripts/smoke.sh web-036c2b 首跑红`
-- [ ] AC2 — GREEN：`git rm src/layouts/Layout.vue src/styles/index.ts` + 编辑 `src/components/index.ts` 删第 6 行坏导出 → 冒烟用例转绿、前端门禁三线+vue-tsc 全绿。← 用例 `AC2 ← 用例 bash scripts/smoke.sh web-036c2b 绿`
-- [ ] AC3 — 前端门禁=基线：lint 0E（W 数随死文件删除预期下降，**实测登记新值**）、vitest 41 文件 324/324 不变（零 spec 引用死文件，已 grep 实证）、build ✓、`vue-tsc --noEmit` 零错。← 用例 `AC3 ← 用例 前端四线`
-- [ ] AC4 — 冒烟全量：**78=76✅+2⏭**（77+新增 1 用例；❌ 保持 0——sprint-100 起基线）。← 用例 `AC4 ← 用例 bash scripts/smoke.sh 全量 SMOKE PASSED（78 用例）` |
+- [ ] AC1 — RED（合成用例护栏）：`bash -c 'source <(sed -n "1,/^# ===================== 用例区/p" scripts/smoke.sh); smoke_case "syn-x" bash -c "echo SYNTHETIC_NOISE; exit 1"' 2>/dev/null | grep -q SYNTHETIC_NOISE` —— 断言「stdout 零噪声」；**修复前 = 噪声泄漏 stdout（断言 false）**。← 用例 `AC1 ← 用例 合成失败用例 stdout 泄漏红`
+- [ ] AC2 — GREEN（三断言）：① 同 AC1 断言转 true（stdout 零噪声）；② 失败日志回放=stderr 含 `SYNTHETIC_NOISE`（`... 2>&1 >/dev/null | grep -q`）；③ 成功路径 `syn-ok`（echo 噪声+exit 0）→ stdout 与 stderr 均零噪声回放；④ 计数器不回归：失败合成用例后 `$CASES=1`、`$FAIL=1`。← 用例 `AC2 ← 用例 合成用例三断言+计数器`
+- [ ] AC3 — 既有能力回归：`bash scripts/smoke.sh web-052` = 1 用例 ✅（FILTER 不回归）；`bash scripts/smoke.sh zzz-not-exist` = exit 2（无匹配防呆不回归）。← 用例 `AC3 ← 用例 FILTER/防呆回归`
+- [ ] AC4 — 全量冒烟零漂移+噪声收敛：`bash scripts/smoke.sh` → **78=76✅+2⏭ 0❌ `SMOKE PASSED（78 用例）`** 且 stdout 实测 `grep -c "Mockito is currently self-attaching"`=0、`grep -c "SpringBootTestContextBootstrapper"`=0（噪声归零实证）。← 用例 `AC4 ← 用例 全量冒烟 78+噪声计数为 0`
 
-### AC1 — 护栏 RED
+### AC1/AC2 — 合成用例护栏（test-first）
 
-**步骤与期望**：smoke.sh 用例区末尾追加 `web-036c2b` 用例（先于删除提交）；首跑=红（G1 三 `test ! -f` 全 false）。
+**步骤与期望**：先写合成断言（AC1）→ 改两函数（AC2）。合成用例通过 source 用例区前的函数定义块实现，不新增正式冒烟用例（**用例区零动**，78 口径不变——同 053 先例）。
 
-**用例**：`AC1 ← 用例 smoke web-036c2b 首跑 EXIT=1`
+**用例**：`AC1/AC2 ← 用例 合成失败/成功用例定向断言`
 
-### AC2 — 删除 GREEN
+### AC3/AC4 — 回归与冒烟
 
-**用例**：`AC2 ← 用例 smoke web-036c2b EXIT=0`
-
-### AC3/AC4 — 门禁与冒烟
-
-**用例**：`AC3/AC4 ← 用例 前端四线+全量冒烟`
+**用例**：`AC3/AC4 ← 用例 FILTER 回归+全量冒烟噪声计数`
 
 ## 测试清单
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | `bash scripts/smoke.sh web-036c2b` 首跑红（三文件在场） | AC1 | **✅ 红**：`SMOKE FAILED（1 用例）` EXIT=1（G1 三断言 false） |
-| 2 | 同上转绿（三文件已删+坏导出行已删） | AC2 | **✅ 绿**：`SMOKE PASSED（1 用例）` EXIT=0 |
-| 3 | lint / vitest / build / vue-tsc 四线 | AC3 | **✅ 0E\|166W（不变）/ 41 文件 324/324 / ✓ 17.11s / vue-tsc EXIT=0** |
-| 4 | `bash scripts/smoke.sh` 全量 78=76✅+2⏭ 0❌ | AC4 | **✅ `SMOKE PASSED（78 用例）`**：✅=76、❌=0、⏭=2（精确计数） |
+| 1 | 合成失败用例 stdout 零噪声（修复前红） | AC1 | 待红 |
+| 2 | 合成失败用例日志回放+成功路径静默+计数器 `1 1` | AC2 | 待绿 |
+| 3 | `smoke.sh web-052`=1 用例；`smoke.sh zzz-not-exist`=exit 2 | AC3 | 待验 |
+| 4 | 全量 78=76✅+2⏭ 0❌ + stdout 噪声计数 0 | AC4 | 待亲测 |
 
 ## RED 证据
 
 ```text
-[修复前红态 2026-10-15] smoke web-036c2b 首跑（a8da1ef test 段，三文件在场）→ SMOKE FAILED（1 用例）EXIT=1（G1 三断言 false）
-[GREEN] git rm 两文件+删坏导出行（d9c3831）→ smoke web-036c2b SMOKE PASSED（1 用例）EXIT=0；全量 78=76✅+0❌+2⏭
-[过程披露] 首版护栏用例 G2 内层双引号未转义致 smoke.sh 语法错误（bash -c 外层引号提前闭合）——未提交前发现并修正（bash -n 预检后才首跑红）；红线未破（语法错误非业务红态，修正后正常取得 RED 物证）
+[修复前红态] 证据槽 — 待 Generator 填写（合成失败用例 SYNTHETIC_NOISE 泄漏 stdout）
 ```
 
 ## 门禁与冒烟记录
 
-> Generator 亲测填写。当前基线（sprint-100 起生效）：lint 0E|166W、vitest 41/324、build ✓、冒烟 77=75✅+2⏭ 0❌。
+> Generator 亲测填写。基线（sprint-100 起）：冒烟 78=76✅+2⏭ 0❌；前端/后端零动。
 
 | 门禁项 | 本单后预期 | 实测 | 结论 |
 |--------|---------|------|------|
-| `npm run lint` | 0E（W≤166，死文件删除后实测登记） | 0E\|166W（死文件本就零警告，W 不变） | ✅=基线 |
-| `npm run test` | 41 文件 324/324（不变） | 41/324 全绿 | ✅=基线 |
-| `npm run build` | ✓ | ✓ 17.11s | ✅=基线 |
-| `vue-tsc --noEmit` | 零错 | EXIT=0 零输出 | ✅ |
-| `bash scripts/smoke.sh` | **78=76✅+2⏭ 0❌**（+1 用例） | `SMOKE PASSED（78 用例）`：76/0/2 | ✅ |
-| 后端 | 零动（mvn 不跑，回归面无后端文件） | — | 零动 |
+| `bash scripts/smoke.sh` | 78=76✅+2⏭ 0❌ `SMOKE PASSED` | 待填 | 待验 |
+| stdout 噪声计数 | `Mockito...`=0、`SpringBootTestContextBootstrapper`=0 | 待填 | 待验 |
+| 合成用例三断言+计数器 | 全绿 | 待填 | 待验 |
+| FILTER/防呆回归 | 1 用例 / exit 2 | 待填 | 待验 |
+| 前端/后端 | 零动（不跑） | — | 零动 |
 
 ## 实现说明
 
-**实现要点**：
-1. test 段：smoke.sh 用例区末尾追加 web-036c2b 用例（G1 三 `test ! -f`+坏导出行断言、G2 零引用 grep 护栏）→ 首跑红。
-2. feat 段：`git rm src/layouts/Layout.vue src/styles/index.ts`；`components/index.ts` 删 `export { default as Layout } from './Layout.vue';` 行 → smoke web-036c2b 绿 → 前端四线 → 全量冒烟 78。
-3. G2 护栏 grep 排除测试目录（tags-view-*-removed.spec 等护栏测试字符串引用 `components/Layout/TagsView.vue` 路径属正常）。
+**实现要点**（`smoke_case` 与 `smoke_case_cond` 对称改造）：
+1. `local log="${TMPDIR:-/tmp}/smoke-case-$$-${CASES}.log"`；`"$@" >"$log" 2>&1`（cond 的 `eval "$cond_cmd"` 同样重定向 `/dev/null`——cond 输出无诊断价值）。
+2. 成功：`echo "    ✅ 通过"` + `rm -f "$log"`。
+3. 失败：`echo "    ❌ 失败: $name"` + `echo "    ---- 日志末 40 行（$log）----"` + `tail -n 40 "$log"`（**输出到 stderr**）+ `FAIL=1`。
+4. 计数器/过滤/尾部汇总语义零变；既有 14 条用例内部自写 `/tmp/smoke-*.log` 不受影响（其定向 grep 不变）。
+5. 头部注释补一行「诊断输出策略：成功静默、失败回放末 40 行」。
 
-**超限熔断**：改动 >4 文件（含 smoke.sh）、动路由/DefaultLayout.vue/components.d.ts、删 components/index.ts 整体（另案预留）、动 smoke 既有用例（web-015/016/017）、mvn 后端文件 → 停止回报。
+**超限熔断**：改动 >1 文件、动用例区（78 用例增减/改名/改命令）、动尾部汇总格式、改 FILTER 语义、失败日志不留档（丢排障能力）→ 停止回报。
 
-**不动清单**：smoke 既有 77 用例（仅追加 1）；DefaultLayout.vue 及其 spec；components.d.ts（unplugin 生成物）；tags-view-*-removed.spec（护栏）；后端全部；application.yml.template D 态。
+**不动清单**：用例区全部 78 用例；`SMOKE_APP_LOG` 与 14 处内部自写日志；FILTER/RAN/exit 2 语义；SMOKE PASSED/FAILED 汇总行格式；后端/前端全部；application.yml.template D 态。
 
-## 交付物（4 业务文件）
+## 交付物（1 业务文件）
 
-1. `scripts/smoke.sh` — 追加 web-036c2b 用例（77→78）
-2. `frontend/src/layouts/Layout.vue` — 删除（103 行）
-3. `frontend/src/styles/index.ts` — 删除（4 行）
-4. `frontend/src/components/index.ts` — 删坏导出行（1 行）
+1. `scripts/smoke.sh` — 两函数输出收敛+头部注释
 
 ### 新增
 （无）
 
 ### 修改
 - `scripts/smoke.sh`
-- `frontend/src/components/index.ts`
 
 ### 删除
-- `frontend/src/layouts/Layout.vue`
-- `frontend/src/styles/index.ts`
+（无）
 
 ### 变更计数
 
-业务文件 **4**；净 -107 行（103+4+1）+1 冒烟用例；后端零动；组件 barrel 整体移除另案预留。
+业务文件 **1**；用例区零动（78 口径不变）；计数/过滤/退出码语义零变。
 
 ## 评审意见
 
-**sprint-101 评审通过 — 均分 9.3/10**（2026-10-16 Evaluator）
-
-| 维度 | 分 | 依据 |
-|------|----|------|
-| 需求符合 | 9.5 | 4 AC 亲核全满足：AC1 首跑红 `SMOKE FAILED（1 用例）` EXIT=1、AC2 转绿 EXIT=0、AC3 四线=基线（0E\|166W、41/324、✓16.74s、vue-tsc EXIT=0）、AC4 全量 `SMOKE PASSED（78 用例）` ✅=76/❌=0/⏭=2 |
-| 设计/实现 | 9 | 最小集精确：diff 恰 4 文件 11+/108-（2 删+1 行改+smoke +11）；扣分=G2 护栏注释称「排除测试目录」但实现无排除逻辑（仅因 pattern 与 tags-view 护栏 spec 字符串不撞而侥幸成立——脆弱，未来若有 spec 引用 `layouts/Layout.vue` 字面即误红 -0.5）；另 components/index.ts 整体 barrel 零消费疑似全死未在本单处置（已另案登记，不计分） |
-| 门禁/回归 | 10 | Evaluator 亲跑：前端四线=基线、全量冒烟 78=76✅+0❌+2⏭、不动清单 0 行（`git diff 1fcedb6..d9c3831 -- DefaultLayout.vue components.d.ts backend/ scripts/ ':!scripts/smoke.sh'` = 0）、smoke.sh diff 0 删除（既有 77 用例零动）；净 -108 行 |
-| 证据/物证 | 9 | RED/GREEN 独立复现（首跑红 EXIT=1→绿 EXIT=0）、两段式 `a8da1ef`→`d9c3831`、冒烟精确计数 76+0+2=78；扣分=首版护栏 G2 内层引号未转义致 smoke.sh 语法错误（未提交前自纠并披露 -0.5，过程透明不隐瞒） |
-| 沟通/流程 | 9.5 | task 双段物证/RED 槽/披露完整；扣分=task AC1 文字自相矛盾（「G1 `test -f` 在场才通过」与「G1 改为三断言 `test ! -f`」并存，措辞混乱 -0.25，Planner 侧改进项） |
-
-**六一票否决**：零命中（无夹带、无跳门禁、无 force push、无跳 Evaluator、无基线漂移、无文档缺失；barrel 整体移除未夹带）。
-
-**扣分项（-0.7）**：① G2 注释与实现不符（无测试目录排除逻辑，侥幸成立 -0.5）；② 首版护栏引号转义语法错误（未提交前自纠+已披露 -0.5→综合 -0.25）；③ task AC1 措辞自相矛盾（-0.25，Planner 侧）。
-
-**结论**：PASS。web/036c2b 收口——死代码净 -108 行清零、护栏用例落地（77→78）。后续候选：web/036c3 串联 :deep 42 处（**>6 文件须问案B**）、web/045 BaseInput、挂起区（barrel 整体移除探明/冒烟 stderr 噪声治理/mvn 计数口径统一）。
-
-**改进项（供后续单）**：G2 护栏若需真排除测试目录，应显式 `--exclude='*.spec.ts'`，勿靠 pattern 侥幸。
+（待 Evaluator 评审）
