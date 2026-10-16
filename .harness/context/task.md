@@ -8,7 +8,7 @@
 | 所属模块 | **web** |
 | 功能点 ID | **web/054** |
 | 功能点名称 | 冒烟用例输出收敛（stderr/stdout 噪声治理，取证可读性） |
-| 状态 | **PLANNED** |
+| 状态 | **AWAITING_REVIEW**（Generator 交付完成 2026-10-16，四 AC 亲测在案） |
 | 创建时间 | 2026-10-16 |
 
 ## 前置依赖
@@ -46,15 +46,17 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | 合成失败用例 stdout 零噪声（修复前红） | AC1 | 待红 |
-| 2 | 合成失败用例日志回放+成功路径静默+计数器 `1 1` | AC2 | 待绿 |
-| 3 | `smoke.sh web-052`=1 用例；`smoke.sh zzz-not-exist`=exit 2 | AC3 | 待验 |
-| 4 | 全量 78=76✅+2⏭ 0❌ + stdout 噪声计数 0 | AC4 | 待亲测 |
+| 1 | 合成失败用例 stdout 零噪声（修复前红） | AC1 | **✅ 红**：`SYNTHETIC_NOISE` 泄漏 stdout（实证） |
+| 2 | 合成失败用例日志回放+成功路径静默+计数器 `1 1` | AC2 | **✅ 四项全绿**：① stdout 仅「用例名+❌」零噪声；② stderr 回放「`---- 日志末 40 行（/tmp/smoke-case-$$-N.log）----`+SYNTHETIC_NOISE」；③ 成功路径双向静默（仅 ✅）；④ `CASES=1 FAIL=1` |
+| 3 | `smoke.sh "web/052"`=1 用例；`smoke.sh zzz-not-exist`=exit 2 | AC3 | **✅**：`web/052`=1 用例 ✅ EXIT=0；`roles`=2 用例 ✅（sprint-100 后已转绿）；无匹配 EXIT=2（口径注记：该用例名=斜杠 `web/052`，task 原文 `web-052` 为笔误，实测纠正） |
+| 4 | 全量 78=76✅+2⏭ 0❌ + stdout 噪声计数 0 | AC4 | **✅**：`SMOKE PASSED（78 用例）` ✅=76/❌=0/⏭=2；噪声计数 Mockito=**0**、SpringBootTestContextBootstrapper=**0**；stdout 全量仅 **157 行**（原噪声数千行） |
 
 ## RED 证据
 
 ```text
-[修复前红态] 证据槽 — 待 Generator 填写（合成失败用例 SYNTHETIC_NOISE 泄漏 stdout）
+[修复前红态 2026-10-16] 合成失败用例 stdout 原文：--- 冒烟用例: syn-x / SYNTHETIC_NOISE / ❌ 失败: syn-x → 噪声直泄 stdout（断言 false）
+[GREEN] 同用例 stdout 仅 --- 冒烟用例: syn-x / ❌ 失败: syn-x；噪声转 stderr 回放（含日志路径）
+[提交物证] 单段 `41a1833 feat`（+12/-3）——test 段物理载体=合成断言（无独立测试文件、用例区零动不可新增），同 053 单段先例；Generator 主动披露供 Evaluator 裁决
 ```
 
 ## 门禁与冒烟记录
@@ -63,10 +65,10 @@
 
 | 门禁项 | 本单后预期 | 实测 | 结论 |
 |--------|---------|------|------|
-| `bash scripts/smoke.sh` | 78=76✅+2⏭ 0❌ `SMOKE PASSED` | 待填 | 待验 |
-| stdout 噪声计数 | `Mockito...`=0、`SpringBootTestContextBootstrapper`=0 | 待填 | 待验 |
-| 合成用例三断言+计数器 | 全绿 | 待填 | 待验 |
-| FILTER/防呆回归 | 1 用例 / exit 2 | 待填 | 待验 |
+| `bash scripts/smoke.sh` | 78=76✅+2⏭ 0❌ `SMOKE PASSED` | `SMOKE PASSED（78 用例）`：76/0/2 | ✅ |
+| stdout 噪声计数 | `Mockito...`=0、`SpringBootTestContextBootstrapper`=0 | 均=0；stdout 全量 157 行 | ✅ 归零 |
+| 合成用例三断言+计数器 | 全绿 | 四项全绿（见测试清单#2） | ✅ |
+| FILTER/防呆回归 | 1 用例 / exit 2 | `web/052`=1 ✅ / 无匹配 EXIT=2 | ✅ |
 | 前端/后端 | 零动（不跑） | — | 零动 |
 
 ## 实现说明

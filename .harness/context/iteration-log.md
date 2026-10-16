@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-16: Generator — sprint-102/web/054 交付 `41a1833 feat`（smoke 两函数输出收敛：per-case 日志/成功静默/失败回放末 40 行+路径；四 AC 全绿=合成用例四断言（stdout 零噪声+stderr 回放+成功双向静默+计数器 1 1）+全量冒烟 SMOKE PASSED 78 用例 0❌+stdout 噪声计数双零 157 行+FILTER/防呆回归；1 文件零越界；单段披露同 053 先例）
 - 2026-10-16: Planner — kickoff sprint-102（web/054，4 条验收标准：冒烟用例输出收敛（per-case 日志+成功静默+失败回放末 40 行）；1 文件、用例区零动 78 口径不变；清偿 sprint-100/101 评审噪声扣分）
 - 2026-10-16: Evaluator — pass sprint-101（web/036c2b，平均分 9.3/10：4 AC 亲核全满足（护栏首跑红 EXIT=1→绿 EXIT=0、前端四线=基线、全量冒烟 SMOKE PASSED 78 用例 76✅+2⏭ 0❌），diff 恰 4 文件 11+/108-、smoke 既有 77 用例零动、不动清单 0 行、六否决零命中；扣分=G2 注释与实现不符-0.5+首版引号转义语法错误未提交自纠-0.25+AC1 措辞自相矛盾-0.25）
 - 2026-10-15: Generator — sprint-101/web/036c2b 交付 `a8da1ef test`→`d9c3831 feat`（护栏首跑红→删 Layout.vue 103 行+styles/index.ts+components/index.ts 坏导出行净 -108 行；四 AC 全绿：四线=基线+全量冒烟 78=76✅+2⏭ 0❌ SMOKE PASSED；披露=首版护栏 G2 引号转义语法错误未提交前修正）
