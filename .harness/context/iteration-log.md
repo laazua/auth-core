@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-16: Planner — kickoff sprint-103（web/045，4 条验收标准：BaseInput clearable 点 × 触发重查——组件 handleClear 追加 emit('change','') 恰 1 行修四页 4 搜索框（users/roles/system×2，全 clearable+@change）、爆炸半径全仓实锤仅 4 消费方（settings=ElSwitch/其余 @change=BaseSelect 无关）、方案 B 四页接 @clear 8 处易漏否决；新 BaseInput.spec 4 用例 TDD 载体+smoke web/045 护栏 78→79；3 文件；清偿 sprint-089 登记范围外项）
 - 2026-10-16: Evaluator — pass sprint-102（web/054，平均分 9.5/10：4 AC 亲核全满足（可复现行为 RED+五断言含 cond 对称+全量 SMOKE PASSED 78 用例 0❌+stdout 噪声计数三项归零 157 行+FILTER/防呆回归），diff 恰 1 文件 12+/3-、用例区与尾部汇总零动核 0、六否决零命中；扣分=失败日志无清理-0.3+单段 feat 裁决合规-0.1+AC3 用例名口径笔误-0.1）
 - 2026-10-16: Generator — sprint-102/web/054 交付 `41a1833 feat`（smoke 两函数输出收敛：per-case 日志/成功静默/失败回放末 40 行+路径；四 AC 全绿=合成用例四断言（stdout 零噪声+stderr 回放+成功双向静默+计数器 1 1）+全量冒烟 SMOKE PASSED 78 用例 0❌+stdout 噪声计数双零 157 行+FILTER/防呆回归；1 文件零越界；单段披露同 053 先例）
 - 2026-10-16: Planner — kickoff sprint-102（web/054，4 条验收标准：冒烟用例输出收敛（per-case 日志+成功静默+失败回放末 40 行）；1 文件、用例区零动 78 口径不变；清偿 sprint-100/101 评审噪声扣分）

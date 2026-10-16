@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: ✅ **sprint-102 / web/054 评审通过 9.5/10（DONE）**，移交 Planner
+- 状态: 🔄 **sprint-103 规划完成（PLANNED，web/045 BaseInput clear 触发重查）**，移交 Generator
 - 当前模块: web
-- 当前功能点: web/054 冒烟输出收敛收口（噪声归零、stdout 157 行）；基线 78=76✅+2⏭ 0❌
+- 当前功能点: web/045 组件级 1 行修 4 页（新 spec 4 用例 TDD 载体+smoke 护栏 78→79；3 文件）
 
 
 ## 下一步动作
-  Planner：读 `.harness/planner.md` 并严格执行——候选：① web/045 BaseInput（BaseInput 候选，注册表长期保留）；② web/036c3 串联 :deep 42 处（068 登记、**>6 文件须先只读实测并向用户问案B**）；③ 挂起区小项（components/index.ts barrel 整体移除探明/mvn 用例计数口径统一/护栏 G2 反模式根治/失败日志清理）。用户带新报障/新需求则以其优先。**建单前先 `grep 'smoke_case "' scripts/smoke.sh` 核对用例名口径**（099/102 两次笔误 Pattern 根治）。
+  Generator：读 `.harness/generator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-103 / web/045）。TDD 两段式：test 段=新 BaseInput.spec.ts 4 用例首跑红（点 × change 恒 0）+smoke web/045 护栏先行（随 spec ❌）→ feat 段=handleClear 追加 emit('change','') 恰 1 行 → spec 4/4 绿+护栏 ✅ → 四门禁（test 42 文件 328/lint 0E|166W/vue-tsc 0/build ✓）→ 全量冒烟 79=77✅+2⏭ 0❌。严守不动清单（四页 IndexView 零改、BaseInput 仅 handleClear、既有 4 spec 与 78 条用例零动、application.yml.template D 态永不 add）；>3 文件熔断。完成后置 AWAITING_REVIEW 移交 Evaluator。
 
 ## 挂起
 - [卫生项 2026-10-14] 死文件清理：`views/system/PermissionView.vue`（21 行占位，/system/permissions 路由指向 system/IndexView.vue 非它）与 `views/system/ModuleView.vue`（21 行占位，/system/modules 同款）——零功能影响，待 Planner 立卫生小单删除
@@ -55,6 +55,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-16: Planner — kickoff sprint-103（web/045，4 条验收标准：BaseInput clearable 点 × 触发重查——handleClear 只发 clear 不发 change 根因实锤、爆炸半径=BaseInput @change 消费方恰 4 搜索框、方案 A 组件级 1 行修 4 页否决方案 B 八处接线；新 spec 4 用例+smoke 护栏 78→79，3 文件；清偿 sprint-089 范围外登记项）
 - 2026-10-16: Evaluator — pass sprint-102（web/054，平均分 9.5/10：4 AC 亲核全满足——可复现行为 RED+五断言（含 cond 对称）+全量 SMOKE PASSED 78 用例 0❌+噪声计数三项归零+stdout 157 行+FILTER 回归；diff 恰 1 文件 12+/3-、用例区/尾部零动核 0、六否决零命中；扣分=失败日志无清理-0.3+单段-0.1+AC3 口径笔误-0.1；清偿两轮噪声扣分）
 - 2026-10-16: Generator — sprint-102/web/054 交付（`41a1833 feat` 单段；两函数输出收敛 per-case 日志+成功静默+失败回放末 40 行；四 AC 全绿=合成四断言+全量冒烟 SMOKE PASSED 78 用例 0❌+噪声计数 Mockito/SpringBootstrap 双零（stdout 157 行）+FILTER/防呆回归；1 文件零越界）
 - 2026-10-16: Planner — kickoff sprint-102（web/054，4 条验收标准：冒烟用例输出收敛——per-case 日志+成功静默+失败回放末 40 行，噪声归零；1 文件、用例区零动；清偿 sprint-100/101 两轮评审噪声扣分）

@@ -1,120 +1,110 @@
-# Sprint 工作单：sprint-102
+# Sprint 工作单：sprint-103
 
 ## 基本信息
 
 | 字段 | 值 |
 |------|-----|
-| Sprint ID | sprint-102 |
+| Sprint ID | sprint-103 |
 | 所属模块 | **web** |
-| 功能点 ID | **web/054** |
-| 功能点名称 | 冒烟用例输出收敛（stderr/stdout 噪声治理，取证可读性） |
-| 状态 | **DONE** |
+| 功能点 ID | **web/045** |
+| 功能点名称 | BaseInput clearable 点 × 触发重查（clear 只发 clear 不发 change 暗修） |
+| 状态 | **PLANNED** |
 | 创建时间 | 2026-10-16 |
 
 ## 前置依赖
 
 | 依赖 ID | 说明 | 状态 |
 |---------|------|------|
-| web/053 | smoke.sh FILTER 过滤参数（本单沿用其计数/过滤语义，不回归） | ✅ |
-| sprint-100 评审意见 | 扣分项② 冒烟 stderr 噪声（本单清偿） | — |
-| sprint-101 评审意见 | 同上再度建议（本单清偿） | — |
+| web/044 | 四管理页搜索 OR 修复（本单是其范围外登记项的清偿） | ✅ |
+| web/053 | smoke FILTER 参数（本单护栏可单跑 `smoke.sh web/045`） | ✅ |
+| web/054 | 冒烟输出收敛（本单门禁取证=157 行级干净输出） | ✅ |
 
 ## 业务背景
 
-**根因（Planner 2026-10-16 只读实测）**：`smoke_case`/`smoke_case_cond` 直接 `"$@"` 执行，用例输出（stdout+stderr）全部泄入终端——实测 `model-001` 一条即产生：stdout 侧 Spring banner+INFO 数十行、stderr 侧 Mockito self-attaching/Java agent/`--enable-native-access` 警告。全量 78 用例累计噪声淹没 `✅/❌` 结论行，评审取证与人工阅读体验差（连续两轮评审判罚扣分）。
+**根因（Planner 2026-10-16 只读实测）**：`BaseInput.handleClear`（BaseInput.vue:79-83）点击清除按钮时只 `emit('update:modelValue','')`+`emit('clear')`，**不 emit `change`**。四管理页搜索框（users/IndexView:289、roles/IndexView:263、system/IndexView:535、system/IndexView:619）全部 `clearable`+`@change="handleSearch…"` 接线——点 × 后 v-model 清空但不触发重查，**列表保持旧筛选结果（stale）**，用户须再敲一键才刷新。sprint-089（web/044）排查时登记为范围外项保留候选。
 
-**修法**：每条用例输出合并重定向到 per-case 日志文件，成功=静默（仅 `✅ 通过`）；失败=仅回放日志**末 40 行**到 stderr（保留排障信息）+打印日志路径。计数/过滤/退出码语义零变。
+**爆炸半径实锤（全仓 grep）**：BaseInput 的 `@change` 消费方**恰为上述 4 处搜索框**——settings:71 的 `@change="toggleTheme"`=ElSwitch、其余 `@change`=BaseSelect，均与本组件无关；29 处 `<BaseInput` 模板消费中仅这 4 处带 `@change`。**方案 A（组件级 1 行）即可修 4 页，无任何副作用面**。
+
+**方案对比**：A=组件 `handleClear` 追加 `emit('change','')`（1 行，`change` 语义=「值已变更」，清空即是变更，原生 input 的 change 亦在值变化后触发，语义自洽）；B=四页各接 `@clear="handleSearch"`（8 处重复、未来新消费方易漏）。**取 A**。
+
+**TDD 载体**：当前**无 BaseInput spec**（`components/__tests__/` 仅 base-select/breadcrumb/Header）→ 新建 `BaseInput.spec.ts` 4 用例；smoke 追加 `web/045` 护栏（vitest 定向跑+实现锚点），78→79。
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — RED（合成用例护栏）：`bash -c 'source <(sed -n "1,/^# ===================== 用例区/p" scripts/smoke.sh); smoke_case "syn-x" bash -c "echo SYNTHETIC_NOISE; exit 1"' 2>/dev/null | grep -q SYNTHETIC_NOISE` —— 断言「stdout 零噪声」；**修复前 = 噪声泄漏 stdout（断言 false）**。← 用例 `AC1 ← 用例 合成失败用例 stdout 泄漏红`
-- [ ] AC2 — GREEN（三断言）：① 同 AC1 断言转 true（stdout 零噪声）；② 失败日志回放=stderr 含 `SYNTHETIC_NOISE`（`... 2>&1 >/dev/null | grep -q`）；③ 成功路径 `syn-ok`（echo 噪声+exit 0）→ stdout 与 stderr 均零噪声回放；④ 计数器不回归：失败合成用例后 `$CASES=1`、`$FAIL=1`。← 用例 `AC2 ← 用例 合成用例三断言+计数器`
-- [ ] AC3 — 既有能力回归：`bash scripts/smoke.sh web-052` = 1 用例 ✅（FILTER 不回归）；`bash scripts/smoke.sh zzz-not-exist` = exit 2（无匹配防呆不回归）。← 用例 `AC3 ← 用例 FILTER/防呆回归`
-- [ ] AC4 — 全量冒烟零漂移+噪声收敛：`bash scripts/smoke.sh` → **78=76✅+2⏭ 0❌ `SMOKE PASSED（78 用例）`** 且 stdout 实测 `grep -c "Mockito is currently self-attaching"`=0、`grep -c "SpringBootTestContextBootstrapper"`=0（噪声归零实证）。← 用例 `AC4 ← 用例 全量冒烟 78+噪声计数为 0`
+- [ ] AC1 — RED：新增 `frontend/src/components/__tests__/BaseInput.spec.ts`（4 用例）首跑红——「点 × 后 emit change 恰一次且值 `''`」失败（当前 `emitted('change')`=undefined）；smoke `web/045` 护栏同步首跑 ❌（vitest 非 `4 passed`）。← 用例 `AC1 ← 用例 BaseInput.spec 首跑红+护栏红`
+- [ ] AC2 — GREEN：`handleClear` 追加 `emit('change','')`（**恰 1 行**）→ spec 4/4 绿：① change 恰一次=`['']`；② `update:modelValue ['']`+`clear` 双 emit 保留；③ input 保持 focus；④ `clearable=false` 或 `modelValue` 空时无 `.base-input__clear` 按钮（v-if 契约回归）。← 用例 `AC2 ← 用例 BaseInput.spec 4/4 绿`
+- [ ] AC3 — 门禁：`npm run test` 全量 100% 通过（基线 41 文件 324/324 → **+1 文件 +4 用例=42 文件 328**，Generator 亲测回填实测数）；`npm run lint` **0E|166W**（±0）；`vue-tsc` **EXIT=0**；`npm run build` **✓**。← 用例 `AC3 ← 用例 四门禁=基线/增量恰+4`
+- [ ] AC4 — 冒烟：`bash scripts/smoke.sh web/045` = 1 用例 ✅（G1=定向 vitest `4 passed`；G3=`handleClear` 含 `emit('change','')` 实现锚点）；全量 **79=77✅+2⏭ 0❌ `SMOKE PASSED（79 用例）`**。← 用例 `AC4 ← 用例 web/045 护栏+全量冒烟 79`
 
-### AC1/AC2 — 合成用例护栏（test-first）
+### AC1/AC2 — 组件行为 TDD
 
-**步骤与期望**：先写合成断言（AC1）→ 改两函数（AC2）。合成用例通过 source 用例区前的函数定义块实现，不新增正式冒烟用例（**用例区零动**，78 口径不变——同 053 先例）。
+**步骤与期望**：先落 spec（RED）→ 1 行 feat（GREEN）→ smoke 护栏随之转 ✅。四页 IndexView **零改动**（方案 A 卖点，消费者 `@change` 接线已就位）。
 
-**用例**：`AC1/AC2 ← 用例 合成失败/成功用例定向断言`
+**用例**：`AC1/AC2 ← 用例 BaseInput.spec 定向红绿`
 
-### AC3/AC4 — 回归与冒烟
+### AC3/AC4 — 门禁与冒烟
 
-**用例**：`AC3/AC4 ← 用例 FILTER 回归+全量冒烟噪声计数`
+**用例**：`AC3/AC4 ← 用例 四门禁+web/045 护栏`
 
 ## 测试清单
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | 合成失败用例 stdout 零噪声（修复前红） | AC1 | **✅ 红**：`SYNTHETIC_NOISE` 泄漏 stdout（实证） |
-| 2 | 合成失败用例日志回放+成功路径静默+计数器 `1 1` | AC2 | **✅ 四项全绿**：① stdout 仅「用例名+❌」零噪声；② stderr 回放「`---- 日志末 40 行（/tmp/smoke-case-$$-N.log）----`+SYNTHETIC_NOISE」；③ 成功路径双向静默（仅 ✅）；④ `CASES=1 FAIL=1` |
-| 3 | `smoke.sh "web/052"`=1 用例；`smoke.sh zzz-not-exist`=exit 2 | AC3 | **✅**：`web/052`=1 用例 ✅ EXIT=0；`roles`=2 用例 ✅（sprint-100 后已转绿）；无匹配 EXIT=2（口径注记：该用例名=斜杠 `web/052`，task 原文 `web-052` 为笔误，实测纠正） |
-| 4 | 全量 78=76✅+2⏭ 0❌ + stdout 噪声计数 0 | AC4 | **✅**：`SMOKE PASSED（78 用例）` ✅=76/❌=0/⏭=2；噪声计数 Mockito=**0**、SpringBootTestContextBootstrapper=**0**；stdout 全量仅 **157 行**（原噪声数千行） |
+| 1 | BaseInput.spec 首跑红（change 恒 0）+ smoke web/045 首跑 ❌ | AC1 | 待红 |
+| 2 | spec 4/4 绿（change=['']+双 emit 保留+focus+按钮 v-if 契约） | AC2 | 待绿 |
+| 3 | test 42 文件 328 全绿 / lint 0E\|166W / vue-tsc 0 / build ✓ | AC3 | 待亲测 |
+| 4 | `smoke.sh web/045`=1 ✅；全量 79=77✅+2⏭ 0❌ | AC4 | 待亲测 |
 
 ## RED 证据
 
 ```text
-[修复前红态 2026-10-16] 合成失败用例 stdout 原文：--- 冒烟用例: syn-x / SYNTHETIC_NOISE / ❌ 失败: syn-x → 噪声直泄 stdout（断言 false）
-[GREEN] 同用例 stdout 仅 --- 冒烟用例: syn-x / ❌ 失败: syn-x；噪声转 stderr 回放（含日志路径）
-[提交物证] 单段 `41a1833 feat`（+12/-3）——test 段物理载体=合成断言（无独立测试文件、用例区零动不可新增），同 053 单段先例；Generator 主动披露供 Evaluator 裁决
+[修复前红态] 证据槽 — 待 Generator 填写（spec 首跑「change 期望 1 次实得 0」+护栏 ❌）
 ```
 
 ## 门禁与冒烟记录
 
-> Generator 亲测填写。基线（sprint-100 起）：冒烟 78=76✅+2⏭ 0❌；前端/后端零动。
+> Generator 亲测填写。基线（sprint-102 后）：冒烟 **78=76✅+2⏭ 0❌**（本单后预期 79=77✅+2⏭）；前端 test 41 文件 324/324、lint 0E|166W、build ✓~17s、vue-tsc EXIT=0；后端零动。
 
 | 门禁项 | 本单后预期 | 实测 | 结论 |
 |--------|---------|------|------|
-| `bash scripts/smoke.sh` | 78=76✅+2⏭ 0❌ `SMOKE PASSED` | `SMOKE PASSED（78 用例）`：76/0/2 | ✅ |
-| stdout 噪声计数 | `Mockito...`=0、`SpringBootTestContextBootstrapper`=0 | 均=0；stdout 全量 157 行 | ✅ 归零 |
-| 合成用例三断言+计数器 | 全绿 | 四项全绿（见测试清单#2） | ✅ |
-| FILTER/防呆回归 | 1 用例 / exit 2 | `web/052`=1 ✅ / 无匹配 EXIT=2 | ✅ |
-| 前端/后端 | 零动（不跑） | — | 零动 |
+| `npm run test` | 42 文件 328/328（+1 文件 +4） | 待填 | 待验 |
+| `npm run lint` | 0E\|166W（±0） | 待填 | 待验 |
+| `vue-tsc` / `build` | EXIT=0 / ✓ | 待填 | 待验 |
+| `bash scripts/smoke.sh` | 79=77✅+2⏭ 0❌ `SMOKE PASSED（79 用例）` | 待填 | 待验 |
+| 后端 mvn | 零动（不跑） | — | 零动 |
 
 ## 实现说明
 
-**实现要点**（`smoke_case` 与 `smoke_case_cond` 对称改造）：
-1. `local log="${TMPDIR:-/tmp}/smoke-case-$$-${CASES}.log"`；`"$@" >"$log" 2>&1`（cond 的 `eval "$cond_cmd"` 同样重定向 `/dev/null`——cond 输出无诊断价值）。
-2. 成功：`echo "    ✅ 通过"` + `rm -f "$log"`。
-3. 失败：`echo "    ❌ 失败: $name"` + `echo "    ---- 日志末 40 行（$log）----"` + `tail -n 40 "$log"`（**输出到 stderr**）+ `FAIL=1`。
-4. 计数器/过滤/尾部汇总语义零变；既有 14 条用例内部自写 `/tmp/smoke-*.log` 不受影响（其定向 grep 不变）。
-5. 头部注释补一行「诊断输出策略：成功静默、失败回放末 40 行」。
+**实现要点**：
+1. spec（test 段）：`mount(BaseInput, {props:{modelValue:'abc', clearable:true}})` → `find('.base-input__clear').trigger('click')` → 断言 `wrapper.emitted('change')`=`[['']]`（当前=undefined 红）；回归三断言（update:modelValue+clear 双 emit、`document.activeElement`=input、非 clearable/空值时按钮不存在）。
+2. smoke（test 段，护栏先行）：用例区唯一闭合分隔线前追加 `web/045`——G1 `npm run test -- --run src/components/__tests__/BaseInput.spec.ts 2>&1 | grep -q '4 passed'`；G3 `grep -q "emit('change', '')" .../BaseInput.vue`。**双引号内 `''` 无需转义，但 G3 的 `emit('change', '')` 外层双引号内含单引号直接可用；`$` 前缀变量无**。
+3. feat 段：`handleClear` 在 `emit('clear')` 后追加 `emit('change', '')` 恰 1 行（focus 行保持不动）。
+4. 四页 IndexView、BaseSelect、其余 BaseInput 逻辑（handleChange/togglePassword/模板 v-if）**零改**。
 
-**超限熔断**：改动 >1 文件、动用例区（78 用例增减/改名/改命令）、动尾部汇总格式、改 FILTER 语义、失败日志不留档（丢排障能力）→ 停止回报。
+**超限熔断**：改动 >3 文件、动四页 IndexView、动 BaseInput 非 handleClear 逻辑、改既有 spec/用例、spec 用例数 ≠4 → 停止回报。
 
-**不动清单**：用例区全部 78 用例；`SMOKE_APP_LOG` 与 14 处内部自写日志；FILTER/RAN/exit 2 语义；SMOKE PASSED/FAILED 汇总行格式；后端/前端全部；application.yml.template D 态。
+**不动清单**：四页 IndexView 全部；BaseSelect；BaseInput 除 handleClear 外全部；既有 4 个 spec 文件；用例区既有 78 条（仅追加 1 条）；SMOKE APP_LOG/内部日志/FILTER 语义/尾部汇总格式；后端全部；`application.yml.template` D 态（永不 add）。
 
-## 交付物（1 业务文件）
+## 交付物（3 业务文件）
 
-1. `scripts/smoke.sh` — 两函数输出收敛+头部注释
+1. `frontend/src/components/__tests__/BaseInput.spec.ts` — **新增**（4 用例，TDD 载体）
+2. `scripts/smoke.sh` — 用例区追加 `web/045` 护栏（78→79）
+3. `frontend/src/components/BaseInput.vue` — handleClear 追加 1 行
 
 ### 新增
-（无）
+- `frontend/src/components/__tests__/BaseInput.spec.ts`
 
 ### 修改
 - `scripts/smoke.sh`
+- `frontend/src/components/BaseInput.vue`
 
 ### 删除
 （无）
 
 ### 变更计数
 
-业务文件 **1**；用例区零动（78 口径不变）；计数/过滤/退出码语义零变。
+业务文件 **3**；smoke 用例 78→**79**；BaseInput 净 +1 行；四页消费者零改。
 
 ## 评审意见
 
-**sprint-102 评审通过 — 均分 9.5/10**（2026-10-16 Evaluator）
-
-| 维度 | 分 | 依据 |
-|------|----|------|
-| 需求符合 | 10 | 4 AC 亲核全满足：AC1 首跑红（噪声泄漏 stdout）、AC2 四断言全绿（stdout 零噪声/stderr 回放含路径/成功双向静默/计数器 `1 1`）、AC3 回归（`web/052`=1 用例 EXIT=0、无匹配 EXIT=2）、AC4 全量 `SMOKE PASSED（78 用例）` 76/0/2 且噪声计数三项全 0 |
-| 设计/实现 | 9.5 | 两函数**对称**改造（Evaluator 追加验证 ⑤ `smoke_case_cond` 亦静默）；per-case 日志 PID+序号唯一命名；计数/FILTER/退出码/汇总行语义零变；扣分=失败日志无清理策略（残留 11 份本会话合成日志 -0.3，可择机加陈旧清理） |
-| 门禁/回归 | 10 | Evaluator 亲跑：diff 恰 1 文件 12+/3-、gm 用例区+尾部汇总零动核=**0**、`web/052`/`zzz` 回归通过；stdout 全量 157 行（原数千行）、stderr 静默（0 失败=零回放） |
-| 证据/物证 | 10 | RED 为**可复现行为证据**（合成用例泄漏 stdout 实证，非结构取证）+GREEN 五项断言（含 Evaluator 追加的 cond 分支）+全量噪声计数实证；优于 098/099 结构取证型 |
-| 沟通/流程 | 9 | task 四 AC 结果/门禁表/单段披露完整；扣分=AC3 用例名口径笔误（`web-052` 实为 `web/052`，Generator 实测纠正并注记 -0.5，与 sprint-099 同类复现，建议后续 D 单前先 `grep 'smoke_case "'` 核对用例名）；单段 feat 裁决**合规**（合成断言无独立测试文件+用例区零动不可新增，同 053 先例 -0.5→综合 -0.1） |
-
-**六一票否决**：零命中（无夹带、无跳门禁、无 force push、无跳 Evaluator、无基线漂移、无文档缺失）。
-
-**扣分项（-0.5）**：① 失败日志无清理策略（-0.3）；② 单段 feat 披露裁决合规（-0.1）；③ AC3 口径笔误（-0.1，与 099 同类，Pattern 需根治）。
-
-**结论**：PASS。web/054 收口——冒烟输出收敛落地（噪声归零、stdout 157 行、失败可回放排障），清偿 sprint-100/101 两轮评审噪声扣分。后续候选：web/045 BaseInput、web/036c3（>6 问案B）、挂起区（barrel 整体移除探明/mvn 计数口径统一/护栏 G2 反模式根治/失败日志清理）。
+（待 Evaluator 评审）
