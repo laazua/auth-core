@@ -23,6 +23,7 @@ docker_available() {
 }
 
 # 条件执行冒烟用例：若条件不满足则标记跳过（不计入失败）
+# 诊断输出策略：用例输出合并入 per-case 日志——成功静默（仅 ✅），失败回放日志末 40 行至 stderr（保留排障信息）
 smoke_case_cond() { # smoke_case_cond <用例名> <条件命令> <测试命令...>
   local name="$1"
   local cond_cmd="$2"
@@ -33,11 +34,15 @@ smoke_case_cond() { # smoke_case_cond <用例名> <条件命令> <测试命令..
   CASES=$((CASES + 1))
   RAN=$((RAN + 1))
   echo "--- 冒烟用例: $name"
-  if eval "$cond_cmd"; then
-    if "$@"; then
+  if eval "$cond_cmd" >/dev/null 2>&1; then
+    local log="${TMPDIR:-/tmp}/smoke-case-$$-${CASES}.log"
+    if "$@" >"$log" 2>&1; then
       echo "    ✅ 通过"
+      rm -f "$log"
     else
       echo "    ❌ 失败: $name"
+      echo "    ---- 日志末 40 行（$log）----" >&2
+      tail -n 40 "$log" >&2
       FAIL=1
     fi
   else
@@ -54,10 +59,14 @@ smoke_case() { # smoke_case <用例名> <命令...>
   CASES=$((CASES + 1))
   RAN=$((RAN + 1))
   echo "--- 冒烟用例: $name"
-  if "$@"; then
+  local log="${TMPDIR:-/tmp}/smoke-case-$$-${CASES}.log"
+  if "$@" >"$log" 2>&1; then
     echo "    ✅ 通过"
+    rm -f "$log"
   else
     echo "    ❌ 失败: $name"
+    echo "    ---- 日志末 40 行（$log）----" >&2
+    tail -n 40 "$log" >&2
     FAIL=1
   fi
 }
