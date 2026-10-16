@@ -8,7 +8,7 @@
 | 所属模块 | **web** |
 | 功能点 ID | **web/045** |
 | 功能点名称 | BaseInput clearable 点 × 触发重查（clear 只发 clear 不发 change 暗修） |
-| 状态 | **PLANNED** |
+| 状态 | **AWAITING_REVIEW**（Generator 交付完成 2026-10-16，四 AC 亲测在案） |
 | 创建时间 | 2026-10-16 |
 
 ## 前置依赖
@@ -31,10 +31,10 @@
 
 ## 验收标准（TDD 驱动）
 
-- [ ] AC1 — RED：新增 `frontend/src/components/__tests__/BaseInput.spec.ts`（4 用例）首跑红——「点 × 后 emit change 恰一次且值 `''`」失败（当前 `emitted('change')`=undefined）；smoke `web/045` 护栏同步首跑 ❌（vitest 非 `4 passed`）。← 用例 `AC1 ← 用例 BaseInput.spec 首跑红+护栏红`
-- [ ] AC2 — GREEN：`handleClear` 追加 `emit('change','')`（**恰 1 行**）→ spec 4/4 绿：① change 恰一次=`['']`；② `update:modelValue ['']`+`clear` 双 emit 保留；③ input 保持 focus；④ `clearable=false` 或 `modelValue` 空时无 `.base-input__clear` 按钮（v-if 契约回归）。← 用例 `AC2 ← 用例 BaseInput.spec 4/4 绿`
-- [ ] AC3 — 门禁：`npm run test` 全量 100% 通过（基线 41 文件 324/324 → **+1 文件 +4 用例=42 文件 328**，Generator 亲测回填实测数）；`npm run lint` **0E|166W**（±0）；`vue-tsc` **EXIT=0**；`npm run build` **✓**。← 用例 `AC3 ← 用例 四门禁=基线/增量恰+4`
-- [ ] AC4 — 冒烟：`bash scripts/smoke.sh web/045` = 1 用例 ✅（G1=定向 vitest `4 passed`；G3=`handleClear` 含 `emit('change','')` 实现锚点）；全量 **79=77✅+2⏭ 0❌ `SMOKE PASSED（79 用例）`**。← 用例 `AC4 ← 用例 web/045 护栏+全量冒烟 79`
+- [x] AC1 — RED：新增 `frontend/src/components/__tests__/BaseInput.spec.ts`（4 用例）首跑红——「点 × 后 emit change 恰一次且值 `''`」失败（当前 `emitted('change')`=undefined）；smoke `web/045` 护栏同步首跑 ❌（vitest 非 `4 passed`）。← 用例 `AC1 ← 用例 BaseInput.spec 首跑红+护栏红`
+- [x] AC2 — GREEN：`handleClear` 追加 `emit('change','')`（**恰 1 行**）→ spec 4/4 绿：① change 恰一次=`['']`；② `update:modelValue ['']`+`clear` 双 emit 保留；③ input 保持 focus；④ `clearable=false` 或 `modelValue` 空时无 `.base-input__clear` 按钮（v-if 契约回归）。← 用例 `AC2 ← 用例 BaseInput.spec 4/4 绿`
+- [x] AC3 — 门禁：`npm run test` 全量 100% 通过（基线 41 文件 324/324 → **+1 文件 +4 用例=42 文件 328**，Generator 亲测回填实测数）；`npm run lint` **0E|166W**（±0）；`vue-tsc` **EXIT=0**；`npm run build` **✓**。← 用例 `AC3 ← 用例 四门禁=基线/增量恰+4`
+- [x] AC4 — 冒烟：`bash scripts/smoke.sh web/045` = 1 用例 ✅（G1=定向 vitest `4 passed`；G3=`handleClear` 含 `emit('change','')` 实现锚点）；全量 **79=77✅+2⏭ 0❌ `SMOKE PASSED（79 用例）`**。← 用例 `AC4 ← 用例 web/045 护栏+全量冒烟 79`
 
 ### AC1/AC2 — 组件行为 TDD
 
@@ -50,10 +50,10 @@
 
 | # | 测试用例名 | 验收标准 | 结果 |
 |---|-----------|---------|------|
-| 1 | BaseInput.spec 首跑红（change 恒 0）+ smoke web/045 首跑 ❌ | AC1 | 待红 |
-| 2 | spec 4/4 绿（change=['']+双 emit 保留+focus+按钮 v-if 契约） | AC2 | 待绿 |
-| 3 | test 42 文件 328 全绿 / lint 0E\|166W / vue-tsc 0 / build ✓ | AC3 | 待亲测 |
-| 4 | `smoke.sh web/045`=1 ✅；全量 79=77✅+2⏭ 0❌ | AC4 | 待亲测 |
+| 1 | BaseInput.spec 首跑红（change 恒 0）+ smoke web/045 首跑 ❌ | AC1 | **✅ 红**：spec 1 failed\|3 passed（`emitted('change')` expected `[['']]` got undefined）+护栏 ❌ EXIT=1 |
+| 2 | spec 4/4 绿（change=['']+双 emit 保留+focus+按钮 v-if 契约） | AC2 | **✅ 绿**：定向 4 passed；护栏 ✅（G1+G3）；实现=handleClear 恰 +1 行 |
+| 3 | test 42 文件 328 全绿 / lint 0E\|166W / vue-tsc 0 / build ✓ | AC3 | **✅**：test 42 文件 **328/328**（恰 +1 文件 +4 用例）；lint **0E\|166W**（±0）；build ✓ 16.69s（内含 vue-tsc EXIT=0） |
+| 4 | `smoke.sh web/045`=1 ✅；全量 79=77✅+2⏭ 0❌ | AC4 | **✅**：web/045=1 用例 ✅ EXIT=0；全量 `SMOKE PASSED（79 用例）` 77/0/2 |
 
 ## RED 证据
 
@@ -70,10 +70,10 @@
 
 | 门禁项 | 本单后预期 | 实测 | 结论 |
 |--------|---------|------|------|
-| `npm run test` | 42 文件 328/328（+1 文件 +4） | 待填 | 待验 |
-| `npm run lint` | 0E\|166W（±0） | 待填 | 待验 |
-| `vue-tsc` / `build` | EXIT=0 / ✓ | 待填 | 待验 |
-| `bash scripts/smoke.sh` | 79=77✅+2⏭ 0❌ `SMOKE PASSED（79 用例）` | 待填 | 待验 |
+| `npm run test` | 42 文件 328/328（+1 文件 +4） | 42 文件 328/328 | ✅ 恰+4 |
+| `npm run lint` | 0E\|166W（±0） | 0E\|166W | ✅ 持平 |
+| `vue-tsc` / `build` | EXIT=0 / ✓ | build ✓ 16.69s（vue-tsc 内含 EXIT=0） | ✅ |
+| `bash scripts/smoke.sh` | 79=77✅+2⏭ 0❌ `SMOKE PASSED（79 用例）` | `SMOKE PASSED（79 用例）` 77/0/2 | ✅ |
 | 后端 mvn | 零动（不跑） | — | 零动 |
 
 ## 实现说明
@@ -107,6 +107,18 @@
 ### 变更计数
 
 业务文件 **3**；smoke 用例 78→**79**；BaseInput 净 +1 行；四页消费者零改。
+
+## 变更清单（Generator 交付）
+
+### 新增
+- `frontend/src/components/__tests__/BaseInput.spec.ts` — 4 用例：点 × emit change=['']（主断言）/双 emit 契约保留/input 保持焦点/按钮 v-if 回归
+
+### 修改
+- `scripts/smoke.sh`:680-687 — 用例区追加 `web/045` 护栏（G1 定向 vitest 4 passed+G3 实现锚点），78→79
+- `frontend/src/components/BaseInput.vue`:83 — handleClear 追加 `emit('change','')` 恰 1 行（清除即值变更）
+
+### 删除
+（无）
 
 ## 评审意见
 
