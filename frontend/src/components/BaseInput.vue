@@ -80,6 +80,7 @@
   const handleClear = () => {
     emit('update:modelValue', '');
     emit('clear');
+    emit('change', '');
     inputRef.value?.focus();
   };
 
