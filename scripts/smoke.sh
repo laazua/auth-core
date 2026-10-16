@@ -683,6 +683,16 @@ smoke_case "web/045 BaseInput clear 触发 change 重查护栏" bash -c "
   # G3 实现锚点：handleClear 仍 emit change('')
   grep -q \"emit('change', '')\" /opt/codes/auth-core/frontend/src/components/BaseInput.vue || exit 1
 "
+# web/036c3：嵌套 :deep 编译失效治理（sprint-104 本单追加：G1 结构 spec 3 用例、G2 构建产物字面 :deep( 残留=0；修复前首跑 G1 含红+G2 残留 42 必红）
+smoke_case "web-036c3 嵌套 :deep 治理护栏" bash -c "
+  FE=/opt/codes/auth-core/frontend
+  # G1 源侧结构 spec（两锚点同步+全仓嵌套=0 断言）
+  cd \$FE || exit 1
+  npm run test -- --run src/__tests__/sidebar-icon-size.spec.ts 2>&1 | grep -q '4 passed' || exit 1
+  # G2 构建产物字面 :deep( 残留 = 0
+  npx vite build >/dev/null 2>&1 || exit 1
+  test \$(grep -rho ':deep(' \$FE/dist/assets/ | wc -l) -eq 0 || exit 1
+"
 # ====================================================================================
 
 if [ -n "$FILTER" ] && [ "$RAN" -eq 0 ]; then

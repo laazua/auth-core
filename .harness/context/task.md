@@ -61,7 +61,13 @@
 ## RED 证据
 
 ```text
-[修复前红态] 证据槽 — 待 Generator 填写（结构用例列 4 文件 35 处+锚点 null+护栏 ❌；静态实证 dist=42）
+[RED 2026-10-16] spec 定向首跑：Tests 3 failed | 1 passed (4)
+  ① 结构用例：expected [ …(4) ] to deeply equal []
+     ["components/BaseTable.vue: 4 处", "components/Breadcrumb.vue: 1 处",
+      "components/Sidebar.vue: 6 处", "views/LoginView.vue: 2 处"]（TS 口径=违规外层规则计数；python 口径 35=体内 :deep 出现数，双口径均红）
+  ② 两锚点同步用例：marker ':deep(.el-menu .el-menu-item)' / ':deep(.el-menu .el-sub-menu .el-sub-menu__title)' 当前源为嵌套形态 → extractRuleBlock=null → not.toBeNull 失败
+  ③ fallback 用例（顶层 .sidebar__icon，非嵌套形态）首跑即绿=回归基线
+[RED-护栏] bash scripts/smoke.sh web-036c3 → ❌ 失败: web-036c3 嵌套 :deep 治理护栏 EXIT=1（G1 非 4 passed；G2 dist 字面 42 静态实证在案）
 ```
 
 ## 门禁与冒烟记录
@@ -115,7 +121,7 @@
 
 ### 变更计数
 
-业务文件 **6**（顶格）；smoke 用例 79→**80**；spec 用例 2→**3**；dist 字面残留 42→**0**。
+业务文件 **6**（顶格）；smoke 用例 79→**80**；spec 用例 3→**4**（+1 结构用例；规划原文「2→3」为 Planner 笔误，实测 3→4，Generator 实测纠正）；dist 字面残留 42→**0**。
 
 ## 评审意见
 
