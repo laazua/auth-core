@@ -58,7 +58,10 @@
 ## RED 证据
 
 ```text
-[修复前红态] 证据槽 — 待 Generator 填写（spec 首跑「change 期望 1 次实得 0」+护栏 ❌）
+[RED 2026-10-16] spec 定向首跑：Tests 1 failed | 3 passed (4)
+  ❯ BaseInput.spec.ts:18 expect(wrapper.emitted('change')).toEqual([['']])
+    - Expected [['']]; + Received undefined  —— handleClear 不 emit change（行为红，可复现）
+[RED-护栏] bash scripts/smoke.sh web/045 → ❌ 失败: web/045（G1 非 4 passed）EXIT=1
 ```
 
 ## 门禁与冒烟记录

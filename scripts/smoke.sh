@@ -676,6 +676,13 @@ smoke_case "web-036c2b 死代码清理与护栏" bash -c "
   test -z \"\$(grep -rl 'layouts/Layout.vue' \$FE/src --include='*.vue' --include='*.ts')\" || exit 1
   test -z \"\$(grep -rl 'styles/index' \$FE/src --include='*.vue' --include='*.ts')\" || exit 1
 "
+smoke_case "web/045 BaseInput clear 触发 change 重查护栏" bash -c "
+  cd /opt/codes/auth-core/frontend || exit 1
+  # G1 组件 spec 4/4（点 × 后 emit change 回归）
+  npm run test -- --run src/components/__tests__/BaseInput.spec.ts 2>&1 | grep -q '4 passed' || exit 1
+  # G3 实现锚点：handleClear 仍 emit change('')
+  grep -q \"emit('change', '')\" /opt/codes/auth-core/frontend/src/components/BaseInput.vue || exit 1
+"
 # ====================================================================================
 
 if [ -n "$FILTER" ] && [ "$RAN" -eq 0 ]; then
