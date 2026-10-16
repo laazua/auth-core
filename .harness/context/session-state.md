@@ -2,13 +2,13 @@
 > 本文件是跨会话交接的唯一真相源。任何会话开始必须先读本文件，按「下一步动作」路由（规则见 `AGENTS.md`）。
 
 ## 当前阶段
-- 状态: ✅ **sprint-103 / web/045 评审通过 9.7/10（DONE）**，移交 Planner
+- 状态: 🔄 **sprint-104 规划完成（PLANNED，web/036c3 嵌套 :deep 编译失效治理）**，移交 Generator
 - 当前模块: web
-- 当前功能点: web/045 clear 触发重查收口（1 行修 4 页）；基线冒烟 **79=77✅+2⏭ 0❌**、test 42 文件 328、lint 0E|166W
+- 当前功能点: web/036c3 4 vue 扁平化+spec 同步+smoke 护栏（6 文件顶格；dist 字面 42→0）
 
 
 ## 下一步动作
-  Planner：读 `.harness/planner.md` 并严格执行——候选：① web/036c3 串联 :deep 42 处（068 登记，**>6 文件须先只读实测并向用户问案B**）；② 挂起区小项（components/index.ts barrel 整体移除探明/mvn 用例计数口径统一/护栏 G2 反模式根治/冒烟失败日志清理/用例名口径 grep 核对）；③ 挂起区观察项（smoke G3 冗余护栏可简化）。用户带新报障/新需求则以其优先。**建单前先 `grep 'smoke_case "' scripts/smoke.sh` 核对用例名口径**（099/102 两次笔误 Pattern 根治）。
+  Generator：读 `.harness/generator.md` 并严格执行——工作单 `.harness/context/task.md`（sprint-104 / web/036c3）。TDD 两段式：test 段=sidebar-icon-size.spec 两锚点按扁平化形态同步+新增全仓结构用例（大括号配平探测）+smoke web-036c3 护栏先行，三路首跑红（结构 35 处/4 文件实录+锚点 null+护栏 ❌）→ feat 段=4 vue 扁平化（叶子规则完整后代路径入单 :deep 参数，禁丢祖先路径凑 spec）→ spec 3/3 绿+源侧 0+build 后 dist 字面 0 → 门禁（test 329/lint 0E|166W/build ✓）→ 全量冒烟 80=78✅+2⏭ 0❌。严守 6 文件顶格熔断与不动清单（单 :deep 规则、breadcrumb-nav/profile-view-spacing spec、既有 79 条用例、application.yml.template D 态）。完成后置 AWAITING_REVIEW 移交 Evaluator。
 
 ## 挂起
 - [卫生项 2026-10-14] 死文件清理：`views/system/PermissionView.vue`（21 行占位，/system/permissions 路由指向 system/IndexView.vue 非它）与 `views/system/ModuleView.vue`（21 行占位，/system/modules 同款）——零功能影响，待 Planner 立卫生小单删除
@@ -55,6 +55,7 @@
 - 2026-08-26: Generator(sprint-001) — 前端门禁暂缓适用：`frontend/` 目录属 web/001 范围尚未创建，infra 阶段仅后端可验证；非架构冲突，自 web/001 交付起恢复「后端+前端」双门禁口径。
 
 ## 最近更新
+- 2026-10-16: Planner — kickoff sprint-104（web/036c3，4 条验收标准：嵌套/串联 :deep 编译失效治理——只读实证 dist 字面残留 42（恰合 068 登记数）+源侧嵌套 35 处/4 文件、068「>6 问案B」预估证伪（修复面 6 顶格无需问案）、spec 三红路 TDD+smoke 护栏 79→80、扁平化保完整后代路径禁凑 spec；068 登记后第 36 单执行清偿）
 - 2026-10-16: Evaluator — pass sprint-103（web/045，平均分 9.7/10：4 AC 亲核全满足——RED 实录+静态取证（test 段实现 0 处/断言 1 处）、四门禁亲测（mvn 168=3F+2E 恰基线/test 42 文件 328/lint 0E|166W/build ✓17.65s）、全量冒烟 SMOKE PASSED 79 用例 0❌ 含 web/045 ✅、diff 恰 3 文件零夹带四页零改；扣分=清单行号 +1 偏差-0.5+G3 冗余护栏-0.5+仅 1/4 用例驱动 RED-0.5；六否决零命中）
 - 2026-10-16: Generator — sprint-103/web/045 交付（`ff34ec1 test` spec 4 用例+护栏先行 RED→`a88516d feat` handleClear +1 行；四 AC 全绿：RED=1 failed|3 passed change undefined→GREEN 4/4、四门禁 test 42 文件 328/lint 0E|166W/build ✓16.7s、冒烟 SMOKE PASSED 79 用例 77✅+2⏭ 0❌；3 文件零越界、四页消费者零改）
 - 2026-10-16: Planner — kickoff sprint-103（web/045，4 条验收标准：BaseInput clearable 点 × 触发重查——handleClear 只发 clear 不发 change 根因实锤、爆炸半径=BaseInput @change 消费方恰 4 搜索框、方案 A 组件级 1 行修 4 页否决方案 B 八处接线；新 spec 4 用例+smoke 护栏 78→79，3 文件；清偿 sprint-089 范围外登记项）

@@ -4,6 +4,7 @@
 
 ## 记录
 
+- 2026-10-16: Planner — kickoff sprint-104（web/036c3，4 条验收标准：嵌套/串联 :deep 编译失效治理（068 登记预存缺陷，第 36 单执行）——只读实证 dist 字面 :deep 残留 42（恰合 068 登记数，分布 DefaultLayout 24/LoginView 7/Breadcrumb 6/el-drawer 5）+源侧嵌套规则体 35 处/4 文件（Sidebar 20/LoginView 6/BaseTable 5/Breadcrumb 4）、068「>6 问案B」预估经只读实测证伪（4 vue+smoke+sidebar spec 同步=6 顶格）直接建单；TDD=结构用例+锚点同步+smoke 护栏三红路→扁平化（叶子规则完整后代路径入单 :deep 参数）；6 文件顶格熔断）
 - 2026-10-16: Evaluator — pass sprint-103（web/045，平均分 9.7/10：4 AC 亲核全满足——spec RED 实录+静态取证（ff34ec1 时点 emit change=0 处/主断言 1 处）+提交序 test→feat、四门禁亲测（mvn 168=3F+2E 恰豁免四类基线/test 42 文件 328/328 恰+4/lint 0E|166W/build ✓17.65s）、全量冒烟 SMOKE PASSED 79=77✅+2⏭ 0❌ 含新护栏 web/045 ✅、diff 恰 3 文件零夹带+四页 IndexView 零改+smoke 恰增 1 用例；扣分=变更清单行号 680-687≠679-685 -0.5+G3 冗余护栏-0.5+仅 1/4 用例驱动 RED -0.5；六否决零命中）
 - 2026-10-16: Generator — done sprint-103（web/045，门禁+冒烟通过：`ff34ec1 test` RED=BaseInput.spec 1 failed|3 passed（emitted change undefined）+护栏 ❌ → `a88516d feat` handleClear 追加 emit('change','') 恰 1 行 → GREEN 4/4；四门禁=test 42 文件 328/328（+1 文件 +4）、lint 0E|166W 持平、build ✓16.69s、全量冒烟 SMOKE PASSED 79=77✅+2⏭ 0❌ 含新护栏 web/045；3 文件零越界、四页 IndexView 零改）
 - 2026-10-16: Planner — kickoff sprint-103（web/045，4 条验收标准：BaseInput clearable 点 × 触发重查——组件 handleClear 追加 emit('change','') 恰 1 行修四页 4 搜索框（users/roles/system×2，全 clearable+@change）、爆炸半径全仓实锤仅 4 消费方（settings=ElSwitch/其余 @change=BaseSelect 无关）、方案 B 四页接 @clear 8 处易漏否决；新 BaseInput.spec 4 用例 TDD 载体+smoke web/045 护栏 78→79；3 文件；清偿 sprint-089 登记范围外项）
