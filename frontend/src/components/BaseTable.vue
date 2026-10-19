@@ -187,22 +187,16 @@
     background: var(--color-bg-page);
   }
 
-  :deep(.el-table__fixed) {
-    :deep(.el-table__header-wrapper) {
-      background: var(--color-bg-page);
-    }
+  :deep(.el-table__fixed .el-table__header-wrapper) {
+    background: var(--color-bg-page);
   }
 
-  :deep(.el-table__fixed-right) {
-    :deep(.el-table__header-wrapper) {
-      background: var(--color-bg-page);
-    }
+  :deep(.el-table__fixed-right .el-table__header-wrapper) {
+    background: var(--color-bg-page);
   }
 
-  :deep(.el-loading-spinner) {
-    :deep(.el-loading-spinner__circular) {
-      border-color: var(--color-primary) !important;
-      border-top-color: transparent !important;
-    }
+  :deep(.el-loading-spinner .el-loading-spinner__circular) {
+    border-color: var(--color-primary) !important;
+    border-top-color: transparent !important;
   }
 </style>

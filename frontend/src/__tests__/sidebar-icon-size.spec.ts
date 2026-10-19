@@ -29,9 +29,7 @@ function extractRuleBlock(content: string, startMarker: string): string | null {
 // 辅助：统计「选择器含 :deep( 且规则体内又含 :deep(」的嵌套规则数
 // （@vue/compiler-sfc 仅转换首个 :deep()，后续以字面选择器残留致规则失效——web/036c3 治理对象）
 function countNestedDeepRules(content: string): number {
-  const stripped = content
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/\/\/[^\n]*/g, '');
+  const stripped = content.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
   let count = 0;
   const re = /([^{}]+)\{/g;
   let m: RegExpExecArray | null;
@@ -61,7 +59,10 @@ describe('SidebarIconSizeSpec', () => {
 
   it('subMenuTitleIconExplicitSize16px — :deep(.el-menu .el-sub-menu .el-sub-menu__title) 规则块含 width: 16px; height: 16px;', () => {
     // web/036c3 扁平化同步：三层嵌套已并入单 :deep() 完整后代路径（原 marker=:deep(.el-sub-menu)）
-    const ruleBlock = extractRuleBlock(sidebarVueContent, ':deep(.el-menu .el-sub-menu .el-sub-menu__title)');
+    const ruleBlock = extractRuleBlock(
+      sidebarVueContent,
+      ':deep(.el-menu .el-sub-menu .el-sub-menu__title)'
+    );
     expect(ruleBlock).not.toBeNull();
     expect(ruleBlock).toContain('width: 16px');
     expect(ruleBlock).toContain('height: 16px');
