@@ -169,14 +169,12 @@
     color: var(--color-text-primary);
   }
 
-  :deep(.el-table--border) {
-    :deep(.el-table__cell) {
-      border-right: 1px solid var(--color-border-lighter);
-    }
+  :deep(.el-table--border .el-table__cell) {
+    border-right: 1px solid var(--color-border-lighter);
+  }
 
-    :deep(.el-table__header th) {
-      border-right: 1px solid var(--color-border-light);
-    }
+  :deep(.el-table--border .el-table__header th) {
+    border-right: 1px solid var(--color-border-light);
   }
 
   :deep(.el-table__empty-block) {

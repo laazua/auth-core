@@ -514,28 +514,24 @@
     align-items: center;
     justify-content: space-between;
 
-    :deep(.el-checkbox) {
-      :deep(.el-checkbox__label) {
-        font-size: 13px;
-        color: var(--color-text-regular);
+    :deep(.el-checkbox .el-checkbox__label) {
+      font-size: 13px;
+      color: var(--color-text-regular);
+    }
+
+    :deep(.el-checkbox .el-checkbox__input .el-checkbox__inner) {
+      border-color: var(--color-border);
+      width: 16px;
+      height: 16px;
+
+      &:hover {
+        border-color: var(--color-primary);
       }
+    }
 
-      :deep(.el-checkbox__input) {
-        :deep(.el-checkbox__inner) {
-          border-color: var(--color-border);
-          width: 16px;
-          height: 16px;
-
-          &:hover {
-            border-color: var(--color-primary);
-          }
-        }
-
-        :deep(.el-checkbox__inner--checked) {
-          background: var(--color-primary);
-          border-color: var(--color-primary);
-        }
-      }
+    :deep(.el-checkbox .el-checkbox__input .el-checkbox__inner--checked) {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
     }
   }
 
